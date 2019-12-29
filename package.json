@@ -22,7 +22,8 @@
         "node-fetch": "^2.6.0",
         "node-gyp": "^6.0.1",
         "rebuild": "^0.1.2",
-        "snekfetch": "^4.0.4"
+        "snekfetch": "^4.0.4",
+        "braces": ">=2.3.1"
     },
     "license": "ISC",
     "bugs": {
