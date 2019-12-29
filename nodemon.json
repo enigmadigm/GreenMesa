@@ -1,0 +1,7 @@
+{
+    "verbose": true,
+    "ignore": ["auth.json", "*.archive.js", "node_modules"],
+    "delay": 2500,
+    "ext": "js,json",
+    "watch": ["commands/*", "bot.js", "nodemon.json", "package.json"]
+}
