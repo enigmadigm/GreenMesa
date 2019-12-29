@@ -1,0 +1,32 @@
+{
+    "name": "greenmesa",
+    "version": "0.2.0",
+    "description": "A basic Discord bot meant to supply basic services, and for the dev to practice on",
+    "main": "bot.js",
+    "scripts": {
+        "test": "ping"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/enigmadigm/greenmesa.git"
+    },
+    "author": "Stefan Hauge",
+    "dependencies": {
+        "body-parser": "^1.19.0",
+        "discord.js": "^11.5.1",
+        "express": "^4.17.1",
+        "express-handlebars": "^3.1.0",
+        "forever": "^1.0.0",
+        "ibm-watson": "^5.2.1",
+        "mysql": "^2.17.1",
+        "node-fetch": "^2.6.0",
+        "node-gyp": "^6.0.1",
+        "rebuild": "^0.1.2",
+        "snekfetch": "^4.0.4"
+    },
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/enigmadigm/greenmesa/issues"
+    },
+    "homepage": "https://github.com/enigmadigm/greenmesa#readme"
+}
