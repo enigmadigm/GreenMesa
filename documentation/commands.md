@@ -1,5 +1,5 @@
 # Bot Commmands
-This page contains all commands and details for GreenMesa. This page is ~~gauranteed~~ to be up to date after official releases, after which unannounced updates may occur, I will do my best to keep these docs up to date if updates are pertinent to current stable version and imperative to operation of application (for maintenance, use reasons, something else).
+This page contains all commands and details for GreenMesa. This page is ~~gauranteed~~ to be up to date after official releases, after which unannounced updates may occur, I will do my best to keep these docs up to date if updates are pertinent to current stable version and imperative to operation of application (for maintenance, use reasons, something else).\
 **Don't forget to execute the command with the bot prefix before**
 - `help` - get help, mostly on commands, and don't worry it's detailed
 - `intro` - intro to the bot
@@ -18,8 +18,8 @@ This page contains all commands and details for GreenMesa. This page is ~~gauran
 - `define` - o~~w~~o I'm proud of this one. define an~~y~~ *english* word
 - ~~`thesaurus`~~ - oops, **coming soon**?
 - `t` - please ignore this one, it's not supposed to be there
-- ~~`poker`~~ - what ^^ `t` is trying to be **coming soon**
+- ~~`poker`~~ - what ^^ `t` is trying to be, **coming soon**
 - `tronalddump` - get some Trump quotes, I've had some issues with this command, **working on it**
 - `PRIVATE` - _**PRIVATE**_ - UNDISCLOSED
-- owner commands are not covered here *(botkill, botreset, logtest, creload, so on, son, so)*
+- owner commands are not covered here *(botkill, botreset, logtest, creload, so on, son, so)*\
 There's probably commands that I didn't include here. *Good thing the `help` command exists, eh?*
