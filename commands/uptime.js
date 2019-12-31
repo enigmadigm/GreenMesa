@@ -1,6 +1,6 @@
 module.exports = {
     name: 'uptime',
-    description: 'Up time and other bot information.',
+    description: 'Get bot lifetime information',
     async execute(client, message) {
         let allSeconds = (client.uptime / 1000);
         let days = Math.floor(allSeconds / 86400);
@@ -23,22 +23,29 @@ module.exports = {
         if (seconds < 10) {
             seconds = "0" + seconds;
         }
-        await message.channel.send("***COMMAND BEING DEVELOPED***").catch(console.error);
+        //await message.channel.send("***COMMAND BEING DEVELOPED***").catch(console.error);
         message.channel.send({
             embed: {
                 "title": "Bot Lifetime",
                 "description": 'How long the bot has been alive (doesn\'t mean healthy)',
-                "fields": [{
+                "fields": [
+                    /*{
                         "name": "Expanded",
                         "value": `${client.user} has been online for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds, and ${milliseconds} ms.`
-                    },
+                    },*/
                     {
-                        "name": "Time",
-                        "value": `${days}**:**${hours}**:**${minutes}**;**${seconds}**;**${milliseconds}`
+                        "name": "Elapsed Time",
+                        "value": `${days} : ${hours} : ${minutes} ; ${seconds} . ${milliseconds}`,
+                        "inline": true
                     },
                     {
                         "name": "ms total",
-                        "value": client.uptime
+                        "value": client.uptime,
+                        "inline": true
+                    },
+                    {
+                        "name": "Bot Started At",
+                        "value": new Date(client.readyTimestamp).toUTCString()
                     }
                 ]
             }
