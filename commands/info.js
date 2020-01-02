@@ -1,6 +1,6 @@
 module.exports = {
     name: 'info',
-    description: '',
+    description: 'Get info on the bot.',
     execute(client, message, args) {
         message.channel.send({
             embed: {
@@ -13,12 +13,12 @@ module.exports = {
                 url: "https://enigmadigm.com/apps/greenmesa/help",
                 description: "This multifunctioning Discord bot was built by EnigmaDigm and is served by AtlasAtmos. The purpose of this bot is to do whatever it can to fulfill the commands supplied to it by it's users.",
                 fields: [{
-                        name: "Does the bot have any commands?",
-                        value: "Believe it or not, yes! That's how you got here. Use $help [specific command] to get info on them or visit [here](https://enigmadigm.com/apps/greenmesa/commands)."
+                        name: "Do you have any commands?",
+                        value: "Believe it or not, yes! That's how you got here. Use $help [specific command] to get info on them or visit [here](https://github.com/enigmadigm/GreenMesa/blob/master/documentation/commands.md) for a full (almost always up to date) list."
                     },
                     {
-                        name: "Adding To The Bot",
-                        value: "If you want to make a request either use the #requests channel in our support discord server, or go to the [enigmadigm contact tab](https://enigmadigm.com/apps/greenmesa/discord/help?conresrec=reset). Now that our GitHub presence is increasing you can open up an issue [here](https://github.com/enigmadigm/greenmesa/issues"
+                        name: "How do I contribute?",
+                        value: "If you want to make a request either use the #requests channel in our support discord server, or go to the [enigmadigm contact tab](https://enigmadigm.com/apps/greenmesa/discord/help?conresrec=reset). Now that our GitHub presence is increasing you can open up an issue [here](https://github.com/enigmadigm/greenmesa/issues)"
                     },
                     {
                         name: "What am I supposed to do?",
