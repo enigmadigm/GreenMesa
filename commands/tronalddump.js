@@ -15,24 +15,19 @@ module.exports = {
                 }
                 return {count: j.total, tags: allTags};
             });
-        if (args[0] == "tags" || args[0] == "subjects" || args[0] == "list") {
-            return message.channel.send({
-                embed: {
-                    "title": "Donald Trump: Tags",
-                    "description": `${tagInfo.count} total tags.\n**All Available Tags:**\n${tagInfo.tags.join('\n')}`,
-                    "timestamp": new Date(),
-                    "footer": {
-                        "text": "tronalddump Tag List"
-                    }
-                }
-            });
-        }
-        if (tagInfo.tags.includes(args.join(" "))) {
-            return message.channel.send('I\'m *sorry*, this feature is currently broken.')
-            fetch(`https://api.tronalddump.io/tag/${encodeURI(args.join(" "))}`)
+
+        // for (let i = 0; i < tagInfo.tags.length; i++) {
+        //     console.log(tagInfo.tags[i]);
+        //     console.log(tagInfo.tags.includes(tagInfo.tags[i]));
+        //     console.log(tagInfo.tags.includes(args.join(" ").toLowerCase()));
+        //     console.log(args.join(" "));
+        // }
+
+        if (!args.length || args.length == 0) {
+            return fetch('https://api.tronalddump.io/random/quote')
                 .then(res => res.json())
                 .then(j => {
-                    return message.channel.send({
+                    message.channel.send({
                         embed: {
                             "title": "Donald Trump",
                             "url": j._links.self.href,
@@ -43,14 +38,30 @@ module.exports = {
                                 "text": j.tags[0] + " | " + j.quote_id
                             }
                         }
+                    });
                     }).catch(console.error);
-                }).catch(console.error);
-            }
-            if (!args.length || true) {
-                fetch('https://api.tronalddump.io/random/quote')
+        }
+        return message.channel.send('I\'m sorry, the quotes by tag feature is currently broken.');
+        if (args[0] == "tags" || args[0] == "subjects" || args[0] == "list") {
+            return message.channel.send({
+                embed: {
+                    "title": "Donald Trump: Tags",
+                    "description": `${tagInfo.count} total tags.\n**All Available Tags:**\n${tagInfo.tags.join('\n')}\n***NOTE: tags are case sensitive***`,
+                    "timestamp": new Date(),
+                    "footer": {
+                        "text": "tronalddump Tag List"
+                    }
+                }
+            });
+        }
+        if (args.length) {
+            if (tagInfo.tags.includes(args.join(" "))) {
+                //return message.channel.send('I\'m *sorry*, this feature is currently broken.')
+                return fetch(`https://api.tronalddump.io/tag/${encodeURI(args.join(" "))}`)
                     .then(res => res.json())
                     .then(j => {
-                        return message.channel.send({
+                        //return console.log(j);
+                        message.channel.send({
                             embed: {
                                 "title": "Donald Trump",
                                 "url": j._links.self.href,
@@ -63,6 +74,9 @@ module.exports = {
                             }
                         }).catch(console.error);
                     }).catch(console.error);
+            } else {
+                message.channel.send(`ERROR. You probably sent an invalid tag: ${args.join(" ").toLowerCase()}. ***NOTE: tags are case sensitive***`);
             }
+        }
         }
 }
