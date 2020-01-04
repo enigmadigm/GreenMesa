@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 module.exports = {
     name: 'chucknorris',
     description: 'Hand curated *(not by me)* Chuck Norris facts',
-    aliases:['chuck'],
+    aliases:['chuck', 'cn'],
     args:false,
     cooldown: 1,
     execute(client, message, args) {
