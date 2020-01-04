@@ -122,7 +122,7 @@ module.exports = {
                     await triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0]))
                     //await triviaMessage.clearReactions()
                     //await triviaMessage.react(triviaChoiceLetters[correctIndex]);
-                    message.channel.send(`${collected.first().author.username} got the correct answer!`);
+                    message.channel.send(`${collected.last().author.username} got the correct answer!`);
                 });
 
 
