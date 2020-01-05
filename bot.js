@@ -253,6 +253,7 @@ client.on("message", async message => {
 
     try {
         //client.commands.get(command).execute(client, message, args, conn, snekfetch);
+        // const commandReturn = await command.execute(client, message, args, conn, snekfetch);
         command.execute(client, message, args, conn, snekfetch);
         client.channels.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\``).catch(console.error);
     } catch (error) {
