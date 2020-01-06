@@ -1,7 +1,16 @@
+const fs = require('fs');
+const config = require('../auth.json');
+
 module.exports = {
     name: 'uptime',
-    description: 'Get bot lifetime information',
+    description: 'Get information about bot lifetime and history',
+    aliases: ['lifetime'],
     async execute(client, message) {
+        if (!config.longLife || config.longLife < client.uptime) config.longLife = client.uptime;
+        fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
+            if (err) return console.log(err);
+        });
+
         let allSeconds = (client.uptime / 1000);
         let days = Math.floor(allSeconds / 86400);
         let hours = Math.floor(allSeconds / 3600);
@@ -35,17 +44,21 @@ module.exports = {
                     },*/
                     {
                         "name": "Elapsed Time",
-                        "value": `${days} : ${hours} : ${minutes} ; ${seconds} . ${milliseconds}`,
+                        "value": `\`${days} : ${hours} : ${minutes} ; ${seconds} . ${milliseconds}\ndays  hrs  min  sec  ms \``,
                         "inline": true
                     },
                     {
-                        "name": "ms total",
-                        "value": client.uptime,
+                        "name": "Elapsed Total",
+                        "value": client.uptime+'ms',
                         "inline": true
                     },
                     {
                         "name": "Bot Started At",
                         "value": new Date(client.readyTimestamp).toUTCString()
+                    },
+                    {
+                        "name": "Longest Lifetime",
+                        "value": config.longLife + 'ms (updates every 20 seconds when idle)'
                     }
                 ]
             }

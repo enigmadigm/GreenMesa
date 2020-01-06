@@ -93,6 +93,11 @@ client.on("ready", async() => {
     //client.user.setActivity(`no site yet | $help | Serving ${client.guilds.size} servers`);
     //var abs = 0;
     setInterval(() => {
+        if (!config.longLife || config.longLife < client.uptime) config.longLife = client.uptime;
+        fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
+            if (err) return console.log(err);
+        });
+
         if (Math.floor(Math.random() * 10) <= 8) {
             //client.user.setActivity(`$help $info | bit.ly/2KvEP9w | Serving ${client.guilds.size} servers`);
             //client.user.setStatus("online");
