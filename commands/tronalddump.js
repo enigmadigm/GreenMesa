@@ -41,7 +41,7 @@ module.exports = {
                     });
                 }).catch(console.error);
         }
-        if (args.length & args.length == 1 & args.toString().length == 22) {
+        if (args.length && args.length == 1 && args.toString().length == 22) {
             return fetch(`https://api.tronalddump.io/quote/${args[0]}`)
                 .then(res => res.json())
                 .then(j => {
