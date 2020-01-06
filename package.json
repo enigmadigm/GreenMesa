@@ -4,7 +4,8 @@
     "description": "A basic Discord bot meant to supply basic services, and for the dev to practice on",
     "main": "bot.js",
     "scripts": {
-        "test": "ping"
+        "start": "node bot.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
         "type": "git",
@@ -18,10 +19,12 @@
         "discord.js": "^11.5.1",
         "express": "^4.17.1",
         "express-handlebars": "^3.1.0",
+        "ffmpeg": "0.0.4",
         "forever": ">=1.0.0",
         "ibm-watson": "^5.2.1",
         "mysql": "^2.17.1",
         "node-fetch": "^2.6.0",
+        "node-opus": "^0.3.3",
         "snekfetch": "^4.0.4"
     },
     "license": "ISC",
