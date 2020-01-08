@@ -1,3 +1,6 @@
+const apppkg = require('../package.json');
+const config = require('../auth.json');
+
 module.exports = {
     name: 'info',
     description: 'Get info on the bot.',
@@ -5,30 +8,63 @@ module.exports = {
         message.channel.send({
             embed: {
                 color: 3447003,
-                author: {
-                    name: client.user.username,
-                    icon_url: client.user.avatarURL
-                },
                 title: "GreenMesa Info",
                 url: "https://enigmadigm.com/apps/greenmesa/help",
-                description: "This multifunctioning Discord bot was built by EnigmaDigm and is served by AtlasAtmos. The purpose of this bot is to do whatever it can to fulfill the commands supplied to it by it's users.",
-                fields: [{
-                        name: "Do you have any commands?",
-                        value: "Believe it or not, yes! That's how you got here. Use $help [specific command] to get info on them or visit [here](https://github.com/enigmadigm/GreenMesa/blob/master/documentation/commands.md) for a full (almost always up to date) list."
+                fields: [
+                    {
+                        "name": "Architect",
+                        "value": "ComradeRooskie#6969",
+                        "inline": true
                     },
                     {
-                        name: "How do I contribute?",
-                        value: "If you want to make a request either use the #requests channel in our support discord server, or go to the [enigmadigm contact tab](https://enigmadigm.com/apps/greenmesa/discord/help?conresrec=reset). Now that our GitHub presence is increasing you can open up an issue [here](https://github.com/enigmadigm/greenmesa/issues)"
+                        "name": "Version",
+                        "value": apppkg.version,
+                        "inline": true
                     },
                     {
-                        name: "What am I supposed to do?",
-                        value: "`t r y   n o t   t o   g e t   c a u g h t`. *kidding* You can refer to the status of the bot at any time to remind yourself of the prefix and help command."
+                        "name": "Library",
+                        "value": "discord.js",
+                        "inline": true
+                    },
+                    {
+                        "name": "Servers",
+                        "value": client.guilds.size,
+                        "inline": true
+                    },
+                    {
+                        "name": "Users",
+                        "value": client.users.size,
+                        "inline": true
+                    },
+                    {
+                        "name": "Invite",
+                        "value": `\`${config.prefix}invite\``,
+                        "inline": true
+                    },
+                    {
+                        "name": "Purpose",
+                        "value": "to do stuff",
+                        "inline": true
+                    },
+                    {
+                        "name": "Website",
+                        "value": "[/apps/greenmesa](https://enigmadigm.com/apps/greenmesa) :warning:",
+                        "inline": true
+                    },
+                    {
+                        "name": "Repo",
+                        "value": "[github.com](https://github.com/enigmadigm/greenmesa) <:octocat_logo:663869429976662057>",
+                        "inline": true
+                    },
+                    {
+                        "name": "Served By",
+                        "value": "[AtlasAtmos.net](https://atlasatmos.net)",
+                        "inline": true
                     }
                 ],
-                timestamp: new Date(),
                 footer: {
                     icon_url: client.user.avatarURL,
-                    text: "The Help"
+                    text: `Information / Información / معلومات (expect translate service soon) | Shards: none | Uptime: ${config.prefix}uptime`
                 }
             }
         });

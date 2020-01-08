@@ -88,6 +88,10 @@ const cooldowns = new Discord.Collection();
 client.on("ready", async() => {
     // This event will run if the bot starts, and logs in, successfully.
     console.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
+    setInterval(() => {
+        console.log(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
+        client.channels.get('661614128204480522').send(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`).catch(console.error);
+    }, 3600000);
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //client.user.setActivity(`no site yet | $help | Serving ${client.guilds.size} servers`);
@@ -260,7 +264,7 @@ client.on("message", async message => {
         //client.commands.get(command).execute(client, message, args, conn, snekfetch);
         // const commandReturn = await command.execute(client, message, args, conn, snekfetch);
         command.execute(client, message, args, conn, snekfetch);
-        client.channels.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\``).catch(console.error);
+        client.channels.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
     } catch (error) {
         console.error(error);
         message.reply('there was an error trying to execute that command! please create an issue at https://github.com/enigmadigm/GreenMesa/issues');
