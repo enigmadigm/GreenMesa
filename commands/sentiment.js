@@ -12,7 +12,7 @@ const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
 module.exports = {
     name: 'sentiment',
     description: 'Get the sentiment of a message using IBM\'s Watson. Plans for this command involve adding more features (besides sentiment analysis), and allowing URLs to be entered for HTML processing.',
-    aliases:['sm'],
+    aliases:['sm','emotion'],
     usage:"<message id to process, text content to process>",
     args:true,
     cooldown: 5,
@@ -34,37 +34,53 @@ module.exports = {
             'text': `${msgContent}`,
             'language': 'en',
             'features': {
-                'sentiment': {}
+                'sentiment': {},
+                'emotion': {}
             }
         }
 
         naturalLanguageUnderstanding.analyze(analyzeParams)
             .then(analysisResults => {
                 //const results = JSON.stringify(analysisResults, null, 2);
+
+                let emotionsResults = analysisResults.result.emotion.document.emotion;
+                let emotions = [];
+                for (const emotionKey in emotionsResults) {
+                    emotions.push(`**${emotionKey[0].toUpperCase() + emotionKey.slice(1)}:** ${emotionsResults[emotionKey] * 100}%`)
+                }
+
                 message.channel.send({
                     embed: {
-                        "title": "Sentiment Analysis",
-                        "description": "Using IBM's Watson: Natural Language Processing resource we can retrieve various features like Sentiment.",
+                        // "description": "Use IBM's Watson via GreenMesa to get various features from text.",
+                        "description": "Use an AI to tell you all about your text.",
                         //"color": Math.floor(Math.random() * 16777215),
                         "color": 9860623,
                         "fields": [
                             {
-                                "name": "Label",
+                                "name": "Sentiment Analysis",
+                                "value": "Sentiment is the overall emotion/tone of a message."
+                            },
+                            {
+                                "name": "Sentiment",
                                 "value": analysisResults.result.sentiment.document.label,
                                 "inline": true
                             },
                             {
                                 "name": "Score",
-                                "value": analysisResults.result.sentiment.document.score.toString(),
+                                "value": (analysisResults.result.sentiment.document.score * 100).toString() + "%",
                                 "inline": true
                             },
                             {
-                                "name": "Future Enhancement",
+                                "name": "Emotion Analysis",
+                                "value": 'Detected emotion probability.\n'+emotions.join('\n')
+                            },
+                            {
+                                "name": "In The Future",
                                 "value": "There's more coming. In the future I may move to another Language Processor, or offer more to choose from (note to self: Google Cloud)."
                             }
                         ],
                         "footer": {
-                            "text": "Watson Sentiment | In Development"
+                            "text": "Watson Natural Language Processing | In Development"
                         }
                     }
                 }).catch(console.error);
