@@ -48,7 +48,7 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Elapsed Total",
+                        "name": "Chronometer",
                         "value": client.uptime+'ms',
                         "inline": true
                     },
