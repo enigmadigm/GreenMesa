@@ -88,7 +88,8 @@ module.exports = {
                 }).catch(console.error);
             })
             .catch(err => {
-                console.log('error:', err);
+                wMsg.edit('**FAILED** *please note* that you cannot send an id of an embed, they are not compatible.');
+                console.log('Sentiment File Error:', err);
             });
     }
 }
