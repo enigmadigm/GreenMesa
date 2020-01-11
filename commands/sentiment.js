@@ -39,6 +39,8 @@ module.exports = {
             }
         }
 
+        const wMsg = await message.channel.send('Analyzing...');
+
         naturalLanguageUnderstanding.analyze(analyzeParams)
             .then(analysisResults => {
                 //const results = JSON.stringify(analysisResults, null, 2);
@@ -49,7 +51,7 @@ module.exports = {
                     emotions.push(`**${emotionKey[0].toUpperCase() + emotionKey.slice(1)}:** ${emotionsResults[emotionKey] * 100}%`)
                 }
 
-                message.channel.send({
+                wMsg.edit({
                     embed: {
                         // "description": "Use IBM's Watson via GreenMesa to get various features from text.",
                         "description": "Use an AI to tell you all about your text.",
