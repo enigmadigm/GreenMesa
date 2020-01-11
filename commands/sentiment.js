@@ -76,7 +76,7 @@ module.exports = {
                             },
                             {
                                 "name": "In The Future",
-                                "value": "There's more coming. In the future I may move to another Language Processor, or offer more to choose from (note to self: Google Cloud)."
+                                "value": "There's more coming. In the future I may move to another Language Processor, or offer more to choose from by user preference. AYLIEN, Google Cloud, Twinword."
                             }
                         ],
                         "footer": {
