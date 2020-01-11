@@ -1,17 +1,18 @@
 module.exports = {
     name: 'ennounce',
-    description: 'esay command but for mods, used to deliver any kind of important embedded message',
+    description: 'Deliver some message inside an embed with optional color choice, and tagged with Admin Message with the senders profile picture. Sender message is deleted, you must either have MENTION_EVERYONE permissions or have a role called Moderator or Admin',
     args: true,
-    usage: '[embed theme color (<16777215)] <content>',
+    usage: '[theme color decimal < 16777215] <content>',
     guildOnly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
         // The following actually works in finding out if author has the admin role, however when this executes console gives warning to `Pass function`?
         // Getting ID of Admin role for next part
         let Admina = message.guild.roles.find(x => x.name === "Admin");
         // Added this for someone who has annnouncement perms but is not an admin
-        let AdminPerma = message.guild.roles.find(x => x.name === "Moderator"); /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+        let AdminPerma = message.guild.roles.find(x => x.name === "Moderator");
         // Using ID of Admin role to find out if author has it
-        if (message.member.roles.has(Admina.id) || message.member.roles.has(AdminPerma.id) || message.member.hasPermission("MENTION_EVERYONE", false, true, true)) {
+        if (message.member.hasPermission("MENTION_EVERYONE", false, true, true) || (AdminPerma && message.member.roles.has(AdminPerma.id)) || (Admina && message.member.roles.has(Admina.id))) {
+            console.log('hey')
             // makes the bot say something and delete the message. As an example, it's open to anyone to use. EDIT:
             // if say is empty the bot makes up something.
             if (args.length > 0) {
@@ -49,7 +50,10 @@ module.exports = {
             }
         } else {
             message.delete().catch(O_o => {});
-            message.author.send("Insufficient permissions for `ennounce`");
+            const noPermMsg = await message.channel.send("Insufficient permissions for `ennounce`");
+            setTimeout(() => {
+                noPermMsg.delete().catch(O_o => {});
+            }, 3000);
         }
 
     }
