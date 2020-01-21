@@ -2,7 +2,7 @@ const config = require("../auth.json");
 
 module.exports = {
     name: 'botreset',
-    description: 'Reloads/recaches the bot',
+    description: 'Restarts the bot',
     aliases:[],
     ownerOnly: true,
     execute(client, message, args) {
