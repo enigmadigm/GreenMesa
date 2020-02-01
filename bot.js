@@ -91,6 +91,7 @@ client.on("ready", async() => {
     setInterval(() => {
         console.log(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
         client.channels.get('661614128204480522').send(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`).catch(console.error);
+        conn.query(`INSERT INTO gmstats (numUsers, numGuilds, numChannels) VALUES (${client.users.size}, ${client.guilds.size}, ${client.channels.size})`)
     }, 3600000);
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
