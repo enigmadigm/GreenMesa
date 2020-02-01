@@ -64,7 +64,7 @@ module.exports = {
                         "description": triviaChoices.join('\n'),
                         "timestamp": new Date(),
                         "footer": {
-                            "text": 'Trivia | Category: '+triviaCategory
+                            "text": 'Trivia | '+triviaCategory
                         }
                     }
                 }).catch(console.error); // .then(triviaMessage => {
