@@ -48,13 +48,7 @@ const snekfetch = require("snekfetch");
 // Connecting to MySQL, external connection (still setting up at the time of this writing)
 //old password _Qf^gVJt,;I8
 const mysql = require("mysql");
-var db_config = {
-    host: "***REMOVED***",
-    user: "***REMOVED***",
-    password: "***REMOVED***",
-    database: "***REMOVED***aline",
-    port: "3306"
-};
+var db_config = config.db_config;
 // This connects the table for the xp (currency) system (in DigiCom)
 //conn.connect(err => {
 //  if(err) throw err;
