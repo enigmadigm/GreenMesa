@@ -27,11 +27,16 @@ module.exports = {
                     data[0].x.push(r.logDate);
                     data[0].y.push(r.numUsers);
                 });
-                await plotly.getImage({ 'data': data }, layout, (err, imageData) => {
-                    if (err) return console.log(err);
-                    var fileStream = fs.createWriteStream('./media/usernumber-graph.png');
-                    imageData.pipe(fileStream);
-                });
+                try {
+                    await plotly.getImage({ 'data': data }, layout, (err, imageData) => {
+                        if (err) return console.log(err);
+                        var fileStream = fs.createWriteStream('./media/usernumber-graph.png');
+                        imageData.pipe(fileStream);
+                    });
+                } catch (error) {
+                    console.log(error);
+                    message.channel.send('There was an error in the graphing process');
+                }
 
                 /*==+==+==+==+==+==*+*==*+*==+==+==+==+==*+*==*+*==+==+==+==+==*+*==*+*==+==+==+==+==+==*/
 
