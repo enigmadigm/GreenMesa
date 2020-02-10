@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const fetch = require('node-fetch');
 
-async function aResponded() {
+async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
     setTimeout(function () {
         alreadyRespondedCallout.delete().catch(O_o => { });
@@ -105,7 +105,7 @@ module.exports = {
                 let usersResponded = [];
                 collector.on('collect', m => {
                     if (usersResponded.includes(m.author)) {
-                        return aResponded();
+                        return aResponded(message);
                     } else {
                         usersResponded.push(m.author);
                     }
