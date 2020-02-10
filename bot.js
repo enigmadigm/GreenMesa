@@ -82,6 +82,7 @@ const cooldowns = new Discord.Collection();
 client.on("ready", async() => {
     // This event will run if the bot starts, and logs in, successfully.
     console.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
+    client.channels.get('661614128204480522').send(`Started`).catch(console.error);
     setInterval(() => {
         console.log(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
         client.channels.get('661614128204480522').send(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`).catch(console.error);
@@ -154,12 +155,14 @@ client.on("ready", async() => {
 client.on("guildCreate", guild => {
     // This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
+    client.channels.get('661614128204480522').send(`New guild: ${guild.name} (id: ${guild.id}) (members: ${guild.memberCount})`).catch(console.error);
     client.user.setActivity(`bit.ly/2KvEP9w | $help | Serving ${client.guilds.size} servers`);
 });
 
 client.on("guildDelete", guild => {
     // this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
+    client.channels.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     client.user.setActivity(`bit.ly/2KvEP9w | $help | Serving ${client.guilds.size} servers`);
 });
 
