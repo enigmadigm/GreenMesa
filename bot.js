@@ -259,6 +259,14 @@ client.on("message", async message => {
         //client.commands.get(command).execute(client, message, args, conn, snekfetch);
         // const commandReturn = await command.execute(client, message, args, conn, snekfetch);
         command.execute(client, message, args, conn, snekfetch);
+        
+        // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this
+        if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
+        if (!config.commandsExecutedCount) config.commandsExecutedCount = 1;
+        fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
+            if (err) return console.log(err);
+        });
+
         client.channels.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
     } catch (error) {
         console.error(error);
