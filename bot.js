@@ -214,7 +214,7 @@ client.on("message", async message => {
         } else if (args.length <= 2 && args[0] == "baby" || args[0]+args[1] == "littlegirl") {
             return message.channel.send(`Hello *${args.join(" ")}* I'm Daddy`);
         }
-        return message.channel.send(`Hello **${args.join(" ")}** I'm ${client.user.tag}`);
+        return message.channel.send(`Hi **${args.join(" ")}**, I'm ${client.user.tag}`);
     }
 
     //if (!client.commands.has(commandName)) return;
