@@ -2,7 +2,7 @@
  * Generates the magic 8ball response
  */
 function doMagic8BallVoodoo() {
-    var rand = ['Yes', 'No', 'Why try?', 'Maybe', 'Never'];
+    var rand = ['Yes', 'No'];
     return rand[Math.floor(Math.random() * rand.length)];
 }
 
