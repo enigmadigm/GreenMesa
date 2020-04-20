@@ -1,7 +1,7 @@
 const { prefix } = require('../auth.json');
 module.exports = {
     name: 'help',
-    description: 'A detailed help command, use with the $info command! Can show information about all or a specific command.',
+    description: 'Detailed help command that can show information about all or a specific command. Use with $info.',
     aliases:['commands'],
     usage:"[command name]",
     cooldown: 5,
@@ -11,7 +11,6 @@ module.exports = {
 
         if (!args.length) {
             data.push('**Here\'s a list of all my commands:**');
-            // data.push(commands.map(command => command.name).join(', '));
             // for some reason if you don't separate \` ${command.name} \` with a space it flips out
             //                                         ^               ^
             data.push(commands.map(command => `\` ${command.name} \` - ${command.description}`).join('\n'));

@@ -9,6 +9,8 @@ const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
     url: 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/c3583068-a860-4dea-b3b3-d417250e51bc',
 });
 
+//For the future: There's more coming. In the future I may move to another Language Processor, or offer more to choose from by user preference. AYLIEN, Google Cloud, Twinword.
+
 module.exports = {
     name: 'sentiment',
     description: 'Get the sentiment of a message using IBM\'s Watson. Plans for this command involve adding more features (besides sentiment analysis), and allowing URLs to be entered for HTML processing.',
@@ -17,9 +19,7 @@ module.exports = {
     args:true,
     cooldown: 5,
     ownerOnly: false,
-    async execute(client, message, args, conn) {
-        // if (!args.length || args.length != 1 || args.toString().length != 18) return message.channel.send('Invalid arguments').catch(console.error);
-
+    async execute(client, message, args) {
         var msgContent;
         if (args.length == 1 && !isNaN(args.toString()) && args.toString().length == 18) {
             await message.channel.fetchMessage(args[0])
@@ -43,8 +43,6 @@ module.exports = {
 
         naturalLanguageUnderstanding.analyze(analyzeParams)
             .then(analysisResults => {
-                //const results = JSON.stringify(analysisResults, null, 2);
-
                 let emotionsResults = analysisResults.result.emotion.document.emotion;
                 let emotions = [];
                 for (const emotionKey in emotionsResults) {
@@ -53,9 +51,7 @@ module.exports = {
 
                 wMsg.edit({
                     embed: {
-                        // "description": "Use IBM's Watson via GreenMesa to get various features from text.",
                         "description": "Use an AI to tell you all about your text.",
-                        //"color": Math.floor(Math.random() * 16777215),
                         "color": 9860623,
                         "fields": [
                             {
@@ -75,10 +71,6 @@ module.exports = {
                             {
                                 "name": "Emotion Analysis",
                                 "value": 'Detected emotion probability.\n'+emotions.join('\n')
-                            },
-                            {
-                                "name": "In The Future",
-                                "value": "There's more coming. In the future I may move to another Language Processor, or offer more to choose from by user preference. AYLIEN, Google Cloud, Twinword."
                             }
                         ],
                         "footer": {

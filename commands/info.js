@@ -4,7 +4,7 @@ const config = require('../auth.json');
 module.exports = {
     name: 'info',
     description: 'Get info on the bot.',
-    execute(client, message, args) {
+    execute(client, message) {
         message.channel.send({
             embed: {
                 color: 3447003,
@@ -23,7 +23,7 @@ module.exports = {
                     },
                     {
                         "name": "Library",
-                        "value": "discord.js",
+                        "value": "discord.js v11",
                         "inline": true
                     },
                     {
@@ -39,11 +39,6 @@ module.exports = {
                     {
                         "name": "Invite",
                         "value": `\`${config.prefix}invite\``,
-                        "inline": true
-                    },
-                    {
-                        "name": "Purpose",
-                        "value": "to do stuff",
                         "inline": true
                     },
                     {
@@ -64,7 +59,7 @@ module.exports = {
                 ],
                 footer: {
                     icon_url: client.user.avatarURL,
-                    text: `Information / Información / معلومات (expect translate service soon) | Shards: none | Uptime: ${config.prefix}uptime`
+                    text: `Information / Información / معلومات (expect translate service soon) | Shards: none | ${config.prefix}uptime`
                 }
             }
         });

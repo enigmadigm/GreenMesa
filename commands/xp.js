@@ -1,3 +1,5 @@
+// NOTE: This whole xp system is in long-term development and needs work. The updates will probably come with a web console if there ever is one.
+
 module.exports = {
     name: 'xp',
     description: 'Get the current amount of xp for the person requested or the author of the message. This system is explained elsewhere, but it should be known that xp is earned by sending messages of any kind globally (on any server GreenMesa is in).',

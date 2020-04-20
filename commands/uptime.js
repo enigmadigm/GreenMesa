@@ -1,3 +1,6 @@
+// NOTE: The discord.js client.uptime variable seems to be unreliable for this bot and there is a to-do list item that has not been completed to fix that.
+// At startup (in bot.js) the bot would create a Date() and subtract when this command is executed to get uptime.
+
 const fs = require('fs');
 const config = require('../auth.json');
 
@@ -32,16 +35,11 @@ module.exports = {
         if (seconds < 10) {
             seconds = "0" + seconds;
         }
-        //await message.channel.send("***COMMAND BEING DEVELOPED***").catch(console.error);
         message.channel.send({
             embed: {
                 "title": "Bot Lifetime",
                 "description": 'How long the bot has been alive (doesn\'t mean healthy)',
                 "fields": [
-                    /*{
-                        "name": "Expanded",
-                        "value": `${client.user} has been online for ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds, and ${milliseconds} ms.`
-                    },*/
                     {
                         "name": "Elapsed Time",
                         "value": `\`${days} : ${hours} : ${minutes} ; ${seconds} . ${milliseconds}\ndays  hrs  min  sec  ms \``,

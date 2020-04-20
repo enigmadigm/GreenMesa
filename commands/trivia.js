@@ -15,10 +15,9 @@ module.exports = {
     cooldown: 20,
     async execute(client, message, args, conn, scores = [], round = 1) {
         if ((round % 5) == 0) {
-            // Need to review this one for understanding \\\ Supposed to sort scores in descending order
+            // Need to review this one for understanding \\\ Supposed to sort scores in descending order \\\ makes sense now
             scores.sort((a, b) => b.score - a.score);
             let newScoreList = scores.map((ela) => `${ela.score} ⁞ ${ela.user.displayName}`)
-            // message.channel.send(`\`\`\`\nRound ${round}\n${newScoreList.join("\n")}\n\`\`\``)
             message.channel.send({
                 embed: {
                     color: 0xffa500,
@@ -34,36 +33,17 @@ module.exports = {
                 //Setting up for message
                 var correctIndex = Math.floor(Math.random() * j.results[0].incorrect_answers.length);
 
-                // let triviaQuestion = decodeURI(j.results[0].question).replace(/\%2C|\%3F/gi, "");
                 let triviaQuestion = decodeURIComponent(j.results[0].question);
                 let triviaCategory = decodeURIComponent(j.results[0].category);
 
-                // let triviaAnswers = [decodeURI(j.results[0].correct_answer)];
                 let triviaChoices = j.results[0].incorrect_answers;
-                // let triviaChoices = [];
                 let triviaChoiceLetters = ['🇦', '🇧', '🇨', '🇩'];
                 let triviaChoiceASCII = ['a', 'b', 'c', 'd'];
                 // let triviaTFChoice = ['✅', '❌'];
 
                 const triviaCommand = client.commands.get('trivia')
 
-                // making array of all answers (right answer, wrong answer, wrong answer, wrong anwer)
-                // for (let i = 0; i < j.results[0].incorrect_answers.length; i++) {
-                //     triviaAnswers.push(decodeURI(j.results[0].incorrect_answers[i]));
-                // }
-                // making new array of how the answers will be displayed (randomizes the array in previous loop)
-                // ::NOTE:: an alternative method is using the .splice() function to insert the right answer at a random spot :: triviaChoices.splice(j.results[0].incorrect_answers[i], 0, j.results[0].correct_answer)
-                // for (let tae = 0; tae < triviaAnswers.length; tae++) {
-                //     const nxtAnsIndx = Math.floor(Math.random() * triviaAnswers.length);
-                //     const nextAnswer = triviaAnswers[nxtAnsIndx];
-                //     triviaChoices.push(`${triviaChoiceLetters[tae]} : ${nextAnswer}`);
-                //     if (nextAnswer == triviaAnswers[0]) {
-                //         correctIndex = tae;
-                //     }
-                //     triviaAnswers.splice(nxtAnsIndx, 1);
-                //     // or const nextAnswer = triviaAnswers.splice(Math.floor(Math.random() * triviaAnswers.length), 1) because splice returns an array of the deleted items
-                // }
-                // went with alternative
+                // *went with alternative
                 triviaChoices.splice(correctIndex, 0, `${j.results[0].correct_answer}`);
                 triviaChoices = triviaChoices.map((e, i) => `${triviaChoiceLetters[i]} : ${decodeURIComponent(e)}`);
 
@@ -87,23 +67,7 @@ module.exports = {
                             "text": 'Trivia | '+triviaCategory+' | Round '+round
                         }
                     }
-                }).catch(console.error); // .then(triviaMessage => {
-                //     message.channel.awaitMessages(filter, {
-                //             max: 1,
-                //             time: 30000,
-                //             errors: ['time']
-                //         })
-                //         .then(collected => {
-                //             triviaMessage.embeds[0].color = 65280;
-                //             triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).then(triviaMessage.clearReactions()).then(triviaMessage.react(triviaChoiceLetters[correctIndex]));
-                //             message.channel.send(`${collected.first().author.username} got the correct answer!`);
-                //         })
-                //         .catch(collected => {
-                //             triviaMessage.embeds[0].color = 16711680;
-                //             triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).then(triviaMessage.clearReactions()).then(triviaMessage.react(triviaChoiceLetters[correctIndex]));
-                //             message.channel.send('Looks like nobody got the answer this time.');
-                //         });
-                // });
+                }).catch(console.error);
                 let cdTime = 20;
                 const countDownMessage = await message.channel.send(`Enter the ***letter*** for the correct answer in \` < ${cdTime} \` seconds`);
                 setInterval(function () {
@@ -136,8 +100,6 @@ module.exports = {
                             return `✅${e}`;
                         }).join('\n');
                         await triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).catch(console.error);
-                        //await triviaMessage.clearReactions();
-                        //await triviaMessage.react(triviaChoiceLetters[correctIndex]);
                         cdTime = -100;
                         await countDownMessage.edit(`Game ended.`).catch(console.error);
                         const gameEndCallout = await message.channel.send('**Looks like nobody got the answer this time.** *Respond with ` tr ` in 10 sec to start a new game quickly.*').catch(console.error);
@@ -147,7 +109,6 @@ module.exports = {
                             errors: ['time']
                             })
                             .then(() => {
-                                // gameEndCallout.edit(`**${collected.last().author.username} got the correct answer!**`).catch(console.error);
                                 gameEndCallout.edit(`**Looks like nobody got the answer this time.**`).catch(console.error);
                                 triviaCommand.execute(client, message, null, null, scores, round);
                             })
@@ -161,8 +122,6 @@ module.exports = {
                         return `✅${e}`;
                     }).join('\n');
                     await triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).catch(console.error);
-                    //await triviaMessage.clearReactions()
-                    //await triviaMessage.react(triviaChoiceLetters[correctIndex]);
                     cdTime = -100;
 
                     if (scores.length == 0) {
@@ -201,56 +160,7 @@ module.exports = {
                         .catch(() => {
                             gameEndCallout.edit(`**${collectedLast} got the correct answer!** Scores deleted.`).catch(console.error);
                         });
-                    // return {
-                        //     noWait: true,
-                        //     user: collected.last().author
-                        // }
                     });
-                    
-                    
-                    
-                    
-                    // function retry(maxRetries, tas) {
-                        //     return triviaMessage.react(triviaChoiceLetters[tas]).catch(function (err) {
-                            //         if (maxRetries <= 0) {
-                                //             return triviaMessage.edit('Sorry, there has been an error. Please retry the command.').then(collector.stop);
-                                //         }
-                //         return retry(maxRetries - 1);
-                //     });
-                // }
-
-                // //Adding reactions to message
-                // for (let tas = 0; tas < triviaChoices.length; tas++) {
-                //     await retry(1, tas).catch(console.error);
-                // }
-                
-                // Answer reaction collector
-                // const collector = triviaMessage.createReactionCollector((reaction, user) => triviaChoiceLetters.includes(reaction.emoji.name) && user.id === message.author.id, {
-                //     time: 15000,
-                //     maxEmojis: 1
-                // });
-
-                // collector.on('collect', (reaction, reactionCollector) => {
-                //     message.channel.send(`Collected ${reaction.emoji.name}`);
-                //     if (reaction.emoji.name == triviaChoiceLetters[correctIndex]) {
-                //         triviaMessage.embeds[0].color = 65280;
-                //         triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).then(triviaMessage.clearReactions()).then(triviaMessage.react(triviaChoiceLetters[correctIndex]));
-                //         reactionCollector.stop();
-                //     } else {
-                //         triviaMessage.embeds[0].color = 16711680;
-                //         triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).then(triviaMessage.clearReactions()).then(triviaMessage.react(triviaChoiceLetters[correctIndex]));
-                //         reactionCollector.stop();
-                //     }
-                // });
-
-                // collector.on('end', (collected, reason) => {
-                //     console.log(`Collected ${collected.size} items`);
-                //     console.log(collector.users.get());
-                //     console.log(reason);
-                //     if (collected.size) return console.log("Collected");
-                //     if (!collected.size) return console.log('No Reactions');
-
-                // });
             });
     }
 }

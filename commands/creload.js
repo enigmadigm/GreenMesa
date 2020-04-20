@@ -12,15 +12,17 @@ module.exports = {
 
         if (!command) return message.channel.send(`There is no command with name or alias \`${commandName}\`, ${message.author}!`);
 
-        // we have to delete the previously loaded command from client.commands and require it again, but you can't do it because the file was cached. I have to delete the file from the cache, and then it can be required it again
+        // Deleting old command from cache
         delete require.cache[require.resolve(`./${command.name}.js`)];
 
         try {
+            // Getting updated command
             const newCommand = require(`./${command.name}.js`);
+            // Adding/updating the command in client.commands
             message.client.commands.set(newCommand.name, newCommand);
         } catch (error) {
             console.log(error);
-            message.channel.send(`The was an error while reloading a command \`${commandName}\`:\n\`${error.message}\``);
+            message.channel.send(`There was an error while reloading a command \`${commandName}\`:\n\`${error.message}\``);
         }
 
         message.channel.send(`Command \`${command.name}\` was reloaded!`);

@@ -3,7 +3,7 @@ const config = require('../auth.json');
 module.exports = {
     name: 'intro',
     description: '',
-    execute(client, message, args) {
+    execute(client, message) {
         message.channel.send({
             embed: {
                 color: 3447003,

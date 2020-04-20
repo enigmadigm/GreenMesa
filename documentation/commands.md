@@ -1,3 +1,5 @@
+> This page is currently out of date. Please use the $help command on Discord for an up-to-date list.
+
 # Bot Commmands
 This page contains all commands and details for GreenMesa. This page is ~~gauranteed~~ to be up to date after official releases, after which unannounced updates may occur, I will do my best to keep these docs up to date if updates are pertinent to current stable version and imperative to operation of application (for maintenance, use reasons, something else).\
 **Don't forget to execute the command with the bot prefix before**

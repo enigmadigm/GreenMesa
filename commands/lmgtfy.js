@@ -1,6 +1,6 @@
 module.exports = {
     name: 'lmgtfy',
-    description: 'Teach the idiots of Discord how to use Google, or just get a quick search link. Make sure to trust the links in the embed',
+    description: 'Teach an idiot how to Google, or just get a nifty search link.',
     aliases:['search', 'google', 'iie'],
     usage:"[explainer: -e] [plain text link: -t] <search terms>",
     args: true,
@@ -25,16 +25,7 @@ module.exports = {
         } else {
             plainText = false;
         }
-        // if (args[0] == "-iie") {
-        //     sengine = "lmgtfy.com/";
-        //     iie = "&iie=1";
-        //     args.shift();
-        // }
-        //let sterms = escape(args.join(" "));
-        // u can keep the space and do encodeUri/encodeUriComponent
-        //let sterms = args.join("%20");
         let sterms = args.join("+");
-        //return console.log(`https://lmgtfy.com/?q=${sterms}${iie}`);
         if (plainText == true) {
             message.channel.send(`https://${sengine}?q=${sterms}${iie}`).catch(console.error);
         } else {

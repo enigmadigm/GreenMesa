@@ -1,24 +1,19 @@
-// Get the filesystem library that comes with js
+// Get the filesystem library that comes with nodejs
 const fs = require('fs');
 // Load up the discord.js library
 const Discord = require("discord.js");
-// Try to get discord.io to use default functions (may not work)
-//NOPE
-//X const DisordIO = require("discord.io");
-//X const ioclient = new Discord.Client;
 
-// Here we load the config.json file that contains our token and our prefix values.
+// Loading config file
 const config = require("./auth.json");
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
 
-// This is your client. Some people call it `bot`, some people call it `self`,
-// some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
-// this is what we're refering to. Your client.
-const client = new Discord.Client();
-client.commands = new Discord.Collection()
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
+
+// The *client*
+const client = new Discord.Client();
+client.commands = new Discord.Collection()
 // ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 var commNumber = 1;
@@ -35,27 +30,12 @@ for (const file of commandFiles) {
     commNumber++;
 }
 
-// ***TESTING*** Trying to set up a "WebSocket"(???) for a website to interact with the bot https://www.youtube.com/watch?v=LxLob6-8Sl0
-//const WS = require('./ws/ws');
-// Create Websocket instance with token '123456',
-// port 5665 and passing the discord client instance
-//var ws = new WS(config.ws.token, config.ws.port, client);
-
-// get the snekfetch client for json requests
-//const snekfetch = require("snekfetch");
-
 // ▼▼▼▼▼▼▼▼ A lot of this stuff below is all to manage database connections, these are passed through the conn argument in the execute function
-// Connecting to MySQL, external connection (still setting up at the time of this writing)
-//old password _Qf^gVJt,;I8
+// Connecting to MySQL, external connection
 const mysql = require("mysql");
 var db_config = config.db_config;
 // This connects the table for the xp (currency) system (in DigiCom)
-//conn.connect(err => {
-//  if(err) throw err;
-//  console.log("Connected to database");
-//});
 var conn;
-
 function handleDisconnect() {
     conn = mysql.createConnection(db_config);
     conn.connect(function(err) {
@@ -79,8 +59,8 @@ handleDisconnect();
 // ▼▼▼▼▼ command cooldowns section
 const cooldowns = new Discord.Collection();
 
-client.on("ready", async() => {
-    // This event will run if the bot starts, and logs in, successfully.
+client.on("ready", async() => {// This event will run if the bot starts, and logs in, successfully.
+    // Stats updates in logs and database
     console.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
     client.channels.get('661614128204480522').send(`Started`).catch(console.error);
     setInterval(() => {
@@ -88,10 +68,7 @@ client.on("ready", async() => {
         client.channels.get('661614128204480522').send(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`).catch(console.error);
         conn.query(`INSERT INTO gmstats (numUsers, numGuilds, numChannels) VALUES (${client.users.size}, ${client.guilds.size}, ${client.channels.size})`)
     }, 3600000);
-    // Example of changing the bot's playing game to something useful. `client.user` is what the
-    // docs refer to as the "ClientUser".
-    //client.user.setActivity(`no site yet | $help | Serving ${client.guilds.size} servers`);
-    //var abs = 0;
+
     setInterval(() => {
         if (!config.longLife || config.longLife < client.uptime) config.longLife = client.uptime;
         fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
@@ -99,18 +76,14 @@ client.on("ready", async() => {
         });
 
         if (Math.floor(Math.random() * 10) <= 8) {
-            //client.user.setActivity(`$help $info | bit.ly/2KvEP9w | Serving ${client.guilds.size} servers`);
-            //client.user.setStatus("online");
             // Set the bot's presence (activity and status)
             client.user.setPresence({
                 game: {
-                    name: `$help $info | bit.ly/2KvEP9w | Serving ${client.guilds.size} servers`,
+                    name: `$help | ${client.guilds.size} servers | GitHub`,
                 },
                 status: 'online'
             })
         } else {
-            //client.user.setActivity(`society crumble`, { type: 'WATCHING' });
-            //client.user.setStatus("dnd");
             client.user.setPresence({
                 game: {
                     name: 'society crumble',
@@ -119,31 +92,10 @@ client.on("ready", async() => {
                 status: 'dnd'
             })
         }
-        /*switch (abs) {
-            case 0:
-                client.user.setActivity(`$help $info | bit.ly/2KvEP9w | Serving ${client.guilds.size} servers`);
-                break;
-            case 1:
-                client.user.setActivity(`society crumble`, { type: 'WATCHING' });
-                break;
-            default:
-                client.user.setActivity(`bit.ly/2KvEP9w | $help | Serving ${client.guilds.size} servers`);
-        }
-        if (abs > 0) {
-            abs = 0
-        } else {
-            abs++
-        }*/
-    }, 20000); // Runs this every 10 seconds.
+    }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
 
-    // if this doesn't work remove the async in the event listener above
-    /*client.generateInvite(["ADMINISTRATOR"]).then(link => {
-        console.log(link);
-    }).catch(err => {
-        console.log(err.stack);
-    });*/
-
+    //Generates invite link to put in console.
     try {
         let link = await client.generateInvite(["ADMINISTRATOR"]);
         console.log(link);
@@ -152,21 +104,19 @@ client.on("ready", async() => {
     }
 });
 
-client.on("guildCreate", guild => {
-    // This event triggers when the bot joins a guild.
+client.on("guildCreate", guild => {// This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     client.channels.get('661614128204480522').send(`New guild: ${guild.name} (id: ${guild.id}) (members: ${guild.memberCount})`).catch(console.error);
-    client.user.setActivity(`bit.ly/2KvEP9w | $help | Serving ${client.guilds.size} servers`);
+    // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
-client.on("guildDelete", guild => {
-    // this event triggers when the bot is removed from a guild.
+client.on("guildDelete", guild => {// this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     client.channels.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
-    client.user.setActivity(`bit.ly/2KvEP9w | $help | Serving ${client.guilds.size} servers`);
+    // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
-// Now were doing work on the xp system
+// xp generator
 function generateXp() {
     /*let min = 20;
     let max = 40;*/
@@ -174,11 +124,8 @@ function generateXp() {
 }
 
 // the actual command processing
-client.on("message", async message => {
-    // This event will run on every single message received, from any channel or DM.
+client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
 
-    // It's good practice to ignore other bots. This also makes your bot ignore itself
-    // and not get into a spam loop (we call that "botception").
     if (message.author.bot) return;
 
     // xp system now automatic, the manual $givexp command has been disabled but remains in the section
@@ -194,17 +141,14 @@ client.on("message", async message => {
         conn.query(sql);
     });
 
+    // Setting up to react to an "I am" message
+    let isiam = message.content.toLowerCase().startsWith("i'm") || message.content.toLowerCase().startsWith("i am") || message.content.toLowerCase().startsWith("im");
     // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
-    let isiam = message.content.toLowerCase().startsWith("i'm") || message.content.toLowerCase().startsWith("i am") || message.content.toLowerCase().startsWith("im");
     if (message.content.indexOf(config.prefix) !== 0 && !isiam) return;
-    // deprecated with the guild only command handler filter
+    // ▼▼▼▼▼ deprecated with the guild only command handler filter
     //if (message.channel.type === "dm") return;
 
-    // Here we separate our "command" name, and our "arguments" for the command.
-    // e.g. if we have the message "+say Is this the real life?" , we'll get the following:
-    // command = say
-    // args = ["Is", "this", "the", "real", "life?"]
     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     const commandName = args.shift().toLowerCase()
     
@@ -217,13 +161,10 @@ client.on("message", async message => {
         return message.channel.send(`Hi **${args.join(" ")}**, I'm ${client.user.tag}`);
     }
 
-    //if (!client.commands.has(commandName)) return;
-
-    //const command = client.commands.get(commandName);
     const command = client.commands.get(commandName)
         || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
-    if (!command) return;
+    if (!command) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
 
     if (command.guildOnly && message.channel.type !== 'text') {
         return message.reply('I can\'t execute that command inside DMs!');
@@ -259,8 +200,6 @@ client.on("message", async message => {
     setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
 
     try {
-        //client.commands.get(command).execute(client, message, args, conn, snekfetch);
-        // const commandReturn = await command.execute(client, message, args, conn, snekfetch);
         command.execute(client, message, args, conn);
         
         // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this

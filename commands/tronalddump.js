@@ -1,3 +1,5 @@
+// NOTE: The database that this command is built on seems to be kind of done with updates
+
 const fetch = require('node-fetch');
 module.exports = {
     name: 'tronalddump',
@@ -15,13 +17,6 @@ module.exports = {
                 }
                 return {count: j.total, tags: allTags};
             });
-            
-            // for (let i = 0; i < tagInfo.tags.length; i++) {
-                //     console.log(tagInfo.tags[i]);
-                //     console.log(tagInfo.tags.includes(tagInfo.tags[i]));
-                //     console.log(tagInfo.tags.includes(args.join(" ").toLowerCase()));
-                //     console.log(args.join(" "));
-                // }
                 
         if (!args.length || args.length == 0) {
             return fetch('https://api.tronalddump.io/random/quote')
@@ -59,7 +54,6 @@ module.exports = {
                     });
                 }).catch(console.error);
         }
-        //return message.channel.send('I\'m sorry, the quotes by tag feature is currently broken.');
         if (args[0] == "tags" || args[0] == "subjects" || args[0] == "list") {
             return message.channel.send({
                 embed: {
@@ -74,10 +68,10 @@ module.exports = {
         }
 
         // sweet home alabama Js5AQrOsQxmjLrq5F_Os2w
+        // ^^^^^^^^^^ April 19 update, I HAVE NO IDEA WHAT THAT IS OR IF IT IS IMPORTANT
 
         if (args.length) {
             if (tagInfo.tags.includes(args.join(" "))) {
-                //return message.channel.send('I\'m *sorry*, this feature is currently broken.')
                 return fetch(`https://api.tronalddump.io/search/quote?tag=${encodeURIComponent(args.join(" "))}&query=`)
                     .then(res => res.json())
                     .then(j => {
