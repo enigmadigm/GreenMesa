@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
     setTimeout(function () {
-        alreadyRespondedCallout.delete().catch(O_o => { });
+        alreadyRespondedCallout.delete().catch(O_o => {O_o});
     }, 2500);
 }
 
@@ -13,7 +13,20 @@ module.exports = {
     description: 'Super duper fun trivia command for your buddy GreenMesa. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer! Command just released and still in development, more features should be expected soon.',
     aliases:['tr'],
     cooldown: 20,
-    async execute(client, message, args, conn) {
+    async execute(client, message, args, conn, scores = [], round = 1) {
+        if ((round % 5) == 0) {
+            // Need to review this one for understanding \\\ Supposed to sort scores in descending order
+            scores.sort((a, b) => b.score - a.score);
+            let newScoreList = scores.map((ela) => `${ela.score} ⁞ ${ela.user.displayName}`)
+            // message.channel.send(`\`\`\`\nRound ${round}\n${newScoreList.join("\n")}\n\`\`\``)
+            message.channel.send({
+                embed: {
+                    color: 0xffa500,
+                    description: `\`\`\`\nRound ${round}\n${newScoreList.join("\n")}\n\`\`\``
+                }
+            })
+        }
+
         return fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986`)
             .then(res => res.json())
             .then(async j => {
@@ -28,8 +41,8 @@ module.exports = {
                 // let triviaAnswers = [decodeURI(j.results[0].correct_answer)];
                 let triviaChoices = j.results[0].incorrect_answers;
                 // let triviaChoices = [];
-                let triviaChoiceLetters = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭'];
-                let triviaChoiceASCII = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+                let triviaChoiceLetters = ['🇦', '🇧', '🇨', '🇩'];
+                let triviaChoiceASCII = ['a', 'b', 'c', 'd'];
                 // let triviaTFChoice = ['✅', '❌'];
 
                 const triviaCommand = client.commands.get('trivia')
@@ -62,7 +75,7 @@ module.exports = {
                 if (Math.floor(Math.random() * 10) >= 9) {
                     const inDevMsg = await message.channel.send('*This command is currently under development, any feedback is appreciated. Features like Questions by Category, Continuous Game, and Difficulty Options can be expected in the future.*').catch(console.error);
                     setTimeout(function () {
-                        inDevMsg.delete().catch(O_o => {});
+                        inDevMsg.delete().catch(O_o => {O_o});
                     }, 3000);
                 }
                 const triviaMessage = await message.channel.send({
@@ -71,7 +84,7 @@ module.exports = {
                         "description": triviaChoices.join('\n'),
                         "timestamp": new Date(),
                         "footer": {
-                            "text": 'Trivia | '+triviaCategory
+                            "text": 'Trivia | '+triviaCategory+' | Round '+round
                         }
                     }
                 }).catch(console.error); // .then(triviaMessage => {
@@ -115,6 +128,7 @@ module.exports = {
                 });
                 
                 collector.on('end', async (collected, reason) => {
+                    round += 1;
                     if (reason == 'time') {
                         triviaMessage.embeds[0].color = 16711680;
                         triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
@@ -126,21 +140,21 @@ module.exports = {
                         //await triviaMessage.react(triviaChoiceLetters[correctIndex]);
                         cdTime = -100;
                         await countDownMessage.edit(`Game ended.`).catch(console.error);
-                        const gameEndCallout = await message.channel.send('**Looks like nobody got the answer this time.** *Respond with \` tr \` in 10 sec to start a new game quickly.*').catch(console.error);
+                        const gameEndCallout = await message.channel.send('**Looks like nobody got the answer this time.** *Respond with ` tr ` in 10 sec to start a new game quickly.*').catch(console.error);
                         gameEndCallout.channel.awaitMessages(r => r.content.toLowerCase() == 'tr', {
                             maxMatches: 1,
                             time: 10000,
                             errors: ['time']
-                        })
-                        .then(() => {
-                            // gameEndCallout.edit(`**${collected.last().author.username} got the correct answer!**`).catch(console.error);
-                            gameEndCallout.edit(`**Looks like nobody got the answer this time.**`).catch(console.error);
-                            triviaCommand.execute(client, message);
-                        })
-                        .catch(O_o => {gameEndCallout.edit('**Looks like nobody got the answer this time.**').catch(console.error)});
+                            })
+                            .then(() => {
+                                // gameEndCallout.edit(`**${collected.last().author.username} got the correct answer!**`).catch(console.error);
+                                gameEndCallout.edit(`**Looks like nobody got the answer this time.**`).catch(console.error);
+                                triviaCommand.execute(client, message, null, null, scores, round);
+                            })
+                            .catch(() => {gameEndCallout.edit('**Looks like nobody got the answer this time.** Scores deleted.').catch(console.error)});
                         return;
                     }
-                    let collectedLast = collected.last().author.username;
+                    let collectedLast = collected.last().member.displayName;
                     triviaMessage.embeds[0].color = 65280;
                     triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
                         if (i != correctIndex) return `🟥${e}`;
@@ -150,6 +164,29 @@ module.exports = {
                     //await triviaMessage.clearReactions()
                     //await triviaMessage.react(triviaChoiceLetters[correctIndex]);
                     cdTime = -100;
+
+                    if (scores.length == 0) {
+                        scores = [
+                            {
+                                user: collected.last().member,
+                                score: 1
+                            }
+                        ]
+                    } else {
+                        let existsIndex;
+                        for (let i = 0; i < scores.length; i++) {
+                            const elem = scores[i];
+                            if (elem.user && elem.user.user.id == collected.last().author.id) {
+                                existsIndex = i;
+                            }
+                        }
+                        if (!isNaN(existsIndex)) {
+                            scores[existsIndex].score += 1;
+                        } else {
+                            scores.push({ user: collected.last().member, score: 1})
+                        }
+                    }
+
                     await countDownMessage.edit(`Game ended.`).catch(console.error);
                     const gameEndCallout = await message.channel.send(`**${collectedLast} got the correct answer!** *Respond with \` tr \` in 10 sec to start a new game quickly.*`);
                     gameEndCallout.channel.awaitMessages(r => r.content.toLowerCase() == 'tr', {
@@ -159,9 +196,11 @@ module.exports = {
                         })
                         .then(() => {
                             gameEndCallout.edit(`**${collectedLast} got the correct answer!**`).catch(console.error);
-                            triviaCommand.execute(client, message);
+                            triviaCommand.execute(client, message, null, null, scores, round);
                         })
-                        .catch(O_o => {gameEndCallout.edit(`**${collectedLast} got the correct answer!**`).catch(console.error)});
+                        .catch(() => {
+                            gameEndCallout.edit(`**${collectedLast} got the correct answer!** Scores deleted.`).catch(console.error);
+                        });
                     // return {
                         //     noWait: true,
                         //     user: collected.last().author
