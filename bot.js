@@ -42,7 +42,7 @@ for (const file of commandFiles) {
 //var ws = new WS(config.ws.token, config.ws.port, client);
 
 // get the snekfetch client for json requests
-const snekfetch = require("snekfetch");
+//const snekfetch = require("snekfetch");
 
 // ▼▼▼▼▼▼▼▼ A lot of this stuff below is all to manage database connections, these are passed through the conn argument in the execute function
 // Connecting to MySQL, external connection (still setting up at the time of this writing)
@@ -168,8 +168,8 @@ client.on("guildDelete", guild => {
 
 // Now were doing work on the xp system
 function generateXp() {
-    let min = 20;
-    let max = 40;
+    /*let min = 20;
+    let max = 40;*/
     return Math.floor(Math.random() * 29);
 }
 
@@ -261,7 +261,7 @@ client.on("message", async message => {
     try {
         //client.commands.get(command).execute(client, message, args, conn, snekfetch);
         // const commandReturn = await command.execute(client, message, args, conn, snekfetch);
-        command.execute(client, message, args, conn, snekfetch);
+        command.execute(client, message, args, conn);
         
         // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this
         if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
