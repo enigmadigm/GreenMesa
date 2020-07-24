@@ -142,7 +142,7 @@ client.on("message", async message => {// This event will run on every single me
     });
 
     // Setting up to react to an "I am" message
-    let isiam = message.content.toLowerCase().startsWith("i'm") || message.content.toLowerCase().startsWith("i am") || message.content.toLowerCase().startsWith("im");
+    let isiam = message.content.toLowerCase().startsWith("i'm ") || message.content.toLowerCase().startsWith("i am ") || message.content.toLowerCase().startsWith("im ");
     // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
     if (message.content.indexOf(config.prefix) !== 0 && !isiam) return;
