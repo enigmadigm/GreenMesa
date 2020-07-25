@@ -6,11 +6,11 @@ module.exports = {
     guildOnly: true,
     async execute(client, message, args) {
         // Getting ID of Admin role for next part
-        let Admina = message.guild.roles.find(x => x.name === "Admin");
+        let Admina = message.guild.roles.cache.find(x => x.name === "Admin");
         // Added this for someone who has annnouncement perms but is not an admin
-        let AdminPerma = message.guild.roles.find(x => x.name === "Moderator");
+        let AdminPerma = message.guild.roles.cache.find(x => x.name === "Moderator");
         // Using ID of Admin role to find out if author has it
-        if (message.member.hasPermission("MENTION_EVERYONE", false, true, true) || (AdminPerma && message.member.roles.has(AdminPerma.id)) || (Admina && message.member.roles.has(Admina.id))) {
+        if (message.member.hasPermission("MENTION_EVERYONE", false, true, true) || (AdminPerma && message.member.roles.cache.has(AdminPerma.id)) || (Admina && message.member.roles.cache.has(Admina.id))) {
             var sclength = 0;
             var seacolor;
             if (isNaN(args[0]) == false && args[0] <= 16777215) {

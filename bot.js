@@ -61,12 +61,12 @@ const cooldowns = new Discord.Collection();
 
 client.on("ready", async() => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
-    console.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
-    client.channels.get('661614128204480522').send(`Started`).catch(console.error);
+    console.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
+    client.channels.cache.get('661614128204480522').send(`Started`).catch(console.error);
     setInterval(() => {
-        console.log(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
-        client.channels.get('661614128204480522').send(`Planned Update: ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`).catch(console.error);
-        conn.query(`INSERT INTO gmstats (numUsers, numGuilds, numChannels) VALUES (${client.users.size}, ${client.guilds.size}, ${client.channels.size})`)
+        console.log(`Planned Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
+        client.channels.cache.get('661614128204480522').send(`Planned Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(console.error);
+        conn.query(`INSERT INTO gmstats (numUsers, numGuilds, numChannels) VALUES (${client.users.cache.size}, ${client.guilds.cache.size}, ${client.channels.cache.size})`)
     }, 3600000);
 
     setInterval(() => {
@@ -78,18 +78,18 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
         if (Math.floor(Math.random() * 10) <= 8) {
             // Set the bot's presence (activity and status)
             client.user.setPresence({
-                game: {
-                    name: `$help | ${client.guilds.size} servers | GitHub`,
+                activity: {
+                    name: `${config.prefix}help | add me`,
                 },
                 status: 'online'
             })
         } else {
             client.user.setPresence({
-                game: {
+                activity: {
                     name: 'society crumble',
                     type: 'WATCHING'
                 },
-                status: 'dnd'
+                status: 'idle'
             })
         }
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
@@ -112,7 +112,7 @@ client.on("guildCreate", guild => {// This event triggers when the bot joins a g
 
 client.on("guildDelete", guild => {// this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
-    client.channels.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
+    client.channels.cache.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
@@ -209,10 +209,12 @@ client.on("message", async message => {// This event will run on every single me
             if (err) return console.log(err);
         });
 
-        client.channels.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+        if (config.msgLogging) {
+            client.channels.cache.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+        }
     } catch (error) {
         console.error(error);
-        message.reply('there was an error trying to execute that command! please create an issue at https://github.com/enigmadigm/GreenMesa/issues');
+        message.reply('error while executing! please create an issue at https://github.com/enigmadigm/GreenMesa/issues');
     }
 });
 

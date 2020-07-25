@@ -14,16 +14,16 @@ const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
 
 module.exports = {
     name: 'sentiment',
-    description: 'Get the sentiment of a message using IBM\'s Watson. Plans for this command involve adding more features (besides sentiment analysis), and allowing URLs to be entered for HTML processing.',
+    description: 'Get the analyzed sentiment of a message using machine learning. More features may come (besides sentiment analysis), and allowing URLs to be entered for HTML processing.',
     aliases:['sm','emotion'],
-    usage:"<message id to process, text content to process>",
+    usage:"<message id to process / text content to process>",
     args:true,
     cooldown: 5,
     ownerOnly: false,
     async execute(client, message, args) {
         var msgContent;
         if (args.length == 1 && !isNaN(args.toString()) && args.toString().length == 18) {
-            await message.channel.fetchMessage(args[0])
+            await message.channel.messages.fetch(args[0])
                 .then(msg => {
                     msgContent = msg.content;
                 }).catch(console.error);
@@ -75,7 +75,7 @@ module.exports = {
                             }
                         ],
                         "footer": {
-                            "text": "Watson Natural Language Processing | In Development"
+                            "text": "Watson Natural Language Processing"
                         }
                     }
                 }).catch(console.error);

@@ -99,12 +99,12 @@ module.exports = {
                             if (i != correctIndex) return `🟥${e}`;
                             return `✅${e}`;
                         }).join('\n');
-                        await triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).catch(console.error);
+                        await triviaMessage.edit(new Discord.MessageEmbed(triviaMessage.embeds[0])).catch(console.error);
                         cdTime = -100;
                         await countDownMessage.edit(`Game ended.`).catch(console.error);
                         const gameEndCallout = await message.channel.send('**Looks like nobody got the answer this time.** *Respond with ` tr ` in 10 sec to start a new game quickly.*').catch(console.error);
                         gameEndCallout.channel.awaitMessages(r => r.content.toLowerCase() == 'tr', {
-                            maxMatches: 1,
+                            max: 1,
                             time: 10000,
                             errors: ['time']
                             })
@@ -121,7 +121,7 @@ module.exports = {
                         if (i != correctIndex) return `🟥${e}`;
                         return `✅${e}`;
                     }).join('\n');
-                    await triviaMessage.edit(new Discord.RichEmbed(triviaMessage.embeds[0])).catch(console.error);
+                    await triviaMessage.edit(new Discord.MessageEmbed(triviaMessage.embeds[0])).catch(console.error);
                     cdTime = -100;
 
                     if (scores.length == 0) {
@@ -149,7 +149,7 @@ module.exports = {
                     await countDownMessage.edit(`Game ended.`).catch(console.error);
                     const gameEndCallout = await message.channel.send(`**${collectedLast} got the correct answer!** *Respond with \` tr \` in 10 sec to start a new game quickly.*`);
                     gameEndCallout.channel.awaitMessages(r => r.content.toLowerCase() == 'tr', {
-                            maxMatches: 1,
+                            max: 1,
                             time: 10000,
                             errors: ['time']
                         })
