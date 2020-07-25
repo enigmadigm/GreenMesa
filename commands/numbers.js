@@ -20,7 +20,7 @@ module.exports = {
                 }).catch(console.error);
             }).catch((err) => {
                 console.error("Numbers API Error: ", err);
-                message.channel.send("There is an error with the api or request.");
+                message.channel.send("There is an error with the api or request.").catch(console.error);
             });
     }
 }

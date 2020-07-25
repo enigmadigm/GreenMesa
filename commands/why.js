@@ -9,9 +9,8 @@ module.exports = {
                     name: "Why?",
                     value: "because"
                 }],
-                timestamp: new Date(),
                 footer: {
-                    text: message.id | "The dev knows this cmd is stupid"
+                    text: `The dev knows this cmd is stupid | ${message.id}`
                 }
             }
         });

@@ -13,13 +13,16 @@ module.exports = {
             data.push('**Here\'s a list of all my commands:**');
             // for some reason if you don't separate \` ${command.name} \` with a space it flips out
             //                                         ^               ^
-            data.push(commands.map(command => `\` ${command.name} \` - ${command.description}`).join('\n'));
+            data.push(commands.map(command => {
+                if (['botkill', 'botreset', 'creload'].includes(command.name)) return;
+                return `\` ${command.name} \` - ${command.description}`;
+            }).join('\n'));
             data.push(`\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`)
 
             return message.author.send(data, { split: true })
                 .then(() => {
                     if (message.channel.type === 'dm') return;
-                    message.reply('I\'ve sent you a DM with all my commands!');
+                    message.reply('DMing you with commands.');
                 })
                 .catch(error => {
                     console.error(`Could not send help DM to ${message.author.tag}.\n`, error);
@@ -32,15 +35,27 @@ module.exports = {
         if (!command) {
             return message.reply('that\'s not a valid command!');
         }
+        const embed = {
+            title: `${prefix}${command.name}`,
+            fields: [],
+            color: 25600,
+            timestamp: new Date(),
+            footer: {
+                text: `${message.author.tag} asked for command help`
+            }
+        }
 
-        data.push(`**Name:** ${command.name}`);
+        if (command.description) {
+            embed.fields.push({ name: "Description", value: `${command.description}` });
+        }
+        if (command.aliases) {
+            embed.fields.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
+        }
+        if (command.usage) {
+            embed.fields.push({ name: "Usage", value: `${prefix}${command.name} ${command.usage}` });
+        }
+        embed.fields.push({ name: "Cooldown", value: `${command.cooldown || 3} second(s)` });
 
-        if (command.aliases) data.push(`**Aliases:** ${command.aliases.join(', ')}`);
-        if (command.description) data.push(`**Description:** ${command.description}`);
-        if (command.usage) data.push(`**Usage:** ${prefix}${command.name} ${command.usage}`);
-
-        data.push(`**Cooldown:** ${command.cooldown || 3} second(s)`);
-
-        message.channel.send(data, { split: true });
+        message.channel.send({ embed });
     }
 }

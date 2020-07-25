@@ -23,17 +23,17 @@ module.exports = {
                     },
                     {
                         "name": "Library",
-                        "value": "discord.js v11",
+                        "value": "discord.js v12",
                         "inline": true
                     },
                     {
                         "name": "Servers",
-                        "value": client.guilds.size,
+                        "value": client.guilds.cache.size,
                         "inline": true
                     },
                     {
                         "name": "Users",
-                        "value": client.users.size,
+                        "value": client.users.cache.size,
                         "inline": true
                     },
                     {
@@ -43,12 +43,12 @@ module.exports = {
                     },
                     {
                         "name": "Website",
-                        "value": "[/apps/greenmesa](https://enigmadigm.com/apps/greenmesa) :warning:",
+                        "value": ":warning:",
                         "inline": true
                     },
                     {
                         "name": "Repo",
-                        "value": "[github.com](https://github.com/enigmadigm/greenmesa) <:octocat_logo:663869429976662057>",
+                        "value": "[github](https://github.com/enigmadigm/greenmesa) <:octocat_logo:663869429976662057>",
                         "inline": true
                     },
                     {
@@ -59,7 +59,7 @@ module.exports = {
                 ],
                 footer: {
                     icon_url: client.user.avatarURL,
-                    text: `Information / Información / معلومات (expect translate service soon) | Shards: none | ${config.prefix}uptime`
+                    text: `Information / Información / معلومات | see ${config.prefix}uptime`
                 }
             }
         });
