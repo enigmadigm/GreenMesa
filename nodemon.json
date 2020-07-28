@@ -1,7 +1,6 @@
 {
     "verbose": true,
-    "ignore": ["auth.json", "*.archive.js", "node_modules"],
+    "ignore": ["auth.json", "node_modules", "package.json", "package-lock.json", ".gitignore", ".eslintrc.json", "desktop.ini", "readme.md", "documentation", "media"],
     "delay": 2500,
-    "ext": "js,json",
-    "watch": ["commands/*", "bot.js", "nodemon.json", "package.json"]
+    "ext": "js,json"
 }

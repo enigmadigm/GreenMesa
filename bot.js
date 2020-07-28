@@ -221,3 +221,8 @@ client.on("message", async message => {// This event will run on every single me
 client.on('error', console.error);
 
 client.login(config.token);
+
+process.on('uncaughtException', function (e) {
+    console.log(new Date().toString(), e.stack || e);
+    process.exit(1);
+});
