@@ -1,13 +1,12 @@
 > This page is currently out of date. Please use the $help command on Discord for an up-to-date list.
 
 # Bot Commmands
-This page contains all commands and details for GreenMesa. This page is ~~gauranteed~~ to be up to date after official releases, after which unannounced updates may occur, I will do my best to keep these docs up to date if updates are pertinent to current stable version and imperative to operation of application (for maintenance, use reasons, something else).\
+This page contains some commands and details for GreenMesa. This page is most likely out of date. Use the `help` command on the installed bot for a complete list of commands.\
 **Don't forget to execute the command with the bot prefix before**
 - `help` - get help, mostly on commands, and don't worry it's detailed
 - `intro` - introduction to the bot
 - `info` - some details I threw together, I think they call it info
 - `say <message>` - make GreenMesa say what you would like, at the moment this command is open to the public (@everyone), this may change **not expected to remain available**
-- ~~`esay [color code] <message>` - same as `$say`, but with this your message is embedded, and with a valid color code (integer less than or equal to 16777215) you can choose the presentation color of the embed~~ **not available**
 - `ping` - the good old ping >> pong, this will also return various latency information
 - `8ball` - play ***magic*** 8ball
 - `chucknorris` - get a wonderful Chuck Norris fact *(I didn't make 'em)*
@@ -22,6 +21,4 @@ This page contains all commands and details for GreenMesa. This page is ~~gauran
 - `tronalddump` - get some Trump quotes
 - `numbers` - get facts about numbers
 - `sentiment` - Get detected sentiment and emotion details of a message using AI. In the future: adding more features (besides sentiment analysis), and allowing URLs to be entered for HTML processing.
-- `PRIVATE` - _**PRIVATE**_ - UNDISCLOSED
-- owner commands are not covered here *(botkill, botreset, logtest, creload, so on, son, so)*\
 There's probably commands that I didn't include here. *Good thing the `help` command exists, eh?*

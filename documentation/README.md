@@ -5,10 +5,10 @@ GM is a _general purpose_ Discord bot that can be used in any Discord server. GM
 
 ## Using the bot
 This section is for first-use and basic commands (for detailed reference and super-using the bot please refer to the docs).
-- Bot Prefix - is currently $ (the symbol in front of all commands)
-- `$help` - use this command to get a mostly full list of commands and their descriptions
-- `$info` - get useful info
-- `$intro` - get the intro
+- Bot Prefix - currently `gm` (the symbol in front of all commands)
+- `help` - use this command to get a mostly full list of commands and their descriptions
+- `info` - get useful info
+- `intro` - get the intro
 
 ## Installation on server
 Go [here](installation.md) to find out more on enabling GM in your server.

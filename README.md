@@ -1,22 +1,22 @@
 # GreenMesa
-This is the repository for a Discord bot known as GreenMesa (GM). The bot was created by, and is still maintained and updated by, Stefan Hauge. GM falls under ownership of EnigmaDigm Holdings, EnDigm Developer branch. More details about the bot can be found in the docs folder, along with all other documentation for GM (minus a few things).
+This is the repository for a Discord bot known as GreenMesa (GM). This page acts acts as a convenient way for @GalaxySH to store core files and other stuff for the bot. 
 
-If you are interested in becoming a part of the team and/or helping to develop and expand GM or EnigmaDigm as a whole, go ahead and request to become a contributor or go to [our involvement page that will soon be available](https://digmsl.link/involve1).
+The application ***cannot*** merely be cloned and run immediately after installation, it will fail; this app was not built for and has not been fixed to be able to do that smoothly.
 
-Details about apps on EnigmaDigm can soon be found [here](https://enigmadigm.com/apps/). We look forward to seeing you around and hopefully hearing from you.
+---
 
 This bot isn't really built to run on someone else's machine (namedly you who is reading this), but mostly I'm just not going to encourage you to because, well, it's *mine*.
 
 ## Ignored files
-There are **quite a few** ignored files (found in [.gitignore](.gitignore)) that are essential (more or less) to the bot's function. Especially auth.json, which houses the keys to the engine. For now auth.json is gonna remain a nono file, it may be released with redacted info at some point in the future. If needed (wouldn't know why unless you try to copy the bot for yourself) you could rebuild it for yourself using the bot's code. You **need to find yourself your own bot token** however.
+There are *quite a few* ignored files (found in [.gitignore](.gitignore)) that are essential (more or less) to the bot's function. Especially auth.json, which contains the keys to the engine. `auth.json` is a nono file, and it will stay that way. .
 
-## auth.json
-So above I said "ur out of luck" but then I decided, what if even I mess up and forget how to rebuild my auth.json?... or something like that...maybe I took pity. Anyway, if you were able to make sense of that, here's a bit of a template auth.json. I do not gaurantee and will not be held responsible for this being out of date.
+## auth.json (config)
+`auth.json` basic template in case there is need of a rebuild. May be out of date.
 ```json
 {
-  "token": "--------your---private---discord---app---token---------",
+  "token": "--------------discordapp-----------------token------------------",
   "prefix": "(*&%#^@$!(@*&$",
-  "ownerID": "your discord snowflake here, you must own the app",
+  "ownerID": "discord snowflake id here, app must be owned",
   "ws": {
     "port": number,
     "token": "123456"
@@ -31,9 +31,8 @@ So above I said "ur out of luck" but then I decided, what if even I mess up and 
       "will",
       "be",
       "auto",
-      "created",
-      "for",
-      "you"
+      "generated",
+      "for"
   ],
   "plotly": {
     "username": "AccountIJustCreated",
@@ -48,8 +47,7 @@ So above I said "ur out of luck" but then I decided, what if even I mess up and 
    }
 }
 ```
-Not that some required fields will be generated for you when the bot is first started or when a command is first run, but feel free to copy them anyway I guess.
+Some required sections of the config file will be generated if not provided (the logging parts), all parts with keys are required.
 
 
-Good luck out there pioneers.
--*Stefan*
+End.
