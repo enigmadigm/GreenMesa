@@ -5,6 +5,6 @@ This is a very easy process:
 3. In the drop down menu select the target server
 4. Leave the admin permission that should be checked as it is for the bot to function properly.
 5. Click authorize to complete the process
-*NOTE:* When you click authorize you are _authorizing_ GM to access your server with full administrator privileges, please abide by EnigmaDigm [Policies](https://enigmadigm.com/policies) and we will have a *happy*, ***healthy*** relationship.
+*NOTE:* When you click authorize you are _authorizing_ GM to access your server with full administrator privileges, understand that I will **not** be held liable to your feelings and we will have a *happy*, ***healthy*** relationship.
 
-For more information refer to the Discord help center or dev docs. To learn how to make a _basic_ bot yourself just Google it. Check out [discord.js](https://discord.js.org) (major library used in this bot for constructing Discord apps).
+This doc is part of the `invite` command. This Node.js bot was made with the [discord.js](https://discord.js.org) (major library good for constructing big or small Discord apps).

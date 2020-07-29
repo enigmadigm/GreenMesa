@@ -11,6 +11,8 @@ const config = require("./auth.json");
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
 
+const { xlogger } = require("./xlogger.js");
+
 // The *client*
 const client = new Discord.Client();
 client.commands = new Discord.Collection()
@@ -221,3 +223,8 @@ client.on("message", async message => {// This event will run on every single me
 client.on('error', console.error);
 
 client.login(config.token);
+
+process.on('uncaughtException', function (e) {
+    xlogger.log(e);
+    process.exit(1);
+});
