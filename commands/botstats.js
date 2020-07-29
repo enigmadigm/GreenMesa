@@ -25,6 +25,7 @@ function generatePlot(rrows) {
         var layout = {
             plot_bgcolor: 'rgb(52, 54, 60)',
             paper_bgcolor: 'rgb(52, 54, 60)',
+            title: 'Users',
         };
         var chart = { 'data': [data], 'layout': layout }
         plotly.getImage(chart, pngOpts, (err, imageData) => {
