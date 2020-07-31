@@ -1,9 +1,9 @@
+const xlg = require("./xlogger");
 process.on('uncaughtException', function (e) {
     xlg.log(e);
     process.exit(1);
 });
 
-const xlg = require("./xlogger");
 const fs = require('fs'); // Get the filesystem library that comes with nodejs
 const Discord = require("discord.js"); // Load discord.js library
 const config = require("./auth.json"); // Loading app config file
