@@ -1,7 +1,14 @@
+const moment = require('moment'); // require
+var now = moment().format();
 module.exports = {
-    log: (e) => {
+    log(e) {
         if (e) {
-            return console.log(new Date().toString(), e.stack || e);
+            return console.log(`[${now}]`, e.stack || e);
+        }
+    },
+    error(e) {
+        if (e) {
+            return console.error(`[${now}]`, e.stack || e);
         }
     }
 }

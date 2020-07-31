@@ -1,20 +1,24 @@
-// Get the filesystem library that comes with nodejs
-const fs = require('fs');
-// Load up the discord.js library
-const Discord = require("discord.js");
+process.on('uncaughtException', function (e) {
+    xlg.log(e);
+    process.exit(1);
+});
 
-// Loading config file
-const config = require("./auth.json");
+const xlg = require("./xlogger");
+const fs = require('fs'); // Get the filesystem library that comes with nodejs
+const Discord = require("discord.js"); // Load discord.js library
+const config = require("./auth.json"); // Loading app config file
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
+//const dbm = require("./dbmanager");
+//const mysql = require("mysql");
+const client = new Discord.Client();
+var { conn, updateXP, updateBotStats } = require("./dbmanager");
+
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
 
-const { xlogger } = require("./xlogger.js");
-
-// The *client*
-const client = new Discord.Client();
+// The Discord.js *client*
 client.commands = new Discord.Collection()
 // ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -34,11 +38,9 @@ for (const file of commandFiles) {
 
 // ▼▼▼▼▼▼▼▼ A lot of this stuff below is all to manage database connections, these are passed through the conn argument in the execute function
 // Connecting to MySQL, external connection
-const mysql = require("mysql");
-var db_config = config.db_config;
-// This connects the table for the xp (currency) system (in DigiCom)
-var conn;
-function handleDisconnect() {
+//var db_config = config.db_config;
+//var conn;
+/*function handleDisconnect() {
     conn = mysql.createConnection(db_config);
     conn.connect(function(err) {
         if (err) {
@@ -56,7 +58,7 @@ function handleDisconnect() {
         }
     });
 }
-handleDisconnect();
+handleDisconnect();*/
 
 // ▼▼▼▼▼ command cooldowns section
 const cooldowns = new Discord.Collection();
@@ -66,10 +68,10 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
     console.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.channels.cache.get('661614128204480522').send(`Started`).catch(console.error);
     setInterval(() => {
-        console.log(`Planned Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
-        client.channels.cache.get('661614128204480522').send(`Planned Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(console.error);
-        conn.query(`INSERT INTO gmstats (numUsers, numGuilds, numChannels) VALUES (${client.users.cache.size}, ${client.guilds.cache.size}, ${client.channels.cache.size})`)
+        client.channels.cache.get('661614128204480522').send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
+        updateBotStats(client);
     }, 3600000);
+    //updateBotStats(client);
 
     setInterval(() => {
         if (!config.longLife || config.longLife < client.uptime) config.longLife = client.uptime;
@@ -81,7 +83,7 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
             // Set the bot's presence (activity and status)
             client.user.setPresence({
                 activity: {
-                    name: `${config.prefix}help | add me`,
+                    name: `${config.prefix} help | add me`,
                 },
                 status: 'online'
             })
@@ -102,36 +104,30 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
         let link = await client.generateInvite(["ADMINISTRATOR"]);
         console.log(link);
     } catch (e) {
-        console.log(e.stack);
+        xlg.error(e);
     }
 });
 
 client.on("guildCreate", guild => {// This event triggers when the bot joins a guild.
-    console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
+    xlg.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     client.channels.get('661614128204480522').send(`New guild: ${guild.name} (id: ${guild.id}) (members: ${guild.memberCount})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
 client.on("guildDelete", guild => {// this event triggers when the bot is removed from a guild.
-    console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
+    xlg.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     client.channels.cache.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
-
-// xp generator
-function generateXp() {
-    /*let min = 20;
-    let max = 40;*/
-    return Math.floor(Math.random() * 29);
-}
 
 // the actual command processing
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
 
     if (message.author.bot) return;
 
+    updateXP(message);
     // xp system now automatic, the manual $givexp command has been disabled but remains in the section
-    conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}'`, (err, rows) => {
+    /*conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}'`, (err, rows) => {
         if (err) throw err;
         let sql;
         if (rows.length < 1) {
@@ -141,20 +137,20 @@ client.on("message", async message => {// This event will run on every single me
             sql = `UPDATE dgmxp SET xp = ${xp + generateXp()} WHERE id = '${message.author.id}'`
         }
         conn.query(sql);
-    });
+    });*/
 
     // Setting up to react to an "I am" message
-    let isiam = message.content.toLowerCase().startsWith("i'm ") || message.content.toLowerCase().startsWith("i am ") || message.content.toLowerCase().startsWith("im ");
+    let containsiam = message.content.toLowerCase().startsWith("i'm ") || message.content.toLowerCase().startsWith("i am ") || message.content.toLowerCase().startsWith("im ");
     // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
-    if (message.content.toLowerCase().indexOf(config.prefix) !== 0 && !isiam) return;
+    if (message.content.toLowerCase().indexOf(config.prefix) !== 0 && !containsiam) return;
     // ▼▼▼▼▼ deprecated with the guild only command handler filter
     //if (message.channel.type === "dm") return;
 
     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     const commandName = args.shift().toLowerCase()
     
-    if (isiam && args.length > 0) {
+    if (containsiam && args.length > 0) {
         if (args.length == 1 && args[0] == "daddy") {
             return message.channel.send("Hello *daddy* I'm little girl");
         } else if (args.length <= 2 && args[0] == "baby" || args[0]+args[1] == "littlegirl") {
@@ -223,8 +219,3 @@ client.on("message", async message => {// This event will run on every single me
 client.on('error', console.error);
 
 client.login(config.token);
-
-process.on('uncaughtException', function (e) {
-    xlogger.log(e);
-    process.exit(1);
-});
