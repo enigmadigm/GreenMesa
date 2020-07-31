@@ -211,7 +211,7 @@ client.on("message", async message => {// This event will run on every single me
             client.channels.cache.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
         }
     } catch (error) {
-        console.error(error);
+        xlg.error(error);
         message.reply('error while executing! please create an issue at https://github.com/enigmadigm/GreenMesa/issues');
     }
 });
