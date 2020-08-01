@@ -1,3 +1,7 @@
+// To all for `import - from '-'` and `export async function function() {}` in modules I must change the eslint sourcetype to module
+// and change the package.json tyope to module, then replace all require()s and exports.method/module.exports with the types of
+// statements above. mayve one day I could do it because it might look better.
+
 const xlg = require("./xlogger");
 process.on('uncaughtException', function (e) {
     xlg.log(e);
@@ -12,7 +16,8 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting } = require("./dbmanager");
+const { permLevels, getPermLevel } = require("./permissions");
 
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
@@ -109,13 +114,13 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
 });
 
 client.on("guildCreate", guild => {// This event triggers when the bot joins a guild.
-    xlg.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
+    xlg.log(`New guild: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     client.channels.get('661614128204480522').send(`New guild: ${guild.name} (id: ${guild.id}) (members: ${guild.memberCount})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
 client.on("guildDelete", guild => {// this event triggers when the bot is removed from a guild.
-    xlg.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
+    xlg.log(`Removed from: ${guild.name} (id: ${guild.id})`);
     client.channels.cache.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
@@ -127,17 +132,22 @@ client.on("message", async message => {// This event will run on every single me
 
     updateXP(message);
     // xp system now automatic, the manual $givexp command has been disabled but remains in the section
-    /*conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}'`, (err, rows) => {
-        if (err) throw err;
-        let sql;
-        if (rows.length < 1) {
-            sql = `INSERT INTO dgmxp (id, xp) VALUES ('${message.author.id}', '${generateXp()}')`;
-        } else {
-            let xp = rows[0].xp;
-            sql = `UPDATE dgmxp SET xp = ${xp + generateXp()} WHERE id = '${message.author.id}'`
+    if (message.mentions && message.mentions.has(client.user)) {
+        if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
+            let iec_gs = await getGlobalSetting("info_embed_color");
+            let info_embed_color = parseInt(iec_gs[0].value);
+            message.channel.send({
+                embed: {
+                    "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **gm**`,
+                    "color": info_embed_color
+                }
+            })
+            return;
         }
-        conn.query(sql);
-    });*/
+    }
+    var dm = false; // checks if it's from a dm
+    if (!message.guild)
+        dm = true;
 
     // Setting up to react to an "I am" message
     let containsiam = message.content.toLowerCase().startsWith("i'm ") || message.content.toLowerCase().startsWith("i am ") || message.content.toLowerCase().startsWith("im ");
@@ -149,6 +159,15 @@ client.on("message", async message => {// This event will run on every single me
 
     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     const commandName = args.shift().toLowerCase()
+
+    var permLevel = permLevels.member;
+    let botmasters = await getGlobalSetting("botmasters").catch(xlg.error);
+    botmasters = botmasters[0].value.split(',');
+    if (!dm) { // gets perm level of member if message isn't from dms
+        permLevel = await getPermLevel(message.member);
+    } else if (botmasters.includes(message.author.id)) { // bot masters
+        permLevel = permLevels.botMaster;
+    }
     
     if (containsiam && args.length > 0) {
         if (args.length == 1 && args[0] == "daddy") {
@@ -167,7 +186,8 @@ client.on("message", async message => {// This event will run on every single me
     if (command.guildOnly && message.channel.type !== 'text') {
         return message.reply('I can\'t execute that command inside DMs!');
     }
-    if (command.ownerOnly && message.author.id !== config.ownerID) return console.log(`${message.author.tag} attempted $botkill!`);
+    if (command.ownerOnly && message.author.id !== config.ownerID) return xlg.log(`${message.author.tag} attempted ownerOnly!`);
+    if (command.permLevel && permLevel < command.permLevel) return; // insufficient bot permissions
     if (command.args && !args.length) {
         let reply = `I need arguments to make that work, ${message.author}!`;
 
@@ -216,6 +236,6 @@ client.on("message", async message => {// This event will run on every single me
     }
 });
 
-client.on('error', console.error);
+client.on('error', xlg.error);
 
 client.login(config.token);
