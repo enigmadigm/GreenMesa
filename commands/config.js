@@ -45,6 +45,10 @@ module.exports = {
                     return false;
                 }
                 let setting = await getGlobalSetting(args[argIndex]).catch(xlg.error);
+                if (!setting) {
+                    message.channel.send("The property does not exist. You may create it with the `edit` option.");
+                    return false;
+                }
                 setting = setting[0];
                 let updatedby = client.users.cache.get(setting.updatedby);
 

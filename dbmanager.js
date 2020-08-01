@@ -33,7 +33,11 @@ const query = util.promisify(conn.query).bind(conn);
  */
 async function getGlobalSetting(name) {
     let rows = await query(`SELECT * FROM globalsettings WHERE name = "${name}"`).catch(xlog.error);
-    return rows;
+    if (rows.length > 0) {
+        return rows;
+    } else {
+        return false;
+    }
 }
 
 /**
