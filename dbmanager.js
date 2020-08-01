@@ -27,14 +27,34 @@ handleDisconnect();
 
 const query = util.promisify(conn.query).bind(conn);
 
+/**
+ * query and retrieve values from the globalsettings table
+ * @param {string} name name of setting to retrieve
+ */
+async function getGlobalSetting(name) {
+    let rows = await query(`SELECT * FROM globalsettings WHERE name = "${name}"`).catch(xlog.error);
+    return rows;
+}
+
+/**
+ * Get the current amount of xp assigned to a user
+ * @param {object} message sent message
+ * @param {object} target discord user object to select in database
+ */
 async function getXP(message, target) {
     let rows = await query(`SELECT * FROM dgmxp WHERE id = '${target.id}'`);
     return rows;
 }
 
+/**
+ * Uses a message sent by author to update their xp in the database
+ * @param {object} message message sent to be counted for author
+ */
 async function updateXP(message) {
+    let maxs = await getGlobalSetting("max_xp");
     function genXP() {
-        return Math.floor(Math.random() * getGlobalSetting("max_xp"));
+        if (!maxs[0]) return 28;
+        return Math.floor(Math.random() * maxs[0].value);
     }
     conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}'`, (err, rows) => {
         if (err) throw err;
@@ -67,12 +87,31 @@ async function getGMStats(limiter = 24) {
 }
 
 /**
- * query and retrieve values from the globalsettings table
- * @param {string} name name of setting to retrieve
+ * Update a setting for config in the global settings database
+ * @param {string} selectortype column being used to select (name, category)
+ * @param {string} selectorvalue value of column for selection
+ * @param {string} value setting value
+ * @param {object} updatedby user
  */
-async function getGlobalSetting(name) {
-    let rows = await query(`SELECT * FROM globalsettings WHERE name = "${name}"`).catch(xlog.error);
-    return rows;
+async function editGlobalSettings(selectortype = "", selectorvalue = "", updateuser, value = "") {
+    return new Promise((resolve, reject) => {
+        if (!selectortype || !selectorvalue || !value || !updateuser || !updateuser.id || typeof selectorvalue !== "string" || typeof value !== "string") return reject("MISSING_VALUES");
+        if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");
+        conn.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}',\`updatedby\`='${updateuser.id}' WHERE \`${selectortype}\`='${selectorvalue}'`, (err, result) => {
+            if (err) throw err;
+            if (result.affectedRows > 0) {
+                return resolve(result);
+            } else if (selectortype === "name") {
+                conn.query(`INSERT INTO \`globalsettings\`(\`name\`, \`value\`, \`updatedby\`) VALUES ('${selectorvalue}','${value}','${updateuser.id}')`, (err, result) => {
+                    if (err) throw err;
+                    resolve(result);
+                });
+            } else {
+                return reject("NONEXISTENT");
+            }
+        });
+    })
+
 }
 
 exports.conn = conn;
@@ -81,3 +120,4 @@ exports.updateXP =  updateXP;
 exports.updateBotStats = updateBotStats;
 exports.getGMStats = getGMStats;
 exports.getGlobalSetting = getGlobalSetting;
+exports.editGlobalSettings = editGlobalSettings;
