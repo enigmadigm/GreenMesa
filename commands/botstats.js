@@ -27,6 +27,9 @@ function generatePlot(rrows) {
             plot_bgcolor: 'rgb(52, 54, 60)',
             paper_bgcolor: 'rgb(52, 54, 60)',
             title: 'Users',
+            font: {
+                color: '#7f7f7f'
+            },
         };
         var chart = { 'data': [data], 'layout': layout }
         plotly.getImage(chart, pngOpts, (err, imageData) => {
@@ -48,7 +51,16 @@ module.exports = {
         if (args.length && !isNaN(args[0]) && args[0] > 3) {
             var limiter = args[0];
         }
-        var rows = await getGMStats(limiter || null);
+        var rows = await getGMStats(limiter || undefined);
+        if (!rows.length) {
+            rows.push({
+                updateId: 0,
+                logData: new Date(),
+                numUsers: 0,
+                numGuilds: 0,
+                numChannels: 5
+            });
+        }
         await generatePlot(rows);
         let diffs = [];
         for (let i = 0; i < rows.length; i++) {
@@ -105,7 +117,7 @@ module.exports = {
                     url: "attachment://usernumber-graph.png"
                 },
                 footer: {
-                    text: "Graphing in development"
+                    text: "Some Statistics"
                 }
             },
         }).catch(console.error)
