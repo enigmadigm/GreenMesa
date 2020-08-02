@@ -8,7 +8,7 @@ module.exports = {
     usage: "<some english word>",
     aliases: ['def'],
     execute(client, message, args) {
-        if (args.length == 1) {
+        if (args.length > 0 && args.length < 11) {
             if (message.channel.type === "text" && message.mentions.members.size) {
                 if (message.mentions.members.first().id == "142831008901890048") {
                     return message.channel.send({
@@ -16,7 +16,6 @@ module.exports = {
                             "title": "The definition of " + message.mentions.users.first().username,
                             "description": "One of the universe's worst ideas",
                             "color": 15277667,
-                            "timestamp": new Date(),
                             "footer": {
                                 "text": "Definitions"
                             }
@@ -29,7 +28,6 @@ module.exports = {
                             "title": "The definition of " + message.mentions.users.first().username,
                             "description": "a total dumbass",
                             "color": 15277667,
-                            "timestamp": new Date(),
                             "footer": {
                                 "text": "Definitions"
                             }
@@ -42,7 +40,6 @@ module.exports = {
                             "title": "The definition of " + message.mentions.users.first().username,
                             "description": "Idiot",
                             "color": 15277667,
-                            "timestamp": new Date(),
                             "footer": {
                                 "text": "Definitions"
                             }
@@ -54,15 +51,14 @@ module.exports = {
                             "title": "Well you see I can't define that mention",
                             "description": "I can't define mentions unless they are special!",
                             "color": 15277667,
-                            "timestamp": new Date(),
                             "footer": {
                                 "text": "Definitions"
                         }
                     }
                 });
             }
-            let def = args[0].toLowerCase();
-            let letters = /^[A-Za-z]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
+            let def = args.join(" ").toLowerCase();
+            let letters = /^[A-Za-z\s]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
             if (letters.test(def)) {
                 fetch(`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${def}?key=03464f03-851d-4df0-ad53-4afdb47311d8`)
                     .then(res => res.json())
@@ -71,9 +67,8 @@ module.exports = {
                             message.channel.send({
                                 embed: {
                                     "title": "It appears you typed gibberish.",
-                                    "description": "That or there was an unhandled error.",
+                                    "description": "That or we're just dumb.",
                                     "color": 16750899,
-                                    "timestamp": new Date(),
                                     "footer": {
                                         "text": "Definitions"
                                     }
@@ -86,7 +81,6 @@ module.exports = {
                                 "title": "Your word could not be found",
                                 "description": "Did you mean: " + altWords,
                                 "color": 16750899,
-                                "timestamp": new Date(),
                                 "footer": {
                                     "text": "Definitions"
                                 }
@@ -152,10 +146,9 @@ module.exports = {
                                 embed: {
                                     "title": "The definition of " + def,
                                     "color": 65280,
-                                    "timestamp": new Date(),
                                     "fields": largeDefs,
                                     "footer": {
-                                        "text": "Definitions | Collegiate Dictionary"
+                                        "text": "Definitions | M-W Collegiate Dictionary"
                                     }
                                 }
                             }).catch(console.error);
@@ -168,7 +161,6 @@ module.exports = {
                         "title": "Please send a valid word to be defined",
                         "description": "Whatever you entered wasn't found to be valid, it probably contained a number",
                         "color": 16711680,
-                        "timestamp": new Date(),
                         "footer": {
                             "text": "Definitions"
                         }
@@ -178,10 +170,8 @@ module.exports = {
         } else {
             message.channel.send({
                 embed: {
-                    "title": "Please send only one term/argument to define",
-                    "description": "$<def>/<define> <proper non-medical English word>",
+                    "description": "Please limit arguments to **ten** or less words",
                     "color": 16711680,
-                    "timestamp": new Date(),
                     "footer": {
                         "text": "Definitions"
                     }

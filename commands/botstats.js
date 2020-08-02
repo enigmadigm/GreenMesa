@@ -24,11 +24,11 @@ function generatePlot(rrows) {
             width: 520,
         };
         var layout = {
-            plot_bgcolor: 'rgb(52, 54, 60)',
-            paper_bgcolor: 'rgb(52, 54, 60)',
+            plot_bgcolor: 'rgb(47,49,54)',
+            paper_bgcolor: 'rgb(47,49,54)',
             title: 'Users',
             font: {
-                color: '#7f7f7f'
+                color: '#FFFFFF'
             },
         };
         var chart = { 'data': [data], 'layout': layout }
@@ -48,7 +48,7 @@ module.exports = {
     description: 'Some statistics for this bot.',
     usage: "[limiter]",
     async execute(client, message, args) {
-        if (args.length && !isNaN(args[0]) && args[0] > 3) {
+        if (args.length && !isNaN(args[0]) && args[0] > 3 && args[0] < 1000) {
             var limiter = args[0];
         }
         var rows = await getGMStats(limiter || undefined);
