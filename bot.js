@@ -67,10 +67,11 @@ handleDisconnect();*/
 
 // ▼▼▼▼▼ command cooldowns section
 const cooldowns = new Discord.Collection();
+const xpcooldowns = new Discord.Collection();
 
 client.on("ready", async() => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
-    console.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
+    xlg.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.channels.cache.get('661614128204480522').send(`Started`).catch(console.error);
     setInterval(() => {
         client.channels.cache.get('661614128204480522').send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
@@ -130,8 +131,14 @@ client.on("message", async message => {// This event will run on every single me
 
     if (message.author.bot) return;
 
-    updateXP(message);
-    // xp system now automatic, the manual $givexp command has been disabled but remains in the section
+    const now = Date.now();
+    if (!xpcooldowns.has(message.author.id)) {
+        updateXP(message);
+        xpcooldowns.set(message.author.id, now);
+        setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
+    }
+
+
     if (message.mentions && message.mentions.has(client.user)) {
         if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
             let iec_gs = await getGlobalSetting("info_embed_color");
@@ -228,7 +235,6 @@ client.on("message", async message => {// This event will run on every single me
         cooldowns.set(command.name, new Discord.Collection());
     }
 
-    const now = Date.now();
     const timestamps = cooldowns.get(command.name);
     const cooldownAmount = (command.cooldown || 3) * 1000;
 

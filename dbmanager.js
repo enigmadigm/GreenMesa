@@ -46,7 +46,7 @@ async function getGlobalSetting(name) {
  * @param {object} target discord user object to select in database
  */
 async function getXP(message, target) {
-    let rows = await query(`SELECT * FROM dgmxp WHERE id = '${target.id}'`);
+    let rows = await query(`SELECT * FROM dgmxp WHERE id = '${target.id}${message.guild.id}'`);
     return rows;
 }
 
@@ -60,16 +60,22 @@ async function updateXP(message) {
         if (!maxs[0]) return 28;
         return Math.floor(Math.random() * maxs[0].value);
     }
-    conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}'`, (err, rows) => {
+    conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}${message.guild.id}'`, (err, rows) => {
         if (err) throw err;
         let sql;
         if (rows.length < 1) {
-            sql = `INSERT INTO dgmxp (id, xp) VALUES ('${message.author.id}', '${genXP()}')`;
+            sql = `INSERT INTO dgmxp (id, userid, guildid, xp) VALUES ('${message.author.id}${message.guild.id}', '${message.author.id}', '${message.guild.id}', '${genXP()}')`;
         } else {
             let xp = rows[0].xp;
-            sql = `UPDATE dgmxp SET xp = ${xp + genXP()} WHERE id = '${message.author.id}'`
+            sql = `UPDATE dgmxp SET xp = ${xp + genXP()} WHERE id = '${message.author.id}${message.guild.id}'`
         }
-        conn.query(sql);
+        query(sql).catch((err) => {
+            if (err.code === "ER_DUP_ENTRY") {
+                return xlog.error('error: ER_DUP_ENTRY caught and deflected');
+            } else {
+                throw err;
+            }
+        });
     });
 }
 
