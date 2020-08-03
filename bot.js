@@ -181,21 +181,47 @@ client.on("message", async message => {// This event will run on every single me
     const command = client.commands.get(commandName)
         || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
-    if (!command) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
+    if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
 
     if (command.guildOnly && message.channel.type !== 'text') {
         return message.reply('I can\'t execute that command inside DMs!');
     }
     if (command.ownerOnly && message.author.id !== config.ownerID) return xlg.log(`${message.author.tag} attempted ownerOnly!`);
     if (command.permLevel && permLevel < command.permLevel) return; // insufficient bot permissions
+
+    let commandEnabledGlobal = await getGlobalSetting(`${command.name}_enabled`);
+    if (commandEnabledGlobal && commandEnabledGlobal[0].value == 'false') {
+        message.channel.send({
+            embed: {
+                title: `Command Disabled`,
+                description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0].value == "false") ? "**Globally**" : "**on this server**"}.`,
+                footer: {
+                    text: `${(commandEnabledGlobal[0].value == "false") ? 'sorry' : 'admins may re-enable it'}`
+                }
+            }
+        });
+        return;
+    }
+
     if (command.args && !args.length) {
+        const fec_gs = await getGlobalSetting("fail_embed_color");
+        const fail_embed_color = parseInt(fec_gs[0].value);
+
         let reply = `I need arguments to make that work, ${message.author}!`;
 
         if (command.usage) {
             reply += `\nThe proper usage would be: \`${config.prefix}${command.name} ${command.usage}\``;
         }
 
-        return message.channel.send(reply);
+        return message.channel.send({
+            embed: {
+                description: reply,
+                color: fail_embed_color,
+                footer: {
+                    text: 'tip: separate arguments with spaces'
+                }
+            }
+        });
     }
 
     if (!cooldowns.has(command.name)) {
