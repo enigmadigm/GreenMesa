@@ -13,16 +13,13 @@ module.exports = {
             data.push('**Here\'s a list of all my commands:**');
             // for some reason if you don't separate \` ${command.name} \` with a space it flips out
             //                                         ^               ^
-            data.push(commands.map(command => {
-                if (['botkill', 'botreset', 'creload'].includes(command.name)) return;
-                return `\` ${command.name} \` - ${command.description}`;
-            }).join('\n'));
+            data.push(commands.filter(command => !['botkill', 'botreset', 'creload', 'config'].includes(command.name)).map(command => `\` ${command.name} \` - ${command.description}`).join('\n'));
             data.push(`\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`)
 
             return message.author.send(data, { split: true })
                 .then(() => {
                     if (message.channel.type === 'dm') return;
-                    message.reply('DMing you with commands.');
+                    message.channel.send('Sending help DM.');
                 })
                 .catch(error => {
                     console.error(`Could not send help DM to ${message.author.tag}.\n`, error);

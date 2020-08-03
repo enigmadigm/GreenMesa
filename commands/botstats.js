@@ -115,9 +115,6 @@ module.exports = {
                 ],
                 image: {
                     url: "attachment://usernumber-graph.png"
-                },
-                footer: {
-                    text: "Some Statistics"
                 }
             },
         }).catch(console.error)

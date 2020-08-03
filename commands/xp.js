@@ -10,8 +10,9 @@ module.exports = {
     async execute(client, message, args) {
         let target = message.mentions.users.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[1]) : false) || message.author;
 
-        let wec_gs = await getGlobalSetting("warn_embed_color");
         let rows = await getXP(message, target);
+        
+        let wec_gs = await getGlobalSetting("warn_embed_color");
         let warn_embed_color = parseInt(wec_gs[0].value);
         let iec_gs = await getGlobalSetting("info_embed_color");
 
