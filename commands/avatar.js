@@ -7,7 +7,7 @@ module.exports = {
     aliases: ['av'],
     usage: '[member]',
     async execute(client, message, args) {
-        let target = message.mentions.users.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]).user : false) || message.author;
+        let target = message.mentions.users.first() || ((message.guild && message.guild.available && args.length) ? message.guild.members.cache.get(args[0]).user : false) || message.author;
         let darkblue_embed_color = await getGlobalSetting('darkblue_embed_color').then(r => parseInt(r[0].value));
         message.channel.send({
             embed: {
