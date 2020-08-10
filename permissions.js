@@ -21,6 +21,7 @@ async function getPermLevel(member) {
     if (member.hasPermission('ADMINISTRATOR')) { // if a user has admin rights he's automatically a admin
         return permLevels.admin;
     }
+    return permLevels.member;
 }
 
 exports.permLevels = permLevels;

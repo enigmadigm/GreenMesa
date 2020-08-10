@@ -62,7 +62,6 @@ module.exports = {
                     embed: {
                         "title": triviaQuestion,
                         "description": triviaChoices.join('\n'),
-                        "timestamp": new Date(),
                         "footer": {
                             "text": 'Trivia | '+triviaCategory+' | Round '+round
                         }

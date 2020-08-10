@@ -17,23 +17,13 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Version",
-                        "value": apppkg.version,
-                        "inline": true
-                    },
-                    {
-                        "name": "Library",
-                        "value": "discord.js v12",
-                        "inline": true
-                    },
-                    {
                         "name": "Servers",
                         "value": client.guilds.cache.size,
                         "inline": true
                     },
                     {
-                        "name": "Users",
-                        "value": client.users.cache.size,
+                        "name": "Vote!",
+                        "value": "[d.b.l](https://top.gg/bot/560223567967551519)",
                         "inline": true
                     },
                     {
@@ -42,8 +32,18 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Website",
-                        "value": ":warning:",
+                        "name": "Library",
+                        "value": "discord.js v12",
+                        "inline": true
+                    },
+                    {
+                        "name": "Version",
+                        "value": apppkg.version,
+                        "inline": true
+                    },
+                    {
+                        "name": "Served",
+                        "value": "[AA](https://atlasatmos.net)",
                         "inline": true
                     },
                     {
@@ -51,11 +51,6 @@ module.exports = {
                         "value": "[github](https://github.com/enigmadigm/greenmesa) <:octocat_logo:663869429976662057>",
                         "inline": true
                     },
-                    {
-                        "name": "Served By",
-                        "value": "[AtlasAtmos.net](https://atlasatmos.net)",
-                        "inline": true
-                    }
                 ],
                 footer: {
                     icon_url: client.user.avatarURL,
