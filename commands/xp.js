@@ -6,6 +6,7 @@ const xlg = require("../xlogger");
 module.exports = {
     name: 'xp',
     description: 'Get the current amount of xp for the person requested or the author of the message. This system is explained elsewhere, but it should be known that xp is earned by sending messages of any kind globally (on any server GreenMesa is in).',
+    aliases: ['exp', 'orbs'],
     usage: "[other user]",
     guildOnly: true,
     async execute(client, message, args) {
@@ -16,6 +17,9 @@ module.exports = {
         let wec_gs = await getGlobalSetting("warn_embed_color");
         let warn_embed_color = parseInt(wec_gs[0].value);
         let iec_gs = await getGlobalSetting("info_embed_color");
+
+        let xpTypeGlobal = await getGlobalSetting('xp_type');
+
 
         if (!rows[0]) {
             return message.channel.send({
@@ -33,7 +37,7 @@ module.exports = {
 
         message.channel.send({
             embed: {
-                description: `${target} currently has ${rows[0].xp} xp at level ${rows[0].level}`,
+                description: `${target} currently has ${rows[0].xp} ${(xpTypeGlobal[0]) ? xpTypeGlobal[0].value : 'xp'} **⁛** level ${rows[0].level}`,
                 color: parseInt(iec_gs[0].value) || 0
             }
         });
