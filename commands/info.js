@@ -43,7 +43,7 @@ module.exports = {
                     },
                     {
                         "name": "Served",
-                        "value": "[AA](https://atlasatmos.net)",
+                        "value": "AA",
                         "inline": true
                     },
                     {
