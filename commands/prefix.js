@@ -1,0 +1,25 @@
+const xlg = require("../xlogger");
+const { permLevels, getPermLevel } = require("../permissions");
+const { setPrefix } = require('../dbmanager')
+
+module.exports = {
+    name: "prefix",
+    description: "set or view the prefix for your guild",
+    guildOnly: true,
+    async execute(client, message, args) {
+        if (!args.length) {
+            return message.channel.send({
+                embed: {
+                    title: `${client.prefix}`,
+                    description: `guild prefix`
+                }
+            }).catch(xlg.error);
+        }
+        var permLevel = await getPermLevel(message.member);
+        if (args.length > 0) {
+            if (permLevel < permLevels.admin) return message.channel.send("Insufficient permissions.").catch(xlg.error);
+            await setPrefix(message.guild.id, args.join(" "));
+            return message.channel.send("Prefix updated.");
+        }
+    }
+}

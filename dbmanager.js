@@ -58,16 +58,21 @@ async function updateXP(message) {
     let maxs = await getGlobalSetting("max_xp");
     function genXP() {
         if (!maxs[0]) return 28;
-        return Math.floor(Math.random() * maxs[0].value);
+        return Math.floor(Math.random() * 15 + (maxs[0].value - 15));
     }
     conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}${message.guild.id}'`, (err, rows) => {
         if (err) throw err;
         let sql;
         if (rows.length < 1) {
-            sql = `INSERT INTO dgmxp (id, userid, guildid, xp) VALUES ('${message.author.id}${message.guild.id}', '${message.author.id}', '${message.guild.id}', '${genXP()}')`;
+            sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild.id}', '${message.author.id}', '${message.guild.id}', '${genXP()}', '0')`;
         } else {
             let xp = rows[0].xp;
-            sql = `UPDATE dgmxp SET xp = ${xp + genXP()} WHERE id = '${message.author.id}${message.guild.id}'`
+            let gennedxp = genXP();
+            let levelNow = Math.floor(0.1 * Math.sqrt(xp));
+            if (rows[0].level !== levelNow) {
+                rows[0].level = levelNow;
+            }
+            sql = `UPDATE dgmxp SET xp = ${xp + gennedxp}, level = ${rows[0].level} WHERE id = '${message.author.id}${message.guild.id}'`
         }
         query(sql).catch((err) => {
             if (err.code === "ER_DUP_ENTRY") {
@@ -124,6 +129,24 @@ async function editGlobalSettings(selectortype = "", selectorvalue = "", updateu
 
 }
 
+async function getPrefix(guildid = "") {
+    let rows = await query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+    if (rows.length > 0) {
+        return rows[0].prefix;
+    } else {
+        return false;
+    }
+}
+
+async function setPrefix(guildid = "", newprefix = "") {
+    let rows = await query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+    if (rows.length > 0) {
+        rows = await query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlog.error);
+    } else {
+        rows = await query(`INSERT INTO \`prefix\`(\`guildid\`, \`prefix\`) VALUES ('${guildid}', '${newprefix}')`).catch(xlog.error);
+    }
+}
+
 exports.conn = conn;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
@@ -131,3 +154,5 @@ exports.updateBotStats = updateBotStats;
 exports.getGMStats = getGMStats;
 exports.getGlobalSetting = getGlobalSetting;
 exports.editGlobalSettings = editGlobalSettings;
+exports.getPrefix = getPrefix;
+exports.setPrefix = setPrefix;
