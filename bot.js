@@ -16,7 +16,7 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats, getGlobalSetting } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 
 
@@ -131,13 +131,26 @@ client.on("message", async message => {// This event will run on every single me
 
     if (message.author.bot) return;
 
-    const now = Date.now();
-    if (!xpcooldowns.has(message.author.id)) {
-        updateXP(message);
-        xpcooldowns.set(message.author.id, now);
-        setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
-    }
+    var dm = false; // checks if it's from a dm
+    if (!message.guild && !message.guild.available)
+        dm = true;
 
+    const now = Date.now();
+    if (message.guild) {
+        if (!xpcooldowns.has(message.author.id)) {
+            updateXP(message);
+            xpcooldowns.set(message.author.id, now);
+            setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
+        }
+    }
+    
+    let special_prefix = false;
+    if (!dm) {
+        special_prefix = await getPrefix(message.guild.id)
+    } else {
+        special_prefix = await getGlobalSetting('global_prefix');
+    }
+    client.prefix = special_prefix || config.prefix;
 
     if (message.mentions && message.mentions.has(client.user)) {
         if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
@@ -145,26 +158,21 @@ client.on("message", async message => {// This event will run on every single me
             let info_embed_color = parseInt(iec_gs[0].value);
             message.channel.send({
                 embed: {
-                    "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **gm**`,
+                    "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **${client.prefix}**`,
                     "color": info_embed_color
                 }
             })
             return;
         }
     }
-    var dm = false; // checks if it's from a dm
-    if (!message.guild)
-        dm = true;
 
-    // Setting up to react to an "I am" message
-    let containsiam = message.content.toLowerCase().startsWith("i'm ") || message.content.toLowerCase().startsWith("i am ") || message.content.toLowerCase().startsWith("im ");
     // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
-    if (message.content.toLowerCase().indexOf(config.prefix) !== 0 && !containsiam) return;
+    if (message.content.toLowerCase().indexOf(client.prefix) !== 0) return;
     // ▼▼▼▼▼ deprecated with the guild only command handler filter
     //if (message.channel.type === "dm") return;
 
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+    const args = message.content.slice(client.prefix.length).trim().split(/ +/g);
     const commandName = args.shift().toLowerCase()
 
     var permLevel = permLevels.member;
@@ -176,15 +184,6 @@ client.on("message", async message => {// This event will run on every single me
         permLevel = permLevels.botMaster;
     }
     
-    if (containsiam && args.length > 0) {
-        if (args.length == 1 && args[0] == "daddy") {
-            return message.channel.send("Hello *daddy* I'm little girl");
-        } else if (args.length <= 2 && args[0] == "baby" || args[0]+args[1] == "littlegirl") {
-            return message.channel.send(`Hello *${args.join(" ")}* I'm Daddy`);
-        }
-        return message.channel.send(`Hi **${args.join(" ")}**, I'm ${client.user.tag}`);
-    }
-
     const command = client.commands.get(commandName)
         || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
@@ -217,7 +216,7 @@ client.on("message", async message => {// This event will run on every single me
         let reply = `I need arguments to make that work, ${message.author}!`;
 
         if (command.usage) {
-            reply += `\nThe proper usage would be: \`${config.prefix}${command.name} ${command.usage}\``;
+            reply += `\nThe proper usage would be: \`${client.prefix}${command.name} ${command.usage}\``;
         }
 
         return message.channel.send({

@@ -12,7 +12,7 @@ module.exports = {
                 color: 3447003,
                 fields: [{
                         name: "Direct invite link",
-                        value: `[Here](https://discordapp.com/api/oauth2/authorize?client_id=560223567967551519&permissions=8&redirect_uri=https%3A%2F%2Fdigmsl.link%2Fgreenmesa&scope=bot&${guildIdParam}) is the direct invite link to get GM on your server, straight to Discord OAuth invite page.`
+                        value: `[Here](https://discordapp.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&redirect_uri=https%3A%2F%2Fdigmsl.link%2Fgreenmesa&scope=bot&${guildIdParam}) is the direct invite link to get GM on your server, straight to Discord OAuth invite page.`
                     },
                     {
                         name: "Step by step process",
