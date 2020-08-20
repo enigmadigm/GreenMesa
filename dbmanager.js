@@ -147,6 +147,13 @@ async function setPrefix(guildid = "", newprefix = "") {
     }
 }
 
+async function getTop10(guildid = "", memberid = "") {
+    let rows = await query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 12`);
+    let personalrows = await query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
+    if (!rows.length) return false;
+    return { rows: rows || [], personal: personalrows[0] || false };
+}
+
 exports.conn = conn;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
@@ -156,3 +163,4 @@ exports.getGlobalSetting = getGlobalSetting;
 exports.editGlobalSettings = editGlobalSettings;
 exports.getPrefix = getPrefix;
 exports.setPrefix = setPrefix;
+exports.getTop10 = getTop10;
