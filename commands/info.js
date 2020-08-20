@@ -10,6 +10,7 @@ module.exports = {
                 color: 3447003,
                 title: "GreenMesa Info",
                 url: "https://enigmadigm.com/apps/greenmesa/help",
+                description: 'this is a bot, it does stuff, stuff listed in help',
                 fields: [
                     {
                         "name": "Architect",
