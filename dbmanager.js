@@ -58,7 +58,7 @@ async function updateXP(message) {
     let maxs = await getGlobalSetting("max_xp");
     function genXP() {
         if (!maxs[0]) return 28;
-        return Math.floor(Math.random() * 15 + (maxs[0].value - 15));
+        return Math.floor(Math.random() * (maxs[0].value - 15) + 15);
     }
     conn.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}${message.guild.id}'`, (err, rows) => {
         if (err) throw err;
