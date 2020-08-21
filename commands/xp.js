@@ -5,7 +5,7 @@ const xlg = require("../xlogger");
 
 module.exports = {
     name: 'xp',
-    description: 'Get the current amount of xp for the person requested or the author of the message. This system is explained elsewhere, but it should be known that xp is earned by sending messages of any kind globally (on any server GreenMesa is in).',
+    description: 'Get the current amount of xp for the person requested or the author of the message. In short, earn xp by sending any kind of communication in any guild with this bot; to prevent spam, xp can only be generated once per minute.',
     aliases: ['exp', 'orbs'],
     usage: "[other user]",
     guildOnly: true,
@@ -27,7 +27,6 @@ module.exports = {
                     "title": "This user has no XP on record.",
                     "description": "To gain XP send messages in chat.",
                     "color": warn_embed_color || 16750899,
-                    "timestamp": new Date(),
                     "footer": {
                         "text": this.name
                     }

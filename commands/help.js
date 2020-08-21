@@ -36,7 +36,6 @@ module.exports = {
             title: `${prefix}${command.name}`,
             fields: [],
             color: 25600,
-            timestamp: new Date(),
             footer: {
                 text: `${message.author.tag} asked for command help`
             }
