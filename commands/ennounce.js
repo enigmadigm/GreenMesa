@@ -1,16 +1,11 @@
 module.exports = {
     name: 'ennounce',
-    description: 'Make the bot send a custom embed with optional color. Sender message is deleted, you must either have MENTION_EVERYONE permissions or have a role called Moderator or Admin. Colors can be sent in decimal, 0x hex format, or just type a common color with \\ before it as a shortcut.',
+    description: 'Make the bot send a custom embed with optional color. MENTION_EVERYONE perms required. The sender message is deleted. Embed color can be sent in decimal, 0x hex format, or just type a common color with \\ prefixing, all in the first argument.',
     args: true,
     usage: '[theme color decimal < 16777215] <content>',
     guildOnly: true,
     async execute(client, message, args) {
-        // Getting ID of Admin role for next part
-        let Admina = message.guild.roles.cache.find(x => x.name === "Admin");
-        // Added this for someone who has annnouncement perms but is not an admin
-        let AdminPerma = message.guild.roles.cache.find(x => x.name === "Moderator");
-        // Using ID of Admin role to find out if author has it
-        if (message.member.hasPermission("MENTION_EVERYONE", false, true, true) || (AdminPerma && message.member.roles.cache.has(AdminPerma.id)) || (Admina && message.member.roles.cache.has(Admina.id))) {
+        if (message.member.hasPermission("MENTION_EVERYONE", false, true, true)) {
             var sclength = 0;
             var seacolor;
             if (isNaN(args[0]) == false && args[0] <= 16777215) {
