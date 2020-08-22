@@ -19,7 +19,8 @@
         "moment": "^2.27.0",
         "mysql": "^2.18.1",
         "node-fetch": "^2.6.0",
-        "plotly": "^1.0.6"
+        "plotly": "^1.0.6",
+        "pm2": "^4.4.1"
     },
     "license": "ISC",
     "bugs": {

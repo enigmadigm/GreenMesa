@@ -7,6 +7,9 @@ process.on('uncaughtException', function (e) {
     xlg.log(e);
     process.exit(1);
 });
+/* https://pm2.keymetrics.io/docs/usage/signals-clean-restart/ while looking at pm2-api docs
+process.on('SIGINT', function () {
+});*/
 
 const fs = require('fs'); // Get the filesystem library that comes with nodejs
 const Discord = require("discord.js"); // Load discord.js library
