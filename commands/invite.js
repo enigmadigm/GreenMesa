@@ -1,6 +1,6 @@
 module.exports = {
     name: 'invite',
-    description: 'Get the bot invite link or instructions to get it on *your* server.',
+    description: 'invite link to bring the bot to your server',
     usage: "[id of a server you can invite on]",
     execute(client, message, args) {
         let guildIdParam = "";

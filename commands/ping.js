@@ -1,6 +1,6 @@
 module.exports = {
     name: 'ping',
-    description: 'The classic ping><pong',
+    description: 'the classic ping><pong',
     cooldown: 5,
     async execute(client, message) {
         // Calculates ping between sending a message and editing it, giving a nice round-trip latency.

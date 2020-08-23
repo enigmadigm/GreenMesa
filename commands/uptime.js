@@ -38,7 +38,10 @@ module.exports = {
         message.channel.send({
             embed: {
                 "title": "Bot Lifetime",
-                "description": 'How long the bot has been alive (doesn\'t mean healthy)',
+                "description": {
+                    short: 'see how long the bot has been alive',
+                    long: 'How long the bot has been alive (doesn\'t mean healthy)'
+                },
                 "fields": [
                     {
                         "name": "Elapsed Time",

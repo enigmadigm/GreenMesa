@@ -13,7 +13,7 @@ function getRandom(n) {
 
 module.exports = {
     name: 'rand',
-    description: 'Get a random number between 0 and 10 or a number you provide.',
+    description: 'provides a decently random number between 0 and 10 or the maximum',
     usage: "[maximum >= 0]",
     aliases: ['random', 'randomnumber', 'rn', 'rng'],
     execute(client, message, args) {

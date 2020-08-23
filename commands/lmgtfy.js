@@ -1,6 +1,6 @@
 module.exports = {
     name: 'lmgtfy',
-    description: 'Teach an idiot how to Google, or just get a nifty search link.',
+    description: 'teach an idiot how to google, or just get a search link',
     aliases:['search', 'google', 'iie'],
     usage:"[explainer: -e] [plain text link: -t] <search terms>",
     args: true,

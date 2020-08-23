@@ -4,7 +4,10 @@ const moment = require("moment");
 
 module.exports = {
     name: 'config',
-    description: 'edit config',
+    description: {
+        short: `edit config`,
+        long: `Using this command you can *currently* edit or view the bot's global settings that are configured in GlobalSetting DB. Settings that are fixed or configured elsewhere cannot be edited here.\n\nRun \`view\` as the first argument and then enter a setting name (must be exact) in order to view current setting and other details.`
+    },
     aliases: ['conf'],
     usage: "<view/edit> <name/value/selector/cat>",
     args: false,
