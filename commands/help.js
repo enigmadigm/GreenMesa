@@ -1,7 +1,7 @@
 const { prefix } = require('../auth.json');
 module.exports = {
     name: 'help',
-    description: 'Detailed help command that can show information about all or a specific command. Use with $info.',
+    description: 'gives a list of commands or command help',
     aliases:['commands'],
     usage:"[command name]",
     cooldown: 5,
@@ -10,11 +10,17 @@ module.exports = {
         const { commands } = message.client;
 
         if (!args.length) {
-            data.push('**Here\'s a list of all my commands:**');
+            data.push('**My unhidden commands:**');
             // for some reason if you don't separate \` ${command.name} \` with a space it flips out
             //                                         ^               ^
-            data.push(commands.filter(command => !['botkill', 'botreset', 'creload', 'config'].includes(command.name)).map(command => `\` ${command.name} \` - ${command.description}`).join('\n'));
-            data.push(`\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`)
+            data.push(commands.filter(command => !['botkill', 'botreset', 'creload', 'config'].includes(command.name)).map(command => {
+                let availableDesc = command.description || "*no description*";
+                if (command.description && (command.description.short || command.description.long)) {
+                    availableDesc = command.description.short || command.description.long;
+                }
+                return `\` ${command.name} \` - ${availableDesc}`
+            }).join('\n'));
+            data.push(`\n**You can send \`${prefix}help [command name]\` to get info on a specific command!**`)
 
             return message.author.send(data, { split: true })
                 .then(() => {
@@ -42,7 +48,11 @@ module.exports = {
         }
 
         if (command.description) {
-            embed.fields.push({ name: "Description", value: `${command.description}` });
+            if (command.description.short || command.description.long) {
+                embed.fields.push({ name: "Description", value: `${command.description.long || command.description.short}` });
+            } else {
+                embed.fields.push({ name: "Description", value: `${command.description}` });
+            }
         }
         if (command.aliases) {
             embed.fields.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
