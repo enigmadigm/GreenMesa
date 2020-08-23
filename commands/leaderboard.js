@@ -9,7 +9,7 @@ module.exports = {
     async execute(client, message) {
         let rowobj = await getTop10(message.guild.id, message.author.id);
         if (!rowobj.rows.length) return message.channel.send('No users');
-        let joinedLb = rowobj.rows.map((row, i) => `**${i + 1}** ⁞⁞ ${(message.guild && message.guild.available) ? message.guild.members.cache.get(row.userid) : 'user'} 💎 ${row.xp}`);
+        let joinedLb = rowobj.rows.map((row, i) => `**${i + 1}** ⁞⁞ ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} 💎 ${row.xp}`);
         message.channel.send({
             embed: {
                 author: {
