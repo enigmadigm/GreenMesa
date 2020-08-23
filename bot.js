@@ -135,7 +135,7 @@ client.on("message", async message => {// This event will run on every single me
     if (message.author.bot) return;
 
     var dm = false; // checks if it's from a dm
-    if (!message.guild && !message.guild.available)
+    if (!message.guild)
         dm = true;
 
     const now = Date.now();
