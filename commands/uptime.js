@@ -3,10 +3,14 @@
 
 const fs = require('fs');
 const config = require('../auth.json');
+const { getFriendlyUptime } = require('../utils/time');
 
 module.exports = {
     name: 'uptime',
-    description: 'Get information about bot lifetime and history',
+    description: {
+        short: 'see how long the bot has been alive',
+        long: 'How long the bot has been alive (doesn\'t mean healthy)'
+    },
     aliases: ['lifetime'],
     async execute(client, message) {
         if (!config.longLife || config.longLife < client.uptime) config.longLife = client.uptime;
@@ -14,38 +18,16 @@ module.exports = {
             if (err) return console.log(err);
         });
 
-        let allSeconds = (client.uptime / 1000);
-        let days = Math.floor(allSeconds / 86400);
-        let hours = Math.floor((allSeconds / 3600) - (days * 24));
-        allSeconds %= 3600;
-        let minutes = Math.floor(allSeconds / 60);
-        let seconds = Math.floor(allSeconds % 60);
-        let milliseconds = Math.floor(((allSeconds % 60) * 1000) - (seconds * 1000));
-        if (days < 10) {
-            days = "00" + days;
-        } else if (days < 100) {
-            days = "0" + days;
-        }
-        if (hours < 10) {
-            hours = "0" + hours;
-        }
-        if (minutes < 10) {
-            minutes = "0" + minutes;
-        }
-        if (seconds < 10) {
-            seconds = "0" + seconds;
-        }
+        let uptime = getFriendlyUptime(client.uptime, true);
+        
         message.channel.send({
             embed: {
                 "title": "Bot Lifetime",
-                "description": {
-                    short: 'see how long the bot has been alive',
-                    long: 'How long the bot has been alive (doesn\'t mean healthy)'
-                },
+                "description": 'How long the bot has been alive (doesn\'t mean healthy)',
                 "fields": [
                     {
                         "name": "Elapsed Time",
-                        "value": `\`${days} : ${hours} : ${minutes} ; ${seconds} . ${milliseconds}\ndays  hrs  min  sec  ms \``,
+                        "value": `\`${uptime.days} : ${uptime.hours} : ${uptime.minutes} ; ${uptime.seconds} . ${uptime.milliseconds}\ndays  hrs  min  sec  ms \``,
                         "inline": true
                     },
                     {

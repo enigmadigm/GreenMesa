@@ -10,6 +10,11 @@ process.on('uncaughtException', function (e) {
 /* https://pm2.keymetrics.io/docs/usage/signals-clean-restart/ while looking at pm2-api docs
 process.on('SIGINT', function () {
 });*/
+// catches unhandled promise rejections
+process.on('unhandledRejection', async (reason, promise) => {
+    var error = new Error('Unhandled Rejection. Reason: ' + reason);
+    console.error(error, "Promise:", promise);
+});
 
 const fs = require('fs'); // Get the filesystem library that comes with nodejs
 const Discord = require("discord.js"); // Load discord.js library
