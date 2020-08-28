@@ -10,6 +10,11 @@ process.on('uncaughtException', function (e) {
 /* https://pm2.keymetrics.io/docs/usage/signals-clean-restart/ while looking at pm2-api docs
 process.on('SIGINT', function () {
 });*/
+// catches unhandled promise rejections
+process.on('unhandledRejection', async (reason, promise) => {
+    var error = new Error('Unhandled Rejection. Reason: ' + reason);
+    console.error(error, "Promise:", promise);
+});
 
 const fs = require('fs'); // Get the filesystem library that comes with nodejs
 const Discord = require("discord.js"); // Load discord.js library
@@ -19,7 +24,7 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 
 
@@ -119,15 +124,22 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
 
 client.on("guildCreate", guild => {// This event triggers when the bot joins a guild.
     xlg.log(`New guild: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
-    client.channels.get('661614128204480522').send(`New guild: ${guild.name} (id: ${guild.id}) (members: ${guild.memberCount})`).catch(console.error);
+    client.channels.cache.get('661614128204480522').send(`New guild: ${guild.name} (id: ${guild.id}) (members: ${guild.memberCount})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
-client.on("guildDelete", guild => {// this event triggers when the bot is removed from a guild.
+client.on("guildDelete", async guild => {// this event triggers when the bot is removed from a guild.
     xlg.log(`Removed from: ${guild.name} (id: ${guild.id})`);
     client.channels.cache.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
+    let clearRes = await massClearXP(guild);
+    if (!clearRes) xlg.log(`Couldn't clear XP of guild: ${guild.id}`);
 });
+
+client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
+    let clearRes = await clearXP(member);
+    if (!clearRes) xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
+})
 
 // the actual command processing
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
@@ -135,7 +147,7 @@ client.on("message", async message => {// This event will run on every single me
     if (message.author.bot) return;
 
     var dm = false; // checks if it's from a dm
-    if (!message.guild && !message.guild.available)
+    if (!message.guild)
         dm = true;
 
     const now = Date.now();

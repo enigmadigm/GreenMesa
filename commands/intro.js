@@ -2,7 +2,7 @@ const config = require('../auth.json');
 
 module.exports = {
     name: 'intro',
-    description: '',
+    description: 'provides a *crappy* introduction to the bot',
     execute(client, message) {
         message.channel.send({
             embed: {

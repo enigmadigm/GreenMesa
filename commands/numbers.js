@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 
 module.exports = {
     name: 'numbers',
-    description: 'Get some neato number facts.',
+    description: 'provides some neato number facts',
     execute(client, message) {
         fetch('http://numbersapi.com/random?json=')
             .then(res => res.json())

@@ -3,7 +3,10 @@
 const fetch = require('node-fetch');
 module.exports = {
     name: 'tronalddump',
-    description: 'the dumbest things Donald Trump has ever said (again not curated by me). Get either a random quote, a list of existing tags, or a quote under one of the tags (case sensitive).',
+    description: {
+        short: 'the dumbest things Donald Trump has ever said (not curated by me)',
+        long: 'The dumbest things Donald Trump has ever said (not curated by me). Get either a random quote, a list of existing tags, or a quote under one of the tags (case sensitive).'
+    },
     aliases:['td', 'tronald'],
     usage: "[tags | existing tag]",
     cooldown: 2,

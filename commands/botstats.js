@@ -45,7 +45,10 @@ function generatePlot(rrows) {
 module.exports = {
     name: 'botstats',
     aliases: ['bs'],
-    description: 'Some statistics for this bot.',
+    description: {
+        short: 'statistics for this bot',
+        long: 'Some statistics for this bot.'
+    },
     usage: "[limiter]",
     async execute(client, message, args) {
         if (args.length && !isNaN(args[0]) && args[0] > 3 && args[0] < 1000) {

@@ -1,7 +1,7 @@
 module.exports = {
     name: 'creload',
     description: 'Reloads a command file',
-    aliases:['cmdreload'],
+    aliases:['cmdreload', 'cre'],
     usage:"<cmd to reload>",
     args: true,
     ownerOnly: true,
