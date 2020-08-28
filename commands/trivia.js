@@ -37,7 +37,7 @@ module.exports = {
         return fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986`)
             .then(res => res.json())
             .then(async j => {
-                if (j.response_code != 0 && j.response_code != "0") return message.channel.send('There\'s been an error, we will address this issue as soon as possible. Until we do, you will continue to receive this message upon execution.').then(console.log('Error in `trivia`'));
+                if (j.response_code != 0 && j.response_code != "0") return message.channel.send('There\'s been an error, we will address this issue as soon as possible. Until we do, you will continue to receive this message upon execution.').then(xlg.log('Error in `trivia`'));
                 //Setting up for message
                 var correctIndex = Math.floor(Math.random() * j.results[0].incorrect_answers.length);
 

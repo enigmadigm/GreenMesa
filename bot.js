@@ -24,7 +24,7 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 
 
@@ -128,11 +128,18 @@ client.on("guildCreate", guild => {// This event triggers when the bot joins a g
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
-client.on("guildDelete", guild => {// this event triggers when the bot is removed from a guild.
+client.on("guildDelete", async guild => {// this event triggers when the bot is removed from a guild.
     xlg.log(`Removed from: ${guild.name} (id: ${guild.id})`);
     client.channels.cache.get('661614128204480522').send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
+    let clearRes = await massClearXP(guild);
+    if (!clearRes) xlg.log(`Couldn't clear XP of guild: ${guild.id}`);
 });
+
+client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
+    let clearRes = await clearXP(member);
+    if (!clearRes) xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
+})
 
 // the actual command processing
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.

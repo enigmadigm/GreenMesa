@@ -32,7 +32,7 @@ const query = util.promisify(conn.query).bind(conn);
  * @param {string} name name of setting to retrieve
  */
 async function getGlobalSetting(name) {
-    let rows = await query(`SELECT * FROM globalsettings WHERE name = "${name}"`).catch(xlog.error);
+    let rows = await query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
     if (rows.length > 0) {
         return rows;
     } else {
@@ -125,8 +125,7 @@ async function editGlobalSettings(selectortype = "", selectorvalue = "", updateu
                 return reject("NONEXISTENT");
             }
         });
-    })
-
+    });
 }
 
 async function getPrefix(guildid = "") {
@@ -154,6 +153,44 @@ async function getTop10(guildid = "", memberid = "") {
     return { rows: rows || [], personal: personalrows[0] || false };
 }
 
+async function getGuildSetting(guild, name) {
+    let rows = await query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND name = '${name}'`).catch(xlog.error);
+    if (rows.length > 0) {
+        return rows;
+    } else {
+        return false;
+    }
+}
+
+async function editGuildSetting(guild, name, value) {
+    return new Promise((resolve, reject) => {
+        if (!value || !guild || !guild.id) return reject("MISSING_VALUES");
+        conn.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}' WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result) => {
+            if (err) throw err;
+            if (result.affectedRows > 0) {
+                return resolve(result);
+            } else {
+                conn.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES ('${guild.id}', '${name}', '${value}')`, (err, result) => {
+                    if (err) throw err;
+                    resolve(result);
+                });
+            }
+        });
+    });
+}
+
+async function clearXP(member) {
+    if (!member || !member.id || !member.guild || !member.guild.id) return false;
+    let result = await query(`DELETE FROM dgmxp WHERE guildid = '${member.guild.id}' AND userid = '${member.id}'`).catch(xlog.error);
+    return result.affectedRows || false;
+}
+
+async function massClearXP(guild) {
+    if (!guild) return false;
+    let result = await query(`DELETE FROM dgmxp WHERE guildid = '${guild.id}'`).catch(xlog.error);
+    return result.affectedRows || false;
+}
+
 exports.conn = conn;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
@@ -164,3 +201,7 @@ exports.editGlobalSettings = editGlobalSettings;
 exports.getPrefix = getPrefix;
 exports.setPrefix = setPrefix;
 exports.getTop10 = getTop10;
+exports.getGuildSetting = getGuildSetting;
+exports.editGuildSetting = editGuildSetting;
+exports.clearXP = clearXP;
+exports.massClearXP = massClearXP;
