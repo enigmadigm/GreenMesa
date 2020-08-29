@@ -154,7 +154,8 @@ async function getTop10(guildid = "", memberid = "") {
 }
 
 async function getGuildSetting(guild, name) {
-    let rows = await query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND name = '${name}'`).catch(xlog.error);
+    if (!guild || !guild.available) return false;
+    let rows = await query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND property = '${name}'`).catch(xlog.error);
     if (rows.length > 0) {
         return rows;
     } else {
@@ -162,9 +163,20 @@ async function getGuildSetting(guild, name) {
     }
 }
 
-async function editGuildSetting(guild, name, value) {
+async function editGuildSetting(guild, name = "", value = "", deleting = false) {
     return new Promise((resolve, reject) => {
-        if (!value || !guild || !guild.id) return reject("MISSING_VALUES");
+        if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
+        if (deleting) {
+            return conn.query(`DELETE FROM \`guildsettings\` WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result) => {
+                if (err) throw err;
+                if (result.affectedRows > 0) {
+                    return resolve(result);
+                } else {
+                    reject('NO_DELETION');
+                }
+            });
+        }
+        if (!value) return reject("MISSING_VALUES");
         conn.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}' WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result) => {
             if (err) throw err;
             if (result.affectedRows > 0) {

@@ -57,8 +57,7 @@ module.exports = {
                     embed: {
                         "description": "Use an AI to tell you all about your text.",
                         "color": 9860623,
-                        "fields": [
-                            {
+                        "fields": [{
                                 "name": "Sentiment Analysis",
                                 "value": "Sentiment is the overall emotion/tone of a message."
                             },
@@ -74,7 +73,7 @@ module.exports = {
                             },
                             {
                                 "name": "Emotion Analysis",
-                                "value": 'Detected emotion probability.\n'+emotions.join('\n')
+                                "value": 'Detected emotion probability.\n' + emotions.join('\n')
                             }
                         ],
                         "footer": {

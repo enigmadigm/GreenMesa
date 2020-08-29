@@ -26,7 +26,7 @@ const config = require("./auth.json"); // Loading app config file
 const client = new Discord.Client();
 var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
-
+const { logMember, logMessageDelete, logMessageBulkDelete } = require('./serverlogger')
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -136,10 +136,23 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
     if (!clearRes) xlg.log(`Couldn't clear XP of guild: ${guild.id}`);
 });
 
+client.on('guildMemberAdd', async member => {
+    logMember(member, true);
+});
+
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
     let clearRes = await clearXP(member);
     if (!clearRes) xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
-})
+    logMember(member, false);
+});
+
+client.on('messageDelete', message => {
+    logMessageDelete(message);
+});
+
+client.on('messageDeleteBulk', messageCollection => {
+    logMessageBulkDelete(messageCollection);
+});
 
 // the actual command processing
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.

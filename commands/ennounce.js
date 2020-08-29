@@ -1,9 +1,12 @@
+const { permLevels } = require('../permissions')
+
 module.exports = {
     name: 'ennounce',
     description: 'Make the bot send a custom embed with optional color. MENTION_EVERYONE perms required. The sender message is deleted. Embed color can be sent in decimal, 0x hex format, or just type a common color with \\ prefixing, all in the first argument.',
     args: true,
     usage: '[theme color decimal < 16777215] <content>',
     guildOnly: true,
+    permLevel: permLevels.mod,
     async execute(client, message, args) {
         if (message.member.hasPermission("MENTION_EVERYONE", false, true, true)) {
             var sclength = 0;
