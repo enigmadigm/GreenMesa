@@ -10,7 +10,7 @@ module.exports = {
         short: "manage mod features",
         long: 'Manage moderation features and server staff. This command is at the beginning of the development cycle.'
     },
-    aliases: ['m', 'management'],
+    aliases: ['mod'],
     usage: "<enable/disable/admins/moderators/case-logging>",
     args: false,
     permLevel: permLevels.admin,
