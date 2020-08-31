@@ -107,6 +107,7 @@ async function getGMStats(limiter = 24) {
  * @param {string} selectorvalue value of column for selection
  * @param {string} value setting value
  * @param {object} updatedby user
+ * @returns {object} result object with edit information, or string for promise rejection
  */
 async function editGlobalSettings(selectortype = "", selectorvalue = "", updateuser, value = "") {
     return new Promise((resolve, reject) => {

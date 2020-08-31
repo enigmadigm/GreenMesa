@@ -87,29 +87,43 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
     }, 3600000);
     //updateBotStats(client);
 
-    setInterval(() => {
+    setInterval(async () => {
         if (!config.longLife || config.longLife < client.uptime) config.longLife = client.uptime;
         fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
             if (err) return console.log(err);
         });
 
-        if (Math.floor(Math.random() * 10) <= 8) {
-            // Set the bot's presence (activity and status)
+        let game = await getGlobalSetting('game_name');
+        let gamePrefix = await getGlobalSetting('game_prefix');
+        let gameStatus = await getGlobalSetting('game_status');
+        if (game[0] && game[0].value !== 'default') {
             client.user.setPresence({
                 activity: {
-                    name: `${config.prefix} help | add me`,
+                    name: game[0].value || 'nothing',
+                    type: (gamePrefix[0] && gamePrefix[0].value) ? gamePrefix[0].value : 'WATCHING'
                 },
-                status: 'online'
-            })
+                status: (gameStatus[0] && gameStatus[0].value) ? gameStatus[0].value : 'idle'
+            }).catch(console.error);
         } else {
-            client.user.setPresence({
-                activity: {
-                    name: 'society crumble',
-                    type: 'WATCHING'
-                },
-                status: 'idle'
-            })
+            if (Math.floor(Math.random() * 10) <= 8) {
+                // Set the bot's presence (activity and status)
+                client.user.setPresence({
+                    activity: {
+                        name: `${config.prefix} help | ${config.prefix} invite`,
+                    },
+                    status: 'online'
+                })
+            } else {
+                client.user.setPresence({
+                    activity: {
+                        name: 'society crumble',
+                        type: 'WATCHING'
+                    },
+                    status: 'idle'
+                })
+            }
         }
+
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
 
