@@ -83,7 +83,7 @@ module.exports = {
                     },
                     {
                         name: 'Joined',
-                        value: moment(target.joinedAt).format('ddd dd/mm/yyyy HH:MM:ss'),
+                        value: moment(target.joinedAt).format('ddd mm/DD/yyyy HH:MM:SS'),
                         inline: true
                     },
                     {
