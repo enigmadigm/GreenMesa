@@ -20,7 +20,7 @@ module.exports = {
                  * Make sure you run this on a member, not a user!
                  * There are big differences between a user and a member
                  */
-                member.kick('Optional reason that will display in the audit logs').then(() => {
+                member.kick('kicked by bot').then(() => {
                     // We let the message author know we were able to kick the person
                     message.reply(`kicked ${user.tag}`);
                     //let logChannel = client.channels.get(config.logChannel.id) || member.guild.channels.find(ch => ch.name === config.logChannel.name);

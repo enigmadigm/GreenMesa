@@ -38,5 +38,12 @@ module.exports = {
                 }
             }
         });*/
+
+        /*
+        setTimeout(function () {
+            tomute.removeRole(muterole.id);
+            message.channel.send(`<@${tomute.id}> has been unmuted!`);
+        }, ms(mutetime));
+        */
     }
 }
