@@ -67,7 +67,7 @@ module.exports = {
                     },
                     {
                         "name": "Created",
-                        "value": `${moment(message.guild.createdAt).format('ddd dd/mm/yyyy HH:MM:ss')}\n(${age} days ago)`,
+                        "value": `${moment(message.guild.createdAt).format('ddd mm/DD/yyyy HH:MM:ss')}\n(${age} days ago)`,
                         "inline": true
                     }
                 ]
