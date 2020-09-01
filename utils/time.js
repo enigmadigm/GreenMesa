@@ -41,5 +41,32 @@ function getFriendlyUptime(msAlive = 0, leadingzero = false) {
     };
 }
 
+/**
+ * This function gets the rounded day difference between two timestamps using getDurationDiff.
+ *
+ * @export
+ * @param {number} timestamp0 first timestamp
+ * @param {number} timestamp1 second timestamp
+ * @returns
+ */
+function getDayDiff(timestamp0, timestamp1) {
+    return Math.round(getDurationDiff(timestamp0, timestamp1, timeUnits.day));
+}
+
+/**
+ * This function returns how many times a specified duration fits into a time frame.
+ *
+ * @param {number} timestamp0 first timestamp
+ * @param {number} timestamp1 second timestamp
+ * @param {(number | timeUnits)} duration duration of time
+ * @returns
+ */
+function getDurationDiff(timestamp0, timestamp1, duration) {
+    return Math.abs(timestamp0 - timestamp1) / duration;
+}
+
+
 exports.timeUnits = timeUnits;
 exports.getFriendlyUptime = getFriendlyUptime;
+exports.getDayDiff = getDayDiff;
+exports.getDurationDiff = getDurationDiff;
