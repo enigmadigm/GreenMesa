@@ -1,16 +1,15 @@
 const moment = require('moment');
 const { getGlobalSetting } = require("../dbmanager");
-const { getDayDiff } = require('../utils/time');
+//const { getDayDiff } = require('../utils/time');
 const xlg = require("../xlogger");
 
 module.exports = {
     name: 'serverinfo',
     aliases: ['server'],
     async execute(client, message) {
-        var date = new Date();
+        let createdAt = moment(message.guild.createdAt).utc();
         var memberCount = message.guild.memberCount;
         var botCount = message.guild.members.cache.filter(member => member.user.bot).size;
-        var age = getDayDiff(message.guild.createdTimestamp, date.getTime());
         message.channel.send({
             embed: {
                 "color": parseInt((await getGlobalSetting('info_embed_color'))[0].value),
@@ -67,7 +66,7 @@ module.exports = {
                     },
                     {
                         "name": "Created",
-                        "value": `${moment(message.guild.createdAt).format('ddd mm/DD/yyyy HH:MM:ss')}\n(${age} days ago)`,
+                        "value": `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
                         "inline": true
                     }
                 ]

@@ -41,7 +41,6 @@ module.exports = {
         let target = message.mentions.members.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.member;
         let rank = await getTop10(target.guild.id, target.id);
         let xp = await getXP(message, target.user);
-        let iec_gs = await getGlobalSetting("info_embed_color");
 
         var roles = '';
         var roleArray = target.roles.cache.array();
@@ -55,6 +54,8 @@ module.exports = {
             roles = 'no roles';
         }
 
+        let joinedAt = moment(target.joinedAt).utc();
+
         // get join rank of member
         var joinRank = getJoinRank(target.id, target.guild) + 1;
         if (joinRank == 1) {
@@ -65,7 +66,7 @@ module.exports = {
         
         message.channel.send({
             embed: {
-                color: target.roles.hoist ? target.roles.hoist.color : parseInt(iec_gs[0].value) || 0,
+                color: target.roles.hoist ? target.roles.hoist.color : parseInt((await getGlobalSetting('info_embed_color'))[0].value) || 0,
                 author: {
                     name: `Stats of ${target.user.tag} ${rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : ""}`,
                     icon_url: target.user.displayAvatarURL()
@@ -83,7 +84,7 @@ module.exports = {
                     },
                     {
                         name: 'Joined',
-                        value: moment(target.joinedAt).format('ddd mm/DD/yyyy HH:MM:SS'),
+                        value: `${joinedAt.format('ddd M/D/Y HH:mm:ss')}\n(${joinedAt.fromNow()})`,
                         inline: true
                     },
                     {
