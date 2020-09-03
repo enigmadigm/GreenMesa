@@ -60,7 +60,7 @@ module.exports = {
         if (command.usage) {
             embed.fields.push({ name: "Usage", value: `${prefix}${command.name} ${command.usage}` });
         }
-        embed.fields.push({ name: "Cooldown", value: `${command.cooldown || 3} second(s)` });
+        embed.fields.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)` });
 
         message.channel.send({ embed });
     }

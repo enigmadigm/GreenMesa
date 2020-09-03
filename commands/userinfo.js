@@ -37,6 +37,7 @@ function getPresenceEmoji(target) {
 module.exports = {
     name: 'userinfo',
     aliases: ['user', 'me'],
+    cooldown: 8,
     async execute(client, message, args) {
         let target = message.mentions.members.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.member;
         let rank = await getTop10(target.guild.id, target.id);

@@ -178,7 +178,7 @@ client.on("message", async message => {// This event will run on every single me
         dm = true;
 
     const now = Date.now();
-    if (message.guild) {
+    if (!dm) {
         if (!xpcooldowns.has(message.author.id)) {
             updateXP(message);
             xpcooldowns.set(message.author.id, now);
@@ -277,7 +277,7 @@ client.on("message", async message => {// This event will run on every single me
     }
 
     const timestamps = cooldowns.get(command.name);
-    const cooldownAmount = (command.cooldown || 3) * 1000;
+    const cooldownAmount = (command.cooldown || 2) * 1000;
 
     if (timestamps.has(message.author.id)) {
         const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
