@@ -133,21 +133,24 @@ async function updateLevelRole(member, level) {
                 availableRoles.push(r);
             }
         });
-        availableRoles.forEach(r => {
-            let rol = member.guild.roles.cache.find(ro => ro.name === r.name);
-            if (!rol) {
-                member.guild.roles.create({
-                    data: {
-                        name: r.name || `Level ${r.level}`,
-                        color: r.color || '#99AAB1',
-                        permissions: 0
-                    }
-                }).catch(xlog.error);
-            }
-            if (!member.roles.cache.find(ro => ro.name === r.name)) {
-                member.roles.add(rol, 'levelling up');
-            }
-        })
+        if (availableRoles) {
+            availableRoles.forEach(async r => {
+                let rol = member.guild.roles.cache.find(ro => ro.name === r.name);
+                if (!rol) {
+                    member.guild.roles.create({
+                        data: {
+                            name: r.name || `Level ${r.level}`,
+                            color: r.color || '#99AAB1',
+                            permissions: 0
+                        }
+                    }).catch(xlog.error);
+                    rol = member.guild.roles.cache.find(ro => ro.name === r.name);
+                }
+                if (rol && !member.roles.cache.find(ro => ro.name === r.name)) {
+                    member.roles.add(rol, 'levelling up').catch(console.error);
+                }
+            });
+        }
         return;
     } else {
         return false;

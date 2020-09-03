@@ -18,7 +18,7 @@ module.exports = {
                 },
                 description: joinedLb.join("\n"),
                 footer: {
-                    text: `Your rank: ${rowobj.personal.rank || "none"}`
+                    text: `${message.member.displayName}'s rank: ${rowobj.personal.rank || "none"}`
                 }
             }
         }).catch(xlg.error)
