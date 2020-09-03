@@ -30,15 +30,15 @@ module.exports = {
         
         // So we get our messages, and delete them. Simple enough, right?
         message.channel.messages.fetch( opts ).then(async messages => {
+            messages.set(message.id, message);
             if (targetMember) {
-                messages = messages.filter(m => m.author.id === targetMember.id).array().slice(0, deleteCount);
+                if (targetMember.lastMessageChannelID === message.channel.id) messages.set(targetMember.lastMessage.id, targetMember.lastMessage);
+                messages = messages.filter(m => m.author.id === targetMember.id || m.id === message.id).array().slice(0, deleteCount);
             }
             if (messages.length == 0) {
                 return message.channel.send(`Could not find any recent messages.`).then(message.delete());
             }
             
-            if (targetMember && targetMember.lastMessageChannelID === message.channel.id) messages.unshift(targetMember.lastMessage);
-            messages.unshift(message);
 
             message.channel.bulkDelete(messages)
                 .catch(e => {
