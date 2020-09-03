@@ -24,7 +24,7 @@ module.exports = {
         if (targetMember) {
             opts = {
                 limit: 100,
-                before: targetMember.lastMessageID
+                before: (targetMember.lastMessageChannelID === message.channel.id) ? targetMember.lastMessageID : message.id
             }
         }
         
@@ -34,11 +34,13 @@ module.exports = {
                 messages = messages.filter(m => m.author.id === targetMember.id).array().slice(0, deleteCount);
             }
             if (messages.length == 0) {
-                return message.channel.send(`Could not find any recent messages.`);
+                return message.channel.send(`Could not find any recent messages.`).then(message.delete());
             }
+            
+            if (targetMember && targetMember.lastMessageChannelID === message.channel.id) messages.unshift(targetMember.lastMessage);
+            messages.unshift(message);
 
             message.channel.bulkDelete(messages)
-                .then(message.delete())
                 .catch(e => {
                     console.log(e.stack);
                     message.reply(`couldn't delete messages because of: ${e}`);

@@ -1,5 +1,7 @@
 var { getGuildSetting, editGuildSetting } = require("./dbmanager");
 const { stringToChannel } = require('./utils/parsers');
+const Discord = require('discord.js')
+const moment = require('moment')
 
 async function getLogChannel(guild) {
     let logValue = await getGuildSetting(guild, 'server_log');
@@ -54,7 +56,19 @@ async function logMessageBulkDelete(messageCollection) {
     let logChannel = await getLogChannel(messageCollection.first().guild);
     if (!logChannel || logChannel.type !== 'text') return;
 
-    logChannel.send({
+    let humanLog = `**Deleted Messages from #${messageCollection.first().channel.name} (${messageCollection.first().channel.id}) in ${messageCollection.first().guild.name} (${messageCollection.first().guild.id})**`;
+    for (const message of messageCollection.array().reverse()) {
+        humanLog += `\r\n\r\n[${moment(message.createdAt).format()}] ${message.author.tag} (${message.id})`;
+        humanLog += ' : ' + message.content;
+        if (message.attachments.size) {
+            humanLog += '\n*Attachments:*';
+            humanLog += '\n*No cache found*'
+        }
+    }
+    let attachment = new Discord.MessageAttachment(Buffer.from(humanLog, 'utf-8'), 'DeletedMessages.txt');
+
+    let logMessage = await logChannel.send(attachment);
+    logMessage.edit({
         embed: {
             "author": {
                 "name": `${messageCollection.first().channel.name}`,
@@ -66,6 +80,10 @@ async function logMessageBulkDelete(messageCollection) {
                 {
                     name: 'Message Count',
                     value: `${messageCollection.array().length} messages deleted`
+                },
+                {
+                    name: 'Messages',
+                    value: `[view](https://txt.discord.website/?txt=${logChannel.id}/${logMessage.attachments.first().id}/DeletedMessages)`
                 }
             ]
         }

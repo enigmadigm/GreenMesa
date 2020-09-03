@@ -1,21 +1,21 @@
 const moment = require('moment');
 const { getGlobalSetting } = require("../dbmanager");
-const { getDayDiff } = require('../utils/time');
+//const { getDayDiff } = require('../utils/time');
 const xlg = require("../xlogger");
 
 module.exports = {
     name: 'serverinfo',
     aliases: ['server'],
+    cooldown: 8,
     async execute(client, message) {
-        var date = new Date();
+        let createdAt = moment(message.guild.createdAt).utc();
         var memberCount = message.guild.memberCount;
         var botCount = message.guild.members.cache.filter(member => member.user.bot).size;
-        var age = getDayDiff(message.guild.createdTimestamp, date.getTime());
         message.channel.send({
             embed: {
                 "color": parseInt((await getGlobalSetting('info_embed_color'))[0].value),
                 "footer": {
-                    "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region
+                    "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
                 },
                 "thumbnail": {
                     "url": message.guild.iconURL
@@ -31,33 +31,18 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Channel Categories",
-                        "value": message.guild.channels.cache.filter(x => x.type == 'category').size,
-                        "inline": true
-                    },
-                    {
-                        "name": "Text Channels",
-                        "value": message.guild.channels.cache.filter(x => x.type == 'text').size,
-                        "inline": true
-                    },
-                    {
-                        "name": "Voice Channels",
-                        "value": message.guild.channels.cache.filter(x => x.type == 'voice').size,
-                        "inline": true
-                    },
-                    {
                         "name": "Members",
-                        "value": `${memberCount}\n(${memberCount - botCount} humans)`,
-                        "inline": true
-                    },
-                    {
-                        "name": "Bots",
-                        "value": botCount,
+                        "value": `${memberCount}\n(${botCount} non-human)`,
                         "inline": true
                     },
                     {
                         "name": "Online",
                         "value": message.guild.members.cache.filter(member => member.presence.status == 'online').size,
+                        "inline": true
+                    },
+                    {
+                        "name": "Channels",
+                        "value": `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}\nText: ${message.guild.channels.cache.filter(x => x.type == 'text').size}\nVoice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`,
                         "inline": true
                     },
                     {
@@ -67,7 +52,7 @@ module.exports = {
                     },
                     {
                         "name": "Created",
-                        "value": `${moment(message.guild.createdAt).format('ddd mm/DD/yyyy HH:MM:ss')}\n(${age} days ago)`,
+                        "value": `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
                         "inline": true
                     }
                 ]
