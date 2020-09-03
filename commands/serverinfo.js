@@ -14,7 +14,7 @@ module.exports = {
             embed: {
                 "color": parseInt((await getGlobalSetting('info_embed_color'))[0].value),
                 "footer": {
-                    "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region
+                    "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
                 },
                 "thumbnail": {
                     "url": message.guild.iconURL
@@ -30,33 +30,18 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Channel Categories",
-                        "value": message.guild.channels.cache.filter(x => x.type == 'category').size,
-                        "inline": true
-                    },
-                    {
-                        "name": "Text Channels",
-                        "value": message.guild.channels.cache.filter(x => x.type == 'text').size,
-                        "inline": true
-                    },
-                    {
-                        "name": "Voice Channels",
-                        "value": message.guild.channels.cache.filter(x => x.type == 'voice').size,
-                        "inline": true
-                    },
-                    {
                         "name": "Members",
-                        "value": `${memberCount}\n(${memberCount - botCount} humans)`,
-                        "inline": true
-                    },
-                    {
-                        "name": "Bots",
-                        "value": botCount,
+                        "value": `${memberCount}\n(${botCount} non-human)`,
                         "inline": true
                     },
                     {
                         "name": "Online",
                         "value": message.guild.members.cache.filter(member => member.presence.status == 'online').size,
+                        "inline": true
+                    },
+                    {
+                        "name": "Channels",
+                        "value": `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}\nText: ${message.guild.channels.cache.filter(x => x.type == 'text').size}\nVoice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`,
                         "inline": true
                     },
                     {

@@ -55,6 +55,7 @@ module.exports = {
         }
 
         let joinedAt = moment(target.joinedAt).utc();
+        let createdAt = moment(target.user.createdTimestamp).utc();
 
         // get join rank of member
         var joinRank = getJoinRank(target.id, target.guild) + 1;
@@ -88,6 +89,11 @@ module.exports = {
                         inline: true
                     },
                     {
+                        name: 'Created',
+                        value: `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
+                        inline: true
+                    },
+                    {
                         name: 'Level (xp)',
                         value: xp[0] ? xp[0].level : 'none',
                         inline: true
@@ -101,7 +107,10 @@ module.exports = {
                         "name": `Roles [${roleCount}]`,
                         "value": roles
                     }
-                ]
+                ],
+                footer: {
+                    text: 'All dates in UTC'
+                }
             }
         })
     }
