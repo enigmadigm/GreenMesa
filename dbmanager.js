@@ -3,6 +3,43 @@ const { db_config } = require("./auth.json");
 const xlog = require("./xlogger");
 const util = require('util');
 var conn;
+const levelRoles = [
+    {
+        level: 70,
+        name: 'no-life',
+        color: '#9F2292'
+    },
+    {
+        level: 60,
+        name: 'Active x10⁹⁹',
+        color: '#943246'
+    },
+    {
+        level: 50,
+        name: 'Super Hyper Active Member',
+        color: '#3F62CC'
+    },
+    {
+        level: 40,
+        name: 'Hyper Active Member',
+        color: '#1F8B4B'
+    },
+    {
+        level: 25,
+        name: 'Very Active Member',
+        color: '#BA342A'
+    },
+    {
+        level: 10,
+        name: 'Active Member',
+        color: '#BB3DA8'
+    },
+    {
+        level: 1,
+        name: 'noob level',
+        color: '#99AAB1'
+    }
+]
 
 function handleDisconnect() {
     conn = mysql.createConnection(db_config);
@@ -73,6 +110,8 @@ async function updateXP(message) {
                 rows[0].level = levelNow;
             }
             sql = `UPDATE dgmxp SET xp = ${xp + gennedxp}, level = ${rows[0].level} WHERE id = '${message.author.id}${message.guild.id}'`
+
+            updateLevelRole(message.member, levelNow);
         }
         query(sql).catch((err) => {
             if (err.code === "ER_DUP_ENTRY") {
@@ -82,6 +121,37 @@ async function updateXP(message) {
             }
         });
     });
+}
+
+async function updateLevelRole(member, level) {
+    let levelsEnabled = await getGuildSetting(member.guild, 'xp_levels');
+    levelsEnabled = levelsEnabled[0] ? levelsEnabled[0].value : false;
+    if (levelsEnabled) {
+        let availableRoles = [];
+        levelRoles.forEach((r) => {
+            if (r.level <= level) {
+                availableRoles.push(r);
+            }
+        });
+        availableRoles.forEach(r => {
+            let rol = member.guild.roles.cache.find(ro => ro.name === r.name);
+            if (!rol) {
+                member.guild.roles.create({
+                    data: {
+                        name: r.name || `Level ${r.level}`,
+                        color: r.color || '#99AAB1',
+                        permissions: 0
+                    }
+                }).catch(xlog.error);
+            }
+            if (!member.roles.cache.find(ro => ro.name === r.name)) {
+                member.roles.add(rol, 'levelling up');
+            }
+        })
+        return;
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -218,3 +288,5 @@ exports.getGuildSetting = getGuildSetting;
 exports.editGuildSetting = editGuildSetting;
 exports.clearXP = clearXP;
 exports.massClearXP = massClearXP;
+exports.levelRoles = levelRoles;
+exports.updateLevelRole = updateLevelRole;

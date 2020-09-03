@@ -3,6 +3,7 @@ const xlg = require("../xlogger");
 //const moment = require("moment");
 const { permLevels } = require('../permissions');
 const { stringToChannel } = require('../utils/parsers');
+const { levelRoles } = require('../dbmanager');
 
 module.exports = {
     name: "moderation",
@@ -31,7 +32,7 @@ module.exports = {
             return message.channel.send({
                 embed: {
                     title: "Server Moderation Management",
-                    description: "This command acts as the portal to configure the bot's moderation and management features to your needs. It also allows you to set up the server staff.",
+                    description: "This command acts as the portal to configure the bot's moderation and management features to your needs. It allows you to set up the server:\nStaff (in development)\nLevel roles (in development)\nServer-log (in development)\nModeration on/off (in development)",
                     color: info_embed_color || 0,
                     footer: {
                         text: "Server Management"
@@ -95,6 +96,15 @@ module.exports = {
                             return message.channel.send('Levels are already **enabled**.');
                         }
                         let editResult = await editGuildSetting(message.guild, 'xp_levels', 'enabled');
+                        levelRoles.forEach(r => {
+                            message.guild.roles.create({
+                                data: {
+                                    name: r.name || `Level ${r.level}`,
+                                    color: r.color || '#99AAB1',
+                                    permissions: 0
+                                }
+                            }).catch(xlg.error);
+                        })
                         if (editResult.affectedRows == 1) {
                             message.channel.send('Levelling **enabled**!').catch(console.error);
                         } else {
@@ -112,6 +122,17 @@ module.exports = {
                         } else {
                             message.channel.send('Failed to disable levelling.').catch(console.error);
                         }
+                        break;
+                    }
+                    case 'list': {
+                        if (!levellingEnabled[0] || levellingEnabled[0].value === 'disabled') {
+                            return message.channel.send(`Levelling is disabled. Enable with \`mod levels enable\`.`);
+                        }
+                        let joinedLevels = levelRoles.map(lvl => `**${lvl.level}**: ${lvl.name}`);
+                        message.channel.send(`Here is each level and it's role name:\n${joinedLevels.join("\n")}`);
+                        break;
+                    }
+                    case 'set': {
                         break;
                     }
                     default:
