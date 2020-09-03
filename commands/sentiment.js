@@ -18,7 +18,7 @@ module.exports = {
         short: 'get the sentiment of provided text or a message',
         long: 'Get the analyzed sentiment of a message using machine learning. More features may come (besides sentiment analysis), and allowing URLs to be entered for HTML processing'
     },
-    aliases:['sm','emotion'],
+    aliases:['sm', 'emotion', 'saltiness'],
     usage:"<message id to process / text content to process>",
     args:true,
     cooldown: 5,
