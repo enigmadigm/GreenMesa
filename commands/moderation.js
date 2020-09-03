@@ -87,12 +87,12 @@ module.exports = {
                 argIndex++;
                 let levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
                 if (!args[argIndex]) {
-                    message.channel.send(`XP levelling is currently ${(levellingEnabled[0].value === 'enabled') ? 'enabled' : 'disabled'}.${(levellingEnabled[0].value === 'disabled') ? ' Enable by appending `enable` to the command.' : ' Disable by appending `disable` to the command.'}`).catch(xlg.error);
+                    message.channel.send(`XP levelling is currently ${(levellingEnabled[0] && levellingEnabled[0].value === 'enabled') ? 'enabled' : 'disabled'}.${(!levellingEnabled || levellingEnabled[0].value === 'disabled') ? ' Enable by appending `enable` to the command.' : ' Disable by appending `disable` to the command.'}`).catch(xlg.error);
                     return false;
                 }
                 switch (args[argIndex]) {
                     case 'enable': {
-                        if (levellingEnabled[0].value === 'enabled') {
+                        if (levellingEnabled[0] && levellingEnabled[0].value === 'enabled') {
                             return message.channel.send('Levels are already **enabled**.');
                         }
                         let editResult = await editGuildSetting(message.guild, 'xp_levels', 'enabled');
@@ -113,7 +113,7 @@ module.exports = {
                         break;
                     }
                     case 'disable': {
-                        if (levellingEnabled[0].value === 'disabled') {
+                        if (!levellingEnabled && levellingEnabled[0].value === 'disabled') {
                             return message.channel.send('Levels are already **disabled**.').catch(console.error);
                         }
                         let editResult = await editGuildSetting(message.guild, 'xp_levels', 'disabled');
@@ -125,7 +125,7 @@ module.exports = {
                         break;
                     }
                     case 'list': {
-                        if (!levellingEnabled[0] || levellingEnabled[0].value === 'disabled') {
+                        if (!levellingEnabled || levellingEnabled[0].value === 'disabled') {
                             return message.channel.send(`Levelling is disabled. Enable with \`mod levels enable\`.`);
                         }
                         let joinedLevels = levelRoles.map(lvl => `**${lvl.level}**: ${lvl.name}`);
