@@ -10,7 +10,7 @@ module.exports = {
         const { commands } = message.client;
 
         if (!args.length) {
-            data.push('**My unhidden commands:**');
+            data.push(`**My unhidden commands: (${commands.array().length})**`);
             // for some reason if you don't separate \` ${command.name} \` with a space it flips out
             //                                         ^               ^
             data.push(commands.filter(command => !['botkill', 'botreset', 'creload', 'config'].includes(command.name)).map(command => {

@@ -136,6 +136,11 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
     }
 });
 
+client.on("rateLimit", rateLimitInfo => {
+    console.log('ratelimited');
+    xlg.log(JSON.stringify(rateLimitInfo));
+})
+
 client.on("guildCreate", guild => {// This event triggers when the bot joins a guild.
     xlg.log(`New guild: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     client.channels.cache.get('661614128204480522').send(`New guild: ${guild.name} (id: ${guild.id}) (members: ${guild.memberCount})`).catch(console.error);
