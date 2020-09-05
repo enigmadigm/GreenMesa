@@ -35,6 +35,11 @@ const levelRoles = [
         color: '#BB3DA8'
     },
     {
+        level: 5,
+        name: 'prob not a bot level',
+        color: '#c364ff'
+    },
+    {
         level: 1,
         name: 'noob level',
         color: '#99AAB1'
@@ -124,37 +129,64 @@ async function updateXP(message) {
 }
 
 async function updateLevelRole(member, level) {
+    if (!member || !member.guild || !member.guild.id || !level) return;
     let levelsEnabled = await getGuildSetting(member.guild, 'xp_levels');
     levelsEnabled = levelsEnabled[0] ? levelsEnabled[0].value : false;
-    if (levelsEnabled) {
+    if (levelsEnabled === "enabled") {
+        let levelRows = await checkForLevelRoles(member.guild);
         let availableRoles = [];
-        levelRoles.forEach((r) => {
+        for (let i = 0; i < levelRows.length; i++) {
+            const r = levelRows[i];
             if (r.level <= level) {
-                availableRoles.push(r);
+                availableRoles.push(member.guild.roles.cache.find(ro => ro.id === r.roleid) || null);
             }
-        });
-        if (availableRoles) {
-            availableRoles.forEach(async r => {
-                let rol = member.guild.roles.cache.find(ro => ro.name === r.name);
-                if (!rol) {
-                    member.guild.roles.create({
-                        data: {
-                            name: r.name || `Level ${r.level}`,
-                            color: r.color || '#99AAB1',
-                            permissions: 0
-                        }
-                    }).catch(xlog.error);
-                    rol = member.guild.roles.cache.find(ro => ro.name === r.name);
+        }
+        if (availableRoles && availableRoles.length > 0) {
+            for (let i = 0; i < availableRoles.length; i++) {
+                const r = availableRoles[i];
+                if (r) {
+                    if (member.roles.cache.find(ro => ro.id === r.id)) {
+                        r.setPosition(availableRoles.length - i)
+                            .catch(console.error);
+                    } else {
+                        member.roles.add(r, 'levelling up').catch(console.error);
+                    }
                 }
-                if (rol && !member.roles.cache.find(ro => ro.name === r.name)) {
-                    member.roles.add(rol, 'levelling up').catch(console.error);
-                }
-            });
+                
+            }
         }
         return;
     } else {
         return false;
     }
+}
+
+async function checkForLevelRoles(guild) {
+    if (!guild) return;
+    let levelRows = await query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
+    if (!levelRows || !levelRows.length) {
+        for (const ro of levelRoles) {
+            let roleToAdd = await guild.roles.create({
+                data: {
+                    name: ro.name || `Level ${ro.level}`,
+                    color: ro.color || '#99AAB1',
+                    permissions: 0,
+                    position: 1
+                }
+            }).catch(console.error);
+            await query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + roleToAdd.id}', '${guild.id}', '${roleToAdd.id}', ${ro.level})`);
+        }
+        levelRows = await query(`SELECT * FROM levelroles WHERE guildid = ${guild.id} ORDER BY level DESC`);
+    } else {
+        for (let i = 0; i < levelRows.length; i++) {
+            const dbro = levelRows[i];
+            if (!guild.roles.cache.find(ro => ro.id === dbro.roleid)) {
+                await query(`DELETE FROM levelroles WHERE roleid = '${dbro.roleid}'`).catch(e => console.log(e.stack))
+                levelRows.splice(i, 1);
+            }
+        }
+    }
+    return levelRows;
 }
 
 /**
@@ -220,6 +252,11 @@ async function setPrefix(guildid = "", newprefix = "") {
     }
 }
 
+/**
+ * Gets the top 10 members by xp of a guild plus the ranking of the provided member.
+ * @param {string} guildid id of guild to look up
+ * @param {string} memberid id of member in guild to look up
+ */
 async function getTop10(guildid = "", memberid = "") {
     let rows = await query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 12`);
     let personalrows = await query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
@@ -227,6 +264,11 @@ async function getTop10(guildid = "", memberid = "") {
     return { rows: rows || [], personal: personalrows[0] || false };
 }
 
+/**
+ * Gets the value of a discord guild setting, if it exists.
+ * @param {object} guild guild object
+ * @param {string} name property name
+ */
 async function getGuildSetting(guild, name) {
     if (!guild || !guild.available) return false;
     let rows = await query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND property = '${name}'`).catch(xlog.error);
@@ -237,6 +279,13 @@ async function getGuildSetting(guild, name) {
     }
 }
 
+/**
+ * Edits or deletes a setting for an individual Discord Guild.
+ * @param {object} guild guild object to edit the settings for
+ * @param {string} name property name of the setting
+ * @param {string} value value to set for the property
+ * @param {boolean} deleting whether to delete the setting
+ */
 async function editGuildSetting(guild, name = "", value = "", deleting = false) {
     return new Promise((resolve, reject) => {
         if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
@@ -265,16 +314,53 @@ async function editGuildSetting(guild, name = "", value = "", deleting = false) 
     });
 }
 
+/**
+ * Deletes the xp entry for a member of a guild.
+ * @param {object} member guild member to delete the xp for
+ */
 async function clearXP(member) {
     if (!member || !member.id || !member.guild || !member.guild.id) return false;
     let result = await query(`DELETE FROM dgmxp WHERE guildid = '${member.guild.id}' AND userid = '${member.id}'`).catch(xlog.error);
     return result.affectedRows || false;
 }
 
+/**
+ * Deletes all xp entries for a guild.
+ * @param {object} guild guild to delete the xp from
+ */
 async function massClearXP(guild) {
     if (!guild) return false;
     let result = await query(`DELETE FROM dgmxp WHERE guildid = '${guild.id}'`).catch(xlog.error);
     return result.affectedRows || false;
+}
+
+async function setLevelRole(level, guild, role, deleting = false) {
+    if (!guild || !guild.id) return false;
+    let result;
+    if (role && deleting) {
+        if (!role.id) return false;
+        result = await query(`DELETE FROM levelroles WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
+        return result.affectedRows || false;
+    }
+    if (level && role) {
+        if (isNaN(level) || !role.id) return false;
+        result = await query(`UPDATE levelroles SET level = ${level} WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
+        if (!result) return false;
+        if (result.affectedRows === 0) {
+            //guild.roles.create()
+            result = await query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + role.id}', '${guild.id}', '${role.id}', ${level})`)
+        }
+        return result.affectedRows;
+    }
+    if (role) {
+        if (!role.id) return false;
+        result = await query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
+        if (!result.length) return false;
+        return result;
+    }
+    result = await query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
+    if (!result[0]) return false;
+    return result;
 }
 
 exports.conn = conn;
@@ -293,3 +379,5 @@ exports.clearXP = clearXP;
 exports.massClearXP = massClearXP;
 exports.levelRoles = levelRoles;
 exports.updateLevelRole = updateLevelRole;
+exports.checkForLevelRoles = checkForLevelRoles;
+exports.setLevelRole = setLevelRole;
