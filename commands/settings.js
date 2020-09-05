@@ -173,8 +173,8 @@ module.exports = {
                         let role = stringToRole(message.guild, args[argIndex]);
                         if (!role) return message.channel.send('Please send a valid role.');
                         argIndex++;
-                        let newlevel = parseInt(args[argIndex]);
-                        if (!newlevel || isNaN(newlevel)) return message.channel.send('Please send a valid level.');
+                        let newlevel = (args[argIndex] && args[argIndex].length < 6) ? parseInt(args[argIndex]) : undefined;
+                        if (!newlevel || isNaN(newlevel) || newlevel > 1000) return message.channel.send('Please send a valid level < 1001.');
                         let result = await setLevelRole(newlevel, message.guild, role);
                         if (!result || result !== 1) {
                             xlg.log('UNABLE to REGISTER role');
