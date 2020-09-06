@@ -1,5 +1,5 @@
 const xlg = require("../xlogger");
-const { getTop10 } = require('../dbmanager');
+const { getTop10, getGlobalSetting } = require('../dbmanager');
 
 module.exports = {
     name: "leaderboard",
@@ -9,7 +9,8 @@ module.exports = {
     async execute(client, message) {
         let rowobj = await getTop10(message.guild.id, message.author.id);
         if (!rowobj.rows.length) return message.channel.send('No users');
-        let joinedLb = rowobj.rows.map((row, i) => `**${i + 1}** ⁞⁞ ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} 💎 ${row.xp}`);
+        let xptype = (await getGlobalSetting('xp_type'))[0].value;
+        let joinedLb = rowobj.rows.map((row, i) => `**${i + 1}** ⫸ ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
         message.channel.send({
             embed: {
                 author: {
@@ -18,7 +19,7 @@ module.exports = {
                 },
                 description: joinedLb.join("\n"),
                 footer: {
-                    text: `${message.member.displayName}'s rank: ${rowobj.personal.rank || "none"}`
+                    text: (rowobj.personal.rank > 10) ? `${message.member.displayName}'s rank: ${rowobj.personal.rank || "none"}` : `top 10 for THIS server`
                 }
             }
         }).catch(xlg.error)
