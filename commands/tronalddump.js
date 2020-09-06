@@ -33,7 +33,7 @@ module.exports = {
                             "color": Math.floor(Math.random() * 16777215),
                             "timestamp": j.appeared_at,
                             "footer": {
-                                "text": j.tags[0] + " | " + j.quote_id
+                                "text": "Tronald Dump: " + j.tags[0] + " | " + j.quote_id
                             }
                         }
                     });
@@ -51,7 +51,7 @@ module.exports = {
                             "color": Math.floor(Math.random() * 16777215),
                             "timestamp": j.appeared_at,
                             "footer": {
-                                "text": j.tags[0] + " | " + j.quote_id
+                                "text": "Tronald Dump: " + j.tags[0] + " | " + j.quote_id
                             }
                         }
                     });
@@ -87,7 +87,7 @@ module.exports = {
                                 "color": Math.floor(Math.random() * 16777215),
                                 "timestamp": j.appeared_at,
                                 "footer": {
-                                    "text": j.tags[0] + " | " + j.quote_id
+                                    "text": "Tronald Dump: " + j.tags[0] + " | " + j.quote_id
                                 }
                             }
                         }).catch(console.error);

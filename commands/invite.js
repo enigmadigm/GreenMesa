@@ -10,9 +10,11 @@ module.exports = {
         message.channel.send({
             embed: {
                 color: 3447003,
-                fields: [{
-                        name: "Direct invite link",
-                        value: `[Here is the direct invite link](https://discordapp.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&redirect_uri=https%3A%2F%2Fdigmsl.link%2Fgreenmesa&scope=bot&${guildIdParam}) to get GM on your server.\n**IMPORTANT:** When added, to make sure all commands (like management) work, please confirm that the bot's role is above every role it should be able to manage, like @everyone.`
+                description: `[Direct link to get ~~GM~~ Stratum on your server.](https://discordapp.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&redirect_uri=https%3A%2F%2Fdigmsl.link%2Fgreenmesa&scope=bot&${guildIdParam})`,
+                fields: [
+                    {
+                        name: `\u200b`,
+                        value: `**IMPORTANT:** When added, to make sure all commands (like management) work, please confirm that the bot's role is above every role it should be able to manage, like @everyone.`
                     },
                     {
                         name: "Step by step process",

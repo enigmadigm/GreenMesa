@@ -1,0 +1,6314 @@
+[
+    {
+        "acronym": "?",
+        "description": "I have a question"
+    },
+    {
+        "acronym": "?",
+        "description": "I don't understand what you mean"
+    },
+    {
+        "acronym": "?4U",
+        "description": "I have a question for you"
+    },
+    {
+        "acronym": ";S",
+        "description": "Gentle warning, like \"Hmm? What did you say?\""
+    },
+    {
+        "acronym": "^^",
+        "description": "Meaning \"read line\" or \"read message\" above"
+    },
+    {
+        "acronym": "<3",
+        "description": "Meaning \"sideways heart\" (love, friendship)"
+    },
+    {
+        "acronym": "<3",
+        "description": "Meaning \"broken heart\""
+    },
+    {
+        "acronym": "<33",
+        "description": "Meaning \"heart or love\" (more 3s is a bigger heart)"
+    },
+    {
+        "acronym": "@TEOTD",
+        "description": "At the end of the day"
+    },
+    {
+        "acronym": ".02",
+        "description": "My (or your) two cents worth"
+    },
+    {
+        "acronym": "1TG, 2TG",
+        "description": "Meaning number of items needed for win (online gaming)"
+    },
+    {
+        "acronym": "1UP",
+        "description": "Meaning extra life (online gaming)"
+    },
+    {
+        "acronym": "121",
+        "description": "One-to-one (private chat initiation)"
+    },
+    {
+        "acronym": "1337",
+        "description": "Leet, meaning 'elite'"
+    },
+    {
+        "acronym": "143",
+        "description": "I love you"
+    },
+    {
+        "acronym": "1432",
+        "description": "I love you too"
+    },
+    {
+        "acronym": "14AA41",
+        "description": "One for all, and all for one"
+    },
+    {
+        "acronym": "182",
+        "description": "I hate you"
+    },
+    {
+        "acronym": "19",
+        "description": "Zero hand (online gaming)"
+    },
+    {
+        "acronym": "10M",
+        "description": "Ten man (online gaming)"
+    },
+    {
+        "acronym": "10X",
+        "description": "Thanks"
+    },
+    {
+        "acronym": "10Q",
+        "description": "Thank you"
+    },
+    {
+        "acronym": "1CE",
+        "description": "Once"
+    },
+    {
+        "acronym": "1DR",
+        "description": "I wonder"
+    },
+    {
+        "acronym": "1NAM",
+        "description": "One in a million"
+    },
+    {
+        "acronym": "2",
+        "description": "Meaning \"to\" in SMS"
+    },
+    {
+        "acronym": "20",
+        "description": "Meaning \"location\""
+    },
+    {
+        "acronym": "2B",
+        "description": "To be"
+    },
+    {
+        "acronym": "2EZ",
+        "description": "Too easy"
+    },
+    {
+        "acronym": "2G2BT",
+        "description": "Too good to be true"
+    },
+    {
+        "acronym": "2M2H",
+        "description": "Too much too handle"
+    },
+    {
+        "acronym": "2MI",
+        "description": "Too much information"
+    },
+    {
+        "acronym": "2MOR",
+        "description": "Tomorrow"
+    },
+    {
+        "acronym": "2MORO",
+        "description": "Tomorrow"
+    },
+    {
+        "acronym": "2M2H",
+        "description": "Too much to handle"
+    },
+    {
+        "acronym": "2N8",
+        "description": "Tonight"
+    },
+    {
+        "acronym": "2NTE",
+        "description": "Tonight"
+    },
+    {
+        "acronym": "4",
+        "description": "Short for \"for\" in SMS"
+    },
+    {
+        "acronym": "411",
+        "description": "Meaning \"information\""
+    },
+    {
+        "acronym": "404",
+        "description": "I don't know"
+    },
+    {
+        "acronym": "411",
+        "description": "Meaning 'information'"
+    },
+    {
+        "acronym": "420",
+        "description": "Lets get high"
+    },
+    {
+        "acronym": "420",
+        "description": "Meaning \"Marijuana\""
+    },
+    {
+        "acronym": "459",
+        "description": "Means I love you (ILY is 459 using keypad numbers)"
+    },
+    {
+        "acronym": "4AO",
+        "description": "For adults only"
+    },
+    {
+        "acronym": "4COL",
+        "description": "For crying out loud"
+    },
+    {
+        "acronym": "4EAE",
+        "description": "Forever and ever"
+    },
+    {
+        "acronym": "4EVA",
+        "description": "Forever"
+    },
+    {
+        "acronym": "4NR",
+        "description": "Foreigner"
+    },
+    {
+        "acronym": "4SALE",
+        "description": "For sale"
+    },
+    {
+        "acronym": "^5",
+        "description": "High-five"
+    },
+    {
+        "acronym": "511",
+        "description": "Too much information (more than 411)"
+    },
+    {
+        "acronym": "555",
+        "description": "Sobbing, crying. (Mandarin Chinese txt msgs)"
+    },
+    {
+        "acronym": "55555",
+        "description": "Crying your eyes out (Mandarin Chinese txt msgs)"
+    },
+    {
+        "acronym": "55555",
+        "description": "Meaning Laughing (In Thai language the number 5 is pronounced 'ha'.)"
+    },
+    {
+        "acronym": "6Y",
+        "description": "Sexy"
+    },
+    {
+        "acronym": "7K",
+        "description": "Sick"
+    },
+    {
+        "acronym": "81",
+        "description": "Meaning Hells Angels (H=8th letter of alphabet, A=1st letter of alphabet)"
+    },
+    {
+        "acronym": "831",
+        "description": "I love you (8 letters, 3 words, 1 meaning)"
+    },
+    {
+        "acronym": "86",
+        "description": "Over"
+    },
+    {
+        "acronym": "88",
+        "description": "Bye-bye (Mandarin Chinese txt msgs)"
+    },
+    {
+        "acronym": "88",
+        "description": "Hugs and kisses"
+    },
+    {
+        "acronym": "9",
+        "description": "Parent is watching"
+    },
+    {
+        "acronym": "*s*",
+        "description": "Meaning \"smile\""
+    },
+    {
+        "acronym": "*w*",
+        "description": "Meaning \"wink\""
+    },
+    {
+        "acronym": "\"A\" Text Message & Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "A3",
+        "description": "Anytime, anywhere, anyplace"
+    },
+    {
+        "acronym": "AA",
+        "description": "Alcoholics Anonymous"
+    },
+    {
+        "acronym": "AA",
+        "description": "As above"
+    },
+    {
+        "acronym": "AA",
+        "description": "Ask about"
+    },
+    {
+        "acronym": "AAF",
+        "description": "As a matter of fact"
+    },
+    {
+        "acronym": "AAF",
+        "description": "As a friend"
+    },
+    {
+        "acronym": "AAK",
+        "description": "Asleep at keyboard"
+    },
+    {
+        "acronym": "AAK",
+        "description": "Alive and kicking"
+    },
+    {
+        "acronym": "AAMOF",
+        "description": "As a matter of fact"
+    },
+    {
+        "acronym": "AAMOI",
+        "description": "As a matter of interest"
+    },
+    {
+        "acronym": "AAP",
+        "description": "Always a pleasure"
+    },
+    {
+        "acronym": "AAR",
+        "description": "At any rate"
+    },
+    {
+        "acronym": "AAS",
+        "description": "Alive and smiling"
+    },
+    {
+        "acronym": "AASHTA",
+        "description": "As always, Sheldon has the answer (Bike mechanic Sheldon Brown)"
+    },
+    {
+        "acronym": "AATK",
+        "description": "Always at the keyboard"
+    },
+    {
+        "acronym": "AAYF",
+        "description": "As always, your friend"
+    },
+    {
+        "acronym": "ABBR",
+        "description": "Meaning abbreviation"
+    },
+    {
+        "acronym": "ABC",
+        "description": "Already been chewed"
+    },
+    {
+        "acronym": "ABD",
+        "description": "Already been done"
+    },
+    {
+        "acronym": "ABT",
+        "description": "About"
+    },
+    {
+        "acronym": "ABT2",
+        "description": "Meaning 'About to'"
+    },
+    {
+        "acronym": "ABTA",
+        "description": "Meaning Good-bye (signoff)"
+    },
+    {
+        "acronym": "ABU",
+        "description": "All bugged up"
+    },
+    {
+        "acronym": "AC",
+        "description": "Acceptable content"
+    },
+    {
+        "acronym": "ACC",
+        "description": "Anyone can come"
+    },
+    {
+        "acronym": "ACD",
+        "description": "ALT / CONTROL / DELETE"
+    },
+    {
+        "acronym": "ACDNT",
+        "description": "Accident (e-mail, Government)"
+    },
+    {
+        "acronym": "ACE",
+        "description": "Meaning marijuana cigarette"
+    },
+    {
+        "acronym": "ACK",
+        "description": "Acknowledge"
+    },
+    {
+        "acronym": "ACPT",
+        "description": "Accept (e-mail, Government)"
+    },
+    {
+        "acronym": "ACQSTN",
+        "description": "Acquisition (e-mail, Government)"
+    },
+    {
+        "acronym": "ADAD",
+        "description": "Another day, another dollar"
+    },
+    {
+        "acronym": "ADBB",
+        "description": "All done, bye-bye"
+    },
+    {
+        "acronym": "ADD",
+        "description": "Address"
+    },
+    {
+        "acronym": "ADDY",
+        "description": "Address"
+    },
+    {
+        "acronym": "ADIH",
+        "description": "Another day in hell"
+    },
+    {
+        "acronym": "ADIP",
+        "description": "Another day in paradise"
+    },
+    {
+        "acronym": "ADMIN",
+        "description": "Administrator"
+    },
+    {
+        "acronym": "ADMINR",
+        "description": "Administrator (Government)"
+    },
+    {
+        "acronym": "ADN",
+        "description": "Any day now"
+    },
+    {
+        "acronym": "ADR",
+        "description": "Address"
+    },
+    {
+        "acronym": "AE",
+        "description": "Area effect (online gaming)"
+    },
+    {
+        "acronym": "AEAP",
+        "description": "As early as possible"
+    },
+    {
+        "acronym": "AF",
+        "description": "April Fools"
+    },
+    {
+        "acronym": "AF",
+        "description": "As *Freak*"
+    },
+    {
+        "acronym": "AF",
+        "description": "Aggression factor (online gaming)"
+    },
+    {
+        "acronym": "AFC",
+        "description": "Away from computer"
+    },
+    {
+        "acronym": "AFAIAA",
+        "description": "As far as I am aware"
+    },
+    {
+        "acronym": "AFAIC",
+        "description": "As far as I am concerned"
+    },
+    {
+        "acronym": "AFAIK",
+        "description": "As far as I know"
+    },
+    {
+        "acronym": "AFAIUI",
+        "description": "As far as I understand it"
+    },
+    {
+        "acronym": "AFAP",
+        "description": "As far as possible"
+    },
+    {
+        "acronym": "AFFA",
+        "description": "Angels Forever, Forever Angels"
+    },
+    {
+        "acronym": "AFJ",
+        "description": "April Fool's joke"
+    },
+    {
+        "acronym": "AFK",
+        "description": "Away from keyboard"
+    },
+    {
+        "acronym": "AFZ",
+        "description": "Acronym Free Zone"
+    },
+    {
+        "acronym": "AFPOE",
+        "description": "A fresh pair of eyes"
+    },
+    {
+        "acronym": "AGI",
+        "description": "Meaning \"agility\" (online gaming)"
+    },
+    {
+        "acronym": "AH",
+        "description": "At home"
+    },
+    {
+        "acronym": "AIAMU",
+        "description": "And I am a money's uncle"
+    },
+    {
+        "acronym": "AIGHT",
+        "description": "Alright"
+    },
+    {
+        "acronym": "AIR",
+        "description": "As I remember"
+    },
+    {
+        "acronym": "AISB",
+        "description": "As it should be"
+    },
+    {
+        "acronym": "AISB",
+        "description": "As I said before"
+    },
+    {
+        "acronym": "AISI",
+        "description": "As I see it"
+    },
+    {
+        "acronym": "AITR",
+        "description": "Adult in the room"
+    },
+    {
+        "acronym": "AKA",
+        "description": "Also known as"
+    },
+    {
+        "acronym": "ALCON",
+        "description": "All concerned"
+    },
+    {
+        "acronym": "ALOL",
+        "description": "Actually laughing out loud"
+    },
+    {
+        "acronym": "AMA",
+        "description": "Ask me anything (Reddit)"
+    },
+    {
+        "acronym": "AMAP",
+        "description": "As much as possible"
+    },
+    {
+        "acronym": "AMBW",
+        "description": "All my best wishes"
+    },
+    {
+        "acronym": "AML",
+        "description": "All my love"
+    },
+    {
+        "acronym": "AMOF",
+        "description": "As a matter of fact"
+    },
+    {
+        "acronym": "A/N",
+        "description": "Author's note"
+    },
+    {
+        "acronym": "AO",
+        "description": "Anarchy Online (online gaming)"
+    },
+    {
+        "acronym": "AOC",
+        "description": "Available on cell"
+    },
+    {
+        "acronym": "AOE",
+        "description": "Area of effect (online game)"
+    },
+    {
+        "acronym": "AOM",
+        "description": "Age of majority"
+    },
+    {
+        "acronym": "AOM",
+        "description": "Age of Mythology (online gaming)"
+    },
+    {
+        "acronym": "AOTA",
+        "description": "All of the above"
+    },
+    {
+        "acronym": "AOYP",
+        "description": "Angel on your pillow"
+    },
+    {
+        "acronym": "APAC",
+        "description": "All praise and credit"
+    },
+    {
+        "acronym": "APP",
+        "description": "Application"
+    },
+    {
+        "acronym": "APP",
+        "description": "Appreciate"
+    },
+    {
+        "acronym": "AQAP",
+        "description": "As quick (or quiet) as possible"
+    },
+    {
+        "acronym": "ARC",
+        "description": "Archive (compressed files)"
+    },
+    {
+        "acronym": "ARE",
+        "description": "Acronym rich environment"
+    },
+    {
+        "acronym": "ARG",
+        "description": "Argument"
+    },
+    {
+        "acronym": "ASIG",
+        "description": "And so it goes"
+    },
+    {
+        "acronym": "ASAP",
+        "description": "As soon as possible"
+    },
+    {
+        "acronym": "A/S/L",
+        "description": "Age/sex/location"
+    },
+    {
+        "acronym": "ASL",
+        "description": "Age/sex/location"
+    },
+    {
+        "acronym": "ASLA",
+        "description": "Age/sex/location/availability"
+    },
+    {
+        "acronym": "AT",
+        "description": "At your terminal"
+    },
+    {
+        "acronym": "ATB",
+        "description": "All the best"
+    },
+    {
+        "acronym": "ATEOTD",
+        "description": "At the end of the day"
+    },
+    {
+        "acronym": "ATM",
+        "description": "At the moment"
+    },
+    {
+        "acronym": "ATSITS",
+        "description": "All the stars in the sky"
+    },
+    {
+        "acronym": "ATSL",
+        "description": "Along the same line (or lines)"
+    },
+    {
+        "acronym": "AWC",
+        "description": "After awhile crocodile"
+    },
+    {
+        "acronym": "AWESO",
+        "description": "Awesome"
+    },
+    {
+        "acronym": "AWOL",
+        "description": "Away without leaving"
+    },
+    {
+        "acronym": "AWOL",
+        "description": "Absent without leave"
+    },
+    {
+        "acronym": "AYDY",
+        "description": "Are you done yet?"
+    },
+    {
+        "acronym": "AYBABTU",
+        "description": "All your base are belong to us (online gaming)"
+    },
+    {
+        "acronym": "AYEC",
+        "description": "At your earliest convenience"
+    },
+    {
+        "acronym": "AYOR",
+        "description": "At your own risk"
+    },
+    {
+        "acronym": "AYSOS",
+        "description": "Are you stupid or something?"
+    },
+    {
+        "acronym": "AYS",
+        "description": "Are you serious?"
+    },
+    {
+        "acronym": "AYT",
+        "description": "Are you there?"
+    },
+    {
+        "acronym": "AYTMTB",
+        "description": "And you're telling me this because"
+    },
+    {
+        "acronym": "AYV",
+        "description": "Are you vertical?"
+    },
+    {
+        "acronym": "AYW",
+        "description": "As you were"
+    },
+    {
+        "acronym": "AYW",
+        "description": "As you want / As you wish"
+    },
+    {
+        "acronym": "AZN",
+        "description": "Asian"
+    },
+    {
+        "acronym": "\"B\" Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "B",
+        "description": "Back"
+    },
+    {
+        "acronym": "B",
+        "description": "Be"
+    },
+    {
+        "acronym": "B&",
+        "description": "Banned"
+    },
+    {
+        "acronym": "B2B",
+        "description": "Business-to-business"
+    },
+    {
+        "acronym": "B2C",
+        "description": "Business-to-consumer"
+    },
+    {
+        "acronym": "B2W",
+        "description": "Back to work"
+    },
+    {
+        "acronym": "B8",
+        "description": "Bait (person teased or joked with, or under-aged person/teen)"
+    },
+    {
+        "acronym": "B9",
+        "description": "Boss is watching"
+    },
+    {
+        "acronym": "B/F",
+        "description": "Boyfriend"
+    },
+    {
+        "acronym": "B/G",
+        "description": "Background (personal information request)"
+    },
+    {
+        "acronym": "B4",
+        "description": "Before"
+    },
+    {
+        "acronym": "B4N",
+        "description": "Bye for now"
+    },
+    {
+        "acronym": "BAG",
+        "description": "Busting a gut"
+    },
+    {
+        "acronym": "BA",
+        "description": "Bad *a*"
+    },
+    {
+        "acronym": "BAE",
+        "description": "Before anyone else"
+    },
+    {
+        "acronym": "BAE",
+        "description": "Meaning Babe or baby"
+    },
+    {
+        "acronym": "BAFO",
+        "description": "Best and final offer"
+    },
+    {
+        "acronym": "BAK",
+        "description": "Back at keyboard"
+    },
+    {
+        "acronym": "BAM",
+        "description": "Below average mentality"
+    },
+    {
+        "acronym": "BAMF",
+        "description": "Bad *a* mother *f*"
+    },
+    {
+        "acronym": "BAO",
+        "description": "Be aware of"
+    },
+    {
+        "acronym": "BAS",
+        "description": "Big 'butt' smile"
+    },
+    {
+        "acronym": "BASIC",
+        "description": "Meaning anything mainstream"
+    },
+    {
+        "acronym": "BASOR",
+        "description": "Breathing a sigh of relief"
+    },
+    {
+        "acronym": "BAU",
+        "description": "Business as usual"
+    },
+    {
+        "acronym": "BAY",
+        "description": "Back at ya"
+    },
+    {
+        "acronym": "BB",
+        "description": "Be back"
+    },
+    {
+        "acronym": "BB",
+        "description": "Big brother"
+    },
+    {
+        "acronym": "BB",
+        "description": "Bebi / Baby (Spanish SMS)"
+    },
+    {
+        "acronym": "BBC",
+        "description": "Big bad challenge"
+    },
+    {
+        "acronym": "BBIAB",
+        "description": "Be back in a bit"
+    },
+    {
+        "acronym": "BBIAF",
+        "description": "Be back in a few"
+    },
+    {
+        "acronym": "BBIAM",
+        "description": "Be back in a minute"
+    },
+    {
+        "acronym": "BBIAS",
+        "description": "Be back in a sec"
+    },
+    {
+        "acronym": "BBL",
+        "description": "Be back later"
+    },
+    {
+        "acronym": "BBN",
+        "description": "Bye, bye now"
+    },
+    {
+        "acronym": "BBQ",
+        "description": "Barbeque, \"Ownage\", shooting score/frag (online gaming)"
+    },
+    {
+        "acronym": "BBS",
+        "description": "Be back soon"
+    },
+    {
+        "acronym": "BBT",
+        "description": "Be back tomorrow"
+    },
+    {
+        "acronym": "BC",
+        "description": "Because"
+    },
+    {
+        "acronym": "B/C",
+        "description": "Because"
+    },
+    {
+        "acronym": "BC",
+        "description": "Be cool"
+    },
+    {
+        "acronym": "BCNU",
+        "description": "Be seeing you"
+    },
+    {
+        "acronym": "BCOS",
+        "description": "Because"
+    },
+    {
+        "acronym": "BCO",
+        "description": "Big crush on"
+    },
+    {
+        "acronym": "BCOY",
+        "description": "Big crush on you"
+    },
+    {
+        "acronym": "BD",
+        "description": "Big deal"
+    },
+    {
+        "acronym": "BDAY",
+        "description": "Birthday"
+    },
+    {
+        "acronym": "B-DAY",
+        "description": "Birthday"
+    },
+    {
+        "acronym": "BDN",
+        "description": "Big darn number"
+    },
+    {
+        "acronym": "BEG",
+        "description": "Big evil grin"
+    },
+    {
+        "acronym": "BELF",
+        "description": "Meaning \"Blood Elf\" (online gaming)"
+    },
+    {
+        "acronym": "BF",
+        "description": "Boyfriend"
+    },
+    {
+        "acronym": "BF",
+        "description": "Brain fart"
+    },
+    {
+        "acronym": "BFAW",
+        "description": "Best friend at work"
+    },
+    {
+        "acronym": "BF2",
+        "description": "Battlefield 2 (online gaming)"
+    },
+    {
+        "acronym": "BF",
+        "description": "Best friend"
+    },
+    {
+        "acronym": "BFF",
+        "description": "Best friends forever"
+    },
+    {
+        "acronym": "BFFL",
+        "description": "Best friends for life"
+    },
+    {
+        "acronym": "BFFLNMW",
+        "description": "Best friends for life, no matter what"
+    },
+    {
+        "acronym": "BFD",
+        "description": "Big freaking deal"
+    },
+    {
+        "acronym": "BFG",
+        "description": "Big  freaking grin"
+    },
+    {
+        "acronym": "BFFN",
+        "description": "Best friend for now"
+    },
+    {
+        "acronym": "BFN",
+        "description": "Bye for now"
+    },
+    {
+        "acronym": "BG",
+        "description": "Big grin"
+    },
+    {
+        "acronym": "BGWM",
+        "description": "Be gentle with me"
+    },
+    {
+        "acronym": "BHL8",
+        "description": "Be home late"
+    },
+    {
+        "acronym": "BIB",
+        "description": "Boss is back"
+    },
+    {
+        "acronym": "BIBO",
+        "description": "Beer in, beer out"
+    },
+    {
+        "acronym": "BIC",
+        "description": "Butt in chair"
+    },
+    {
+        "acronym": "BIF",
+        "description": "Before I forget"
+    },
+    {
+        "acronym": "BIH",
+        "description": "Burn in hell"
+    },
+    {
+        "acronym": "BIL",
+        "description": "Brother in law"
+    },
+    {
+        "acronym": "BIO",
+        "description": "Meaning \"I'm going to the bathroom\" (or) \"Bathroom break\""
+    },
+    {
+        "acronym": "BION",
+        "description": "Believe it or not"
+    },
+    {
+        "acronym": "BIOYA",
+        "description": "Blow it out your *a*"
+    },
+    {
+        "acronym": "BIOYN",
+        "description": "Blow it out your nose"
+    },
+    {
+        "acronym": "BIS",
+        "description": "Best in slot (online gaming)"
+    },
+    {
+        "acronym": "BISFLATM",
+        "description": "Boy, I sure feel like a turquoise monkey! (unverified)"
+    },
+    {
+        "acronym": "BITMT",
+        "description": "But in the meantime"
+    },
+    {
+        "acronym": "BL",
+        "description": "Belly laugh"
+    },
+    {
+        "acronym": "BLNT",
+        "description": "Better luck next time"
+    },
+    {
+        "acronym": "Bloke",
+        "description": "Meaning Man (Discord)"
+    },
+    {
+        "acronym": "BM",
+        "description": "Bite me"
+    },
+    {
+        "acronym": "BME",
+        "description": "Based on my experience"
+    },
+    {
+        "acronym": "BM&Y",
+        "description": "Between me and you"
+    },
+    {
+        "acronym": "BOB",
+        "description": "Back off *buddy*"
+    },
+    {
+        "acronym": "BN",
+        "description": "Bad news"
+    },
+    {
+        "acronym": "BOE",
+        "description": "Meaning \"bind on equip\" (online gaming)"
+    },
+    {
+        "acronym": "BOHICA",
+        "description": "Bend over here it comes again"
+    },
+    {
+        "acronym": "BOL",
+        "description": "Best of luck"
+    },
+    {
+        "acronym": "BOM",
+        "description": "*b* of mine"
+    },
+    {
+        "acronym": "BOLO",
+        "description": "Be on the look out"
+    },
+    {
+        "acronym": "BOOMS",
+        "description": "Bored out of my skull"
+    },
+    {
+        "acronym": "BOP",
+        "description": "Meaning \"bind on pickup\" (online gaming)"
+    },
+    {
+        "acronym": "BOSMKL",
+        "description": "Bending over smacking my knee laughing"
+    },
+    {
+        "acronym": "BOT",
+        "description": "Back on topic"
+    },
+    {
+        "acronym": "BOT",
+        "description": "Be on that"
+    },
+    {
+        "acronym": "BMS",
+        "description": "Broke my scale, used when rating someone"
+    },
+    {
+        "acronym": "BOYF",
+        "description": "Boyfriend"
+    },
+    {
+        "acronym": "BPLM",
+        "description": "Big person little mind"
+    },
+    {
+        "acronym": "BRB",
+        "description": "Be right back"
+    },
+    {
+        "acronym": "BR",
+        "description": "Best regards"
+    },
+    {
+        "acronym": "BRBB",
+        "description": "Be right back *b*"
+    },
+    {
+        "acronym": "BRNC",
+        "description": "Be right back, nature calls"
+    },
+    {
+        "acronym": "BRD",
+        "description": "Bored"
+    },
+    {
+        "acronym": "BRH",
+        "description": "Be right here"
+    },
+    {
+        "acronym": "BRT",
+        "description": "Be right there"
+    },
+    {
+        "acronym": "BSF",
+        "description": "But seriously folks"
+    },
+    {
+        "acronym": "BSOD",
+        "description": "Blue screen of death"
+    },
+    {
+        "acronym": "BSTS",
+        "description": "Better safe than sorry"
+    },
+    {
+        "acronym": "BT",
+        "description": "Bite this"
+    },
+    {
+        "acronym": "BT",
+        "description": "Between technologies"
+    },
+    {
+        "acronym": "BTA",
+        "description": "But then again"
+    },
+    {
+        "acronym": "BTDT",
+        "description": "Been there, done that"
+    },
+    {
+        "acronym": "BTW",
+        "description": "By the way"
+    },
+    {
+        "acronym": "BTYCL",
+        "description": "Meaning 'Bootycall'"
+    },
+    {
+        "acronym": "BUBU",
+        "description": "Slang term for the most beautiful of women"
+    },
+    {
+        "acronym": "BURN",
+        "description": "Used to reference an insult"
+    },
+    {
+        "acronym": "Buff",
+        "description": "Meaning \"changed and is now stronger\" (online gaming)"
+    },
+    {
+        "acronym": "BWL",
+        "description": "Bursting with laughter"
+    },
+    {
+        "acronym": "BYOB",
+        "description": "Bring your own beer"
+    },
+    {
+        "acronym": "BYOC",
+        "description": "Bring your own computer"
+    },
+    {
+        "acronym": "BYOD",
+        "description": "Bring your own device"
+    },
+    {
+        "acronym": "BYOH",
+        "description": "Bat you on (the) head"
+    },
+    {
+        "acronym": "BYOP",
+        "description": "Bring your own paint (paintball)"
+    },
+    {
+        "acronym": "BYTM",
+        "description": "Better you than me"
+    },
+    {
+        "acronym": "\"C\" Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "C&G",
+        "description": "Chuckle & grin"
+    },
+    {
+        "acronym": "C4N",
+        "description": "Ciao for now"
+    },
+    {
+        "acronym": "CAD",
+        "description": "Control + Alt + Delete"
+    },
+    {
+        "acronym": "CAD",
+        "description": "Short for Canada/Canadian"
+    },
+    {
+        "acronym": "Cakeday",
+        "description": "Meaning Birthday (Reddit)"
+    },
+    {
+        "acronym": "CAM",
+        "description": "Camera (SMS)"
+    },
+    {
+        "acronym": "CB",
+        "description": "Coffee break"
+    },
+    {
+        "acronym": "CB",
+        "description": "Chat break"
+    },
+    {
+        "acronym": "CB",
+        "description": "Crazy *b*"
+    },
+    {
+        "acronym": "CD9",
+        "description": "Code 9, Meaning \"parents are around\""
+    },
+    {
+        "acronym": "CFS",
+        "description": "Care for secret?"
+    },
+    {
+        "acronym": "CFY",
+        "description": "Calling for you"
+    },
+    {
+        "acronym": "CHK",
+        "description": "Check"
+    },
+    {
+        "acronym": "CIAO",
+        "description": "Good-bye (Italian word)"
+    },
+    {
+        "acronym": "CICO",
+        "description": "Coffee in, coffee out"
+    },
+    {
+        "acronym": "CID",
+        "description": "Crying in disgrace"
+    },
+    {
+        "acronym": "CID",
+        "description": "Consider it done"
+    },
+    {
+        "acronym": "CLAB",
+        "description": "Crying like a baby"
+    },
+    {
+        "acronym": "CLD",
+        "description": "Could"
+    },
+    {
+        "acronym": "CLK",
+        "description": "Click"
+    },
+    {
+        "acronym": "CM",
+        "description": "Call me"
+    },
+    {
+        "acronym": "CMAP",
+        "description": "Cover my *a* partner (online gaming)"
+    },
+    {
+        "acronym": "CMB",
+        "description": "Call me back"
+    },
+    {
+        "acronym": "CMGR",
+        "description": "Meaning \"Community manager\""
+    },
+    {
+        "acronym": "CMIIW",
+        "description": "Correct me if I'm wrong"
+    },
+    {
+        "acronym": "CMON",
+        "description": "Come on"
+    },
+    {
+        "acronym": "CNP",
+        "description": "Continued (in) next post"
+    },
+    {
+        "acronym": "COB",
+        "description": "Close of business"
+    },
+    {
+        "acronym": "COH",
+        "description": "City of Heroes (online gaming)"
+    },
+    {
+        "acronym": "COS",
+        "description": "Because"
+    },
+    {
+        "acronym": "C/P",
+        "description": "Cross post"
+    },
+    {
+        "acronym": "CP",
+        "description": "Chat post (or continue in IM)"
+    },
+    {
+        "acronym": "CR8",
+        "description": "Create"
+    },
+    {
+        "acronym": "Cray",
+        "description": "Meaning crazy"
+    },
+    {
+        "acronym": "CRE8",
+        "description": "Create"
+    },
+    {
+        "acronym": "CRA CRA",
+        "description": "Slang term meaning \"crazy\""
+    },
+    {
+        "acronym": "CRAFT",
+        "description": "Can't remember a *freaking* thing"
+    },
+    {
+        "acronym": "CRB",
+        "description": "Come right back"
+    },
+    {
+        "acronym": "CRBT",
+        "description": "Crying really big tears"
+    },
+    {
+        "acronym": "CRIT",
+        "description": "Meaning \"critical hit\" (online gaming)"
+    },
+    {
+        "acronym": "CRZ",
+        "description": "Crazy"
+    },
+    {
+        "acronym": "CRS",
+        "description": "Can't remember *stuff*"
+    },
+    {
+        "acronym": "CSG",
+        "description": "Chuckle, snicker, grin"
+    },
+    {
+        "acronym": "CSL",
+        "description": "Can't stop laughing"
+    },
+    {
+        "acronym": "CSS",
+        "description": "Counter-Strike Source (online gaming)"
+    },
+    {
+        "acronym": "CT",
+        "description": "Can't talk"
+    },
+    {
+        "acronym": "CTC",
+        "description": "Care to chat?"
+    },
+    {
+        "acronym": "CTHU",
+        "description": "Cracking the *heck* up"
+    },
+    {
+        "acronym": "CTN",
+        "description": "Can't talk now"
+    },
+    {
+        "acronym": "CTO",
+        "description": "Check this out"
+    },
+    {
+        "acronym": "CU",
+        "description": "See you too"
+    },
+    {
+        "acronym": "CU",
+        "description": "See you"
+    },
+    {
+        "acronym": "CU2",
+        "description": "See you"
+    },
+    {
+        "acronym": "CUA",
+        "description": "See you around"
+    },
+    {
+        "acronym": "CUL",
+        "description": "See you later"
+    },
+    {
+        "acronym": "CULA",
+        "description": "See you later alligator"
+    },
+    {
+        "acronym": "CUL8R",
+        "description": "See you later"
+    },
+    {
+        "acronym": "CUMID",
+        "description": "See you in my dreams"
+    },
+    {
+        "acronym": "CURLO",
+        "description": "See you around like a donut"
+    },
+    {
+        "acronym": "CWD",
+        "description": "Comment when done"
+    },
+    {
+        "acronym": "CWOT",
+        "description": "Complete waste of time"
+    },
+    {
+        "acronym": "CWYL",
+        "description": "Chat with you later"
+    },
+    {
+        "acronym": "CX",
+        "description": "Meaning \"Correction\""
+    },
+    {
+        "acronym": "CYA",
+        "description": "See you"
+    },
+    {
+        "acronym": "CYAL8R",
+        "description": "See you later"
+    },
+    {
+        "acronym": "CYE",
+        "description": "Check your e-mail"
+    },
+    {
+        "acronym": "CYEP",
+        "description": "Close your eyes partner (online gaming)"
+    },
+    {
+        "acronym": "CYO",
+        "description": "See you online"
+    },
+    {
+        "acronym": "\"D\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "D2",
+        "description": "Dedos / fingers (Spanish SMS)"
+    },
+    {
+        "acronym": "D46?",
+        "description": "Down for sex?"
+    },
+    {
+        "acronym": "DA",
+        "description": "Meaning \"The\""
+    },
+    {
+        "acronym": "DAE",
+        "description": "Does anyone else?"
+    },
+    {
+        "acronym": "DAFUQ",
+        "description": "(What) the *Freak*?"
+    },
+    {
+        "acronym": "DAM",
+        "description": "Don't annoy me"
+    },
+    {
+        "acronym": "DAoC",
+        "description": "Dark Age of Camelot (online gaming)"
+    },
+    {
+        "acronym": "DBAU",
+        "description": "Doing business as usual"
+    },
+    {
+        "acronym": "DBEYR",
+        "description": "Don't believe everything you read"
+    },
+    {
+        "acronym": "DC",
+        "description": "Disconnect"
+    },
+    {
+        "acronym": "DD",
+        "description": "Dear (or Darling) daughter"
+    },
+    {
+        "acronym": "DD",
+        "description": "Due diligence"
+    },
+    {
+        "acronym": "DDG",
+        "description": "Drop dead gorgeous"
+    },
+    {
+        "acronym": "DEEZ NUTZ",
+        "description": "A phrase used in online chat to annoy or frustrate those involved in the conversation."
+    },
+    {
+        "acronym": "DEGT",
+        "description": "Dear (or Darling) daughter"
+    },
+    {
+        "acronym": "DERP",
+        "description": "Meaning stupid or silly"
+    },
+    {
+        "acronym": "DF",
+        "description": "Don't even go there"
+    },
+    {
+        "acronym": "DFL",
+        "description": "Dead *freaking* last (online gaming)"
+    },
+    {
+        "acronym": "DGA",
+        "description": "Don't go anywhere"
+    },
+    {
+        "acronym": "DGAF",
+        "description": "Don't give a *freak*"
+    },
+    {
+        "acronym": "DGT",
+        "description": "Don't go there"
+    },
+    {
+        "acronym": "DGTG",
+        "description": "Don't go there, girlfriend"
+    },
+    {
+        "acronym": "DGYF",
+        "description": "Dang, girl you fine"
+    },
+    {
+        "acronym": "DH",
+        "description": "Dear (or Darling) husband"
+    },
+    {
+        "acronym": "DHU",
+        "description": "Dinosaur hugs (used to show support)"
+    },
+    {
+        "acronym": "DIIK",
+        "description": "Darned if I know"
+    },
+    {
+        "acronym": "DIKU",
+        "description": "Do I know you?"
+    },
+    {
+        "acronym": "DILLIGAF",
+        "description": "Do I look like I give a *freak*?"
+    },
+    {
+        "acronym": "DILLIGAS",
+        "description": "Do I look like I give a sugar?"
+    },
+    {
+        "acronym": "DIS",
+        "description": "Did I say?"
+    },
+    {
+        "acronym": "DITYID",
+        "description": "Did I tell you I'm distressed?"
+    },
+    {
+        "acronym": "DIY",
+        "description": "Do it yourself"
+    },
+    {
+        "acronym": "DKDC",
+        "description": "Don't know, don't care"
+    },
+    {
+        "acronym": "DKP",
+        "description": "Dragon kill points (online gaming)"
+    },
+    {
+        "acronym": "D/L",
+        "description": "Download"
+    },
+    {
+        "acronym": "DL",
+        "description": "Download"
+    },
+    {
+        "acronym": "DL",
+        "description": "Down low"
+    },
+    {
+        "acronym": "DL",
+        "description": "Dead link"
+    },
+    {
+        "acronym": "DLBBB",
+        "description": "Don't let (the) bed bugs bite"
+    },
+    {
+        "acronym": "DLTBBB",
+        "description": "Don't let the bed bugs bite"
+    },
+    {
+        "acronym": "DM",
+        "description": "Doesn't matter"
+    },
+    {
+        "acronym": "DM",
+        "description": "Direct message (Twitter slang)"
+    },
+    {
+        "acronym": "DM",
+        "description": "Do me"
+    },
+    {
+        "acronym": "DM",
+        "description": "Dungeon Master (online gaming)"
+    },
+    {
+        "acronym": "DMNO",
+        "description": "Dude Man No Offense"
+    },
+    {
+        "acronym": "DMY",
+        "description": "Don't mess yourself"
+    },
+    {
+        "acronym": "DN",
+        "description": "Down"
+    },
+    {
+        "acronym": "DNC",
+        "description": "Do not compute (meaning I do not understand)"
+    },
+    {
+        "acronym": "DNR",
+        "description": "Dinner (SMS)"
+    },
+    {
+        "acronym": "DNT",
+        "description": "Don't"
+    },
+    {
+        "acronym": "d00d",
+        "description": "Dude"
+    },
+    {
+        "acronym": "DOE",
+        "description": "Daughter of Eve"
+    },
+    {
+        "acronym": "DORBS",
+        "description": "Meaning \"Adorable\""
+    },
+    {
+        "acronym": "DOT",
+        "description": "Damage over time (online gaming)"
+    },
+    {
+        "acronym": "Downvote",
+        "description": "Voting negatively on a thread using Reddit’s voting system (Reddit)"
+    },
+    {
+        "acronym": "DPS",
+        "description": "Damage per second (online gaming)"
+    },
+    {
+        "acronym": "DQMOT",
+        "description": "Don't quote me on this"
+    },
+    {
+        "acronym": "DR",
+        "description": "Didn't read"
+    },
+    {
+        "acronym": "DS",
+        "description": "Dear (or Darling) son"
+    },
+    {
+        "acronym": "DTR",
+        "description": "Define the relationship"
+    },
+    {
+        "acronym": "DTRT",
+        "description": "Do the right thing"
+    },
+    {
+        "acronym": "DTS",
+        "description": "Don't think so"
+    },
+    {
+        "acronym": "DTTD",
+        "description": "Don't touch that dial"
+    },
+    {
+        "acronym": "DUPE",
+        "description": "Duplicate"
+    },
+    {
+        "acronym": "DUR",
+        "description": "Do you remember?"
+    },
+    {
+        "acronym": "DV8",
+        "description": "Deviate"
+    },
+    {
+        "acronym": "DW",
+        "description": "Dear (or Darling) wife"
+    },
+    {
+        "acronym": "DWF",
+        "description": "Divorced white female"
+    },
+    {
+        "acronym": "DWM",
+        "description": "Divorced white male"
+    },
+    {
+        "acronym": "DXNRY",
+        "description": "Dictionary"
+    },
+    {
+        "acronym": "DYNWUTB",
+        "description": "Do you know what you are talking about?"
+    },
+    {
+        "acronym": "DYFI",
+        "description": "Did you find it?"
+    },
+    {
+        "acronym": "DYFM",
+        "description": "Dude, you fascinate me"
+    },
+    {
+        "acronym": "DYJHIW",
+        "description": "Don't you just hate it when...?"
+    },
+    {
+        "acronym": "DYOR",
+        "description": "Do your own research (common stock market chat slang)"
+    },
+    {
+        "acronym": "\"E\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "E",
+        "description": "Ecstasy"
+    },
+    {
+        "acronym": "E",
+        "description": "Enemy (online gaming)"
+    },
+    {
+        "acronym": "E1",
+        "description": "Everyone"
+    },
+    {
+        "acronym": "E123",
+        "description": "Easy as one, two, three"
+    },
+    {
+        "acronym": "E2EG",
+        "description": "Ear to ear grin"
+    },
+    {
+        "acronym": "EAK",
+        "description": "Eating at keyboard"
+    },
+    {
+        "acronym": "EBKAC",
+        "description": "Error between keyboard and chair"
+    },
+    {
+        "acronym": "ED",
+        "description": "Erase display"
+    },
+    {
+        "acronym": "EF4T",
+        "description": "Effort"
+    },
+    {
+        "acronym": "EG",
+        "description": "Evil grin"
+    },
+    {
+        "acronym": "EI",
+        "description": "Eat it"
+    },
+    {
+        "acronym": "EIP",
+        "description": "Editing in progress"
+    },
+    {
+        "acronym": "ELI5",
+        "description": "Explain like I'm 5"
+    },
+    {
+        "acronym": "EM",
+        "description": "E-mail (Twitter slang)"
+    },
+    {
+        "acronym": "EMA",
+        "description": "E-mail address (Twitter slang)"
+    },
+    {
+        "acronym": "EMBAR",
+        "description": "Meaning \"Embarassing\""
+    },
+    {
+        "acronym": "EMFBI",
+        "description": "Excuse me for butting in"
+    },
+    {
+        "acronym": "EMFBI",
+        "description": "Excuse me for jumping in"
+    },
+    {
+        "acronym": "EMSG",
+        "description": "E-mail message"
+    },
+    {
+        "acronym": "ENUF",
+        "description": "Enough"
+    },
+    {
+        "acronym": "EOD",
+        "description": "End of day"
+    },
+    {
+        "acronym": "EOD",
+        "description": "End of discussion"
+    },
+    {
+        "acronym": "EOL",
+        "description": "End of lecture"
+    },
+    {
+        "acronym": "EOL",
+        "description": "End of life"
+    },
+    {
+        "acronym": "EOM",
+        "description": "End of message"
+    },
+    {
+        "acronym": "EOS",
+        "description": "End of show"
+    },
+    {
+        "acronym": "EOT",
+        "description": "End of transmission"
+    },
+    {
+        "acronym": "EQ",
+        "description": "EverQuest (online gaming)"
+    },
+    {
+        "acronym": "ERP",
+        "description": "Meaning \"Erotic Role-Play\" (online gaming)"
+    },
+    {
+        "acronym": "ERS2",
+        "description": "Eres tz / are you (Spanish SMS)"
+    },
+    {
+        "acronym": "ES",
+        "description": "Erase screen"
+    },
+    {
+        "acronym": "ESAD",
+        "description": "Eat *S* and die!"
+    },
+    {
+        "acronym": "ETA",
+        "description": "Estimated time (of) arrival"
+    },
+    {
+        "acronym": "ETA",
+        "description": "Edited to add"
+    },
+    {
+        "acronym": "EVA",
+        "description": "Ever"
+    },
+    {
+        "acronym": "EVO",
+        "description": "Evolution"
+    },
+    {
+        "acronym": "EWG",
+        "description": "Evil wicked grin (in fun, teasing)"
+    },
+    {
+        "acronym": "EWI",
+        "description": "Emailing while intoxicated"
+    },
+    {
+        "acronym": "EXTRA",
+        "description": "Meaning over the top"
+    },
+    {
+        "acronym": "EYC",
+        "description": "Excitable, yet calm"
+    },
+    {
+        "acronym": "EZ",
+        "description": "Easy"
+    },
+    {
+        "acronym": "EZY",
+        "description": "Easy"
+    },
+    {
+        "acronym": "\"F\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "F",
+        "description": "Meaning female"
+    },
+    {
+        "acronym": "F2F",
+        "description": "Face to face"
+    },
+    {
+        "acronym": "F2P",
+        "description": "Free to play (online gaming)"
+    },
+    {
+        "acronym": "F4F",
+        "description": "Follow for follow (Instagram)"
+    },
+    {
+        "acronym": "FAAK",
+        "description": "Falling asleep at keyboard"
+    },
+    {
+        "acronym": "FAB",
+        "description": "Fabulous"
+    },
+    {
+        "acronym": "Facepalm",
+        "description": "Used to represent the gesture of \"smacking your forehead with your palm\" to express embarrassment or frustration"
+    },
+    {
+        "acronym": "FAF",
+        "description": "Funny as *freak*"
+    },
+    {
+        "acronym": "FAM",
+        "description": "FFamily, but not limited to actual family members. Could mean friends."
+    },
+    {
+        "acronym": "FAQ",
+        "description": "Frequently asked questions"
+    },
+    {
+        "acronym": "FAY",
+        "description": "*Freak* all you"
+    },
+    {
+        "acronym": "FB",
+        "description": "Facebook"
+    },
+    {
+        "acronym": "FBB",
+        "description": "Meaning \"Facebook buddy\""
+    },
+    {
+        "acronym": "FBC",
+        "description": "Facebook chat"
+    },
+    {
+        "acronym": "FBF",
+        "description": "Flashback Friday"
+    },
+    {
+        "acronym": "FBF",
+        "description": "Meaning \"Facebook friend\""
+    },
+    {
+        "acronym": "FBF",
+        "description": "Fat boy food (e.g. pizza, burgers, fries)"
+    },
+    {
+        "acronym": "FBFR",
+        "description": "FaceBook friend"
+    },
+    {
+        "acronym": "FBM",
+        "description": "Fine by me"
+    },
+    {
+        "acronym": "FBO",
+        "description": "Facebook official (An official update from Facebook)"
+    },
+    {
+        "acronym": "FBOW",
+        "description": "For better or worse"
+    },
+    {
+        "acronym": "FC",
+        "description": "Fingers crossed"
+    },
+    {
+        "acronym": "FC",
+        "description": "Full card (online gaming)"
+    },
+    {
+        "acronym": "FC'INGO",
+        "description": "For crying out loud"
+    },
+    {
+        "acronym": "FCOL",
+        "description": "For crying out loud"
+    },
+    {
+        "acronym": "Feelsbadman",
+        "description": "A social meme that means to feel negative."
+    },
+    {
+        "acronym": "Feelsbatman",
+        "description": "A social meme taking \"feelsbadman\" to the extreme. This references the DC super hero Batmanbecause he witnessed the murder of his parents."
+    },
+    {
+        "acronym": "Feelsgoodman",
+        "description": "A social meme that means to feel positive."
+    },
+    {
+        "acronym": "FEITCTAJ",
+        "description": "*Freak* 'em if they can't take a joke"
+    },
+    {
+        "acronym": "FF",
+        "description": "Follow Friday (Twitter slang)"
+    },
+    {
+        "acronym": "FFA",
+        "description": "Free for all (online gaming)"
+    },
+    {
+        "acronym": "FFS",
+        "description": "For *freak'*sakes"
+    },
+    {
+        "acronym": "FICCL",
+        "description": "Frankly I couldn't care a less"
+    },
+    {
+        "acronym": "FIF",
+        "description": "*Freak* I'm funny"
+    },
+    {
+        "acronym": "FIIK",
+        "description": "*Freaked* if I know"
+    },
+    {
+        "acronym": "FIIOOH",
+        "description": "Forget it, I'm out of here"
+    },
+    {
+        "acronym": "FIL",
+        "description": "Father in law"
+    },
+    {
+        "acronym": "FIMH",
+        "description": "Forever in my heart"
+    },
+    {
+        "acronym": "Finna",
+        "description": "Means \"Going to\""
+    },
+    {
+        "acronym": "Finsta",
+        "description": "A second Instagram account where someone can post things that they're too afraid to post on their main account."
+    },
+    {
+        "acronym": "FISH",
+        "description": "First in, still here"
+    },
+    {
+        "acronym": "FITB",
+        "description": "Fill in the blank"
+    },
+    {
+        "acronym": "FML",
+        "description": "*Freak* My Life"
+    },
+    {
+        "acronym": "FOMC",
+        "description": "Falling off my chair"
+    },
+    {
+        "acronym": "FOMO",
+        "description": "Fear of missing out (definition)"
+    },
+    {
+        "acronym": "FOAD",
+        "description": "*Freak* off and die"
+    },
+    {
+        "acronym": "FOAF",
+        "description": "Friend of a friend"
+    },
+    {
+        "acronym": "FOMCL",
+        "description": "Falling off my chair laughing"
+    },
+    {
+        "acronym": "FRT",
+        "description": "For real though"
+    },
+    {
+        "acronym": "FTBOMH",
+        "description": "From the bottom of my heart"
+    },
+    {
+        "acronym": "FTFY",
+        "description": "Fixed that for you"
+    },
+    {
+        "acronym": "FTL",
+        "description": "For the loss"
+    },
+    {
+        "acronym": "FTW",
+        "description": "For the win"
+    },
+    {
+        "acronym": "FU",
+        "description": "*Freak* you"
+    },
+    {
+        "acronym": "FUBAR",
+        "description": "Fouled up beyond all recognition"
+    },
+    {
+        "acronym": "FUBB",
+        "description": "Fouled up beyond belief"
+    },
+    {
+        "acronym": "FUD",
+        "description": "Face up deal (online gaming)"
+    },
+    {
+        "acronym": "FUTAB",
+        "description": "Feet up, take a break"
+    },
+    {
+        "acronym": "FW",
+        "description": "Forward"
+    },
+    {
+        "acronym": "FWB",
+        "description": "Friend with benefits"
+    },
+    {
+        "acronym": "FWIW",
+        "description": "For what it's worth"
+    },
+    {
+        "acronym": "FWM",
+        "description": "Fine with me"
+    },
+    {
+        "acronym": "FWP",
+        "description": "First world problems"
+    },
+    {
+        "acronym": "FYE",
+        "description": "Fire, something that is cool"
+    },
+    {
+        "acronym": "FYEO",
+        "description": "For your eyes only"
+    },
+    {
+        "acronym": "FYA",
+        "description": "For your amusement"
+    },
+    {
+        "acronym": "FYI",
+        "description": "For your information"
+    },
+    {
+        "acronym": "\"G\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "G",
+        "description": "Grin"
+    },
+    {
+        "acronym": "G",
+        "description": "Giggle"
+    },
+    {
+        "acronym": "G+",
+        "description": "Google+"
+    },
+    {
+        "acronym": "G/F",
+        "description": "Girlfriend"
+    },
+    {
+        "acronym": "G2CU",
+        "description": "Good to see you"
+    },
+    {
+        "acronym": "G2G",
+        "description": "Got to go"
+    },
+    {
+        "acronym": "G2GICYAL8ER",
+        "description": "Got to go I'll see you later"
+    },
+    {
+        "acronym": "G2R",
+        "description": "Got to run"
+    },
+    {
+        "acronym": "G2TU",
+        "description": "Got to tell u (you)"
+    },
+    {
+        "acronym": "G4C",
+        "description": "Going for coffee"
+    },
+    {
+        "acronym": "G9",
+        "description": "Genius"
+    },
+    {
+        "acronym": "GA",
+        "description": "Go ahead"
+    },
+    {
+        "acronym": "GAC",
+        "description": "Get a clue"
+    },
+    {
+        "acronym": "GAFC",
+        "description": "Get a *freaking* clue"
+    },
+    {
+        "acronym": "GAL",
+        "description": "Get a life"
+    },
+    {
+        "acronym": "GANK",
+        "description": "Meaning a player ambush or unfair player kill (online gaming)"
+    },
+    {
+        "acronym": "GAS",
+        "description": "Got a second?"
+    },
+    {
+        "acronym": "GAS",
+        "description": "Greetings and salutations"
+    },
+    {
+        "acronym": "GB",
+        "description": "Goodbye"
+    },
+    {
+        "acronym": "GBTW",
+        "description": "Get back to work"
+    },
+    {
+        "acronym": "GBU",
+        "description": "God bless you"
+    },
+    {
+        "acronym": "GD",
+        "description": "Good"
+    },
+    {
+        "acronym": "GDR",
+        "description": "Grinning, ducking, and running"
+    },
+    {
+        "acronym": "GD/R",
+        "description": "Grinning, ducking, and running"
+    },
+    {
+        "acronym": "GFI",
+        "description": "Go for it"
+    },
+    {
+        "acronym": "GF",
+        "description": "Girl friend"
+    },
+    {
+        "acronym": "GFN",
+        "description": "Gone for now"
+    },
+    {
+        "acronym": "GG",
+        "description": "Gotta Go"
+    },
+    {
+        "acronym": "GG",
+        "description": "Good Game (online gaming)"
+    },
+    {
+        "acronym": "GG",
+        "description": "Brother (Mandarin Chinese txt msgs)"
+    },
+    {
+        "acronym": "GGA",
+        "description": "Good game, all (online gaming)"
+    },
+    {
+        "acronym": "GGE1",
+        "description": "Good game, everyone (online gaming)"
+    },
+    {
+        "acronym": "GGU2",
+        "description": "Good game, you too"
+    },
+    {
+        "acronym": "GGMSOT",
+        "description": "Gotta get me some of that"
+    },
+    {
+        "acronym": "GGOH",
+        "description": "Gotta Get Outa Here"
+    },
+    {
+        "acronym": "GGP",
+        "description": "Got to go pee"
+    },
+    {
+        "acronym": "GH",
+        "description": "Good hand (online gaming)"
+    },
+    {
+        "acronym": "GIAR",
+        "description": "Give it a rest"
+    },
+    {
+        "acronym": "GIC",
+        "description": "Gift in crib (online gaming)"
+    },
+    {
+        "acronym": "GIGO",
+        "description": "Garbage in, garbage out"
+    },
+    {
+        "acronym": "GIRL",
+        "description": "Guy in real life"
+    },
+    {
+        "acronym": "GJ",
+        "description": "Good job"
+    },
+    {
+        "acronym": "GL",
+        "description": "Good luck"
+    },
+    {
+        "acronym": "GL2U",
+        "description": "Good luck to you (online gaming)"
+    },
+    {
+        "acronym": "GLA",
+        "description": "Good luck all (online gaming)"
+    },
+    {
+        "acronym": "GL/HF",
+        "description": "Good luck, have fun  (online gaming)"
+    },
+    {
+        "acronym": "GLE",
+        "description": "Good luck everyone (online gaming)"
+    },
+    {
+        "acronym": "GLE1",
+        "description": "Good luck everyone (online gaming)"
+    },
+    {
+        "acronym": "GLNG",
+        "description": "Good luck next game (online gaming)"
+    },
+    {
+        "acronym": "GMBA",
+        "description": "Giggling my butt off"
+    },
+    {
+        "acronym": "GMTA",
+        "description": "Great minds think alike"
+    },
+    {
+        "acronym": "GMV",
+        "description": "Got my vote"
+    },
+    {
+        "acronym": "GN",
+        "description": "Good night"
+    },
+    {
+        "acronym": "GNA",
+        "description": "Good night all"
+    },
+    {
+        "acronym": "GNE1",
+        "description": "Good night everyone"
+    },
+    {
+        "acronym": "GNIGHT",
+        "description": "Good night"
+    },
+    {
+        "acronym": "GNITE",
+        "description": "Good night"
+    },
+    {
+        "acronym": "GNSD",
+        "description": "Good night, sweet dreams"
+    },
+    {
+        "acronym": "GOAT",
+        "description": "Greatest of all Time(s)"
+    },
+    {
+        "acronym": "GOI",
+        "description": "Get over it"
+    },
+    {
+        "acronym": "GOL",
+        "description": "Giggling out loud"
+    },
+    {
+        "acronym": "GOMB",
+        "description": "Get off my back"
+    },
+    {
+        "acronym": "GPOY",
+        "description": "Gratuitous picture of yourself"
+    },
+    {
+        "acronym": "GR8",
+        "description": "Great"
+    },
+    {
+        "acronym": "GRATZ",
+        "description": "Congratulations"
+    },
+    {
+        "acronym": "GRL",
+        "description": "Girl"
+    },
+    {
+        "acronym": "GRWG",
+        "description": "Get right with God"
+    },
+    {
+        "acronym": "GR&D",
+        "description": "Grinning, running and ducking"
+    },
+    {
+        "acronym": "GS",
+        "description": "Good shot"
+    },
+    {
+        "acronym": "GS",
+        "description": "Good split (online gaming)"
+    },
+    {
+        "acronym": "GT",
+        "description": "Good try"
+    },
+    {
+        "acronym": "GTFO",
+        "description": "Get the *freak* out"
+    },
+    {
+        "acronym": "GTFOH",
+        "description": "Get the *freak* outta here"
+    },
+    {
+        "acronym": "GTG",
+        "description": "Got to go"
+    },
+    {
+        "acronym": "GTM",
+        "description": "Giggling to myself"
+    },
+    {
+        "acronym": "GTRM",
+        "description": "Going to read mail"
+    },
+    {
+        "acronym": "GTSY",
+        "description": "Great (or good) to see you"
+    },
+    {
+        "acronym": "GUCCI",
+        "description": "Good"
+    },
+    {
+        "acronym": "GUD",
+        "description": "Good"
+    },
+    {
+        "acronym": "GWHTLC",
+        "description": "Glad we had this little chat"
+    },
+    {
+        "acronym": "\"H\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "H",
+        "description": "Hug"
+    },
+    {
+        "acronym": "H8",
+        "description": "Hate"
+    },
+    {
+        "acronym": "H8TTU",
+        "description": "Hate to be you"
+    },
+    {
+        "acronym": "HAG1",
+        "description": "Have a good one"
+    },
+    {
+        "acronym": "HAK",
+        "description": "Hug and kiss"
+    },
+    {
+        "acronym": "HALP",
+        "description": "Help (Discord)"
+    },
+    {
+        "acronym": "HAU",
+        "description": "How about you?"
+    },
+    {
+        "acronym": "H&K",
+        "description": "Hugs & kisses"
+    },
+    {
+        "acronym": "H2CUS",
+        "description": "Hope to see you soon"
+    },
+    {
+        "acronym": "HAGN",
+        "description": "Have a good night"
+    },
+    {
+        "acronym": "HAGO",
+        "description": "Have a good one"
+    },
+    {
+        "acronym": "HAND",
+        "description": "Have a nice day"
+    },
+    {
+        "acronym": "HAWT",
+        "description": "Have a wonderful day (out-dated, see next in list)"
+    },
+    {
+        "acronym": "HAWT",
+        "description": "Meaning \"sexy\" or \"attractive\""
+    },
+    {
+        "acronym": "HB",
+        "description": "Hurry back"
+    },
+    {
+        "acronym": "HB",
+        "description": "Hug back"
+    },
+    {
+        "acronym": "HBD",
+        "description": "Happy birthday"
+    },
+    {
+        "acronym": "H-BDAY",
+        "description": "Happy Birthday"
+    },
+    {
+        "acronym": "HBU",
+        "description": "How about you?"
+    },
+    {
+        "acronym": "HF",
+        "description": "Have fun"
+    },
+    {
+        "acronym": "HFAC",
+        "description": "Holy flipping animal crackers"
+    },
+    {
+        "acronym": "H-FDAY",
+        "description": "Happy Father's Day"
+    },
+    {
+        "acronym": "HHIS",
+        "description": "Head hanging in shame"
+    },
+    {
+        "acronym": "HIFW",
+        "description": "How I felt when... (Used with photo or gif)"
+    },
+    {
+        "acronym": "HL",
+        "description": "Half Life (online gaming)"
+    },
+    {
+        "acronym": "HLA",
+        "description": "Hola / hello (Spanish SMS)"
+    },
+    {
+        "acronym": "H-MDAY",
+        "description": "Happy Mother's Day"
+    },
+    {
+        "acronym": "HMU",
+        "description": "Hit me up"
+    },
+    {
+        "acronym": "HNL",
+        "description": "(w)Hole 'nother level"
+    },
+    {
+        "acronym": "HOAS",
+        "description": "Hold on a second"
+    },
+    {
+        "acronym": "HP",
+        "description": "Hit points / Health points (online gaming)"
+    },
+    {
+        "acronym": "HRU",
+        "description": "How are you?"
+    },
+    {
+        "acronym": "HTH",
+        "description": "Hope this helps"
+    },
+    {
+        "acronym": "HUB",
+        "description": "Head up butt"
+    },
+    {
+        "acronym": "HUYA",
+        "description": "Head up your *butt*"
+    },
+    {
+        "acronym": "HV",
+        "description": "Have"
+    },
+    {
+        "acronym": "HVH",
+        "description": "Heroic Violet Hold (online gaming)"
+    },
+    {
+        "acronym": "HW",
+        "description": "Homework"
+    },
+    {
+        "acronym": "HYFR",
+        "description": "Hell yeah, *Freaking* right!"
+    },
+    {
+        "acronym": "\"I\" Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "I2",
+        "description": "I too (me too)"
+    },
+    {
+        "acronym": "IA8",
+        "description": "I already ate"
+    },
+    {
+        "acronym": "IAAA",
+        "description": "I am an accountant"
+    },
+    {
+        "acronym": "IAAD",
+        "description": "I am a doctor"
+    },
+    {
+        "acronym": "IAAL",
+        "description": "I am a lawyer"
+    },
+    {
+        "acronym": "IAC",
+        "description": "In any case"
+    },
+    {
+        "acronym": "IAE",
+        "description": "In any event"
+    },
+    {
+        "acronym": "IANAC",
+        "description": "I am not a crook"
+    },
+    {
+        "acronym": "IANAL",
+        "description": "I am not a lawyer"
+    },
+    {
+        "acronym": "IAO",
+        "description": "I am out (of here)"
+    },
+    {
+        "acronym": "IB",
+        "description": "I'm back"
+    },
+    {
+        "acronym": "IB",
+        "description": "I'm back"
+    },
+    {
+        "acronym": "IC",
+        "description": "I see"
+    },
+    {
+        "acronym": "ICAM",
+        "description": "I couldn't agree more"
+    },
+    {
+        "acronym": "ICBW",
+        "description": "It could be worse"
+    },
+    {
+        "acronym": "ICEDI",
+        "description": "I can't even discuss it"
+    },
+    {
+        "acronym": "ICFILWU",
+        "description": "I could fall in love with you"
+    },
+    {
+        "acronym": "ICYMI",
+        "description": "In case you missed it (Twitter slang)"
+    },
+    {
+        "acronym": "IDBI",
+        "description": "I don't believe it"
+    },
+    {
+        "acronym": "IDC",
+        "description": "I don't care"
+    },
+    {
+        "acronym": "IDGAF",
+        "description": "I don't give a *freak*"
+    },
+    {
+        "acronym": "IDK",
+        "description": "I don't know"
+    },
+    {
+        "acronym": "IDTS",
+        "description": "I don't think so"
+    },
+    {
+        "acronym": "IDUNNO",
+        "description": "I don't know"
+    },
+    {
+        "acronym": "IFYP",
+        "description": "I feel your pain"
+    },
+    {
+        "acronym": "IG",
+        "description": "Instagram"
+    },
+    {
+        "acronym": "IG2R",
+        "description": "I got to run"
+    },
+    {
+        "acronym": "IGHT",
+        "description": "I got high tonight"
+    },
+    {
+        "acronym": "IGN",
+        "description": "I (I've) got nothing"
+    },
+    {
+        "acronym": "IGP",
+        "description": "I got to (go) pee"
+    },
+    {
+        "acronym": "IHNI",
+        "description": "I have no idea"
+    },
+    {
+        "acronym": "IIRC",
+        "description": "If I remember correctly"
+    },
+    {
+        "acronym": "IIIO",
+        "description": "Intel inside, idiot outside"
+    },
+    {
+        "acronym": "IK",
+        "description": "I know"
+    },
+    {
+        "acronym": "IKR",
+        "description": "I know, right?"
+    },
+    {
+        "acronym": "ILBL8",
+        "description": "I'll be late"
+    },
+    {
+        "acronym": "ILU",
+        "description": "I love you"
+    },
+    {
+        "acronym": "ILUM",
+        "description": "I love you man"
+    },
+    {
+        "acronym": "ILYSM",
+        "description": "I love you so much"
+    },
+    {
+        "acronym": "ILY",
+        "description": "I love you"
+    },
+    {
+        "acronym": "IM",
+        "description": "Instant message"
+    },
+    {
+        "acronym": "IMAO",
+        "description": "In my arrogant opinion"
+    },
+    {
+        "acronym": "IMHO",
+        "description": "In my humble opinion"
+    },
+    {
+        "acronym": "ImL",
+        "description": "(in Arial font) Means I love you (a way of using the American sign language in text)"
+    },
+    {
+        "acronym": "IMNSHO",
+        "description": "In my not so humble opinion"
+    },
+    {
+        "acronym": "IMO",
+        "description": "In my opinion"
+    },
+    {
+        "acronym": "IMS",
+        "description": "I am sorry"
+    },
+    {
+        "acronym": "IMSB",
+        "description": "I am so bored"
+    },
+    {
+        "acronym": "IMTM",
+        "description": "I am the man"
+    },
+    {
+        "acronym": "IMU",
+        "description": "I miss u (you)"
+    },
+    {
+        "acronym": "INAL",
+        "description": "I'm not a lawyer"
+    },
+    {
+        "acronym": "INC",
+        "description": "Meaning \"incoming\" (online gaming)"
+    },
+    {
+        "acronym": "Inspoo",
+        "description": "Inspiration"
+    },
+    {
+        "acronym": "INV",
+        "description": "Meaning \"Invite\""
+    },
+    {
+        "acronym": "IOMH",
+        "description": "In over my head"
+    },
+    {
+        "acronym": "IOW",
+        "description": "In other words"
+    },
+    {
+        "acronym": "IRL",
+        "description": "In real life"
+    },
+    {
+        "acronym": "IRMC",
+        "description": "I rest my case"
+    },
+    {
+        "acronym": "ISLY",
+        "description": "I still love you"
+    },
+    {
+        "acronym": "ISO",
+        "description": "In search of"
+    },
+    {
+        "acronym": "ITAM",
+        "description": "It's The Accounting, Man (financial blogs)"
+    },
+    {
+        "acronym": "ITT",
+        "description": "In This Thread"
+    },
+    {
+        "acronym": "ITYK",
+        "description": "I thought you knew"
+    },
+    {
+        "acronym": "IUSS",
+        "description": "If you say so"
+    },
+    {
+        "acronym": "IWALU",
+        "description": "I will always love you"
+    },
+    {
+        "acronym": "IWAWO",
+        "description": "I want a way out"
+    },
+    {
+        "acronym": "IWIAM",
+        "description": "Idiot wrapped in a moron"
+    },
+    {
+        "acronym": "IWSN",
+        "description": "I want sex now"
+    },
+    {
+        "acronym": "IYKWIM",
+        "description": "If you know what I mean"
+    },
+    {
+        "acronym": "IYO",
+        "description": "In your opinion"
+    },
+    {
+        "acronym": "IYQ",
+        "description": "Meaning \"I like you\""
+    },
+    {
+        "acronym": "IYSS",
+        "description": "If you say so"
+    },
+    {
+        "acronym": "\"J\" Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "j00",
+        "description": "You"
+    },
+    {
+        "acronym": "j00r",
+        "description": "Your"
+    },
+    {
+        "acronym": "JAC",
+        "description": "Just a second"
+    },
+    {
+        "acronym": "JAM",
+        "description": "Just a minute"
+    },
+    {
+        "acronym": "JAS",
+        "description": "Just a second"
+    },
+    {
+        "acronym": "JC (J/C)",
+        "description": "Just checking"
+    },
+    {
+        "acronym": "JDI",
+        "description": "Just do it"
+    },
+    {
+        "acronym": "JELLY",
+        "description": "Meaning \"jealous\""
+    },
+    {
+        "acronym": "JFF",
+        "description": "Just for fun"
+    },
+    {
+        "acronym": "JFGI",
+        "description": "Just *freaking* Google it"
+    },
+    {
+        "acronym": "JIC",
+        "description": "Just in case"
+    },
+    {
+        "acronym": "JJ (J/J)",
+        "description": "Just joking"
+    },
+    {
+        "acronym": "JJA",
+        "description": "Just joking around"
+    },
+    {
+        "acronym": "JK (J/K)",
+        "description": "Just kidding"
+    },
+    {
+        "acronym": "JLMK",
+        "description": "Just let me know"
+    },
+    {
+        "acronym": "JMO",
+        "description": "Just my opinion"
+    },
+    {
+        "acronym": "JP",
+        "description": "Just playing"
+    },
+    {
+        "acronym": "JP",
+        "description": "Jackpot (online gaming, bingo games)"
+    },
+    {
+        "acronym": "JT (J/T)",
+        "description": "Just teasing"
+    },
+    {
+        "acronym": "JTLYK",
+        "description": "Just to let you know"
+    },
+    {
+        "acronym": "JV",
+        "description": "Joint venture"
+    },
+    {
+        "acronym": "JW",
+        "description": "Just wondering"
+    },
+    {
+        "acronym": "\"K\" Text Messages / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "K",
+        "description": "Okay"
+    },
+    {
+        "acronym": "KK",
+        "description": "Knock, knock"
+    },
+    {
+        "acronym": "KK",
+        "description": "Okay, Okay!"
+    },
+    {
+        "acronym": "K8T",
+        "description": "Katie"
+    },
+    {
+        "acronym": "k/b",
+        "description": "Keyboard"
+    },
+    {
+        "acronym": "KB",
+        "description": "Keyboard"
+    },
+    {
+        "acronym": "KB",
+        "description": "Kick butt (online gaming)"
+    },
+    {
+        "acronym": "KDFU",
+        "description": "Means Cracking (K) the (D as in Da) *freak* up"
+    },
+    {
+        "acronym": "KEWL",
+        "description": "Cool"
+    },
+    {
+        "acronym": "KEYA",
+        "description": "I will key you later"
+    },
+    {
+        "acronym": "KEYME",
+        "description": "Key me when you get in"
+    },
+    {
+        "acronym": "KFY",
+        "description": "Kiss for you"
+    },
+    {
+        "acronym": "KIA",
+        "description": "Know it all"
+    },
+    {
+        "acronym": "KIR",
+        "description": "Keep it real"
+    },
+    {
+        "acronym": "KISS",
+        "description": "Keep it simple, stupid"
+    },
+    {
+        "acronym": "KIT",
+        "description": "Keep in touch"
+    },
+    {
+        "acronym": "KMA",
+        "description": "Kiss my *a*"
+    },
+    {
+        "acronym": "KMK",
+        "description": "Kiss my keister"
+    },
+    {
+        "acronym": "KMS",
+        "description": "Killing myself"
+    },
+    {
+        "acronym": "KMT",
+        "description": "Kiss my tushie"
+    },
+    {
+        "acronym": "KOC",
+        "description": "Kiss on cheek"
+    },
+    {
+        "acronym": "KOL",
+        "description": "Key opinion leader"
+    },
+    {
+        "acronym": "Koreaboo",
+        "description": "Someone obsessed with Korean culture"
+    },
+    {
+        "acronym": "KOS",
+        "description": "Kid over shoulder"
+    },
+    {
+        "acronym": "KOS",
+        "description": "Kill on sight (online gaming)"
+    },
+    {
+        "acronym": "KOW",
+        "description": "Knock on wood"
+    },
+    {
+        "acronym": "KOTC",
+        "description": "Kiss on the cheek"
+    },
+    {
+        "acronym": "KOTD",
+        "description": "Kicks of the day (Instagram)"
+    },
+    {
+        "acronym": "KOTL",
+        "description": "Kiss on the lips"
+    },
+    {
+        "acronym": "KNIM",
+        "description": "Know what I mean?"
+    },
+    {
+        "acronym": "KNOW",
+        "description": "Meaning \"knowledge\""
+    },
+    {
+        "acronym": "KPC",
+        "description": "Keeping parents clueless"
+    },
+    {
+        "acronym": "KS",
+        "description": "Kill then steal (online gaming)"
+    },
+    {
+        "acronym": "KSC",
+        "description": "Kind (of) sort (of) chuckle"
+    },
+    {
+        "acronym": "KT",
+        "description": "Katie"
+    },
+    {
+        "acronym": "KUTGW",
+        "description": "Keep up the good work"
+    },
+    {
+        "acronym": "KYS",
+        "description": "Kill yourself"
+    },
+    {
+        "acronym": "\"L\"  Text Message & Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "L2G",
+        "description": "Like to go?"
+    },
+    {
+        "acronym": "L2G",
+        "description": "(would) Love to go"
+    },
+    {
+        "acronym": "L2K",
+        "description": "Like to come"
+    },
+    {
+        "acronym": "L2P",
+        "description": "Learn to play"
+    },
+    {
+        "acronym": "l33t",
+        "description": "Leet, meaning 'elite'"
+    },
+    {
+        "acronym": "L4L",
+        "description": "Like for like (Instagram)"
+    },
+    {
+        "acronym": "L8R",
+        "description": "Later"
+    },
+    {
+        "acronym": "L8RG8R",
+        "description": "Later, gator"
+    },
+    {
+        "acronym": "LAB",
+        "description": "Life's a *b*"
+    },
+    {
+        "acronym": "LBAY",
+        "description": "Laughing back at you"
+    },
+    {
+        "acronym": "LBS",
+        "description": "Laughing, but serious"
+    },
+    {
+        "acronym": "LBVS",
+        "description": "Laughing, but very serious"
+    },
+    {
+        "acronym": "LD",
+        "description": "Later, dude"
+    },
+    {
+        "acronym": "LD",
+        "description": "Long distance"
+    },
+    {
+        "acronym": "LDO",
+        "description": "Like, duh obviously"
+    },
+    {
+        "acronym": "LEMENO",
+        "description": "Let me know"
+    },
+    {
+        "acronym": "LERK",
+        "description": "Leaving easy reach of keyboard"
+    },
+    {
+        "acronym": "LFD",
+        "description": "Left for day"
+    },
+    {
+        "acronym": "LFG",
+        "description": "Looking for group (online gaming)"
+    },
+    {
+        "acronym": "LFG",
+        "description": "Looking for guard (online gaming)"
+    },
+    {
+        "acronym": "LFM",
+        "description": "Looking for more (online gaming)"
+    },
+    {
+        "acronym": "LGH",
+        "description": "Lets get high"
+    },
+    {
+        "acronym": "LH6",
+        "description": "Lets have sex"
+    },
+    {
+        "acronym": "LHSX",
+        "description": "Lets have sex"
+    },
+    {
+        "acronym": "LHM",
+        "description": "Lord help me"
+    },
+    {
+        "acronym": "LHO",
+        "description": "Laughing head off"
+    },
+    {
+        "acronym": "LI",
+        "description": "LinkedIn"
+    },
+    {
+        "acronym": "LIC",
+        "description": "Like I care"
+    },
+    {
+        "acronym": "LIK",
+        "description": "Meaning liquor"
+    },
+    {
+        "acronym": "LIMT",
+        "description": "Laugh in my tummy"
+    },
+    {
+        "acronym": "LIT",
+        "description": "Meaning really good or something fun and exciting"
+    },
+    {
+        "acronym": "LIT",
+        "description": "Extremely intoxicated"
+    },
+    {
+        "acronym": "LLGB",
+        "description": "Love, later, God bless"
+    },
+    {
+        "acronym": "LLS",
+        "description": "Laughing like *silly*"
+    },
+    {
+        "acronym": "LMAO",
+        "description": "Laughing my *a* off"
+    },
+    {
+        "acronym": "LMBO",
+        "description": "Laughing my butt off"
+    },
+    {
+        "acronym": "LMFAO",
+        "description": "Laughing my freaking *a* off"
+    },
+    {
+        "acronym": "LMIRL",
+        "description": "Lets meet in real life"
+    },
+    {
+        "acronym": "LMK",
+        "description": "Let me know"
+    },
+    {
+        "acronym": "LMMFAO",
+        "description": "Laughing my mother freaking a** off"
+    },
+    {
+        "acronym": "LMNK",
+        "description": "Leave my name out"
+    },
+    {
+        "acronym": "LMS",
+        "description": "Like my status (Facebook)"
+    },
+    {
+        "acronym": "LNT",
+        "description": "Meaning lost in translation"
+    },
+    {
+        "acronym": "LOA",
+        "description": "List of acronyms"
+    },
+    {
+        "acronym": "LOL",
+        "description": "Laughing out loud"
+    },
+    {
+        "acronym": "LOL",
+        "description": "Laugh out loud"
+    },
+    {
+        "acronym": "LOL",
+        "description": "Lots of love"
+    },
+    {
+        "acronym": "LOLH",
+        "description": "Laughing out loud hysterically"
+    },
+    {
+        "acronym": "LOLO",
+        "description": "Lots of love"
+    },
+    {
+        "acronym": "LOLWTF",
+        "description": "Laughing out loud (saying) \"What the *freak*?\""
+    },
+    {
+        "acronym": "LOTI",
+        "description": "Laughing on the inside"
+    },
+    {
+        "acronym": "LOTR",
+        "description": "Lord of The Rings (online gaming)"
+    },
+    {
+        "acronym": "LQTM",
+        "description": "Laughing quietly to myself"
+    },
+    {
+        "acronym": "LSHMBH",
+        "description": "Laugh so hard my belly hurts"
+    },
+    {
+        "acronym": "LSV",
+        "description": "Language, sex and violence"
+    },
+    {
+        "acronym": "LTD",
+        "description": "Living the dream"
+    },
+    {
+        "acronym": "LTLWDLS",
+        "description": "Let's twist like we did last summer"
+    },
+    {
+        "acronym": "LTNS",
+        "description": "Long time no see"
+    },
+    {
+        "acronym": "LTOD",
+        "description": "Laptop of death"
+    },
+    {
+        "acronym": "LTS",
+        "description": "Laughing to self"
+    },
+    {
+        "acronym": "LULT",
+        "description": "Love you long time"
+    },
+    {
+        "acronym": "LULZ",
+        "description": "Meaning joke, or for laughs"
+    },
+    {
+        "acronym": "LVM",
+        "description": "Left voice mail"
+    },
+    {
+        "acronym": "LWOS",
+        "description": "Laughing without smiling"
+    },
+    {
+        "acronym": "LY",
+        "description": "Love ya"
+    },
+    {
+        "acronym": "LYLAS",
+        "description": "Love you like a sis"
+    },
+    {
+        "acronym": "LYLC",
+        "description": "Love you like crazy"
+    },
+    {
+        "acronym": "LYSM",
+        "description": "Love you so much"
+    },
+    {
+        "acronym": "\"M\" Text Messages & Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "M$",
+        "description": "Microsoft"
+    },
+    {
+        "acronym": "M8",
+        "description": "Mate"
+    },
+    {
+        "acronym": "MB",
+        "description": "Mamma's boy"
+    },
+    {
+        "acronym": "MBS",
+        "description": "Mom behind shoulder"
+    },
+    {
+        "acronym": "MC",
+        "description": "Merry Christmas"
+    },
+    {
+        "acronym": "MDIAC",
+        "description": "My Dad is a cop"
+    },
+    {
+        "acronym": "MEGO",
+        "description": "My eyes glaze over"
+    },
+    {
+        "acronym": "MEH",
+        "description": "Meaning a \"shrug\" or shrugging shoulders"
+    },
+    {
+        "acronym": "MEH",
+        "description": "Meaning a \"so-so\" or \"just okay\""
+    },
+    {
+        "acronym": "MEHH",
+        "description": "Meaning a \"sigh\" or sighing"
+    },
+    {
+        "acronym": "MEZ",
+        "description": "Meaning \"mesmerize\" (online gaming)"
+    },
+    {
+        "acronym": "MFI",
+        "description": "Mad for it"
+    },
+    {
+        "acronym": "MFW",
+        "description": "My face when... (Used with photo or gif)"
+    },
+    {
+        "acronym": "MGB",
+        "description": "May God bless"
+    },
+    {
+        "acronym": "MGMT",
+        "description": "Management"
+    },
+    {
+        "acronym": "MHOTY",
+        "description": "My hat (is) off to you"
+    },
+    {
+        "acronym": "MIRL",
+        "description": "Me in real life"
+    },
+    {
+        "acronym": "MIRL",
+        "description": "Meet in real life"
+    },
+    {
+        "acronym": "MISS.(number)",
+        "description": "Meaning \"child and her age\". Miss.3 would be a 3-year old daughter"
+    },
+    {
+        "acronym": "MKAY",
+        "description": "Meaning \"Mmm, okay\""
+    },
+    {
+        "acronym": "MLM",
+        "description": "Meaning give the middle finger"
+    },
+    {
+        "acronym": "MM",
+        "description": "Sister (Mandarin Chinese txt msg)"
+    },
+    {
+        "acronym": "MMK",
+        "description": "Meaning okay? (as a question)"
+    },
+    {
+        "acronym": "MNC",
+        "description": "Mother nature calls"
+    },
+    {
+        "acronym": "MNSG",
+        "description": "Mensaje (message in Spanish)"
+    },
+    {
+        "acronym": "MOD",
+        "description": "Moderator"
+    },
+    {
+        "acronym": "MOD",
+        "description": "Modification (online gaming)"
+    },
+    {
+        "acronym": "MORF",
+        "description": "Male or female?"
+    },
+    {
+        "acronym": "MOMBOY",
+        "description": "Mamma's boy"
+    },
+    {
+        "acronym": "MOO",
+        "description": "My own opinion"
+    },
+    {
+        "acronym": "MOOS",
+        "description": "Member of the opposite sex"
+    },
+    {
+        "acronym": "MOS",
+        "description": "Mother over shoulder"
+    },
+    {
+        "acronym": "MOSS",
+        "description": "Member of same sex"
+    },
+    {
+        "acronym": "MP",
+        "description": "Mana points (online gaming)"
+    },
+    {
+        "acronym": "MR.(number)",
+        "description": "Meaning \"child and his age\". Mr.3 would be a 3-year old son"
+    },
+    {
+        "acronym": "MRT",
+        "description": "Modified ReTweet  (Twitter slang)"
+    },
+    {
+        "acronym": "MRW",
+        "description": "My reaction when... (Used with photo or gif)"
+    },
+    {
+        "acronym": "MSG",
+        "description": "Message"
+    },
+    {
+        "acronym": "MTF",
+        "description": "More to follow"
+    },
+    {
+        "acronym": "MTFBWU",
+        "description": "May the force be with you"
+    },
+    {
+        "acronym": "MU",
+        "description": "Miss U (you)"
+    },
+    {
+        "acronym": "MUAH",
+        "description": "Multiple unsuccessful attempts (at/to) humor"
+    },
+    {
+        "acronym": "MUSM",
+        "description": "Miss you so much"
+    },
+    {
+        "acronym": "MWAH",
+        "description": "Meaning \"kiss\" (it is is the sound made when kissing through the air)"
+    },
+    {
+        "acronym": "MYO",
+        "description": "Mind your own (business)"
+    },
+    {
+        "acronym": "MYOB",
+        "description": "Mind your own business"
+    },
+    {
+        "acronym": "\"N\"  Text Message & Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "n00b",
+        "description": "Newbie"
+    },
+    {
+        "acronym": "N1",
+        "description": "Nice one"
+    },
+    {
+        "acronym": "N2M",
+        "description": "Nothing too much"
+    },
+    {
+        "acronym": "NADT",
+        "description": "Not a darn thing"
+    },
+    {
+        "acronym": "NALOPKT",
+        "description": "Not a lot of people know that"
+    },
+    {
+        "acronym": "NANA",
+        "description": "Not now, no need"
+    },
+    {
+        "acronym": "NBD",
+        "description": "No big deal"
+    },
+    {
+        "acronym": "NBFAB",
+        "description": "No bad for a beginner (online gaming)"
+    },
+    {
+        "acronym": "NC",
+        "description": "Nice crib (online gaming)"
+    },
+    {
+        "acronym": "ND",
+        "description": "Nice double (online gaming)"
+    },
+    {
+        "acronym": "NE",
+        "description": "Any"
+    },
+    {
+        "acronym": "NE1",
+        "description": "Anyone"
+    },
+    {
+        "acronym": "NERF",
+        "description": "Meaning \"Changed and is now weaker\" (online gaming)"
+    },
+    {
+        "acronym": "NFM",
+        "description": "None for me / Not for me"
+    },
+    {
+        "acronym": "NFM",
+        "description": "Not for me"
+    },
+    {
+        "acronym": "NGL",
+        "description": "Not gonna (going to) lie"
+    },
+    {
+        "acronym": "NFS",
+        "description": "Need for Speed (online gaming)"
+    },
+    {
+        "acronym": "NFS",
+        "description": "Not for sale"
+    },
+    {
+        "acronym": "NFW",
+        "description": "No *freaking* way"
+    },
+    {
+        "acronym": "NFW",
+        "description": "Not for work"
+    },
+    {
+        "acronym": "NFWS",
+        "description": "Not for work safe"
+    },
+    {
+        "acronym": "NH",
+        "description": "Nice hand (online gaming)"
+    },
+    {
+        "acronym": "NIFOC",
+        "description": "Naked in front of computer"
+    },
+    {
+        "acronym": "NIGI",
+        "description": "Now I get it"
+    },
+    {
+        "acronym": "NIMBY",
+        "description": "Not in my back yard"
+    },
+    {
+        "acronym": "NIROK",
+        "description": "Not in reach of keyboard"
+    },
+    {
+        "acronym": "NLT",
+        "description": "No later than"
+    },
+    {
+        "acronym": "NM",
+        "description": "Nothing much"
+    },
+    {
+        "acronym": "NM",
+        "description": "Never mind"
+    },
+    {
+        "acronym": "NM",
+        "description": "Nice meld (online gaming)"
+    },
+    {
+        "acronym": "NMH",
+        "description": "Not much here"
+    },
+    {
+        "acronym": "NMJC",
+        "description": "Nothing much, just chilling"
+    },
+    {
+        "acronym": "NMU",
+        "description": "Not much, you?"
+    },
+    {
+        "acronym": "NO1",
+        "description": "No one"
+    },
+    {
+        "acronym": "NOOB",
+        "description": "Meaning someone who is bad at (online) games"
+    },
+    {
+        "acronym": "NOWL",
+        "description": "Meaning \"knowledge\""
+    },
+    {
+        "acronym": "NOYB",
+        "description": "None of your business"
+    },
+    {
+        "acronym": "NP",
+        "description": "No problem"
+    },
+    {
+        "acronym": "NPC",
+        "description": "Non-playing character (online gaming)"
+    },
+    {
+        "acronym": "NQT",
+        "description": "Newly qualified teacher"
+    },
+    {
+        "acronym": "NR",
+        "description": "Nice roll (online gaming)"
+    },
+    {
+        "acronym": "NRN",
+        "description": "No response/reply necessary"
+    },
+    {
+        "acronym": "NS",
+        "description": "Nice score (online gaming)"
+    },
+    {
+        "acronym": "NS",
+        "description": "Nice split (online gaming)"
+    },
+    {
+        "acronym": "NSA",
+        "description": "No strings attached"
+    },
+    {
+        "acronym": "NSFL",
+        "description": "Not safe for life"
+    },
+    {
+        "acronym": "NSFW",
+        "description": "Not safe for work"
+    },
+    {
+        "acronym": "NSISR",
+        "description": "Not sure if spelled right"
+    },
+    {
+        "acronym": "NT",
+        "description": "Nice try"
+    },
+    {
+        "acronym": "NTHING",
+        "description": "Nothing (SMS)"
+    },
+    {
+        "acronym": "NTS",
+        "description": "Note to self"
+    },
+    {
+        "acronym": "NVM",
+        "description": "Never mind"
+    },
+    {
+        "acronym": "NVR",
+        "description": "Never"
+    },
+    {
+        "acronym": "NW",
+        "description": "No way"
+    },
+    {
+        "acronym": "NWO",
+        "description": "No way out"
+    },
+    {
+        "acronym": "\"O\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "O4U",
+        "description": "Only for you"
+    },
+    {
+        "acronym": "O",
+        "description": "Opponent (online gaming)"
+    },
+    {
+        "acronym": "O",
+        "description": "Meaning \"hugs\""
+    },
+    {
+        "acronym": "O",
+        "description": "Over"
+    },
+    {
+        "acronym": "OA",
+        "description": "Online auctions (see more auction abbreviations)"
+    },
+    {
+        "acronym": "OATUS",
+        "description": "On a totally unrelated subject"
+    },
+    {
+        "acronym": "OB",
+        "description": "Oh baby"
+    },
+    {
+        "acronym": "OB",
+        "description": "Oh brother"
+    },
+    {
+        "acronym": "OBV",
+        "description": "Obviously"
+    },
+    {
+        "acronym": "OFC",
+        "description": "Of course"
+    },
+    {
+        "acronym": "OG",
+        "description": "Original gangster"
+    },
+    {
+        "acronym": "OGIM",
+        "description": "Oh God, it's Monday"
+    },
+    {
+        "acronym": "OH",
+        "description": "Overheard"
+    },
+    {
+        "acronym": "OHHEMMGEE",
+        "description": "Meaning \"Oh My God\" (alternate of OMG)"
+    },
+    {
+        "acronym": "OI",
+        "description": "Operator indisposed"
+    },
+    {
+        "acronym": "OIB",
+        "description": "Oh, I'm back"
+    },
+    {
+        "acronym": "OIC",
+        "description": "Oh, I see"
+    },
+    {
+        "acronym": "OJ",
+        "description": "Only joking"
+    },
+    {
+        "acronym": "OL",
+        "description": "Old lady"
+    },
+    {
+        "acronym": "OLL",
+        "description": "Online love"
+    },
+    {
+        "acronym": "OM",
+        "description": "Old man"
+    },
+    {
+        "acronym": "OM",
+        "description": "Oh, my"
+    },
+    {
+        "acronym": "OMAA",
+        "description": "Oh, my aching *A* (butt)"
+    },
+    {
+        "acronym": "OMDB",
+        "description": "Over my dead body"
+    },
+    {
+        "acronym": "OMFG",
+        "description": "Oh my *freaking* God"
+    },
+    {
+        "acronym": "omfglmaobbqrofl\n copteriss",
+        "description": "oh my *freaking* god, laugh my *a* off, owned, roll on floor spinning around I'm so sad"
+    },
+    {
+        "acronym": "OMG",
+        "description": "Oh my God"
+    },
+    {
+        "acronym": "OMG",
+        "description": "Oh my gosh"
+    },
+    {
+        "acronym": "OMGYG2BK",
+        "description": "Oh my God, you got to be kidding"
+    },
+    {
+        "acronym": "OMGYS",
+        "description": "Oh my gosh you suck"
+    },
+    {
+        "acronym": "OMS",
+        "description": "On my soul (meaning \"promise\")"
+    },
+    {
+        "acronym": "OMW",
+        "description": "On my way"
+    },
+    {
+        "acronym": "ONL",
+        "description": "Online"
+    },
+    {
+        "acronym": "OO",
+        "description": "Over and out"
+    },
+    {
+        "acronym": "OOC",
+        "description": "Out of character"
+    },
+    {
+        "acronym": "OOH",
+        "description": "Out of here"
+    },
+    {
+        "acronym": "OOMF",
+        "description": "One of my followers"
+    },
+    {
+        "acronym": "OOTD",
+        "description": "One of these days"
+    },
+    {
+        "acronym": "OOTD",
+        "description": "Outfit of the day (Instagram)"
+    },
+    {
+        "acronym": "OOTO",
+        "description": "Out of the office"
+    },
+    {
+        "acronym": "OP",
+        "description": "On phone"
+    },
+    {
+        "acronym": "ORLY",
+        "description": "Oh really?"
+    },
+    {
+        "acronym": "OS",
+        "description": "Operating system"
+    },
+    {
+        "acronym": "OT",
+        "description": "Off topic (discussion forums)"
+    },
+    {
+        "acronym": "OTB",
+        "description": "Off to bed"
+    },
+    {
+        "acronym": "OTFL",
+        "description": "On the floor laughing"
+    },
+    {
+        "acronym": "OTL",
+        "description": "Out to lunch"
+    },
+    {
+        "acronym": "OTOH",
+        "description": "On the other hand"
+    },
+    {
+        "acronym": "OTP",
+        "description": "On the phone"
+    },
+    {
+        "acronym": "OTP",
+        "description": "One true pairing; two people you would love to see as a couple"
+    },
+    {
+        "acronym": "OTT",
+        "description": "Over the top"
+    },
+    {
+        "acronym": "OTTOMH",
+        "description": "Off the top of my head"
+    },
+    {
+        "acronym": "OTW",
+        "description": "Off to work"
+    },
+    {
+        "acronym": "OVA",
+        "description": "Over"
+    },
+    {
+        "acronym": "OYO",
+        "description": "On your own"
+    },
+    {
+        "acronym": "\"P\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "P",
+        "description": "Partner (online gaming)"
+    },
+    {
+        "acronym": "P2P",
+        "description": "Parent to parent"
+    },
+    {
+        "acronym": "P2P",
+        "description": "Peer to peer"
+    },
+    {
+        "acronym": "P2P",
+        "description": "Pay to play (online gaming)"
+    },
+    {
+        "acronym": "P911",
+        "description": "Parents coming into room alert"
+    },
+    {
+        "acronym": "PAP",
+        "description": "Post a picture"
+    },
+    {
+        "acronym": "PAT",
+        "description": "Meaning \"patrol\" (online gaming)"
+    },
+    {
+        "acronym": "PAW",
+        "description": "Parents are watching"
+    },
+    {
+        "acronym": "PBOOK",
+        "description": "Phonebook (e-mail)"
+    },
+    {
+        "acronym": "PC",
+        "description": "Player character (online gaming)"
+    },
+    {
+        "acronym": "PCM",
+        "description": "Please call me"
+    },
+    {
+        "acronym": "PDA",
+        "description": "Personal display (of) affection"
+    },
+    {
+        "acronym": "PDH",
+        "description": "Pretty darn happy"
+    },
+    {
+        "acronym": "PDS",
+        "description": "Please don't shoot"
+    },
+    {
+        "acronym": "PDQ",
+        "description": "Pretty darn quick"
+    },
+    {
+        "acronym": "PEEPS",
+        "description": "People"
+    },
+    {
+        "acronym": "PFT",
+        "description": "Pretty *freaking* tight"
+    },
+    {
+        "acronym": "PIC",
+        "description": "Picture"
+    },
+    {
+        "acronym": "PIP",
+        "description": "Peeing in pants (laughing hard)"
+    },
+    {
+        "acronym": "PIR",
+        "description": "Parents in room"
+    },
+    {
+        "acronym": "PISS",
+        "description": "Put in some sugar"
+    },
+    {
+        "acronym": "PITA",
+        "description": "Pain in the *butt*"
+    },
+    {
+        "acronym": "PKMN",
+        "description": "Pokemon (online gaming)"
+    },
+    {
+        "acronym": "PL8",
+        "description": "Plate"
+    },
+    {
+        "acronym": "PLD",
+        "description": "Played"
+    },
+    {
+        "acronym": "PLMK",
+        "description": "Please let me know"
+    },
+    {
+        "acronym": "PLS",
+        "description": "Please"
+    },
+    {
+        "acronym": "PLU",
+        "description": "People like us"
+    },
+    {
+        "acronym": "PLZ",
+        "description": "Please"
+    },
+    {
+        "acronym": "PLZTLME",
+        "description": "Please tell me"
+    },
+    {
+        "acronym": "PM",
+        "description": "Private Message"
+    },
+    {
+        "acronym": "PMFI",
+        "description": "Pardon me for interrupting"
+    },
+    {
+        "acronym": "PMFJI",
+        "description": "Pardon me for jumping in"
+    },
+    {
+        "acronym": "PMSL",
+        "description": "Pee myself laughing"
+    },
+    {
+        "acronym": "POAHF",
+        "description": "Put on a happy face"
+    },
+    {
+        "acronym": "POIDH",
+        "description": "Picture, or it didn't happen"
+    },
+    {
+        "acronym": "POS",
+        "description": "Parent over shoulder"
+    },
+    {
+        "acronym": "POT",
+        "description": "Meaning \"potion\" (online gaming)"
+    },
+    {
+        "acronym": "POTD",
+        "description": "Photo of the day (Instagram)"
+    },
+    {
+        "acronym": "POV",
+        "description": "Point of view"
+    },
+    {
+        "acronym": "POV",
+        "description": "Privately owned vehicle (originally used to differentiate an individual's vehicle from a military vehicle)"
+    },
+    {
+        "acronym": "PPL",
+        "description": "People"
+    },
+    {
+        "acronym": "PPU",
+        "description": "Pending pick-up"
+    },
+    {
+        "acronym": "PRESH",
+        "description": "Precious"
+    },
+    {
+        "acronym": "PROBS",
+        "description": "Probably"
+    },
+    {
+        "acronym": "PROLLY",
+        "description": "Probably"
+    },
+    {
+        "acronym": "PROGGY",
+        "description": "Meaning computer program"
+    },
+    {
+        "acronym": "PRON",
+        "description": "Meaning pornography"
+    },
+    {
+        "acronym": "PRT",
+        "description": "Party"
+    },
+    {
+        "acronym": "PRT",
+        "description": "Please Retweet (Twitter slang)"
+    },
+    {
+        "acronym": "PRW",
+        "description": "People/parents are watching"
+    },
+    {
+        "acronym": "PSA",
+        "description": "Public Service Announcement"
+    },
+    {
+        "acronym": "PSOS",
+        "description": "Parent standing over shoulder"
+    },
+    {
+        "acronym": "PSP",
+        "description": "Playstation Portable"
+    },
+    {
+        "acronym": "PST",
+        "description": "Please send tell (online gaming)"
+    },
+    {
+        "acronym": "PTFO",
+        "description": "Pass the *freak* out"
+    },
+    {
+        "acronym": "PTIYPASI",
+        "description": "Put that in your pipe and smoke it"
+    },
+    {
+        "acronym": "PTL",
+        "description": "Praise the Lord"
+    },
+    {
+        "acronym": "PTMM",
+        "description": "Please tell me more"
+    },
+    {
+        "acronym": "PTO",
+        "description": "Paid time off"
+    },
+    {
+        "acronym": "PTO",
+        "description": "Personal time off"
+    },
+    {
+        "acronym": "PTO",
+        "description": "Parent Teacher Organization"
+    },
+    {
+        "acronym": "PUG",
+        "description": "Pick up group (online gaming)"
+    },
+    {
+        "acronym": "PVE",
+        "description": "Player vs enemy, Player versus environment (online gaming)"
+    },
+    {
+        "acronym": "PVP",
+        "description": "Player versus player (online gaming)"
+    },
+    {
+        "acronym": "PWN",
+        "description": "Meaning \"own\""
+    },
+    {
+        "acronym": "PXT",
+        "description": "Please explain that"
+    },
+    {
+        "acronym": "PU",
+        "description": "That stinks!"
+    },
+    {
+        "acronym": "PUKS",
+        "description": "Pick up kids (SMS)"
+    },
+    {
+        "acronym": "PYT",
+        "description": "Pretty young thing"
+    },
+    {
+        "acronym": "PZ",
+        "description": "Peace"
+    },
+    {
+        "acronym": "PZA",
+        "description": "Pizza"
+    },
+    {
+        "acronym": "\"Q\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "Q",
+        "description": "Queue"
+    },
+    {
+        "acronym": "Q4U",
+        "description": "(I have a) question for you"
+    },
+    {
+        "acronym": "QC",
+        "description": "Quality control"
+    },
+    {
+        "acronym": "QFE",
+        "description": "Question for everyone"
+    },
+    {
+        "acronym": "QFI",
+        "description": "Quoted for idiocy"
+    },
+    {
+        "acronym": "QFI",
+        "description": "Quoted for irony"
+    },
+    {
+        "acronym": "QFT",
+        "description": "Quoted for truth"
+    },
+    {
+        "acronym": "QIK",
+        "description": "Quick"
+    },
+    {
+        "acronym": "QL",
+        "description": "Quit laughing"
+    },
+    {
+        "acronym": "QOTD",
+        "description": "Quote of the day"
+    },
+    {
+        "acronym": "QQ (qq) (Q_Q)",
+        "description": "Meaning \"crying eyes\""
+    },
+    {
+        "acronym": "QQ",
+        "description": "Quick question"
+    },
+    {
+        "acronym": "QSL",
+        "description": "Reply"
+    },
+    {
+        "acronym": "QSO",
+        "description": "Conversation"
+    },
+    {
+        "acronym": "QT",
+        "description": "Cutie"
+    },
+    {
+        "acronym": "QTPI",
+        "description": "Cutie pie"
+    },
+    {
+        "acronym": "\"R\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "R",
+        "description": "Meaning \"are\""
+    },
+    {
+        "acronym": "R8",
+        "description": "Rate (SMS)"
+    },
+    {
+        "acronym": "RBAY",
+        "description": "Right back at you"
+    },
+    {
+        "acronym": "RFN",
+        "description": "Right *freaking* now"
+    },
+    {
+        "acronym": "RGR",
+        "description": "Roger (I agree, I understand)"
+    },
+    {
+        "acronym": "RHIP",
+        "description": "Rank has its privileges"
+    },
+    {
+        "acronym": "RIP",
+        "description": "Rest in peace"
+    },
+    {
+        "acronym": "RL",
+        "description": "Real life"
+    },
+    {
+        "acronym": "RLY",
+        "description": "Really"
+    },
+    {
+        "acronym": "RME",
+        "description": "Rolling my eyes"
+    },
+    {
+        "acronym": "RMLB",
+        "description": "Read my lips baby"
+    },
+    {
+        "acronym": "RMMM",
+        "description": "Read my mail man"
+    },
+    {
+        "acronym": "ROFL",
+        "description": "Rolling on floor laughing"
+    },
+    {
+        "acronym": "ROFLCOPTER",
+        "description": "Rolling on floor laughing and spinning around"
+    },
+    {
+        "acronym": "ROFLMAO",
+        "description": "Rolling on the floor, laughing my *butt* off"
+    },
+    {
+        "acronym": "ROTFL",
+        "description": "Rolling on the floor laughing"
+    },
+    {
+        "acronym": "ROTFLUTS",
+        "description": "Rolling on the floor laughing unable to speak"
+    },
+    {
+        "acronym": "RS",
+        "description": "Runescape (online gaming)"
+    },
+    {
+        "acronym": "RSN",
+        "description": "Real soon now"
+    },
+    {
+        "acronym": "RT",
+        "description": "Roger that"
+    },
+    {
+        "acronym": "RT",
+        "description": "Retweet (Twitter slang)"
+    },
+    {
+        "acronym": "RTBS",
+        "description": "Reason to be single"
+    },
+    {
+        "acronym": "RTFM",
+        "description": "Read the *freaking* manual"
+    },
+    {
+        "acronym": "RTFQ",
+        "description": "Read the *freaking* question"
+    },
+    {
+        "acronym": "RTHX",
+        "description": "Meaning \"Thanks for the RT (Retweet)\" (Twitter slang)"
+    },
+    {
+        "acronym": "RTMS",
+        "description": "Read the manual, stupid"
+    },
+    {
+        "acronym": "RTNTN",
+        "description": "Retention (email, Government)"
+    },
+    {
+        "acronym": "RTRCTV",
+        "description": "Retroactive (email, Government)"
+    },
+    {
+        "acronym": "RTRMT",
+        "description": "Retirement (email, Government)"
+    },
+    {
+        "acronym": "RTSM",
+        "description": "Read the stupid manual"
+    },
+    {
+        "acronym": "RTWFQ",
+        "description": "Read the whole *freaking* question"
+    },
+    {
+        "acronym": "RU",
+        "description": "Are you?"
+    },
+    {
+        "acronym": "RUMOF",
+        "description": "Are you male or female?"
+    },
+    {
+        "acronym": "RUT",
+        "description": "Are u (you) there?"
+    },
+    {
+        "acronym": "RUOK",
+        "description": "Are you okay?"
+    },
+    {
+        "acronym": "RX",
+        "description": "Regards"
+    },
+    {
+        "acronym": "RW",
+        "description": "Real world"
+    },
+    {
+        "acronym": "RX",
+        "description": "Meaning drugs or prescriptions"
+    },
+    {
+        "acronym": "RYB",
+        "description": "Read your Bible"
+    },
+    {
+        "acronym": "RYO",
+        "description": "Roll your own"
+    },
+    {
+        "acronym": "RYS",
+        "description": "Read your screen"
+    },
+    {
+        "acronym": "RYS",
+        "description": "Are you single?"
+    },
+    {
+        "acronym": "\"S\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "S2R",
+        "description": "Send to receive (meaning send me your picture to get mine)"
+    },
+    {
+        "acronym": "S2S",
+        "description": "Sorry to say"
+    },
+    {
+        "acronym": "S4L",
+        "description": "Spam for life"
+    },
+    {
+        "acronym": "SAL",
+        "description": "Such a laugh"
+    },
+    {
+        "acronym": "SAT",
+        "description": "Sorry about that"
+    },
+    {
+        "acronym": "SAVAGE",
+        "description": "Slang for a shockingly careless expression or response to an event or message"
+    },
+    {
+        "acronym": "SB",
+        "description": "Snap back (Snapchat)"
+    },
+    {
+        "acronym": "SB",
+        "description": "Should be"
+    },
+    {
+        "acronym": "SB",
+        "description": "Smiling back"
+    },
+    {
+        "acronym": "SBIA",
+        "description": "Meaning Standing back in amazement"
+    },
+    {
+        "acronym": "SBT",
+        "description": "Sorry 'bout that"
+    },
+    {
+        "acronym": "SC",
+        "description": "Stay cool"
+    },
+    {
+        "acronym": "SD",
+        "description": "Sweet dreams"
+    },
+    {
+        "acronym": "SDMB",
+        "description": "Sweet dreams, my baby"
+    },
+    {
+        "acronym": "SENPAI",
+        "description": "Meaning someone older than you, someone you look up to"
+    },
+    {
+        "acronym": "SEO",
+        "description": "Search engine optimization"
+    },
+    {
+        "acronym": "SETE",
+        "description": "Smiling Ear-to-Ear"
+    },
+    {
+        "acronym": "SELFIE",
+        "description": "A photo that is taken of oneself for social media sharing (definition)"
+    },
+    {
+        "acronym": "SFAIK",
+        "description": "So far as I know"
+    },
+    {
+        "acronym": "SH",
+        "description": "Same here"
+    },
+    {
+        "acronym": "SH^",
+        "description": "Shut up"
+    },
+    {
+        "acronym": "SHID",
+        "description": "Slapping head in disgust"
+    },
+    {
+        "acronym": "SHIP",
+        "description": "Slang for \"wishing two people were in a relationship\""
+    },
+    {
+        "acronym": "SICNR",
+        "description": "Sorry, I could not resist"
+    },
+    {
+        "acronym": "SIG2R",
+        "description": "Sorry, I got to run"
+    },
+    {
+        "acronym": "SIHTH",
+        "description": "Stupidity is hard to take"
+    },
+    {
+        "acronym": "SIMYC",
+        "description": "Sorry I missed your call"
+    },
+    {
+        "acronym": "SIR",
+        "description": "Strike it rich"
+    },
+    {
+        "acronym": "SIS",
+        "description": "Snickering in silence"
+    },
+    {
+        "acronym": "SIS",
+        "description": "Meaning sister"
+    },
+    {
+        "acronym": "SIT",
+        "description": "Stay in touch"
+    },
+    {
+        "acronym": "SITD",
+        "description": "Still in the dark"
+    },
+    {
+        "acronym": "SJW",
+        "description": "Social justice warrior"
+    },
+    {
+        "acronym": "SK8",
+        "description": "Skate"
+    },
+    {
+        "acronym": "SK8NG",
+        "description": "Skating"
+    },
+    {
+        "acronym": "SK8R",
+        "description": "Skater"
+    },
+    {
+        "acronym": "SK8RBOI",
+        "description": "Skater Boy"
+    },
+    {
+        "acronym": "SLAP",
+        "description": "Sounds like a plan"
+    },
+    {
+        "acronym": "Slay",
+        "description": "To succeed at something"
+    },
+    {
+        "acronym": "SM",
+        "description": "Social media"
+    },
+    {
+        "acronym": "SMAZED",
+        "description": "Smoky haze (marijuana stoned)"
+    },
+    {
+        "acronym": "SMEXI",
+        "description": "Combination of sexy and Mexican, used to describe attractive people"
+    },
+    {
+        "acronym": "SMH",
+        "description": "Shaking my head"
+    },
+    {
+        "acronym": "SMHID",
+        "description": "Scratching my head in disbelief"
+    },
+    {
+        "acronym": "SNAFU",
+        "description": "Situation normal all fouled up"
+    },
+    {
+        "acronym": "SNERT",
+        "description": "Snot nosed egotistical rude teenager"
+    },
+    {
+        "acronym": "SNR",
+        "description": "Streaks and Recents (Snapchat)"
+    },
+    {
+        "acronym": "SO",
+        "description": "Significant other"
+    },
+    {
+        "acronym": "SOAB",
+        "description": "Son of a *B*"
+    },
+    {
+        "acronym": "S'OK",
+        "description": "Meaning It' (s) okay (ok)"
+    },
+    {
+        "acronym": "SOL",
+        "description": "Sooner or later"
+    },
+    {
+        "acronym": "SOMY",
+        "description": "Sick of me yet?"
+    },
+    {
+        "acronym": "SorG",
+        "description": "Straight or Gay?"
+    },
+    {
+        "acronym": "SOS",
+        "description": "Meaning help"
+    },
+    {
+        "acronym": "SOS",
+        "description": "Son of Sam"
+    },
+    {
+        "acronym": "SOT",
+        "description": "Short of time"
+    },
+    {
+        "acronym": "SOTMG",
+        "description": "Short of time, must go"
+    },
+    {
+        "acronym": "SOWM",
+        "description": "Someone with me"
+    },
+    {
+        "acronym": "SPK",
+        "description": "Speak (SMS)"
+    },
+    {
+        "acronym": "SRSLY",
+        "description": "Seriously"
+    },
+    {
+        "acronym": "SPST",
+        "description": "Same place, same time"
+    },
+    {
+        "acronym": "SPTO",
+        "description": "Spoke to"
+    },
+    {
+        "acronym": "SQ",
+        "description": "Square"
+    },
+    {
+        "acronym": "SRY",
+        "description": "Sorry"
+    },
+    {
+        "acronym": "SS",
+        "description": "So sorry"
+    },
+    {
+        "acronym": "SSDD",
+        "description": "Same stuff, different day"
+    },
+    {
+        "acronym": "SSIF",
+        "description": "So stupid it's funny"
+    },
+    {
+        "acronym": "SSINF",
+        "description": "So stupid it's not funny"
+    },
+    {
+        "acronym": "ST&D",
+        "description": "Stop texting and drive"
+    },
+    {
+        "acronym": "Stan",
+        "description": "Meaning a die-hard fan of someone (Snapchat)"
+    },
+    {
+        "acronym": "STFU",
+        "description": "Shut the *freak* up"
+    },
+    {
+        "acronym": "STR8",
+        "description": "Straight"
+    },
+    {
+        "acronym": "STW",
+        "description": "Search the Web"
+    },
+    {
+        "acronym": "SU",
+        "description": "Shut up"
+    },
+    {
+        "acronym": "SUITM",
+        "description": "See you in the morning"
+    },
+    {
+        "acronym": "SUL",
+        "description": "See you later"
+    },
+    {
+        "acronym": "SUP",
+        "description": "What's up?"
+    },
+    {
+        "acronym": "SUTH",
+        "description": "So use(d) to haters (Facebook)"
+    },
+    {
+        "acronym": "SUX",
+        "description": "Meanings sucks or \"it sucks\""
+    },
+    {
+        "acronym": "SUYF",
+        "description": "Shut up you fool"
+    },
+    {
+        "acronym": "SWAG",
+        "description": "Meaning free stuff and giveaways from tech tradeshows (definition)"
+    },
+    {
+        "acronym": "SWAG",
+        "description": "Scientific wild *a* guess"
+    },
+    {
+        "acronym": "SWAK",
+        "description": "Sent (or sealed) with a kiss"
+    },
+    {
+        "acronym": "SWALK",
+        "description": "Sealed (or sealed) with a loving kiss"
+    },
+    {
+        "acronym": "SWAT",
+        "description": "Scientific wild *butt* guess"
+    },
+    {
+        "acronym": "SWL",
+        "description": "Screaming with laughter"
+    },
+    {
+        "acronym": "SWMBO",
+        "description": "She who must be obeyed. Meaning wife or partner"
+    },
+    {
+        "acronym": "SYL",
+        "description": "See you later"
+    },
+    {
+        "acronym": "SYS",
+        "description": "See you soon"
+    },
+    {
+        "acronym": "SYY",
+        "description": "Shut your yapper"
+    },
+    {
+        "acronym": "\"T\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "T+",
+        "description": "Think positive"
+    },
+    {
+        "acronym": "T4BU",
+        "description": "Thanks for being you"
+    },
+    {
+        "acronym": "T:)T",
+        "description": "Think happy thoughts"
+    },
+    {
+        "acronym": "TA",
+        "description": "Thanks a lot"
+    },
+    {
+        "acronym": "TAFN",
+        "description": "That's all for now"
+    },
+    {
+        "acronym": "TAM",
+        "description": "Tomorro a.m."
+    },
+    {
+        "acronym": "TANK",
+        "description": "Meaning really strong"
+    },
+    {
+        "acronym": "TANKED",
+        "description": "Meaning \"owned\""
+    },
+    {
+        "acronym": "TANKING",
+        "description": "Meaning \"owning\""
+    },
+    {
+        "acronym": "TARFU",
+        "description": "Things Are Really *fouled* Up."
+    },
+    {
+        "acronym": "TAU",
+        "description": "Thinking about u (you)"
+    },
+    {
+        "acronym": "TAUMUALU",
+        "description": "Thinking about you miss you always love you"
+    },
+    {
+        "acronym": "TBAG",
+        "description": "Process of disgracing a corpse, taunting a fragged/killed player (online gaming)"
+    },
+    {
+        "acronym": "TBBH",
+        "description": "To be brutally honest"
+    },
+    {
+        "acronym": "TBC",
+        "description": "To be continued"
+    },
+    {
+        "acronym": "TBD",
+        "description": "To be determined"
+    },
+    {
+        "acronym": "TBH",
+        "description": "To be honest"
+    },
+    {
+        "acronym": "TBL",
+        "description": "Text back later"
+    },
+    {
+        "acronym": "TBT",
+        "description": "Throwback Thursday (Twitter slang)"
+    },
+    {
+        "acronym": "TC",
+        "description": "Take care"
+    },
+    {
+        "acronym": "TCB",
+        "description": "Take care of business"
+    },
+    {
+        "acronym": "TCOY",
+        "description": "Take care of yourself"
+    },
+    {
+        "acronym": "TD",
+        "description": "Tower defense (online gaming)"
+    },
+    {
+        "acronym": "TD2M",
+        "description": "Talk dirty to me"
+    },
+    {
+        "acronym": "TDTM",
+        "description": "Talk dirty to me"
+    },
+    {
+        "acronym": "TEA",
+        "description": "Meaning gossip"
+    },
+    {
+        "acronym": "TFF",
+        "description": "Too *freaking* funny"
+    },
+    {
+        "acronym": "TFS",
+        "description": "Thanks for sharing"
+    },
+    {
+        "acronym": "TFTF",
+        "description": "Thanks for the follow (Twitter slang)"
+    },
+    {
+        "acronym": "TFTI",
+        "description": "Thanks for the invitation"
+    },
+    {
+        "acronym": "TFTT",
+        "description": "Thanks for this tweet (Twitter slang)"
+    },
+    {
+        "acronym": "TG",
+        "description": "Thank goodness"
+    },
+    {
+        "acronym": "TGIF",
+        "description": "Thank God it's Friday"
+    },
+    {
+        "acronym": "THNQ",
+        "description": "Thank-you (SMS)"
+    },
+    {
+        "acronym": "THNX",
+        "description": "Thanks"
+    },
+    {
+        "acronym": "THOT",
+        "description": "That wh*re over there"
+    },
+    {
+        "acronym": "THT",
+        "description": "Think happy thoughts"
+    },
+    {
+        "acronym": "THX",
+        "description": "Thanks"
+    },
+    {
+        "acronym": "TIA",
+        "description": "Thanks in advance"
+    },
+    {
+        "acronym": "TIAD",
+        "description": "Tomorrow is another day"
+    },
+    {
+        "acronym": "TIC",
+        "description": "Tongue-in-cheek"
+    },
+    {
+        "acronym": "TIL",
+        "description": "Today I learned"
+    },
+    {
+        "acronym": "TILIS",
+        "description": "Tell it like it is"
+    },
+    {
+        "acronym": "TIR",
+        "description": "Teacher in room"
+    },
+    {
+        "acronym": "TLK2UL8R",
+        "description": "Talk to you later"
+    },
+    {
+        "acronym": "TL",
+        "description": "Too long"
+    },
+    {
+        "acronym": "TL;DR",
+        "description": "Too long; didn't read"
+    },
+    {
+        "acronym": "TM",
+        "description": "Trust me"
+    },
+    {
+        "acronym": "TMA",
+        "description": "Take my advice"
+    },
+    {
+        "acronym": "TMB",
+        "description": "Text me back"
+    },
+    {
+        "acronym": "TMB",
+        "description": "Tweet me back (Twitter slang)"
+    },
+    {
+        "acronym": "TMI",
+        "description": "Too much information"
+    },
+    {
+        "acronym": "TMOT",
+        "description": "Trust me on this"
+    },
+    {
+        "acronym": "TMTH",
+        "description": "Too much to handle"
+    },
+    {
+        "acronym": "TMYL",
+        "description": "Tell me your location"
+    },
+    {
+        "acronym": "TMWFI",
+        "description": "Take my word for it"
+    },
+    {
+        "acronym": "TNSTAAFL",
+        "description": "There's no such thing as a free lunch"
+    },
+    {
+        "acronym": "TNT",
+        "description": "Til next time"
+    },
+    {
+        "acronym": "TOJ",
+        "description": "Tears of joy"
+    },
+    {
+        "acronym": "TOS",
+        "description": "Terms of service"
+    },
+    {
+        "acronym": "TOTES",
+        "description": "Totally"
+    },
+    {
+        "acronym": "TOU",
+        "description": "Thinking of you"
+    },
+    {
+        "acronym": "TOY",
+        "description": "Thinking of you"
+    },
+    {
+        "acronym": "TPM",
+        "description": "Tomorrow p.m."
+    },
+    {
+        "acronym": "TPTB",
+        "description": "The powers that be"
+    },
+    {
+        "acronym": "TQ",
+        "description": "Te quiero / I love you (Spanish SMS)"
+    },
+    {
+        "acronym": "TSH",
+        "description": "Tripping so hard"
+    },
+    {
+        "acronym": "TSNF",
+        "description": "That's so not fair"
+    },
+    {
+        "acronym": "TSTB",
+        "description": "The sooner, the better"
+    },
+    {
+        "acronym": "TT",
+        "description": "Trending topic (Twitter slang)"
+    },
+    {
+        "acronym": "TTFN",
+        "description": "Ta ta for now"
+    },
+    {
+        "acronym": "TTLY",
+        "description": "Totally"
+    },
+    {
+        "acronym": "TTTT",
+        "description": "These things take time"
+    },
+    {
+        "acronym": "TTUL",
+        "description": "Talk to you later"
+    },
+    {
+        "acronym": "TU",
+        "description": "Thank you"
+    },
+    {
+        "acronym": "TUI",
+        "description": "Turning you in"
+    },
+    {
+        "acronym": "TURNT",
+        "description": "Meaning excitement, turned up"
+    },
+    {
+        "acronym": "TWSS",
+        "description": "That's what she said"
+    },
+    {
+        "acronym": "TTG",
+        "description": "Time to go"
+    },
+    {
+        "acronym": "TTYAFN",
+        "description": "Talk to you awhile from now"
+    },
+    {
+        "acronym": "TTYL",
+        "description": "Talk to you later"
+    },
+    {
+        "acronym": "TTYS",
+        "description": "Talk to you soon"
+    },
+    {
+        "acronym": "TY",
+        "description": "Thank you"
+    },
+    {
+        "acronym": "TYFC",
+        "description": "Thank you for charity (online gaming)"
+    },
+    {
+        "acronym": "TYFYC",
+        "description": "Thank you for your comment"
+    },
+    {
+        "acronym": "TYS",
+        "description": "Told you so"
+    },
+    {
+        "acronym": "TYT",
+        "description": "Take your time"
+    },
+    {
+        "acronym": "TYSO",
+        "description": "Thank you so much"
+    },
+    {
+        "acronym": "TYAFY",
+        "description": "Thank you and *freak* you"
+    },
+    {
+        "acronym": "TYVM",
+        "description": "Thank you very much"
+    },
+    {
+        "acronym": "TX",
+        "description": "Thanks"
+    },
+    {
+        "acronym": "\"U\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "^URS",
+        "description": "Up yours"
+    },
+    {
+        "acronym": "UCMU",
+        "description": "You crack me up"
+    },
+    {
+        "acronym": "UDI",
+        "description": "Unidentified drinking injury (meaning bruise, scratch, ache and so on)"
+    },
+    {
+        "acronym": "UDM",
+        "description": "U (You) da (the) man"
+    },
+    {
+        "acronym": "UDS",
+        "description": "Ugly domestic scene"
+    },
+    {
+        "acronym": "UFB",
+        "description": "Un *freaking* believable"
+    },
+    {
+        "acronym": "UFN",
+        "description": "Until further notice"
+    },
+    {
+        "acronym": "UFWM",
+        "description": "You *freaking* with me?"
+    },
+    {
+        "acronym": "UGTBK",
+        "description": "You've got to be kidding"
+    },
+    {
+        "acronym": "UHGTBSM",
+        "description": "You have got to be s#$t*ing me!"
+    },
+    {
+        "acronym": "UKTR",
+        "description": "You know that's right"
+    },
+    {
+        "acronym": "UL",
+        "description": "Upload"
+    },
+    {
+        "acronym": "U-L",
+        "description": "Meaning \"You will\""
+    },
+    {
+        "acronym": "UNA",
+        "description": "Use no acronyms"
+    },
+    {
+        "acronym": "UN4TUN8",
+        "description": "Unfortunate"
+    },
+    {
+        "acronym": "UNBLEFBLE",
+        "description": "Unbelievable"
+    },
+    {
+        "acronym": "UNCRTN",
+        "description": "Uncertain"
+    },
+    {
+        "acronym": "UNPC",
+        "description": "Un- (not) politically correct"
+    },
+    {
+        "acronym": "UOK",
+        "description": "(Are) You ok?"
+    },
+    {
+        "acronym": "UR",
+        "description": "You are / You're"
+    },
+    {
+        "acronym": "UR2YS4ME",
+        "description": "You are too wise for me"
+    },
+    {
+        "acronym": "URA*",
+        "description": "You are a star"
+    },
+    {
+        "acronym": "URH",
+        "description": "You are hot (U R Hot)"
+    },
+    {
+        "acronym": "URSKTM",
+        "description": "You are so kind to me"
+    },
+    {
+        "acronym": "URTM",
+        "description": "You are the man"
+    },
+    {
+        "acronym": "URW",
+        "description": "You are welcome"
+    },
+    {
+        "acronym": "USBCA",
+        "description": "Until something better comes along"
+    },
+    {
+        "acronym": "USU",
+        "description": "Usually"
+    },
+    {
+        "acronym": "UT",
+        "description": "Unreal Tournament (online gaming)"
+    },
+    {
+        "acronym": "UT2L",
+        "description": "You take too long"
+    },
+    {
+        "acronym": "UTM",
+        "description": "You tell me"
+    },
+    {
+        "acronym": "UV",
+        "description": "Unpleasant visual"
+    },
+    {
+        "acronym": "UW",
+        "description": "You're welcome"
+    },
+    {
+        "acronym": "UX",
+        "description": "User experience"
+    },
+    {
+        "acronym": "\"V\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "V",
+        "description": "Very"
+    },
+    {
+        "acronym": "VAT",
+        "description": "Value added tax"
+    },
+    {
+        "acronym": "VBL",
+        "description": "Visible bra line"
+    },
+    {
+        "acronym": "VBS",
+        "description": "Very big smile"
+    },
+    {
+        "acronym": "VC",
+        "description": "Voice chat"
+    },
+    {
+        "acronym": "VEG",
+        "description": "Very evil grin"
+    },
+    {
+        "acronym": "VFF",
+        "description": "Very freaking funny"
+    },
+    {
+        "acronym": "VFM",
+        "description": "Value for money"
+    },
+    {
+        "acronym": "VGC",
+        "description": "Very good condition"
+    },
+    {
+        "acronym": "VGG",
+        "description": "Very good game (online gaming)"
+    },
+    {
+        "acronym": "VGH",
+        "description": "Very good hand (online gaming)"
+    },
+    {
+        "acronym": "VIP",
+        "description": "Very important person"
+    },
+    {
+        "acronym": "VM",
+        "description": "Voice mail"
+    },
+    {
+        "acronym": "VN",
+        "description": "Very nice"
+    },
+    {
+        "acronym": "VNH",
+        "description": "Very nice hand (online gaming)"
+    },
+    {
+        "acronym": "VoIP",
+        "description": "Voice over Internet Protocol (definition)"
+    },
+    {
+        "acronym": "VRY",
+        "description": "Very"
+    },
+    {
+        "acronym": "VSC",
+        "description": "Very soft chuckle"
+    },
+    {
+        "acronym": "VSF",
+        "description": "Very sad face"
+    },
+    {
+        "acronym": "VWD",
+        "description": "Very well done (online gaming)"
+    },
+    {
+        "acronym": "VWP",
+        "description": "Very well played (online gaming)"
+    },
+    {
+        "acronym": "\"W\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "W@",
+        "description": "What?"
+    },
+    {
+        "acronym": "W/",
+        "description": "With"
+    },
+    {
+        "acronym": "W/B",
+        "description": "Welcome back"
+    },
+    {
+        "acronym": "W3",
+        "description": "WWW (Web address)"
+    },
+    {
+        "acronym": "W8",
+        "description": "Wait"
+    },
+    {
+        "acronym": "WAH",
+        "description": "Working at home"
+    },
+    {
+        "acronym": "WAJ",
+        "description": "What a jerk"
+    },
+    {
+        "acronym": "WAM",
+        "description": "Wait a minute"
+    },
+    {
+        "acronym": "WAN2",
+        "description": "Want to? (SMS)"
+    },
+    {
+        "acronym": "WAN2TLK",
+        "description": "Want to talk"
+    },
+    {
+        "acronym": "WAREZ",
+        "description": "Meaning pirated (illegally gained) software"
+    },
+    {
+        "acronym": "WAS",
+        "description": "Wait a second"
+    },
+    {
+        "acronym": "WAS",
+        "description": "Wild *a* guess"
+    },
+    {
+        "acronym": "WAT",
+        "description": "What"
+    },
+    {
+        "acronym": "WAWA",
+        "description": "Where are we at?"
+    },
+    {
+        "acronym": "WAYF",
+        "description": "Where are you from?"
+    },
+    {
+        "acronym": "W/B",
+        "description": "Write back"
+    },
+    {
+        "acronym": "WB",
+        "description": "Welcome back"
+    },
+    {
+        "acronym": "WBS",
+        "description": "Write back soon"
+    },
+    {
+        "acronym": "WBU",
+        "description": "What about you?"
+    },
+    {
+        "acronym": "WC",
+        "description": "Welcome"
+    },
+    {
+        "acronym": "WC",
+        "description": "Who cares"
+    },
+    {
+        "acronym": "WCA",
+        "description": "Who cares anyway"
+    },
+    {
+        "acronym": "W/E",
+        "description": "Whatever"
+    },
+    {
+        "acronym": "W/END",
+        "description": "Weekend"
+    },
+    {
+        "acronym": "WE",
+        "description": "Whatever"
+    },
+    {
+        "acronym": "WEBO",
+        "description": "Webopedia"
+    },
+    {
+        "acronym": "WEEBO",
+        "description": "Describes a person obsessed with of Japanese culture"
+    },
+    {
+        "acronym": "WEP",
+        "description": "Weapon (online gaming)"
+    },
+    {
+        "acronym": "WH5",
+        "description": "Who, what, when, where, why"
+    },
+    {
+        "acronym": "WHATEVES",
+        "description": "Whatever"
+    },
+    {
+        "acronym": "WIBNI",
+        "description": "Wouldn't it be nice if"
+    },
+    {
+        "acronym": "WDALYIC",
+        "description": "Who died and left you in charge"
+    },
+    {
+        "acronym": "WDYK",
+        "description": "What do you know?"
+    },
+    {
+        "acronym": "WDYT",
+        "description": "What do you think?"
+    },
+    {
+        "acronym": "WGACA",
+        "description": "What do you think?"
+    },
+    {
+        "acronym": "WIIFM",
+        "description": "What's in it for me?"
+    },
+    {
+        "acronym": "WISP",
+        "description": "Winning is so pleasurable"
+    },
+    {
+        "acronym": "WITP",
+        "description": "What is the point?"
+    },
+    {
+        "acronym": "WITW",
+        "description": "What in the world"
+    },
+    {
+        "acronym": "WIU",
+        "description": "Wrap it up"
+    },
+    {
+        "acronym": "WK",
+        "description": "Week"
+    },
+    {
+        "acronym": "WKD",
+        "description": "Weekend"
+    },
+    {
+        "acronym": "WRT",
+        "description": "With regard to"
+    },
+    {
+        "acronym": "WL",
+        "description": "Whatta loser"
+    },
+    {
+        "acronym": "W/O",
+        "description": "Without"
+    },
+    {
+        "acronym": "WOA",
+        "description": "Work of Art"
+    },
+    {
+        "acronym": "WOKE",
+        "description": "Slang for people who are aware of current social issues, and politics"
+    },
+    {
+        "acronym": "WOMBAT",
+        "description": "Waste of money, brains and time"
+    },
+    {
+        "acronym": "WOW",
+        "description": "World of Warcraft (online gaming)"
+    },
+    {
+        "acronym": "WRK",
+        "description": "Work"
+    },
+    {
+        "acronym": "WRU",
+        "description": "Where are you?"
+    },
+    {
+        "acronym": "WRU@",
+        "description": "Where are you at?"
+    },
+    {
+        "acronym": "WRUD",
+        "description": "What are you doing?"
+    },
+    {
+        "acronym": "WTB",
+        "description": "Want to buy (online gaming)"
+    },
+    {
+        "acronym": "WTF",
+        "description": "What the *freak* ?"
+    },
+    {
+        "acronym": "WTFE",
+        "description": "What the *freak* ever"
+    },
+    {
+        "acronym": "WTFO",
+        "description": "What the *freak* ?, over."
+    },
+    {
+        "acronym": "WTG",
+        "description": "Way to go"
+    },
+    {
+        "acronym": "WTGP",
+        "description": "Want to go private (talk out of public chat area)"
+    },
+    {
+        "acronym": "WTH",
+        "description": "What the heck?"
+    },
+    {
+        "acronym": "WTM",
+        "description": "Who's the man?"
+    },
+    {
+        "acronym": "WTS",
+        "description": "Want to sell? (online gaming)"
+    },
+    {
+        "acronym": "WTT",
+        "description": "Want to trade? (online gaming)"
+    },
+    {
+        "acronym": "WU",
+        "description": "What's up?"
+    },
+    {
+        "acronym": "WUCIWUG",
+        "description": "What you see is what you get"
+    },
+    {
+        "acronym": "WUF",
+        "description": "Where are you from?"
+    },
+    {
+        "acronym": "WUP",
+        "description": "What's up?"
+    },
+    {
+        "acronym": "WUT",
+        "description": "Meaning \"what\""
+    },
+    {
+        "acronym": "WUW",
+        "description": "What u (you) want?"
+    },
+    {
+        "acronym": "WUU2",
+        "description": "What are you up to?"
+    },
+    {
+        "acronym": "WUZ",
+        "description": "Meaning \"was\""
+    },
+    {
+        "acronym": "WWJD",
+        "description": "What would Jesus do?"
+    },
+    {
+        "acronym": "WWJD",
+        "description": "What Would Judd Do? (Artist Donald Judd, who was known to do things in his own compulsive way.)"
+    },
+    {
+        "acronym": "WWNC",
+        "description": "Will wonders never cease"
+    },
+    {
+        "acronym": "WWYC",
+        "description": "Write when you can"
+    },
+    {
+        "acronym": "WYCM",
+        "description": "Will you call me?"
+    },
+    {
+        "acronym": "WYD",
+        "description": "What (are) you doing?"
+    },
+    {
+        "acronym": "WYGAM",
+        "description": "When you get a minute"
+    },
+    {
+        "acronym": "WYHAM",
+        "description": "When you have a minute"
+    },
+    {
+        "acronym": "WYLEI",
+        "description": "When you least expect it"
+    },
+    {
+        "acronym": "WYSIWYG",
+        "description": "What you see is what you get"
+    },
+    {
+        "acronym": "WYWH",
+        "description": "Wish you were here"
+    },
+    {
+        "acronym": "\"X\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "X-1-10",
+        "description": "Meaning \"Exciting\""
+    },
+    {
+        "acronym": "X",
+        "description": "Kiss"
+    },
+    {
+        "acronym": "X!",
+        "description": "Meaning \"a typical woman\""
+    },
+    {
+        "acronym": "XD",
+        "description": "Meaning \"really hard laugh\" (where D is a smiley mouth)"
+    },
+    {
+        "acronym": "XD",
+        "description": "Meaning a \"devilish smile\""
+    },
+    {
+        "acronym": "XME",
+        "description": "Excuse Me"
+    },
+    {
+        "acronym": "XOXOXO",
+        "description": "Hugs & Kisses"
+    },
+    {
+        "acronym": "XLNT",
+        "description": "Excellent"
+    },
+    {
+        "acronym": "XLR8",
+        "description": "Meaning \"faster\" or \"going faster\""
+    },
+    {
+        "acronym": "XPOST",
+        "description": "Meaning Cross-post. A link posted to a subreddit that was already shared on a different subreddit (Reddit)"
+    },
+    {
+        "acronym": "XYL",
+        "description": "Ex-young lady, meaning wife. (amateur radio)"
+    },
+    {
+        "acronym": "XYZ",
+        "description": "Examine your zipper"
+    },
+    {
+        "acronym": "\"Y\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "Y?",
+        "description": "Why?"
+    },
+    {
+        "acronym": "Y",
+        "description": "Meaning Yawn"
+    },
+    {
+        "acronym": "Y2K",
+        "description": "You're too kind"
+    },
+    {
+        "acronym": "YA",
+        "description": "Your"
+    },
+    {
+        "acronym": "YAA",
+        "description": "Yet another acronym"
+    },
+    {
+        "acronym": "YABA",
+        "description": "Yet another bloody acronym"
+    },
+    {
+        "acronym": "YARLY",
+        "description": "Ya, really?"
+    },
+    {
+        "acronym": "YAS",
+        "description": "Meaning \"praise\""
+    },
+    {
+        "acronym": "YBIC",
+        "description": "Your brother in Christ"
+    },
+    {
+        "acronym": "YBS",
+        "description": "You'll be sorry"
+    },
+    {
+        "acronym": "YCDBWYCID",
+        "description": "You can't do business when your computer is down"
+    },
+    {
+        "acronym": "YCHT",
+        "description": "You can have them"
+    },
+    {
+        "acronym": "YCLIU",
+        "description": "You can look it up"
+    },
+    {
+        "acronym": "YCMU",
+        "description": "You crack me up"
+    },
+    {
+        "acronym": "YCT",
+        "description": "Meaning Your comment to?"
+    },
+    {
+        "acronym": "YD",
+        "description": "Yesterday"
+    },
+    {
+        "acronym": "YEET",
+        "description": "Meaning excitement, approval or display of energy (i.e. throwing something)"
+    },
+    {
+        "acronym": "YF",
+        "description": "Wife"
+    },
+    {
+        "acronym": "YG",
+        "description": "Young gentleman"
+    },
+    {
+        "acronym": "YGG",
+        "description": "You go girl"
+    },
+    {
+        "acronym": "YGTBKM",
+        "description": "You've got to be kidding me"
+    },
+    {
+        "acronym": "YGTR",
+        "description": "You got that right"
+    },
+    {
+        "acronym": "YHBT",
+        "description": "You have been trolled"
+    },
+    {
+        "acronym": "YHBW",
+        "description": "You have been warned"
+    },
+    {
+        "acronym": "YHL",
+        "description": "You have lost"
+    },
+    {
+        "acronym": "YIU",
+        "description": "Yes, I understand"
+    },
+    {
+        "acronym": "YKW",
+        "description": "You know what"
+    },
+    {
+        "acronym": "YKWYCD",
+        "description": "You know what you can do"
+    },
+    {
+        "acronym": "YL",
+        "description": "Young lady"
+    },
+    {
+        "acronym": "YMMV",
+        "description": "Your mileage may vary"
+    },
+    {
+        "acronym": "YNK",
+        "description": "You never know"
+    },
+    {
+        "acronym": "YOLO",
+        "description": "You only live once"
+    },
+    {
+        "acronym": "YR",
+        "description": "Your"
+    },
+    {
+        "acronym": "YR",
+        "description": "Yeah right"
+    },
+    {
+        "acronym": "YRYOCC",
+        "description": "You're running your own cuckoo clock"
+    },
+    {
+        "acronym": "YSIC",
+        "description": "Your sister in Christ"
+    },
+    {
+        "acronym": "YSYD",
+        "description": "Yeah sure you do"
+    },
+    {
+        "acronym": "YT",
+        "description": "YouTube"
+    },
+    {
+        "acronym": "YT",
+        "description": "You there?"
+    },
+    {
+        "acronym": "YTB",
+        "description": "You're the best"
+    },
+    {
+        "acronym": "YTB",
+        "description": "Youth talk back"
+    },
+    {
+        "acronym": "YTTL",
+        "description": "You take too long"
+    },
+    {
+        "acronym": "YTG",
+        "description": "You're the greatest"
+    },
+    {
+        "acronym": "YW",
+        "description": "You're welcome"
+    },
+    {
+        "acronym": "YWHNB",
+        "description": "Yes, we have no bananas"
+    },
+    {
+        "acronym": "YWHOL",
+        "description": "Yelling \"woohoo\" out loud"
+    },
+    {
+        "acronym": "YWSYLS",
+        "description": "You win some, you lose some"
+    },
+    {
+        "acronym": "YYSSW",
+        "description": "Yeah, yeah, sure, sure, whatever"
+    },
+    {
+        "acronym": "\"Z\"  Text Message / Chat Abbreviations",
+        "description": ""
+    },
+    {
+        "acronym": "Z",
+        "description": "Zero"
+    },
+    {
+        "acronym": "Z",
+        "description": "Z's are calling (meaning going to bed/sleep)"
+    },
+    {
+        "acronym": "Z",
+        "description": "Meaning \"Said\""
+    },
+    {
+        "acronym": "Z%",
+        "description": "Zoo"
+    },
+    {
+        "acronym": "ZH",
+        "description": "Sleeping Hour"
+    },
+    {
+        "acronym": "ZOMG",
+        "description": "Used in World of Warcraft to mean OMG (Oh My God)"
+    },
+    {
+        "acronym": "ZOT",
+        "description": "Zero tolerance"
+    },
+    {
+        "acronym": "ZUP",
+        "description": "Meaning \"What's up?\""
+    },
+    {
+        "acronym": "ZZZZ",
+        "description": "Sleeping (or bored)"
+    }
+]
