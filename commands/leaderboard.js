@@ -13,6 +13,7 @@ module.exports = {
         let joinedLb = rowobj.rows.map((row, i) => `**${i + 1}** ⫸ ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
         message.channel.send({
             embed: {
+                color: parseInt((await getGlobalSetting('info_embed_color'))[0].value) || 6969,
                 author: {
                     name: 'Leaderboard',
                     icon_url: message.guild.iconURL() || client.user.displayAvatarURL()
