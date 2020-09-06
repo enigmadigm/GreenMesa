@@ -1,11 +1,13 @@
 const { prefix } = require('../auth.json');
+//const { getGlobalSetting } = require('../dbmanager');
+
 module.exports = {
     name: 'help',
-    description: 'gives a list of commands or command help',
+    description: 'get a command list or command help',
     aliases:['commands'],
     usage:"[command name]",
     cooldown: 5,
-    execute(client, message, args) {
+    async execute(client, message, args) {
         const data = [];
         const { commands } = message.client;
 
@@ -58,7 +60,7 @@ module.exports = {
             embed.fields.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
         }
         if (command.usage) {
-            embed.fields.push({ name: "Usage", value: `${prefix}${command.name} ${command.usage}` });
+            embed.fields.push({ name: "Usage", value: `\`\`\`${prefix}${command.name} ${command.usage}\`\`\`` });
         }
         embed.fields.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)` });
 
