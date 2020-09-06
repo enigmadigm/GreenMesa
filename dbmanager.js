@@ -106,15 +106,24 @@ async function updateXP(message) {
         if (err) throw err;
         let sql;
         if (rows.length < 1) {
-            sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild.id}', '${message.author.id}', '${message.guild.id}', '${genXP()}', '0')`;
+            sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild.id}', '${message.author.id}', '${message.guild.id}', ${genXP()}, 0)`;
         } else {
-            let xp = rows[0].xp;
-            let gennedxp = genXP();
-            let levelNow = Math.floor(0.1 * Math.sqrt(xp));
+            // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
+            let xp = rows[0].xp + genXP();
+            let levelNow = rows[0].level;
+            let totalNeeded = 0;
+            for (let x = 0; x < rows[0].level + 1; x++) {
+                totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
+            }
+            if (xp > totalNeeded) levelNow++;
+            console.log(levelNow)
+            xlog.log('n:' + totalNeeded + 't:' + xp);
+
+            /*let levelNow = Math.floor(0.1 * Math.sqrt(xp));
             if (rows[0].level !== levelNow) {
                 rows[0].level = levelNow;
-            }
-            sql = `UPDATE dgmxp SET xp = ${xp + gennedxp}, level = ${rows[0].level} WHERE id = '${message.author.id}${message.guild.id}'`
+            }*/
+            sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = '${message.author.id}${message.guild.id}'`
 
             updateLevelRole(message.member, levelNow);
         }
