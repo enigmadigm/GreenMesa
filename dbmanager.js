@@ -116,9 +116,6 @@ async function updateXP(message) {
                 totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
             }
             if (xp > totalNeeded) levelNow++;
-            console.log(levelNow)
-            xlog.log('n:' + totalNeeded + 't:' + xp);
-
             /*let levelNow = Math.floor(0.1 * Math.sqrt(xp));
             if (rows[0].level !== levelNow) {
                 rows[0].level = levelNow;
