@@ -75,7 +75,7 @@ const query = util.promisify(conn.query).bind(conn);
  */
 async function getGlobalSetting(name) {
     let rows = await query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
-    if (rows.length > 0) {
+    if (rows && rows.length > 0) {
         return rows;
     } else {
         return false;
