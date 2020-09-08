@@ -1,4 +1,5 @@
 const Leeter = require('../utils/leeter');
+const xlg = require('../xlogger');
 var leeter = new Leeter(1, false);
 
 module.exports = {
@@ -7,6 +8,10 @@ module.exports = {
     aliases: ['leetspeaker', 'leetify', 'leetspeakify', 'leet'],
     guildonly: true,
     execute(client, message, args) {
-        message.channel.send(leeter.tol33t(args.join(" ")));
+        message.channel.send({
+            embed: {
+                description: `\`${leeter.tol33t(args.join(" "))}\``
+            }
+        }).catch(xlg.error);
     }
 }
