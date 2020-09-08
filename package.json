@@ -1,6 +1,6 @@
 {
     "name": "greenmesa",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
     "main": "bot.js",
     "scripts": {
@@ -20,7 +20,8 @@
         "mysql": "^2.18.1",
         "node-fetch": "^2.6.0",
         "plotly": "^1.0.6",
-        "pm2": "^4.4.1"
+        "pm2": "^4.4.1",
+        "ytdl-core": "^3.2.2"
     },
     "license": "ISC",
     "bugs": {
