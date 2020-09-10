@@ -15,7 +15,7 @@ module.exports = {
             data.push(`**My unhidden commands: (${commands.array().length})**`);
             // for some reason if you don't separate \` ${command.name} \` with a space it flips out
             //                                         ^               ^
-            data.push(commands.filter(command => !['botkill', 'botreset', 'creload', 'config'].includes(command.name)).map(command => {
+            data.push(commands.filter(command => !['botkill', 'botreset', 'creload'].includes(command.name)).map(command => {
                 let availableDesc = command.description || "*no description*";
                 if (command.description && (command.description.short || command.description.long)) {
                     availableDesc = command.description.short || command.description.long;
