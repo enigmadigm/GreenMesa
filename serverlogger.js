@@ -120,6 +120,7 @@ async function logMessageUpdate(omessage, nmessage) {
     let logChannel = await getLogChannel(nmessage.guild);
     if (!logChannel || logChannel.type !== 'text') return;
     if (logChannel.id === nmessage.channel.id) return;
+    if (nmessage.author.id == nmessage.client.user.id) return;
 
     // shorten both messages when the content is larger then 1024 chars
     let oldShortened = false;
