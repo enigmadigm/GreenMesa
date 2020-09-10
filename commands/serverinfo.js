@@ -5,7 +5,9 @@ const xlg = require("../xlogger");
 
 module.exports = {
     name: 'serverinfo',
+    description: 'get info on the current server',
     aliases: ['server'],
+    guildOnly: true,
     cooldown: 8,
     async execute(client, message) {
         let createdAt = moment(message.guild.createdAt).utc();
