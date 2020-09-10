@@ -26,7 +26,7 @@ const config = require("./auth.json"); // Loading app config file
 const client = new Discord.Client();
 var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
-const { logMember, logMessageDelete, logMessageBulkDelete } = require('./serverlogger')
+const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate } = require('./serverlogger')
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -171,6 +171,10 @@ client.on('messageDelete', message => {
 
 client.on('messageDeleteBulk', messageCollection => {
     logMessageBulkDelete(messageCollection);
+});
+
+client.on('messageUpdate', (omessage, nmessage) => {
+    logMessageUpdate(omessage, nmessage);
 });
 
 // the actual command processing

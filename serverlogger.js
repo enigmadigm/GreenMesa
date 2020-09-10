@@ -1,4 +1,4 @@
-var { getGuildSetting, editGuildSetting } = require("./dbmanager");
+var { getGlobalSetting, getGuildSetting, editGuildSetting } = require("./dbmanager");
 const { stringToChannel } = require('./utils/parsers');
 const Discord = require('discord.js')
 const moment = require('moment')
@@ -17,34 +17,57 @@ async function logMember(member, joining) {
     let logChannel = await getLogChannel(member.guild);
     if (!logChannel || logChannel.type !== 'text') return;
 
-    logChannel.send({
+    let embed = {
         embed: {
             "author": {
                 "name": `Member ${joining ? 'Joined' : 'Left'}`,
-                "icon_url": member.user.displayAvatarURL
+                "icon_url": member.user.displayAvatarURL()
             },
-            "description": `${member}\n${member.nickname || "***No nickname***"}\n${member.user.tag}`,
+            "description": `${member.user.tag} (${member})${!joining ? `\n ${member.nickname || "***No nickname***"}` : ''}`,
+            "fields": [
+                {
+                    "name": `${joining ? 'Created' : 'Joined'}`,
+                    "value": `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`
+                }
+            ],
             "color": joining ? 0x00ff00 : 0xff0000,
-            "timestamp": new Date().toISOString(),
+            "timestamp": joining ? member.joinedAt : new Date(),
             "footer": {
                 "text": `ID: ${member.id}`
             }
         }
-    });
+    };
+    logChannel.send(embed).catch(console.error);
 }
 
 async function logMessageDelete(message) {
     let logChannel = await getLogChannel(message.guild);
     if (!logChannel || logChannel.type !== 'text') return;
+    if (logChannel.id === message.channel.id) return;
+    if (message.author.id == message.client.user.id) return;
+    // shorten message if it's longer then 1024 (thank you bulletbot)
+    let shortened = false;
+    let content = message.content;
+    if (content.length > 1024) {
+        content = content.slice(0, 1020) + '...';
+        shortened = true;
+    }
 
     logChannel.send({
         embed: {
+            "color": parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000,
             "author": {
                 "name": "Message Deleted",
-                "icon_url": message.author.avatarURL
+                "icon_url": message.author.displayAvatarURL()
             },
-            "description": `Message deleted in ${message.channel}\n${message.content || "*content not able to be shown*"}`,
-            "timestamp": new Date().toISOString(),
+            "description": `Message by ${message.author} deleted in ${message.channel}\nmessage created ${moment(message.createdAt).utc().fromNow()}`,
+            "fields": [
+                {
+                    name: 'Content' + (shortened ? ' (shortened)' : ''),
+                    value: message.content.length > 0 ? content : '*content unavailable*'
+                }
+            ],
+            "timestamp": new Date(message.createdAt).toISOString(),
             "footer": {
                 "text": `Message ID: ${message.id} | Author ID: ${message.author.id}`
             }
@@ -55,6 +78,7 @@ async function logMessageDelete(message) {
 async function logMessageBulkDelete(messageCollection) {
     let logChannel = await getLogChannel(messageCollection.first().guild);
     if (!logChannel || logChannel.type !== 'text') return;
+    if (logChannel.id === messageCollection.first().channel.id) return;
 
     let humanLog = `**Deleted Messages from #${messageCollection.first().channel.name} (${messageCollection.first().channel.id}) in ${messageCollection.first().guild.name} (${messageCollection.first().guild.id})**`;
     for (const message of messageCollection.array().reverse()) {
@@ -70,6 +94,7 @@ async function logMessageBulkDelete(messageCollection) {
     let logMessage = await logChannel.send(attachment);
     logMessage.edit({
         embed: {
+            "color": parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000,
             "author": {
                 "name": `${messageCollection.first().channel.name}`,
                 "icon_url": messageCollection.first().guild.iconURL
@@ -90,6 +115,51 @@ async function logMessageBulkDelete(messageCollection) {
     });
 }
 
+async function logMessageUpdate(omessage, nmessage) {
+    if (omessage.content == nmessage.content) return;
+    let logChannel = await getLogChannel(nmessage.guild);
+    if (!logChannel || logChannel.type !== 'text') return;
+    if (logChannel.id === nmessage.channel.id) return;
+
+    // shorten both messages when the content is larger then 1024 chars
+    let oldShortened = false;
+    let oldContent = omessage.content;
+    if (oldContent.length > 1024) {
+        oldContent = oldContent.slice(0, 1020) + '...';
+        oldShortened = true;
+    }
+    let newShortened = false;
+    let newContent = nmessage.content;
+    if (newContent.length > 1024) {
+        newContent = newContent.slice(0, 1020) + '...';
+        newShortened = true;
+    }
+
+    logChannel.send({
+        embed: {
+            author: {
+                name: "Message Edited",
+                icon_url: nmessage.author.displayAvatarURL()
+            },
+            description: `**m.** edited in ${nmessage.channel} by ${nmessage.author}\n**m.** created ${moment(omessage.createdAt).utc().fromNow()} [${moment(omessage.createdAt).utc().format('M/D/Y HH:mm:ss')}]`,
+            fields: [
+                {
+                    name: "Before" + (oldShortened ? ' (shortened)' : ''),
+                    value: `${omessage.content.length > 0 ? omessage.content : '*content unavailable*'}`
+                },
+                {
+                    name: "After" + (newShortened ? ' (shortened)' : ''),
+                    value: `${nmessage.content.length > 0 ? nmessage.content : '*content unavailable*'}`
+                }
+            ],
+            footer: {
+                text: `Msg ID: ${nmessage.id} | Author ID: ${nmessage.author.id}`
+            }
+        }
+    });
+}
+
 exports.logMember = logMember;
 exports.logMessageDelete = logMessageDelete;
 exports.logMessageBulkDelete = logMessageBulkDelete;
+exports.logMessageUpdate = logMessageUpdate;
