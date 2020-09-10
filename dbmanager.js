@@ -37,7 +37,7 @@ const levelRoles = [
     {
         level: 5,
         name: 'prob not a bot level',
-        color: '#c364ff'
+        color: '#a886f1'
     },
     {
         level: 1,
