@@ -1,6 +1,7 @@
 const { getGlobalSetting, editGlobalSettings } = require("../dbmanager");
 const xlg = require("../xlogger");
 const moment = require("moment");
+const { permLevels } = require('../permissions');
 
 module.exports = {
     name: 'config',
@@ -13,7 +14,7 @@ module.exports = {
     args: false,
     guildOnly: false,
     cooldown: 3,
-    permLevel: 4,
+    permLevel: permLevels.botMaster,
     /**
      * 
      * @param {discord.Client} client

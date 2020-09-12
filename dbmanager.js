@@ -2,6 +2,7 @@ const mysql = require("mysql");
 const { db_config } = require("./auth.json");
 const xlog = require("./xlogger");
 const util = require('util');
+const Discord = require('discord.js');
 var conn;
 const levelRoles = [
     {
@@ -84,11 +85,11 @@ async function getGlobalSetting(name) {
 
 /**
  * Get the current amount of xp assigned to a user
- * @param {object} message sent message
- * @param {object} target discord user object to select in database
+ * @param {Discord.GuildMember} target discord user object to select in database
  */
-async function getXP(message, target) {
-    let rows = await query(`SELECT * FROM dgmxp WHERE id = '${target.id}${message.guild.id}'`);
+async function getXP(target) {
+    if (!target || !(target instanceof Discord.GuildMember)) return false;
+    let rows = await query(`SELECT * FROM dgmxp WHERE id = '${target.user.id}${target.guild.id}'`);
     return rows;
 }
 
@@ -151,11 +152,10 @@ async function updateLevelRole(member, level) {
             for (let i = 0; i < availableRoles.length; i++) {
                 const r = availableRoles[i];
                 if (r) {
-                    if (member.roles.cache.find(ro => ro.id === r.id)) {
-                        r.setPosition(availableRoles.length - i)
-                            .catch(console.error);
-                    } else {
-                        member.roles.add(r, 'levelling up').catch(console.error);
+                    if (r.comparePositionTo(member.guild.me.roles.highest) < 0) {
+                        if (!member.roles.cache.find(ro => ro.id === r.id)) {
+                            member.roles.add(r, 'levelling up').catch(console.error);
+                        }
                     }
                 }
                 
@@ -185,9 +185,9 @@ async function checkForLevelRoles(guild) {
         levelRows = await query(`SELECT * FROM levelroles WHERE guildid = ${guild.id} ORDER BY level DESC`);
     } else {
         for (let i = 0; i < levelRows.length; i++) {
-            const dbro = levelRows[i];
-            if (!guild.roles.cache.find(ro => ro.id === dbro.roleid)) {
-                await query(`DELETE FROM levelroles WHERE roleid = '${dbro.roleid}'`).catch(e => console.log(e.stack))
+            const dbro = guild.roles.cache.find(ro => ro.id === levelRows[i].roleid);
+            if (!dbro) {
+                await query(`DELETE FROM levelroles WHERE roleid = '${levelRows[i].roleid}'`).catch(e => console.log(e.stack))
                 levelRows.splice(i, 1);
             }
         }
@@ -340,6 +340,13 @@ async function massClearXP(guild) {
     return result.affectedRows || false;
 }
 
+/**
+ * Configure the role reward roles for a given guild.
+ * @param {number} level the current level for the role to be set to
+ * @param {Discord.Guild} guild the guild for the role to be set to
+ * @param {Discord.Role} role the role to be added or configured
+ * @param {boolean} deleting whether or not the given role should be deleted from the database, if true the level param will be ignored
+ */
 async function setLevelRole(level, guild, role, deleting = false) {
     if (!guild || !guild.id) return false;
     let result;
@@ -369,6 +376,13 @@ async function setLevelRole(level, guild, role, deleting = false) {
     return result;
 }
 
+async function deleteAllLevelRoles(guild) {
+    if (!(guild instanceof Discord.Guild)) return;
+    let result = await query(`DELETE FROM levelroles WHERE guildid = '${guild.id}'`);
+    if (result && result.affectedRows > 0) return result;
+    return false;
+}
+
 exports.conn = conn;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
@@ -387,3 +401,4 @@ exports.levelRoles = levelRoles;
 exports.updateLevelRole = updateLevelRole;
 exports.checkForLevelRoles = checkForLevelRoles;
 exports.setLevelRole = setLevelRole;
+exports.deleteAllLevelRoles = deleteAllLevelRoles;

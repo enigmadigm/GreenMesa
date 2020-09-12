@@ -10,13 +10,13 @@ module.exports = {
     usage: "[other user]",
     guildOnly: true,
     async execute(client, message, args) {
-        let target = message.mentions.users.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.author;
+        let target = message.mentions.members.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.member || false;
+        if (!target) return message.channel.send('Invalid target.');
 
-        let rows = await getXP(message, target);
+        let rows = await getXP(target);
         
-        let wec_gs = await getGlobalSetting("warn_embed_color");
-        let warn_embed_color = parseInt(wec_gs[0].value);
-        let iec_gs = await getGlobalSetting("info_embed_color");
+        let warn_embed_color = parseInt((await getGlobalSetting("warn_embed_color"))[0].value, 10);
+        let info_embed_color = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
 
         let xpTypeGlobal = await getGlobalSetting('xp_type');
 
@@ -37,7 +37,7 @@ module.exports = {
         message.channel.send({
             embed: {
                 description: `${target} currently has ${rows[0].xp} ${(xpTypeGlobal[0]) ? xpTypeGlobal[0].value : 'xp'} **⁛** level ${rows[0].level}`,
-                color: parseInt(iec_gs[0].value) || 0
+                color: info_embed_color || 0
             }
         });
     }

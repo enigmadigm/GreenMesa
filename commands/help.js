@@ -6,7 +6,7 @@ module.exports = {
     description: 'get a command list or command help',
     aliases:['commands'],
     usage:"[command name]",
-    cooldown: 5,
+    cooldown: 2,
     async execute(client, message, args) {
         const data = [];
         const { commands } = message.client;
