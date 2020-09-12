@@ -1,12 +1,13 @@
 const xlg = require("./xlogger");
-const { getGlobalSetting } = require("./dbmanager");
+const { getGlobalSetting, getXP } = require("./dbmanager");
 
 const permLevels = {
-    member : 0,
-    immune : 1,
-    mod : 2,
-    admin : 3,
-    botMaster : 4,
+    member: 0,
+    trustedMember: 1,
+    immune: 2,
+    mod: 3,
+    admin: 4,
+    botMaster: 5,
 }
 
 async function getPermLevel(member) {
@@ -20,6 +21,9 @@ async function getPermLevel(member) {
     }
     if (member.hasPermission('ADMINISTRATOR')) { // if a user has admin rights he's automatically a admin
         return permLevels.admin;
+    }
+    if ((await getXP(member))[0].level > 0) {
+        return permLevels.trustedMember;
     }
     return permLevels.member;
 }

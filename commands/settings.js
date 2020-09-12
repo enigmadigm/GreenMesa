@@ -1,4 +1,4 @@
-const { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole } = require("../dbmanager");
+const { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole, deleteAllLevelRoles } = require("../dbmanager");
 const xlg = require("../xlogger");
 //const moment = require("moment");
 const { permLevels } = require('../permissions');
@@ -7,10 +7,10 @@ const { stringToChannel, stringToRole } = require('../utils/parsers');
 module.exports = {
     name: "settings",
     description: {
-        short: "manage mod features",
-        long: 'Manage many server config settings. **Access much more information by sending the cmd w/out args.** In early development.'
+        short: "manage the server settings for the bot",
+        long: 'Use to manage many of the server config settings. You can send this command without arguments to see the various options available. Send most options without arguments to see them in even more detail. **In development**.'
     },
-    aliases: ['mod', 'moderation'],
+    aliases: ['set', 'server', 'mod', 'moderation'],
     usage: "<serverlog/megalog>",
     args: false,
     permLevel: permLevels.admin,
@@ -32,7 +32,7 @@ module.exports = {
         if (!args.length) {
             return message.channel.send({
                 embed: {
-                    title: "Server Moderation Management",
+                    title: "Server Management",
                     description: `This command acts as the portal to configure the bot's moderation and management features to your needs.\n\nSend one of the following commands for specific information about them.\n:unlock: \`level-roles\`\n:unlock: \`server-log\`\n:lock: \`case-logging\`\n:lock: \`mods\`, \`admins\` (staff)\n:lock: \`enable/disable\` (moderation)\n(:lock: = in dev, :unlock: = available)`,
                     color: info_embed_color || 0,
                     footer: {
@@ -77,7 +77,7 @@ module.exports = {
             case 'admininistrators': {
                 message.channel.send({
                     embed: {
-                        description: 'This option is currently in development.'
+                        description: 'This subcommand is currently in development.'
                     }
                 }).catch(xlg.error);
                 break;
@@ -86,7 +86,7 @@ module.exports = {
             case 'moderators': {
                 message.channel.send({
                     embed: {
-                        description: 'This option is currently in development.'
+                        description: 'This subcommand is currently in development.'
                     }
                 }).catch(xlg.error);
                 break;
@@ -94,7 +94,7 @@ module.exports = {
             case 'case-logging': {
                 message.channel.send({
                     embed: {
-                        description: 'This option is currently in development.'
+                        description: 'This subcommand is currently in development.'
                     }
                 }).catch(xlg.error);
                 break;
@@ -109,7 +109,7 @@ module.exports = {
                 if (!args[argIndex]) {
                     message.channel.send({
                         embed: {
-                            description: 'Level roles are a fun thing to add to your server. No matter the setting, when members send messages they gain xp; the more xp they have, the higher their level. If this setting is `enable`d, when they reach certain levels they will be awarded with roles. When you first enable `levels`, a preset list of roles will be created for you (view with `settings levels list`).',
+                            description: 'Level roles are a fun thing to add to your server. No matter the setting, when members send messages they gain xp; the more xp they have, the higher their level. If this setting is `enable`d, when they reach certain levels they will be awarded with roles. When you first enable `levels`, a preset list of roles will be created for you (view with `settings levels list`). After enabling, you may edit the roles however you wish, or add new ones.',
                             fields: [
                                 {
                                     name: 'Setting',
@@ -117,7 +117,7 @@ module.exports = {
                                 },
                                 {
                                     name: 'Subcommands',
-                                    value: '🔹`enable/disable`\n🔹`list (available roles)`\n🔹`set <role> <new lvl>`\n🔹`remove <role id>`'
+                                    value: '🔹`(enable) / (disable [--forget (existing roles)])`\n🔹`list (available roles)`\n🔹`set <role> <new lvl>`\n🔹`remove <role id>`'
                                 }
                             ]
                         }
@@ -139,11 +139,19 @@ module.exports = {
                         break;
                     }
                     case 'disable': {
-                        if (!levellingEnabled && levellingEnabled[0].value === 'disabled') {
+                        argIndex++;
+                        if (!levellingEnabled || levellingEnabled[0].value === 'disabled') {
                             return message.channel.send('Levels are already **disabled**.').catch(console.error);
                         }
                         let editResult = await editGuildSetting(message.guild, 'xp_levels', 'disabled');
-                        if (editResult.affectedRows == 1) {
+                        let massDeletionResult = true;
+                        if (args[argIndex] == '--forget') {
+                            massDeletionResult = await deleteAllLevelRoles(message.guild);
+                            if (!massDeletionResult || massDeletionResult.affectedRows == 0) {
+                                massDeletionResult = false;
+                            }
+                        }
+                        if (editResult.affectedRows == 1 && massDeletionResult) {
                             message.channel.send('Levelling **disabled**!').catch(console.error);
                         } else {
                             message.channel.send('Failed to disable levelling.').catch(console.error);

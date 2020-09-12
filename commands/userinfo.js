@@ -42,7 +42,7 @@ module.exports = {
     async execute(client, message, args) {
         let target = message.mentions.members.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.member;
         let rank = await getTop10(target.guild.id, target.id);
-        let xp = await getXP(message, target.user);
+        let xp = await getXP(target);
 
         var roles = '';
         var roleArray = target.roles.cache.array();
