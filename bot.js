@@ -181,6 +181,7 @@ client.on('messageUpdate', (omessage, nmessage) => {
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
 
     if (message.author.bot) return;
+    if (message.system) return;
 
     var dm = false; // checks if it's from a dm
     if (!message.guild)
