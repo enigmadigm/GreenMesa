@@ -28,10 +28,11 @@ function getOrdinalSuffix(i) {
 }
 
 function getPresenceEmoji(target) {
-    if (target.user.presence.status === 'online') return ':green_circle:';
-    if (target.user.presence.status === 'idle') return ':yellow_circle:';
-    if (target.user.presence.status === 'dnd') return ':red_circle:';
-    if (target.user.presence.status === 'offline') return ':black_circle:';
+    if (target.user.presence.status === 'online') return '<:736903507436896313:752118506950230067>';
+    if (target.user.presence.status === 'idle') return '<:736903574235250790:752118507164139570>';
+    if (target.user.presence.status === 'dnd') return '<:736903662617755670:752118507046699079>';
+    if (target.user.presence.status === 'offline') return '<:736903819509628948:752118507260477460>';
+    if (target.user.presence.activities.length && target.user.presence.activities[0].type === 'streaming') return '<:736903745245413386:752118507248025641>';
 }
 
 module.exports = {
@@ -71,18 +72,26 @@ module.exports = {
             embed: {
                 color: target.roles.hoist ? target.roles.hoist.color : parseInt((await getGlobalSetting('info_embed_color'))[0].value) || 0,
                 author: {
-                    name: `Stats of ${target.user.tag} ${rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : ""}`,
+                    name: `Stats of ${target.user.tag} ${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}`,
                     icon_url: target.user.displayAvatarURL()
+                },
+                thumbnail: {
+                    url: target.user.displayAvatarURL()
                 },
                 fields: [
                     {
                         "name": "Status",
-                        "value": `${getPresenceEmoji(target)} ${target.user.presence.status}`,
+                        "value": `${getPresenceEmoji(target)} ${target.user.presence.status || ''}`,
                         "inline": true
                     },
                     {
                         name: 'Join Rank',
                         value: joinRank,
+                        inline: true
+                    },
+                    {
+                        name: 'Nitro Boosting',
+                        value: `${target.premiumSince ? `since ${moment(target.premiumSince).format('ddd M/D/Y HH:mm:ss')}` : 'no'}`,
                         inline: true
                     },
                     {
@@ -96,13 +105,8 @@ module.exports = {
                         inline: true
                     },
                     {
-                        name: 'Level (xp)',
-                        value: xp[0] ? xp[0].level : 'none',
-                        inline: true
-                    },
-                    {
-                        name: 'Rank (xp)',
-                        value: rank.personal.rank,
+                        name: 'Rank & Level (xp)',
+                        value: `#${rank.personal ? rank.personal.rank : 'none'} | ${xp[0] ? xp[0].level : 'none'}`,
                         inline: true
                     },
                     {
