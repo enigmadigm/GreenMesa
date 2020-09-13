@@ -1,5 +1,6 @@
 const { prefix } = require('../auth.json');
 //const { getGlobalSetting } = require('../dbmanager');
+const { permLevels } = require('../permissions');
 
 module.exports = {
     name: 'help',
@@ -63,6 +64,13 @@ module.exports = {
             embed.fields.push({ name: "Usage", value: `\`\`\`${prefix}${command.name} ${command.usage}\`\`\`` });
         }
         embed.fields.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)` });
+        if (command.permLevel) {
+            let permKeys = Object.keys(permLevels);
+            embed.fields.push({
+                name: "Permissions",
+                value: permKeys[command.permLevel]
+            })
+        }
 
         message.channel.send({ embed });
     }
