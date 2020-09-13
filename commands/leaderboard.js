@@ -20,7 +20,7 @@ module.exports = {
                 },
                 description: joinedLb.join("\n"),
                 footer: {
-                    text: (rowobj.personal.rank > 10) ? `${message.member.displayName}'s rank: ${rowobj.personal.rank || "none"}` : `top 10 for THIS server`
+                    text: (rowobj.personal.rank > 10) ? `${message.member.displayName}'s rank: ${rowobj.personal.rank || "none"}` : `top ten for this server`
                 }
             }
         }).catch(xlg.error)

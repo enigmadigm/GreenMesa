@@ -5,6 +5,7 @@ module.exports = {
     usage:"<cmd to reload>",
     args: true,
     ownerOnly: true,
+    cooldown: 1,
     execute(client, message, args) {
         const commandName = args[0].toLowerCase();
         const command = message.client.commands.get(commandName)

@@ -20,11 +20,11 @@ module.exports = {
                     "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
                 },
                 "thumbnail": {
-                    "url": message.guild.iconURL
+                    "url": message.guild.iconURL()
                 },
                 "author": {
                     "name": message.guild.name,
-                    "icon_url": message.guild.iconURL
+                    "icon_url": message.guild.iconURL()
                 },
                 "fields": [
                     {
@@ -43,7 +43,7 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Channels",
+                        "name": `Channels (${message.guild.channels.cache.array().length})`,
                         "value": `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}\nText: ${message.guild.channels.cache.filter(x => x.type == 'text').size}\nVoice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`,
                         "inline": true
                     },

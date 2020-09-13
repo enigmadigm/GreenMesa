@@ -142,7 +142,7 @@ async function logMessageUpdate(omessage, nmessage) {
                 name: "Message Edited",
                 icon_url: nmessage.author.displayAvatarURL()
             },
-            description: `**m.** edited in ${nmessage.channel} by ${nmessage.author}\n**m.** created ${moment(omessage.createdAt).utc().fromNow()} [${moment(omessage.createdAt).utc().format('M/D/Y HH:mm:ss')}]`,
+            description: `[**m.**](${nmessage.url}) edited in ${nmessage.channel} by ${nmessage.author}\n[**m.**](${nmessage.url}) created ${moment(omessage.createdAt).utc().fromNow()}\n[${moment(omessage.createdAt).utc().format('M/D/Y HH:mm:ss')}]`,
             fields: [
                 {
                     name: "Before" + (oldShortened ? ' (shortened)' : ''),
