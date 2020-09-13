@@ -160,7 +160,53 @@ async function logMessageUpdate(omessage, nmessage) {
     });
 }
 
+async function logRole(role, deletion = false) {
+    let logChannel = await getLogChannel(role.guild);
+    if (!logChannel || logChannel.type !== 'text') return;
+
+    try {
+        await logChannel.send({
+            embed: {
+                author: {
+                    name: `Role ${deletion ? 'Deleted' : 'Created'}`,
+                    icon_url: role.guild.iconURL()
+                },
+                description: `${deletion ? `@${role.name} (${role.hexColor})` : `${role || role.name}`}${deletion ? "\n created " + moment(role.createdAt).utc().fromNow() : ''}`,
+                color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
+                timestamp: deletion ? role.createdAt : new Date(),
+                footer: {
+                    text: "Role ID: " + role.id
+                }
+            }
+        });
+    } catch (e) {
+        return; // acording to bb devs: very likely just left the server and the bot specific role got deleted
+    }
+}
+
+async function logChannelState(channel, deletion = false) {
+    let logChannel = await getLogChannel(channel.guild);
+    if (!logChannel || logChannel.type !== 'text') return;
+    
+    await logChannel.send({
+        embed: {
+            author: {
+                name: `${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
+                icon_url: channel.guild.iconURL()
+            },
+            description: `${deletion ? `#${channel.name}` : `${channel || channel.name}`} (${channel.type})${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
+            color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
+            timestamp: deletion ? channel.createdAt : new Date(),
+            footer: {
+                text: "Channel ID: " + channel.id
+            }
+        }
+    });
+}
+
 exports.logMember = logMember;
 exports.logMessageDelete = logMessageDelete;
 exports.logMessageBulkDelete = logMessageBulkDelete;
 exports.logMessageUpdate = logMessageUpdate;
+exports.logRole = logRole;
+exports.logChannelState = logChannelState;
