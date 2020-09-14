@@ -9,7 +9,7 @@ module.exports = {
     aliases: ['def'],
     execute(client, message, args) {
         if (args.length > 0 && args.length < 11) {
-            if (message.channel.type === "text" && message.mentions.members.size) {
+            if (message.channel.type === "text" && message.mentions.members.size && message.mentions.members.first().id !== message.guild.me.id) {
                 if (message.mentions.members.first().id == "142831008901890048") {
                     return message.channel.send({
                         embed: {
@@ -48,11 +48,23 @@ module.exports = {
                 }
                 return message.channel.send({
                     embed: {
-                            "title": "Well you see I can't define that mention",
-                            "description": "I can't define mentions unless they are special!",
+                        "title": "Well you see I can't define that mention",
+                        "description": "I can't define mentions unless they are special!",
                             "color": 15277667,
                             "footer": {
                                 "text": "Definitions"
+                            }
+                    }
+                });
+            }
+            if (args.join(" ") === client.user.id || (message.mentions.members.size && message.mentions.members.first().id === message.guild.me.id)) {
+                return message.channel.send({
+                    embed: {
+                        "title": `The definition of ${message.guild.me.displayName}`,
+                        "description": "that's this bot, stupid head",
+                        "color": 15277667,
+                        "footer": {
+                            "text": "Definitions"
                         }
                     }
                 });
@@ -67,7 +79,7 @@ module.exports = {
                             message.channel.send({
                                 embed: {
                                     "title": "It appears you typed gibberish.",
-                                    "description": "That or we're just dumb.",
+                                    "description": "That, or we're just dumb.",
                                     "color": 16750899,
                                     "footer": {
                                         "text": "Definitions"
@@ -88,13 +100,13 @@ module.exports = {
                             message.channel.send({ embed }).catch(console.error);
                         } else {
                             const largeDefs = [];
-                            for (let i = 0; i < j.length; i++) {                                
+                            for (let i = 0; i < (j.length > 3 ? 3 : j.length); i++) {                                
                                 let r = j[i];
 
                                 if (r.hwi.hw && r.shortdef.length >= 1) {
                                     let defsArray = [];
                                     for (var x = 0; x < r.shortdef.length; x++) {
-                                        defsArray[x] = "[" + (x + 1) + "] " + r.shortdef[x];
+                                        defsArray[x] = "**[" + (x + 1) + "]** " + r.shortdef[x];
                                     }
 
                                     /*https://nodejs.org/en/knowledge/getting-started/what-is-require/
@@ -136,16 +148,18 @@ module.exports = {
                                     fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
                                         if (err) return console.log(err);
                                     });
-                                    largeDefs.push({
-                                        name: r.hwi.hw.split('*').join(" ● "),
-                                        value: defsArray.join(", ")
-                                    });
+                                    if (defsArray.join(", ").length < 1022) {
+                                        largeDefs.push({
+                                            name: r.hwi.hw.split('*').join(" ● "),
+                                            value: defsArray.join(", ")
+                                        });
+                                    }
                                 }
                             }
                             message.channel.send({
                                 embed: {
                                     "title": "The definition of " + def,
-                                    "color": 65280,
+                                    "color": 25600 || 65280,
                                     "fields": largeDefs,
                                     "footer": {
                                         "text": "Definitions | M-W Collegiate Dictionary"
