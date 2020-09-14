@@ -30,7 +30,7 @@ module.exports = {
                     }
                 })
             }
-        } else if (['WATCHING', 'LISTENING'].includes(args.join(" "))) {
+        } else if (['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING'].includes(args.join(" "))) {
             let result = await getGlobalSetting('game_prefix')
             if (result[0] && result[0].value === args.join(" ")) {
                 return message.channel.send({
