@@ -1,7 +1,8 @@
 const xlg = require('../xlogger');
 const { getGlobalSetting } = require('../dbmanager')
+const { stringToMember } = require('../utils/parsers');
 
-const actions = ['shoot', 'punche', 'kick', 'drop', 'choke', 'torture', 'shoots', 'superhero battle', 'cleave'];
+const actions = ['shoot', 'punch', 'kick', 'drop', 'choke', 'torture', 'shoot', 'superhero battle', 'cleave', 'big cgi fight'];
 
 module.exports = {
     name: 'battle',
@@ -11,10 +12,10 @@ module.exports = {
         long: 'Fight with another user. There\'s a chance you\'ll get caught!!'
     },
     guildOnly: true,
-    cooldown: 10,
+    cooldown: 1,
     args: true,
     usage: '<person to fight with>',
-    async execute(client, message) {
+    async execute(client, message, args) {
         let fec_gs = await getGlobalSetting("fail_embed_color");
         let fail_embed_color = parseInt(fec_gs[0].value);
         let iec_gs = await getGlobalSetting("info_embed_color");
@@ -22,7 +23,7 @@ module.exports = {
         let sec_gs = await getGlobalSetting("success_embed_color");
         let success_embed_color = parseInt(sec_gs[0].value);
 
-        let target = message.mentions.members.first();
+        let target = await stringToMember(message.guild, args.join(" ")) || message.mentions.members.first();
         let action = actions[Math.floor(Math.random() * actions.length)];
         let outcome = [true, false][Math.floor(Math.random() * 2)];
 
@@ -45,7 +46,7 @@ module.exports = {
         message.channel.send({
             embed: {
                 color: outcome ? success_embed_color : fail_embed_color,
-                description: `${target} ${outcome ? 'dies' : 'wins'} after ${message.author} ${outcome ? 'successfully' : 'completely fails to'} ${action}${outcome ? 's' : ''} ${target}${outcome ? ' ' + Math.floor(Math.random() * 1000) + ' times' : ''}.`
+                description: `You ${!outcome ? 'die' : 'win'} after you, ${message.author}, ${outcome ? 'successfully' : 'completely fail to'} ${action} ${target}${outcome ? ' ' + Math.floor(Math.random() * 500) + ' times' : ''}.`
             }
         }).catch(xlg.error);
     }
