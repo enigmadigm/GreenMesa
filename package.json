@@ -29,7 +29,8 @@
     },
     "homepage": "https://github.com/enigmadigm/greenmesa#readme",
     "devDependencies": {
-        "eslint": "^7.9.0"
+        "eslint": "^7.9.0",
+        "jsonschema": "^1.2.6"
     },
     "type": "commonjs"
 }
