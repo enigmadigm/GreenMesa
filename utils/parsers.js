@@ -1,3 +1,6 @@
+// THANK YOU BULLETBOT, A LOT OF THE BASE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
+// https://www.npmjs.com/package/string-similarity
+
 /**
  * Returns similarity value based on Levenshtein distance.
  * The value is between 0 and 1
@@ -78,7 +81,7 @@ function extractString(str, regex) {
  */
 async function stringToUser(client, text) {
     text = extractString(text, /<@!?(\d*)>/) || text;
-    return await client.fetchUser(text) || undefined;
+    return await client.users.fetch(text) || undefined;
 }
 
 /**
@@ -99,6 +102,50 @@ async function stringToUser(client, text) {
  * @param {boolean} [bySimilar=true] if it should also search by similar name (default true)
  * @returns
  */
+
+/**
+ * Parses string into GuildMember object.
+ * If the username isn't accurate the function will use the stringSimilarity method.
+ * Can parse following inputs:
+ * - user mention
+ * - username
+ * - nickname
+ * - user id
+ * - similar username
+ *
+ * @export
+ * @param {Guild} guild guild where the member is in
+ * @param {string} text string to parse
+ * @param {boolean} [byUsername=true] if it should also search by username (default true)
+ * @param {boolean} [byNickname=true] if it should also search by nickname (default true)
+ * @param {boolean} [bySimilar=true] if it should also search by similar username (default true)
+ * @returns
+ */
+async function stringToMember(guild, text, byUsername = true, byNickname = true, bySimilar = true) {
+    text = extractString(text, /<@!?(\d*)>/) || extractString(text, /([^#@:]{2,32})#\d{4}/) || text;
+    guild.members.cache = await guild.members.fetch();
+
+    // by id
+    var member = guild.members.cache.get(text);
+    if (!member && byUsername)
+        // by username
+        member = guild.members.cache.find(x => x.user.username == text);
+    if (!member && byNickname)
+        // by nickname
+        member = guild.members.cache.find(x => x.nickname == text);
+
+    if (!member && bySimilar) {
+        // closest matching username
+        member = guild.members.cache.reduce(function (prev, curr) {
+            return (stringSimilarity(curr.user.username, text) > stringSimilarity(prev.user.username, text) ? curr : prev);
+        });
+        if (stringSimilarity(member.user.username, text) < 0.4) {
+            member = undefined;
+        }
+    }
+    return member;
+}
+
 function stringToRole(guild, text, byName = true, bySimilar = true) {
 
     if (text == 'here' || text == '@here') {
@@ -177,7 +224,12 @@ function stringToEmbed(text) {
     return embed
 }
 
+/*function timeParser() {
+
+}*/
+
 exports.stringToUser = stringToUser;
 exports.stringToRole = stringToRole;
 exports.stringToChannel = stringToChannel;
 exports.stringToEmbed = stringToEmbed;
+exports.stringToMember = stringToMember;

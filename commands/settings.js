@@ -32,8 +32,12 @@ module.exports = {
         if (!args.length) {
             return message.channel.send({
                 embed: {
+                    author: {
+                        name: message.guild.name,
+                        icon_url: message.guild.iconURL()
+                    },
                     title: "Server Management",
-                    description: `This command acts as the portal to configure the bot's moderation and management features to your needs.\n\nSend one of the following commands for specific information about them.\n:unlock: \`level-roles\`\n:unlock: \`server-log\`\n:lock: \`case-logging\`\n:lock: \`mods\`, \`admins\` (staff)\n:lock: \`enable/disable\` (moderation)\n(:lock: = in dev, :unlock: = available)`,
+                    description: `This command acts as the portal to configure the bot's moderation and management features to your needs.\n\n**Send one of the following commands for specific information about them.**\n\`levelroles\` set the roles rewarded for levels\n\`serverlog\` set the channel used to log server activity\n\`moderation\` (enable/disable all)\n:lock: \`case-logging\`\n:lock: \`adminrole\` set the role that gives admin powers\n:lock: \`modrole\` set the role that gives mod powers\n\n:lock: = in dev`,
                     color: info_embed_color || 0,
                     footer: {
                         text: "Server Management"
@@ -43,37 +47,52 @@ module.exports = {
         }
         var argIndex = 0;
         switch (args[argIndex]) {
-            case 'enable': {
+            case 'moderation': {
                 argIndex++;
                 let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-
-                if (moderationEnabled[0].value === 'enabled') {
-                    return message.channel.send('Moderation is already **enabled**.');
-                }
-                let editResult = await editGuildSetting(message.guild, 'all_moderation', 'enabled');
-                if (editResult.affectedRows == 1) {
-                    message.channel.send('Moderation **enabled**!');
-                } else {
-                    message.channel.send('Failed to enable moderation.');
-                }
-                break;
-            }
-            case 'disable': {
-                argIndex++;
-                let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-
-                if (moderationEnabled[0].value === 'disabled') {
-                    return message.channel.send('Moderation is already **disabled**.');
-                }
-                let editResult = await editGuildSetting(message.guild, 'all_moderation', 'disabled');
-                if (editResult.affectedRows == 1) {
-                    message.channel.send('Moderation **disabled**!');
-                } else {
-                    message.channel.send('Failed to disable moderation.');
+                switch (args[argIndex]) {
+                    case 'enable': {
+                        if (moderationEnabled[0] && moderationEnabled[0].value === 'enabled') {
+                            return message.channel.send('Moderation is already **enabled**.');
+                        }
+                        let editResult = await editGuildSetting(message.guild, 'all_moderation', 'enabled');
+                        if (editResult.affectedRows == 1) {
+                            message.channel.send('Moderation **enabled**!');
+                        } else {
+                            message.channel.send('Failed to enable moderation.');
+                        }
+                        break;
+                    }
+                    case 'disable': {
+                        if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+                            return message.channel.send('Moderation is already **disabled**.');
+                        }
+                        let editResult = await editGuildSetting(message.guild, 'all_moderation', 'disabled', true);
+                        if (editResult.affectedRows == 1) {
+                            message.channel.send('Moderation **disabled**!');
+                        } else {
+                            message.channel.send('Failed to disable moderation.');
+                        }
+                        break;
+                    }
+                    default: {
+                        let moderationStatus = 'disabled';
+                        if (moderationEnabled[0] && moderationEnabled[0].value === 'enabled') {
+                            moderationStatus = 'enabled';
+                        }
+                        message.channel.send({
+                            embed: {
+                                color: info_embed_color,
+                                description: `Server moderation in ${message.guild.name} is currently **${moderationStatus}**. Adjust this setting with \`enable\` or \`disable\``
+                            }
+                        })
+                        break;
+                    }
                 }
                 break;
             }
             case 'admins':
+            case 'adminrole':
             case 'admininistrators': {
                 message.channel.send({
                     embed: {
@@ -83,6 +102,7 @@ module.exports = {
                 break;
             }
             case 'mods':
+            case 'modrole':
             case 'moderators': {
                 message.channel.send({
                     embed: {
@@ -240,7 +260,7 @@ module.exports = {
                 if (!args[argIndex]) {
                     message.channel.send({
                         embed: {
-                            description: 'The serverlog is a useful moderation feature that is still being developed. When enabled, most events that occur throughout the server will be logged in the specified server. Some supported events include: member joins and leaves, message deletion (+ purging), and more. When you use the purge command, the event along with an option to view the deleted messages will be posted.',
+                            description: `The server-log is a useful moderation feature that is still being developed. When enabled, most events that occur throughout the server will be logged in the specified channel.\nSome supported events include: member joins/leaves, message deletion (+ purging), channels, roles, and more.\n**note:** \`purge\` command logs an option to view the deleted messages when server-log enabled`,
                             fields: [{
                                     name: 'Setting',
                                     value: `The server log is currently ${(slogChannel) ? `**enabled** in ${slogChannel}` : '**disabled**'}.${(!slogChannel) ? ' Enable by appending the desired channel\'s ID to the command.' : ' Disable by appending `disable` to the command.'}`

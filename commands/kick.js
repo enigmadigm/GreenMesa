@@ -1,54 +1,57 @@
+const { getGuildSetting } = require("../dbmanager");
 const { permLevels } = require('../permissions');
+const { sendModerationDisabled } = require('../utils/specialmsgs');
+const { stringToMember } = require('../utils/parsers');
+const Discord = require('discord.js')
 
 module.exports = {
     name: 'kick',
     description: 'kick a user',
+    usage: '<user mention>',
     args: true,
     guildOnly: true,
     permLevel: permLevels.mod,
-    execute(client, message) {
-        const user = message.mentions.users.first();
+    async execute(client, message, args) {
+        let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+        if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+            return sendModerationDisabled(message.channel);
+        }
+        
+        const target = await stringToMember(message.guild, args[0], false, false, false);
         // If we have a user mentioned
-        if (user) {
-            // Now we get the member from the user
-            const member = message.guild.member(user);
-            // If the member is in the guild
-            if (member) {
-                // let reason = args.join(" ").slice(user.length).trim();
-                /**
-                 * Kick the member
-                 * Make sure you run this on a member, not a user!
-                 * There are big differences between a user and a member
-                 */
-                member.kick('kicked by bot').then(() => {
-                    // We let the message author know we were able to kick the person
-                    message.reply(`kicked ${user.tag}`);
-                    //let logChannel = client.channels.get(config.logChannel.id) || member.guild.channels.find(ch => ch.name === config.logChannel.name);
-                    /*logChannel.send({
-                        embed: {
-                            "title": `User Kicked`,
-                            "description": `${member} was kicked from the server by ${message.author}`,
-                            "timestamp": new Date(),
-                            "footer": {
-                                "text": `Kicked ID: ${member.id}`
-                            }
+        if (target && target instanceof Discord.GuildMember) {
+            args.shift();
+            let reason = args.join(" ");
+            /**
+             * Kick the member
+             * Make sure you run this on a member, not a user!
+             * There are big differences between a user and a member
+             */
+            target.kick(reason).then(() => {
+                // We let the message author know we were able to kick the person
+                message.channel.send(`<a:spinning_light00:680291499904073739> ✅ Kicked ${target.user.tag}`);
+                //let logChannel = client.channels.get(config.logChannel.id) || member.guild.channels.find(ch => ch.name === config.logChannel.name);
+                /*logChannel.send({
+                    embed: {
+                        "title": `User Kicked`,
+                        "description": `${member} was kicked from the server by ${message.author}`,
+                        "timestamp": new Date(),
+                        "footer": {
+                            "text": `Kicked ID: ${member.id}`
                         }
-                    });*/
-                }).catch(err => {
-                    // An error happened
-                    // This is generally due to the bot not being able to kick the member,
-                    // either due to missing permissions or role hierarchy
-                    message.reply('the member could not be kicked.');
-                    // Log the error
-                    console.error(err);
-                });
-            } else {
-                // The mentioned user isn't in this guild
-                message.reply('That user isn\'t in this guild!');
-            }
+                    }
+                });*/
+            }).catch(err => {
+                // An error happened
+                // This is generally due to the bot not being able to kick the member,
+                // either due to missing permissions or role hierarchy
+                message.reply(`<a:spinning_light00:680291499904073739> 🆘 Could not kick ${target.user.tag}`);
+                // Log the error
+                console.error(err);
+            });
             // Otherwise, if no user was mentioned
         } else {
-            message.reply('You didn\'t mention the user to kick!');
+            message.channel.send(`🟥 Invalid member to kick`);
         }
     }
 }
