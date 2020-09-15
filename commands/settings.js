@@ -11,7 +11,7 @@ module.exports = {
         long: 'Use to manage many of the server config settings. You can send this command without arguments to see the various options available. Send most options without arguments to see them in even more detail. **In development**.'
     },
     aliases: ['set', 'server', 'mod', 'moderation'],
-    usage: "<serverlog/megalog>",
+    usage: "[send nothing for detailed help]",
     args: false,
     permLevel: permLevels.admin,
     guildOnly: true,
