@@ -1,3 +1,5 @@
+const { getGuildSetting } = require("../dbmanager");
+const { sendModerationDisabled } = require('../utils/specialmsgs');
 const { permLevels } = require('../permissions');
 
 module.exports = {
@@ -8,6 +10,11 @@ module.exports = {
     guildOnly: true,
     permLevel: permLevels.mod,
     async execute(client, message, args) {
+        let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+        if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+            return sendModerationDisabled(message.channel);
+        }
+        
         const toMute = ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.mentions.members.first();
         // Check perms, self, rank, etc
         if (!toMute) return message.channel.send('You did not specify a user mention or ID!');

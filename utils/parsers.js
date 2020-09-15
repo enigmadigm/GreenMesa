@@ -122,6 +122,7 @@ async function stringToUser(client, text) {
  * @returns
  */
 async function stringToMember(guild, text, byUsername = true, byNickname = true, bySimilar = true) {
+    if (!text) return undefined;
     text = extractString(text, /<@!?(\d*)>/) || extractString(text, /([^#@:]{2,32})#\d{4}/) || text;
     guild.members.cache = await guild.members.fetch();
 

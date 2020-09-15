@@ -1,7 +1,7 @@
 const { getGuildSetting } = require("../dbmanager");
 const { sendModerationDisabled } = require('../utils/specialmsgs');
 const { permLevels } = require('../permissions');
-const { stringToUser } = require('../utils/parsers');
+const { stringToMember } = require('../utils/parsers');
 
 module.exports = {
     name: 'purge',
@@ -17,8 +17,9 @@ module.exports = {
             return sendModerationDisabled(message.channel);
         }
 
-        const targetMember = await stringToUser(client, args.slice(1, args.length));
         const deleteCount = parseInt(args[0], 10); // get the delete count, as an actual number.
+        args.shift();
+        const target = await stringToMember(message.guild, args.join(" "));
 
         // Ooooh nice, combined conditions. <3
         if (!deleteCount || deleteCount < 2)
@@ -28,19 +29,19 @@ module.exports = {
             limit: (deleteCount < 100) ? deleteCount : 100,
             before: message.id
         }
-        if (targetMember) {
+        if (target) {
             opts = {
                 limit: 100,
-                before: (targetMember.lastMessageChannelID === message.channel.id) ? targetMember.lastMessageID : message.id
+                before: (target.user.lastMessageChannelID === message.channel.id) ? target.user.lastMessageID : message.id
             }
         }
         
         // So we get our messages, and delete them. Simple enough, right?
         message.channel.messages.fetch( opts ).then(async messages => {
             messages.set(message.id, message);
-            if (targetMember) {
-                if (targetMember.lastMessageChannelID === message.channel.id) messages.set(targetMember.lastMessage.id, targetMember.lastMessage);
-                messages = messages.filter(m => m.author.id === targetMember.id || m.id === message.id).array().slice(0, deleteCount);
+            if (target) {
+                if (target.user.lastMessageChannelID === message.channel.id) messages.set(target.user.lastMessage.id, target.user.lastMessage);
+                messages = messages.filter(m => m.author.id === target.user.id || m.id === message.id).array().slice(0, deleteCount);
             }
             if (messages.length == 0) {
                 return message.channel.send(`Could not find any recent messages.`).then(message.delete());
@@ -48,6 +49,7 @@ module.exports = {
             
 
             message.channel.bulkDelete(messages)
+                .then(messages => message.channel.send(`Purged ${messages.size} messages`))
                 .catch(e => {
                     console.log(e.stack);
                     message.reply(`couldn't delete messages because of: ${e}`);
