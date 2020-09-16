@@ -52,6 +52,10 @@ module.exports = {
                         "value": "[github](https://github.com/enigmadigm/greenmesa) <:octocat_logo:663869429976662057>",
                         "inline": true
                     },
+                    {
+                        "name": "Memory",
+                        "value": client.tools.memoryUsage()
+                    }
                 ],
                 footer: {
                     icon_url: client.user.avatarURL,
