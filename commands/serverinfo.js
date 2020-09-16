@@ -34,12 +34,12 @@ module.exports = {
                     },
                     {
                         "name": "Members",
-                        "value": `${memberCount}\n(${botCount} non-human)`,
+                        "value": `:slot_machine: ${memberCount}\n👥 ${memberCount - botCount}\n🤖 ${botCount}`,
                         "inline": true
                     },
                     {
-                        "name": "Online",
-                        "value": message.guild.members.cache.filter(member => member.presence.status == 'online').size,
+                        "name": "Online <:736903507436896313:752118506950230067>",
+                        "value": `${message.guild.members.cache.filter(member => member.presence.status == 'online' && !member.user.bot).size} human`,
                         "inline": true
                     },
                     {

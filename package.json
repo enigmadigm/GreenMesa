@@ -1,6 +1,6 @@
 {
     "name": "greenmesa",
-    "version": "1.4.2",
+    "version": "1.4.6",
     "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
     "main": "bot.js",
     "scripts": {
@@ -30,7 +30,8 @@
     "homepage": "https://github.com/enigmadigm/greenmesa#readme",
     "devDependencies": {
         "eslint": "^7.9.0",
-        "jsonschema": "^1.2.6"
+        "jsonschema": "^1.2.6",
+        "uniqid": "^5.2.0"
     },
     "type": "commonjs"
 }

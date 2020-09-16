@@ -45,9 +45,22 @@ for (const file of commandFiles) {
     if (command.name == "" || command.name == null) {
         noName = ' \x1b[33mWARNING: \x1b[32mthis command has no name, it may not be configured properly\x1b[0m';
     }
+    if (!command.execute) {
+        noName = ' \x1b[33mWARNING: \x1b[32mthis command has no function, it may not be configured properly\x1b[0m';
+    }
     console.log(`${commNumber} - %s$${command.name}%s has been loaded%s`, "\x1b[35m", "\x1b[0m", noName);
     commNumber++;
 }
+
+const tools = {
+    memoryUsage() {
+        return Object.entries(process.memoryUsage()).map(usage => {
+            return `${usage[0]} : ${(Math.round(usage[1] / 1024 / 1024 * 100) / 100).toFixed().split('.')[0]} MB`
+        }).join("\n");
+    }
+}
+
+client.tools = tools;
 
 // ▼▼▼▼▼▼▼▼ A lot of this stuff below is all to manage database connections, these are passed through the conn argument in the execute function
 // Connecting to MySQL, external connection

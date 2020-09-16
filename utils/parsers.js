@@ -81,7 +81,11 @@ function extractString(str, regex) {
  */
 async function stringToUser(client, text) {
     text = extractString(text, /<@!?(\d*)>/) || text;
-    return await client.users.fetch(text) || undefined;
+    try {
+        return await client.users.fetch(text) || undefined;
+    } catch (e) {
+        return undefined;
+    }
 }
 
 /**
