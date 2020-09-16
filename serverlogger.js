@@ -171,7 +171,7 @@ async function logRole(role, deletion = false) {
                     name: `Role ${deletion ? 'Deleted' : 'Created'}`,
                     icon_url: role.guild.iconURL()
                 },
-                description: `${deletion ? `@${role.name} (${role.hexColor})` : `${role}\n${role.name}`}${deletion ? "\n created " + moment(role.createdAt).utc().fromNow() : ''}`,
+                description: `${deletion ? `@${role.name} (${role.hexColor})` : `${role}\nName: ${role.name}\nColor: ${role.hexColor}`}${deletion ? "\n created " + moment(role.createdAt).utc().fromNow() : ''}`,
                 color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
                 timestamp: deletion ? role.createdAt : new Date(),
                 footer: {
