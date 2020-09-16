@@ -18,6 +18,7 @@ module.exports = {
         var permLevel = await getPermLevel(message.member);
         if (args.length > 0) {
             if (permLevel < permLevels.admin) return message.channel.send("Insufficient permissions.").catch(xlg.error);
+            if (args.join(" ").length > 46) return message.channel.send(":frowning2: Prefix must be less than 47 characters.");
             await setPrefix(message.guild.id, args.join(" "));
             return message.channel.send("Prefix updated.");
         }
