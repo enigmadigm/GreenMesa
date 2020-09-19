@@ -383,6 +383,34 @@ async function deleteAllLevelRoles(guild) {
     return false;
 }
 
+async function logCmdUsage(name) {
+    try {
+        let oresult = await query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
+        let result = await query(`SELECT * FROM cmdtracking WHERE cmdname = '${name}'`);
+        if (!oresult || oresult.length === 0) {
+            await query(`INSERT INTO cmdtracking (cmdname, used) VALUES ('all', 1)`);
+        } else {
+            await query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = 'all'`);
+
+        }
+        if (!result || result.length === 0) {
+            await query(`INSERT INTO cmdtracking (cmdname, used) VALUES ('${name}', 1)`);
+        } else {
+            await query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = '${name}'`);
+        }
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
+async function getTotalCmdUsage() {
+    try {
+        return await query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
 exports.conn = conn;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
@@ -402,3 +430,5 @@ exports.updateLevelRole = updateLevelRole;
 exports.checkForLevelRoles = checkForLevelRoles;
 exports.setLevelRole = setLevelRole;
 exports.deleteAllLevelRoles = deleteAllLevelRoles;
+exports.logCmdUsage = logCmdUsage;
+exports.getTotalCmdUsage = getTotalCmdUsage;

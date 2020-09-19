@@ -5,7 +5,7 @@ const config = require("../auth.json");
 const fs = require('fs');
 const plotly = require('plotly')(config.plotly.username, config.plotly.key)
 const Discord = require("discord.js");
-const { getGMStats } = require("../dbmanager")
+const { getGMStats, getTotalCmdUsage } = require("../dbmanager")
 
 function generatePlot(rrows) {
     return new Promise((resolve, reject) => {
@@ -112,7 +112,7 @@ module.exports = {
                     },
                     {
                         name: "Total Commands Completed",
-                        value: config.commandsExecutedCount,
+                        value: ((await getTotalCmdUsage()) || [{used: 0}])[0].used,
                         inline: true
                     }
                 ],
