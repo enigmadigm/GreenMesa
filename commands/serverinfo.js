@@ -13,6 +13,14 @@ module.exports = {
         let createdAt = moment(message.guild.createdAt).utc();
         var memberCount = message.guild.memberCount;
         var botCount = message.guild.members.cache.filter(member => member.user.bot).size;
+        var channels = [
+            `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}`,
+            `Text: ${message.guild.channels.cache.filter(x => x.type == 'text').size}`,
+            `Voice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`
+        ]
+        if (message.guild.channels.cache.filter(x => x.type == 'news').size) channels.push(`News: ${message.guild.channels.cache.filter(x => x.type == 'news').size}`);
+        if (message.guild.channels.cache.filter(x => x.type == 'store').size) channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
+        if (message.guild.channels.cache.filter(x => x.type == 'unknown').size) channels.push(`Unknown: ${message.guild.channels.cache.filter(x => x.type == 'unknown').size}`);
         message.channel.send({
             embed: {
                 "color": parseInt((await getGlobalSetting('info_embed_color'))[0].value),
@@ -43,8 +51,8 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": `Channels (${message.guild.channels.cache.array().length})`,
-                        "value": `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}\nText: ${message.guild.channels.cache.filter(x => x.type == 'text').size}\nVoice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`,
+                        "name": `Channels (${message.guild.channels.cache.size - message.guild.channels.cache.filter(x => x.type == 'category').size})`,
+                        "value": channels.join("\n") || 'none',
                         "inline": true
                     },
                     {
