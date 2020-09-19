@@ -16,7 +16,7 @@ module.exports = {
     cooldown: 5,
     async execute(client, message) {
         let levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
-        let warn_embed_color = parseInt((await getGlobalSetting("warn_embed_color"))[0].value, 10);
+        let warn_embed_color = parseInt((await getGlobalSetting("warn_embed_color") || ['7322774'])[0].value, 10);
         if (!levellingEnabled || levellingEnabled[0].value === 'disabled') {
             return message.channel.send({
                 embed: {
@@ -38,7 +38,7 @@ module.exports = {
             return `${yes ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild.roles.cache.find(ro => ro.id = lvl.roleid) || 'no role found'}${yes ? ' < you' : ''}`
         });
         
-        let info_embed_color = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
+        let info_embed_color = parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
         message.channel.send({
             embed: {
                 color: info_embed_color,
