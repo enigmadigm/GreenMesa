@@ -10,7 +10,7 @@ module.exports = {
         if (!args.length) {
             return message.channel.send({
                 embed: {
-                    title: `${client.prefix}`,
+                    title: `${message.gprefix}`,
                     description: `guild prefix`
                 }
             }).catch(xlg.error);
