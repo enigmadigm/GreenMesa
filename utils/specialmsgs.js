@@ -6,7 +6,7 @@ async function sendModerationDisabled(channel) {
     channel.send({
         embed: {
             color: fail_embed_color,
-            description: `Server moderation in ${channel.guild.name} is currently disabled. In order to use moderation commands, they must be enabled with \`settings moderation enable\`.`
+            description: `Server moderation in ${channel.guild.name} is currently disabled. In order to use moderation commands, they must be enabled by admins with \`settings moderation enable\`.`
         }
     }).catch(xlg.error);
 }
