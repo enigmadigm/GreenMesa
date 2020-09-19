@@ -1,4 +1,4 @@
-const { prefix } = require('../auth.json');
+//const { prefix } = require('../auth.json');
 //const { getGlobalSetting } = require('../dbmanager');
 const { permLevels } = require('../permissions');
 
@@ -23,7 +23,7 @@ module.exports = {
                 }
                 return `\` ${command.name} \` - ${availableDesc}`
             }).join('\n'));
-            data.push(`\n**You can send \`${prefix}help [command name]\` to get info on a specific command!**`)
+            data.push(`\n**You can send \`${message.gprefix}help [command name]\` to get info on a specific command!**`)
 
             return message.author.send(data, { split: true })
                 .then(() => {
@@ -42,7 +42,7 @@ module.exports = {
             return message.reply('that\'s not a valid command!');
         }
         const embed = {
-            title: `${prefix}${command.name}`,
+            title: `${message.gprefix}${command.name}`,
             fields: [],
             color: 25600,
             footer: {
@@ -61,7 +61,7 @@ module.exports = {
             embed.fields.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
         }
         if (command.usage) {
-            embed.fields.push({ name: "Usage", value: `\`\`\`${prefix}${command.name} ${command.usage}\`\`\`` });
+            embed.fields.push({ name: "Usage", value: `\`\`\`${message.gprefix}${command.name} ${command.usage}\`\`\`` });
         }
         embed.fields.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)` });
         if (command.permLevel) {

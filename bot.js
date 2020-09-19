@@ -1,3 +1,5 @@
+'use strict';
+
 // To all for `import - from '-'` and `export async function function() {}` in modules I must change the eslint sourcetype to module
 // and change the package.json tyope to module, then replace all require()s and exports.method/module.exports with the types of
 // statements above. mayve one day I could do it because it might look better.
@@ -233,7 +235,7 @@ client.on("message", async message => {// This event will run on every single me
     } else {
         special_prefix = await getGlobalSetting('global_prefix');
     }
-    client.prefix = special_prefix || config.prefix;
+    message.gprefix = special_prefix || config.prefix;
 
     if (message.mentions && message.mentions.has(client.user)) {
         if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
@@ -241,7 +243,7 @@ client.on("message", async message => {// This event will run on every single me
             let info_embed_color = parseInt(iec_gs[0].value);
             message.channel.send({
                 embed: {
-                    "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **${client.prefix}**`,
+                    "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **${message.gprefix}**`,
                     "color": info_embed_color
                 }
             })
@@ -251,11 +253,11 @@ client.on("message", async message => {// This event will run on every single me
 
     // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
-    if (message.content.toLowerCase().indexOf(client.prefix) !== 0) return;
+    if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;
     // ▼▼▼▼▼ deprecated with the guild only command handler filter
     //if (message.channel.type === "dm") return;
 
-    const args = message.content.slice(client.prefix.length).trim().split(/ +/g);
+    const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
     const commandName = args.shift().toLowerCase()
 
     var permLevel = permLevels.member;
@@ -299,7 +301,7 @@ client.on("message", async message => {// This event will run on every single me
         let reply = `I need arguments to make that work, ${message.author}!`;
 
         if (command.usage) {
-            reply += `\nThe proper usage would be: \`${client.prefix}${command.name} ${command.usage}\``;
+            reply += `\nThe proper usage would be: \`${message.gprefix}${command.name} ${command.usage}\``;
         }
 
         return message.channel.send({
