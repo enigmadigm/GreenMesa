@@ -10,21 +10,17 @@ module.exports = {
         message.channel.send({
             embed: {
                 color: 3447003,
-                description: `[Direct link to get ~~GM~~ Stratum on your server.](https://discordapp.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&redirect_uri=https%3A%2F%2Fdigmsl.link%2Fgreenmesa&scope=bot&${guildIdParam})`,
+                description: `[Invite to get me on your server](https://discordapp.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=2147483639&scope=bot&${guildIdParam})`,
                 fields: [
                     {
                         name: `\u200b`,
-                        value: `**IMPORTANT:** When added, to make sure all commands (like management) work, please confirm that the bot's role is above every role it should be able to manage, like @everyone.`
-                    },
-                    {
-                        name: "Step by step process",
-                        value: "[Steps to get bot (low effort)](https://git.io/fjmEX)."
+                        value: `**IMPORTANT:** Make sure all moderation commands work by confirming that the bot's role is above every role it should be able to manage, like @everyone.\n\n[Steps to get bot (low effort)](https://git.io/fjmEX).`
                     }
                 ],
                 timestamp: new Date(),
                 footer: {
                     icon_url: client.user.avatarURL,
-                    text: message.id
+                    text: "Invite"
                 }
             }
         });
