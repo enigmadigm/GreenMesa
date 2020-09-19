@@ -7,6 +7,7 @@ module.exports = {
     usage: "<bot message>",
     guildOnly: true,
     permLevel: permLevels.mod,
+    category: 'utility',
     execute(client, message, args) {
         message.delete().catch();
         message.channel.send(args.join(" "));

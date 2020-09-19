@@ -6,6 +6,7 @@ module.exports = {
     aliases: ['status'],
     permLevel: permLevels.botMaster,
     args: true,
+    category: 'utility',
     async execute(client, message, args) {
         let fec_gs = await getGlobalSetting("fail_embed_color");
         let fail_embed_color = parseInt(fec_gs[0].value);

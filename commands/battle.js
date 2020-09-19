@@ -14,6 +14,7 @@ module.exports = {
     guildOnly: true,
     cooldown: 1,
     args: true,
+    category: 'fun',
     usage: '<person to fight with>',
     async execute(client, message, args) {
         let fec_gs = await getGlobalSetting("fail_embed_color");

@@ -9,7 +9,8 @@ module.exports = {
     aliases: ['nick'],
     usage: '[target member] <new nick>',
     guildOnly: true,
-    description: 'set your server nickname',
+    description: 'set a member nickname',
+    category: 'moderation',
     async execute(client, message, args) {
         let target = await stringToMember(message.guild, args[0], true, true, false) || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.member || false;
         if (!target) return message.channel.send('🔴 Could not resolve target.');

@@ -22,6 +22,7 @@ module.exports = {
     usage:"<message id to process / text content to process>",
     args:true,
     cooldown: 5,
+    category: 'utility',
     ownerOnly: false,
     async execute(client, message, args) {
         var msgContent;

@@ -1,6 +1,7 @@
 module.exports = {
     name: 'why',
-    description: 'Ask why.',
+    description: 'ask...why',
+    category: 'fun',
     execute(client, message) {
         message.channel.send({
             embed: {

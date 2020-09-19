@@ -11,6 +11,7 @@ module.exports = {
     },
     cooldown: 5,
     guildOnly: true,
+    category: 'fun',
     usage: '<YouTube URL available in the United States>',
     async execute(client, message, args) {
         //let darkred_embed_color = parseInt((await getGlobalSetting('darkred_embed_color'))[0].value);

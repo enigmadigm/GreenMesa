@@ -6,6 +6,7 @@ module.exports = {
     description: 'Call a quick vote on the message the command was in',
     usage: "[the content of the vote]",
     guildOnly: true,
+    category: 'utility',
     async execute(client, message, args) {
         if (!args.length) {
             await message.react('✅')
