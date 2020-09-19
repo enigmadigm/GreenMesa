@@ -7,6 +7,7 @@ module.exports = {
     args: true,
     aliases: ['leetspeaker', 'leetify', 'leetspeakify', 'leet'],
     guildonly: true,
+    category: 'utility',
     execute(client, message, args) {
         message.channel.send({
             embed: {

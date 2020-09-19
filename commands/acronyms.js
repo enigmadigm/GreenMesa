@@ -81,6 +81,7 @@ module.exports = {
     aliases: ['whatyourkidsaretexting', 'acronym', 'slang', 'abbreviations'],
     description: 'get a list of common messaging acronyms or search over 1550',
     usage: '[acronym]',
+    category: 'fun',
     async execute(client, message, args) {
         let fail_embed_color = parseInt((await getGlobalSetting('fail_embed_color'))[0].value);
         let darkred_embed_color = parseInt((await getGlobalSetting('darkred_embed_color'))[0].value);

@@ -1,25 +1,21 @@
+const xlg = require("../xlogger");
 const apppkg = require('../package.json');
-const config = require('../auth.json');
+const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
     name: 'info',
     description: 'Get info on the bot.',
-    execute(client, message) {
+    async execute(client, message) {
         message.channel.send({
             embed: {
-                color: 3447003,
+                color: parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10) || 3447003,
                 title: "GreenMesa Info",
                 url: "https://enigmadigm.com/apps/greenmesa/help",
-                description: 'this is a bot, it does stuff, stuff listed in help',
+                description: "this is a bot, it does stuff, stuff listed in `help`\nthis bot will be punished if it lets down its masters",
                 fields: [
                     {
                         "name": "Architect",
                         "value": "ComradeRooskie#6969",
-                        "inline": true
-                    },
-                    {
-                        "name": "Servers",
-                        "value": client.guilds.cache.size,
                         "inline": true
                     },
                     {
@@ -29,12 +25,12 @@ module.exports = {
                     },
                     {
                         "name": "Invite",
-                        "value": `\`${config.prefix}invite\``,
+                        "value": `\`${message.gprefix}invite\``,
                         "inline": true
                     },
                     {
                         "name": "Library",
-                        "value": "discord.js v12",
+                        "value": "discord.js",
                         "inline": true
                     },
                     {
@@ -43,13 +39,13 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Served",
-                        "value": "AA",
+                        "name": "Served by",
+                        "value": "🚫",
                         "inline": true
                     },
                     {
                         "name": "Repo",
-                        "value": "[github](https://github.com/enigmadigm/greenmesa) <:octocat_logo:663869429976662057>",
+                        "value": "🚫",
                         "inline": true
                     },
                     {
@@ -59,10 +55,10 @@ module.exports = {
                 ],
                 footer: {
                     icon_url: client.user.avatarURL,
-                    text: `Information / Información / معلومات | see ${config.prefix}uptime`
+                    text: `Information / Información / معلومات | 👀 ${message.gprefix}uptime`
                 }
             }
-        });
+        }).catch(xlg.error);
 
     }
 }

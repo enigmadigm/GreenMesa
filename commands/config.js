@@ -14,6 +14,7 @@ module.exports = {
     args: false,
     guildOnly: false,
     cooldown: 3,
+    category: 'moderation',
     permLevel: permLevels.botMaster,
     /**
      * 

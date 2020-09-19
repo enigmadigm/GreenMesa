@@ -14,6 +14,7 @@ module.exports = {
     usage: "[send nothing for detailed help]",
     args: false,
     permLevel: permLevels.admin,
+    category: 'moderation',
     guildOnly: true,
     /**
      * 

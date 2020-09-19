@@ -10,6 +10,7 @@ module.exports = {
     usage: "<# of messages to delete> [target member @]",
     args: true,
     guildOnly: true,
+    category: 'moderation',
     permLevel: permLevels.mod,
     async execute(client, message, args) {
         let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');

@@ -9,6 +9,7 @@ module.exports = {
     aliases: ['exp', 'orbs', 'level', 'points'],
     usage: "[other user]",
     guildOnly: true,
+    category: 'fun',
     async execute(client, message, args) {
         let target = message.mentions.members.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.member || false;
         if (!target) return message.channel.send('Invalid target.');

@@ -11,6 +11,7 @@ module.exports = {
     args: true,
     guildOnly: true,
     permLevel: permLevels.mod,
+    category: 'moderation',
     async execute(client, message, args) {
         let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
         if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {

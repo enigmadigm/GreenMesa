@@ -2,6 +2,7 @@ module.exports = {
     name: 'ping',
     description: 'the classic ping><pong',
     cooldown: 5,
+    category: 'utility',
     async execute(client, message) {
         // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
         // The second ping is an average latency between the bot and the websocket server (one-way, not round-trip)

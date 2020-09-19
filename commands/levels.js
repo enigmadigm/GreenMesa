@@ -14,6 +14,7 @@ module.exports = {
     permLevel: permLevels.member,
     guildOnly: true,
     cooldown: 5,
+    category: 'fun',
     async execute(client, message) {
         let levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
         let warn_embed_color = parseInt((await getGlobalSetting("warn_embed_color") || ['7322774'])[0].value, 10);

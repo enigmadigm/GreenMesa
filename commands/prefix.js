@@ -6,6 +6,7 @@ module.exports = {
     name: "prefix",
     description: "set or view the prefix for your guild",
     guildOnly: true,
+    category: 'utility',
     async execute(client, message, args) {
         if (!args.length) {
             return message.channel.send({

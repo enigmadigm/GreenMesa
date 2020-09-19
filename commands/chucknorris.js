@@ -5,6 +5,7 @@ module.exports = {
     aliases:['chuck', 'cn'],
     args:false,
     cooldown: 1,
+    category: 'fun',
     execute(client, message, args) {
         if (Math.random() < 0.08) {
             message.channel.send('The developer of the bot recommends joke `KC54acTTT6iPf9FD0m7VWw`');

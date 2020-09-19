@@ -7,6 +7,7 @@ module.exports = {
     aliases: ['lsroles'],
     description: 'list all of the roles in a server',
     guildOnly: true,
+    category: 'utility',
     permLevel: permLevels.trustedMember,
     async execute(client, message) {
         message.channel.send({

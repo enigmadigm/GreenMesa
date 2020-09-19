@@ -10,6 +10,7 @@ module.exports = {
     aliases:['td', 'tronald'],
     usage: "[tags | existing tag]",
     cooldown: 2,
+    category: 'fun',
     async execute(client, message, args) {
         const allTags = [];
         const tagInfo = await fetch('https://api.tronalddump.io/tag')

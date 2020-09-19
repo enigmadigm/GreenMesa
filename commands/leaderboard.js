@@ -6,6 +6,7 @@ module.exports = {
     aliases: ['lb'],
     description: 'get rankings for xp in your guild',
     guildOnly: true,
+    category: 'fun',
     async execute(client, message) {
         let rowobj = await getTop10(message.guild.id, message.author.id);
         if (!rowobj.rows.length) return message.channel.send('No users');

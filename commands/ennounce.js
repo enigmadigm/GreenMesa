@@ -14,6 +14,7 @@ module.exports = {
     usage: '[\\common color | decimal < 16777215] <message | json> [--no-footer --json]',
     guildOnly: true,
     permLevel: permLevels.mod,
+    category: 'moderation',
     async execute(client, message, args) {
         let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
         if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {

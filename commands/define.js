@@ -1,5 +1,5 @@
 const fs = require("fs");
-const fetch = require("node-fetch")
+const fetch = require("node-fetch");
 
 module.exports = {
     name: 'define',
@@ -7,6 +7,7 @@ module.exports = {
     args: true,
     usage: "<some english word>",
     aliases: ['def'],
+    category: 'utility',
     execute(client, message, args) {
         if (args.length > 0 && args.length < 11) {
             if (message.channel.type === "text" && message.mentions.members.size && message.mentions.members.first().id !== message.guild.me.id) {
@@ -70,7 +71,7 @@ module.exports = {
                 });
             }
             let def = args.join(" ").toLowerCase();
-            let letters = /^[A-Za-z\s]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
+            let letters = /^[A-Za-z\s-]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
             if (letters.test(def)) {
                 fetch(`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${def}?key=03464f03-851d-4df0-ad53-4afdb47311d8`)
                     .then(res => res.json())
@@ -148,21 +149,26 @@ module.exports = {
                                     fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
                                         if (err) return console.log(err);
                                     });
-                                    if (defsArray.join(", ").length < 1022) {
-                                        largeDefs.push({
-                                            name: r.hwi.hw.split('*').join(" ● "),
-                                            value: defsArray.join(", ")
-                                        });
+                                    if (defsArray.join(", ").length < 1020) {
+                                        let sDef = {
+                                            name: `📖  ${r.hwi.hw.split('*').join("")} *${r.fl}*`,
+                                            value: `(${i + 1} of ${j.length})\n${defsArray.join(", ")}`
+                                        }
+                                        if (i === 0) {
+                                            sDef.value = `${r.hwi.prs && r.hwi.prs[0] ? `${r.hwi.hw.split('*').join(" ● ")} **|** \\ ${r.hwi.prs[0].mw} \\` : ''}\n${defsArray.join(", ")}`
+                                        }
+                                        largeDefs.push(sDef);
                                     }
                                 }
                             }
                             message.channel.send({
                                 embed: {
-                                    "title": "The definition of " + def,
+                                    "title": `Definition of *${def}*`,
                                     "color": 25600 || 65280,
                                     "fields": largeDefs,
                                     "footer": {
-                                        "text": "Definitions | M-W Collegiate Dictionary"
+                                        "text": "Collegiate Dictionary | Definitions",
+                                        "iconURL": "https://cdn.discordapp.com/attachments/660242946834038791/756892388198449162/MWLogo_120x120.png"
                                     }
                                 }
                             }).catch(console.error);

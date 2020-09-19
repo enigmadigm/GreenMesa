@@ -26,7 +26,7 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
 
@@ -337,15 +337,17 @@ client.on("message", async message => {// This event will run on every single me
         command.execute(client, message, args, conn);
         
         // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this
-        if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
+        /*if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
         if (!config.commandsExecutedCount) config.commandsExecutedCount = 1;
         fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
             if (err) return console.log(err);
-        });
+        });*/
 
         if (config.msgLogging) {
             client.channels.cache.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
         }
+
+        logCmdUsage(commandName);
     } catch (error) {
         xlg.error(error);
         message.reply('error while executing! please create an issue at https://github.com/enigmadigm/GreenMesa/issues');

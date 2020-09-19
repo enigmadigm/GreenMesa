@@ -7,6 +7,7 @@ module.exports = {
     aliases: ['mp', 'userperms'],
     description: 'get a list of perms a member has in a channel',
     usage: '[target member]',
+    category: 'utility',
     guildOnly: true,
     permLevel: permLevels.trustedMember,
     async execute(client, message, args) {

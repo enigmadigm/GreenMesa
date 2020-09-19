@@ -16,6 +16,7 @@ module.exports = {
     description: 'provides a decently random number between 0 and 10 or the maximum',
     usage: "[maximum >= 0]",
     aliases: ['random', 'randomnumber', 'rn', 'rng'],
+    category: 'utility',
     execute(client, message, args) {
         let provNum = args[0] || 10;
         message.channel.send(getRandom(provNum)).catch(console.error);
