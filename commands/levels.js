@@ -27,16 +27,16 @@ module.exports = {
             });
         }
         let levelRows = await checkForLevelRoles(message.guild);
-        let targetRow = await getXP(message.guild.members.cache.get('748759691319836702'));
+        let targetRow = await getXP(message.member);
         let targetLevel = targetRow[0] ? targetRow[0].level : 0;
         let alreadyAbove = false;
         let joinedLevels = levelRows.map((lvl) => {
-            let yes = false;
-            if (!alreadyAbove && targetLevel > lvl.level) {
-                yes = true;
+            let curr = false;
+            if (!alreadyAbove && targetLevel >= lvl.level) {
+                curr = true;
                 alreadyAbove = true;
             }
-            return `${yes ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild.roles.cache.find(ro => ro.id = lvl.roleid) || 'no role found'}${yes ? ' < you' : ''}`
+            return `${curr ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild.roles.cache.find(ro => ro.id = lvl.roleid) || 'no role found'}${curr ? ' < you' : ''}`
         });
         
         let info_embed_color = parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
