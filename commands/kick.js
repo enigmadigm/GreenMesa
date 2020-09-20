@@ -6,7 +6,10 @@ const Discord = require('discord.js')
 
 module.exports = {
     name: 'kick',
-    description: 'kick a user',
+    description: {
+        short: 'kick a user',
+        long: 'Remove any non-elevated member from the server. This will not ban them, they may rejoin.'
+    },
     usage: '<user mention>',
     args: true,
     guildOnly: true,
@@ -46,7 +49,7 @@ module.exports = {
                 // An error happened
                 // This is generally due to the bot not being able to kick the member,
                 // either due to missing permissions or role hierarchy
-                message.reply(`<a:spinning_light00:680291499904073739> 🆘 Could not kick ${target.user.tag}`);
+                message.channel.send(`<a:spinning_light00:680291499904073739> 🆘 Could not kick ${target.user.tag}`);
                 // Log the error
                 console.error(err);
             });

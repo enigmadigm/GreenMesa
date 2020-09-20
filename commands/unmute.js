@@ -4,7 +4,10 @@ const { permLevels } = require('../permissions');
 
 module.exports = {
     name: 'unmute',
-    description: 'Unmute a user.',
+    description: {
+        short: 'unmute a member',
+        long: 'Allows a muted member to speak again.'
+    },
     usage: "<user @ / user id>",
     args: true,
     guildOnly: true,
