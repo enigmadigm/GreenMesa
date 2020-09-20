@@ -152,7 +152,7 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
 });
 
 client.on("rateLimit", rateLimitInfo => {
-    console.log('ratelimited');
+    xlg.log('ratelimited'); 
     xlg.log(JSON.stringify(rateLimitInfo));
 })
 

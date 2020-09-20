@@ -5,7 +5,10 @@ const { stringToMember } = require('../utils/parsers');
 
 module.exports = {
     name: 'purge',
-    description: 'This command removes all messages from all users in the channel, up to 100',
+    description: {
+        short: 'bulk delete messages in a channel',
+        long: 'This command can remove up to 100 messages from all members or a single target in a channel.'
+    },
     aliases: ['bulkdelete'],
     usage: "<# of messages to delete> [target member @]",
     args: true,
