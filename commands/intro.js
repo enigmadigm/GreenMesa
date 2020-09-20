@@ -1,5 +1,3 @@
-const config = require('../auth.json');
-
 module.exports = {
     name: 'intro',
     description: 'provides a *crappy* introduction to the bot',
@@ -8,29 +6,29 @@ module.exports = {
             embed: {
                 color: 3447003,
                 title: "Introduction",
-                description: "This multifunctioning disfunctioning Discord bot was built by ComradeRooskie#6969, who runs [EnigmaDigm](https://enigmadigm.com). This bot can do a bunch of random stuff right now, and bigger and better features are in development ;).",
+                description: "I, a multidisfunctioning bot, was built by ComradeRooskie#6969, who runs [his Palace (Discord Server)](https://discord.gg/AvXvvSg). This bot can do a bunch of stuff, and bigger and better features are always in development ;).",
                 fields: [
                     {
                         name: "Do you have any commands?",
-                        value: `*Yes in fact.* I didn't use months of my life for nothing. Use the \` ${config.prefix}help \` command to get info on them, or see the GitHub repo.`
+                        value: `*Yes in fact.* Use the \` ${message.gprefix}help \` command to get info on them.`
                     },
                     {
-                        name: "How do I contribute?",
-                        value: "If you want to make a request you can open up an issue [here](https://github.com/enigmadigm/greenmesa/issues) (an issue doesn't have to be a bug, it's an opportunity to make your voice heard)."
+                        name: "What if I have an idea?",
+                        value: "If you want to make a request, please open up an issue [here](https://github.com/enigmadigm/greenmesa/issues) (issues don't have to be bugs)."
+                    },
+                    {
+                        name: "How do I find out more?",
+                        value: "I have my very own [website under development](https://enigmadigm.com/apps/greenmesa/help) that I hope will be available to help in a greater capacity soon."
                     },
                     {
                         name: "What am I supposed to do?",
-                        value: `||\` don't  get  caught  doing  anything  stupid \`|| (\`${config.prefix}help\` will tell you everything you can do)`
-                    },
-                    {
-                    name: "How do I find out more?",
-                    value: "Use commands like `help` and `info` to get more information. Visit [the GreenMesa GitHub repo](https://github.com/enigmadigm/GreenMesa), or my [website under development](https://enigmadigm.com/apps/greenmesa/)."
+                        value: `Again, \`${message.gprefix}help\` will get you on the right path, and don't  get  caught  doing  anything  stupid. This shouldn't be that hard to figure out.`
                     }
                 ],
                 timestamp: new Date(),
                 footer: {
                     icon_url: client.user.avatarURL,
-                    text: `The Intro | See ${config.prefix}info for app info`
+                    text: `The Intro | See ${message.gprefix}info for app info`
                 }
             }
         });
