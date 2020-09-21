@@ -275,7 +275,7 @@ client.on("message", async message => {// This event will run on every single me
     if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
 
     if (command.guildOnly && message.channel.type !== 'text') {
-        return message.reply('I can\'t execute that command inside DMs!');
+        return message.channel.send('I can\'t execute that command inside DMs!');
     }
     if (command.ownerOnly && message.author.id !== config.ownerID) return xlg.log(`${message.author.tag} attempted ownerOnly!`);
     if (command.permLevel && permLevel < command.permLevel) return; // insufficient bot permissions
@@ -285,9 +285,9 @@ client.on("message", async message => {// This event will run on every single me
         message.channel.send({
             embed: {
                 title: `Command Disabled`,
-                description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0].value == "false") ? "**Globally**" : "**on this server**"}.`,
+                description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0].value == "false") ? "**globally**" : "**on this server**"}.`,
                 footer: {
-                    text: `${(commandEnabledGlobal[0].value == "false") ? 'sorry' : 'admins may re-enable it'}`
+                    text: `${(commandEnabledGlobal[0].value == "false") ? 'sorry, please be patient' : 'admins may re-enable it'}`
                 }
             }
         });
