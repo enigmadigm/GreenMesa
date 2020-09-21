@@ -57,7 +57,12 @@ module.exports = {
                     },
                     {
                         "name": "Roles",
-                        "value": message.guild.roles.cache.size,
+                        "value": `<:atsign_1:757386730960584815> ${message.guild.roles.cache.size}`,
+                        "inline": true
+                    },
+                    {
+                        "name": "Emojis 😏",
+                        "value": `${message.guild.emojis.cache.size}\n<:giflabel1:757354173086957608> ${message.guild.emojis.cache.filter(e => e.animated).size}`,
                         "inline": true
                     },
                     {
