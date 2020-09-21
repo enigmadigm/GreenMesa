@@ -1,5 +1,6 @@
 const fs = require("fs");
 const fetch = require("node-fetch");
+const { MWKEY } = require('../auth.json');
 
 module.exports = {
     name: 'define',
@@ -73,7 +74,7 @@ module.exports = {
             let def = args.join(" ").toLowerCase();
             let letters = /^[A-Za-z\s-]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
             if (letters.test(def)) {
-                fetch(`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${def}?key=03464f03-851d-4df0-ad53-4afdb47311d8`)
+                fetch(`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${def}?key=${MWKEY}`)
                     .then(res => res.json())
                     .then(j => {
                         if(!j[0]) {
