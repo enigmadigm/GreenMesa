@@ -9,9 +9,8 @@ module.exports = {
     async execute(client, message, args) {
         try {
             let evalRet = await eval(args.join(" "));
-            message.channel.send({
-                split: true,
-                content: `🟢 Executed:\n\`\`\`${evalRet ? evalRet : 'no return'}\`\`\``
+            message.channel.send(`🟢 Executed:\n\`\`\`${evalRet ? evalRet : 'no return'}\`\`\``, {
+                split: true
             });
             xlg.log("Executed `eval`: success");
         } catch (e) {
