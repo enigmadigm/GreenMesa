@@ -4,6 +4,6 @@ module.exports = {
     description: 'oh no! error 418!',
     category: 'fun',
     execute(client, message) {
-        message.channel.send("I'm a teapot <:teapot_sm:755357581102415903>");
+        message.channel.send("I'm a teapot <:teapot_sm_2:755357581102415903>");
     }
 }

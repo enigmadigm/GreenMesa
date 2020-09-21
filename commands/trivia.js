@@ -2,12 +2,12 @@ const Discord = require("discord.js");
 const fetch = require('node-fetch');
 const xlg = require('../xlogger')
 
-async function aResponded(message) {
+/*async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
     setTimeout(function () {
         alreadyRespondedCallout.delete().catch(O_o => {O_o});
     }, 2500);
-}
+}*/
 
 function displayScores(message, round = 0, scores = [], ignoreround = false) {
     round--;
@@ -86,7 +86,8 @@ module.exports = {
                 let usersResponded = [];
                 collector.on('collect', m => {
                     if (usersResponded.includes(m.author)) {
-                        return aResponded(message);
+                        //return aResponded(message); // stopping for ratelimit and load reasons for now
+                        return;
                     } else {
                         usersResponded.push(m.author);
                     }
