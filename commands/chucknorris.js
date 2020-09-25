@@ -8,7 +8,7 @@ module.exports = {
     category: 'fun',
     execute(client, message, args) {
         if (Math.random() < 0.08) {
-            message.channel.send('The developer of the bot recommends joke `KC54acTTT6iPf9FD0m7VWw`');
+            message.channel.send('I recommend joke `KC54acTTT6iPf9FD0m7VWw`');
         }
         if (args.length & args.length == 1 & args.toString().length == 22) {
             return fetch(`https://api.chucknorris.io/jokes/${args.join("%20")}`)

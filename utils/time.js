@@ -65,8 +65,33 @@ function getDurationDiff(timestamp0, timestamp1, duration) {
     return Math.abs(timestamp0 - timestamp1) / duration;
 }
 
+/**
+ * converts string into milliseconds. Syntax:
+ * - Ns = N seconds
+ * - Nm = N minutes
+ * - Nh = N hours
+ * - Nd = N days
+ *
+ * @export
+ * @param {string} text input text
+ * @returns
+ */
+function stringToDuration(text) {
+    let ms = 0;
+    let seconds = /(\d+)s/.exec(text);
+    if (seconds) ms += Number(seconds[1]) * timeUnits.second;
+    let minutes = /(\d+)m/.exec(text);
+    if (minutes) ms += Number(minutes[1]) * timeUnits.minute;
+    let hours = /(\d+)h/.exec(text);
+    if (hours) ms += Number(hours[1]) * timeUnits.hour;
+    let days = /(\d+)d/.exec(text);
+    if (days) ms += Number(days[1]) * timeUnits.day;
+
+    return ms;
+}
 
 exports.timeUnits = timeUnits;
 exports.getFriendlyUptime = getFriendlyUptime;
 exports.getDayDiff = getDayDiff;
 exports.getDurationDiff = getDurationDiff;
+exports.stringToDuration = stringToDuration;

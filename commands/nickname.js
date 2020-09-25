@@ -25,6 +25,7 @@ module.exports = {
             args.shift();
         }
         if (args[0] === message.member.id) args.shift();
+        if (target.id == client.id) return message.channel.send(':frowning2: my nickname should be changed manually');
         if (!target.manageable) return message.channel.send(':frowning2: I am unable to manage the target, I am outranked! 🚀 inbound');
         if (args.join(" ").length > 32) return message.channel.send(':frowning2: nicknames cannot be longer than 32 characters');
         if (args.join(" ") == target.nickname) return message.channel.send(':frowning2: that is already the nickname');

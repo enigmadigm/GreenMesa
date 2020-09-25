@@ -233,8 +233,43 @@ function stringToEmbed(text) {
 
 }*/
 
+/**
+ * converts milliseconds into a string. Examples:
+ * - 3m 4s
+ * - 20d 30m
+ * - 0s
+ * - 1d 1h 1m 1s
+ *
+ * @export
+ * @param {number} duration duration in milliseconds
+ * @returns
+ */
+function durationToString(duration) {
+
+    var ms = duration % 1000;
+    duration = (duration - ms) / 1000;
+    var seconds = duration % 60;
+    duration = (duration - seconds) / 60;
+    var minutes = duration % 60;
+    duration = (duration - minutes) / 60;
+    var hours = duration % 24;
+    var days = (duration - hours) / 24;
+
+    var durationString = '';
+
+    if (days != 0) durationString += days + 'd ';
+    if (hours != 0) durationString += hours + 'h ';
+    if (minutes != 0) durationString += minutes + 'm ';
+    if (seconds != 0) durationString += seconds + 's';
+
+    if (durationString == '') durationString = '0s';
+
+    return durationString.trim();
+}
+
 exports.stringToUser = stringToUser;
 exports.stringToRole = stringToRole;
 exports.stringToChannel = stringToChannel;
 exports.stringToEmbed = stringToEmbed;
 exports.stringToMember = stringToMember;
+exports.durationToString = durationToString;

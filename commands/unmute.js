@@ -1,6 +1,7 @@
 const { getGuildSetting } = require("../dbmanager");
 const { sendModerationDisabled } = require('../utils/specialmsgs');
 const { permLevels } = require('../permissions');
+const { stringToMember } = require('../utils/parsers');
 
 module.exports = {
     name: 'unmute',
@@ -19,8 +20,12 @@ module.exports = {
             return sendModerationDisabled(message.channel);
         }
         
-        const toMute = ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.mentions.members.first();
+        const toMute = await stringToMember(message.guild, args[0], false, false, false);
         // Check perms, self, rank, etc
+        if (!await message.guild.me.hasPermission("MANAGE_ROLES")) { // check if the bot has the permissions to mute  members
+            message.channel.send("I do not have the permissions to do that");
+            return;
+        }
         if (!toMute) return message.channel.send('You did not specify a user mention or ID!');
         if (toMute.id === message.author.id) return message.channel.send('You cannot unmute yourself!');
         if (toMute.roles.highest.position >= message.member.roles.highest.position) return message.channel.send('You cannot unmute a member that is equal to or higher than yourself!');
@@ -34,7 +39,7 @@ module.exports = {
 
         // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
         await toMute.roles.remove(mutedRole, 'unmuting');
-        toMute.voice.setMute(false);
+        if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
 
         message.channel.send(`I have unmuted ${toMute.user.tag}!`);
         //let logChannel = client.channels.get(config.logChannel.id) || member.guild.channels.find(ch => ch.name === config.logChannel.name);
