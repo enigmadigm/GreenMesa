@@ -9,7 +9,7 @@ module.exports = {
         message.channel.send({
             embed: {
                 color: info_embed_color,
-                description: `Sure thing, here's the invite to the (new) support server: [invite link](https://discord.gg/AvXvvSg)`
+                description: `Invite to the (new) support server: [invite link](https://discord.gg/AvXvvSg)`
             }
         }).catch(xlg.error);
     }
