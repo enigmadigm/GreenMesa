@@ -1,6 +1,8 @@
 const { getGuildSetting } = require("../dbmanager");
 const { sendModerationDisabled } = require('../utils/specialmsgs');
 const { permLevels } = require('../permissions');
+const { stringToMember, durationToString } = require('../utils/parsers');
+const { stringToDuration } = require('../utils/time');
 
 module.exports = {
     name: 'mute',
@@ -8,7 +10,7 @@ module.exports = {
         short: 'fully mute a member',
         long: 'Prevents a non-admin user from chatting or speaking in voice.'
     },
-    usage: "<user @ / user id>",
+    usage: "<user @ | user id> [time (9d9h9m9s)]",
     args: true,
     guildOnly: true,
     permLevel: permLevels.mod,
@@ -19,10 +21,15 @@ module.exports = {
             return sendModerationDisabled(message.channel);
         }
         
-        const toMute = ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.mentions.members.first();
+        const toMute = await stringToMember(message.guild, args[0], false, false, false);
         // Check perms, self, rank, etc
+        if (!await message.guild.me.hasPermission("MANAGE_ROLES")) { // check if the bot has the permissions to mute  members
+            message.channel.send("I do not have the permissions to do that");
+            return;
+        }
         if (!toMute) return message.channel.send('You did not specify a user mention or ID!');
         if (toMute.id === message.author.id) return message.channel.send('You cannot mute yourself!');
+        if (toMute.id === client.id) return message.channel.send('You cannot mute yourself!');
         if (toMute.roles.highest.position >= message.member.roles.highest.position) return message.channel.send('You cannot mute a member that is equal to or higher than yourself!');
         if (!toMute.manageable) return message.channel.send(`I don't have a high enough role to manage ${toMute || 'that user'}.`);
 
@@ -62,9 +69,22 @@ module.exports = {
         if (toMute.roles.cache.has(mutedRole.id)) return message.channel.send('This user is already muted!');
         
         await toMute.roles.add(mutedRole, "muting").catch(e => console.log(e.stack));
-        toMute.voice.setMute(true);
+        if (toMute.voice.connection && !toMute.voice.mute) await toMute.voice.setMute(true).catch(console.error);
 
-        message.channel.send(`I have muted ${toMute.user.tag}!`);
+        let mendm = ""
+        let time = await stringToDuration(args[1]);
+        if (!time || time == 0) {
+            mendm = ` ${durationToString(time)}`
+        }
+
+        message.channel.send(`I have muted ${toMute.user.tag}!${mendm.lengths > 0 ? mendm : ''}`);
+
+        setTimeout(async () => {
+            if (!toMute.roles.cache.has(mutedRole.id)) return;
+            // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
+            await toMute.roles.remove(mutedRole, 'unmuting automatically');
+            if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
+        }, time)
         /*let logChannel = client.channels.get(.id) || toMute.guild.channels.find(ch => ch.name === "");
         logChannel.send({
             embed: {
