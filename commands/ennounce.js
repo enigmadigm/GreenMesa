@@ -9,7 +9,10 @@ var schema = {
 
 module.exports = {
     name: 'ennounce',
-    description: 'Make the bot send a custom embed with optional color. The sender message is deleted. Embed color can be sent in decimal, 0x hex format, or just type a common color with \\ prefixing, all in the first argument.',
+    description: {
+        short: 'send an embed and more',
+        long: 'Make the bot send a custom embed with optional color. The sender message is deleted. Embed color can be sent in decimal, 0x hex format, or just type a common color with \\ prefixing, all in the first argument.'
+    },
     args: true,
     usage: '[\\common color | decimal < 16777215] <message | json> [--no-footer --json]',
     guildOnly: true,
