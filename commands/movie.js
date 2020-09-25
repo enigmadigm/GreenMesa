@@ -7,11 +7,11 @@ module.exports = {
     name: 'movie',
     description: {
         short: 'get metadata about a movie',
-        long: 'Search for a movie, film, or series and get a bunch of neat information it.'
+        long: 'Search for a movie, film, or series. This returns a bunch of neat information on what is found. If you don\'t get the result you want with your search terms, sorry; either try again or resort to your browser.'
     },
     args: true,
     usage: "<movie name>",
-    aliases: ['movies', 'imdb', ],
+    aliases: ['movies', 'imdb', 'films'],
     category: 'fun',
     async execute(client, message, args) {
         if (args.length > 0 && args.length < 11 && args.join("+").length < 200) {
@@ -39,7 +39,7 @@ module.exports = {
                                 description: `${j.Plot}`,
                                 fields: [],
                                 footer: {
-                                    text: `${j.imdbID}${j.Production ? ` | ${j.Production}` : ''} | not right? google.`
+                                    text: `${j.imdbID}${j.Production ? ` | Studio: ${j.Production}` : ''}`
                                 }
                             }
                             if (j.Rated) {
@@ -105,7 +105,7 @@ module.exports = {
                                     inline: true
                                 });
                             }
-                            if (j.Poster) {
+                            if (j.Poster && j.Poster.toLowerCase() !== "n/a") {
                                 let cres = await getColors(j.Poster);
                                 let pcol = cres[0] ? cres[0].num() : parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
                                 embed.image = {
