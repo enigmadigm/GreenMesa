@@ -152,8 +152,7 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
 });
 
 client.on("rateLimit", rateLimitInfo => {
-    xlg.log('ratelimited'); 
-    xlg.log(JSON.stringify(rateLimitInfo));
+    xlg.log('Ratelimited: ' + JSON.stringify(rateLimitInfo));
 })
 
 client.on("guildCreate", guild => {// This event triggers when the bot joins a guild.
