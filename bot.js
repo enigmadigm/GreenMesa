@@ -29,6 +29,7 @@ const client = new Discord.Client();
 var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
+const { timedMessagesHandler } = require('./utils/specialmsgs');
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -141,6 +142,8 @@ client.on("ready", async() => {// This event will run if the bot starts, and log
 
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
+
+    await timedMessagesHandler(client);
 
     //Generates invite link to put in console.
     try {
