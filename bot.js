@@ -276,7 +276,7 @@ client.on("message", async message => {// This event will run on every single me
 
     if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
 
-    if (command.guildOnly && message.channel.type !== 'text') {
+    if (command.guildOnly && dm) {
         return message.channel.send('I can\'t execute that command inside DMs!');
     }
     if (command.ownerOnly && message.author.id !== config.ownerID) return xlg.log(`${message.author.tag} attempted ownerOnly!`);
