@@ -1,6 +1,6 @@
 {
     "name": "greenmesa",
-    "version": "1.4.16",
+    "version": "1.4.17",
     "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
     "main": "bot.js",
     "scripts": {
@@ -25,6 +25,7 @@
         "pm2": "^4.4.1",
         "puppeteer": "^5.3.1",
         "reddit": "^1.2.0",
+        "rpg-dice-roller": "^4.5.1",
         "twitch": "^4.2.4",
         "twitch-webhooks": "^4.2.4",
         "ytdl-core": "^3.2.2"
