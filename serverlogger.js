@@ -60,7 +60,7 @@ async function logMessageDelete(message) {
                 "name": "Message Deleted",
                 "icon_url": message.author.displayAvatarURL()
             },
-            "description": `Message by ${message.author} deleted in ${message.channel}\nmessage created ${moment(message.createdAt).utc().fromNow()}`,
+            "description": `message by ${message.author} deleted in ${message.channel}\nmessage created ${moment(message.createdAt).utc().fromNow()}`,
             "fields": [
                 {
                     name: 'Content' + (shortened ? ' (shortened)' : ''),
@@ -142,7 +142,7 @@ async function logMessageUpdate(omessage, nmessage) {
                 name: "Message Edited",
                 icon_url: nmessage.author.displayAvatarURL()
             },
-            description: `[**m.**](${nmessage.url}) edited in ${nmessage.channel} by ${nmessage.author}\n[**m.**](${nmessage.url}) created ${moment(omessage.createdAt).utc().fromNow()}\n[${moment(omessage.createdAt).utc().format('M/D/Y HH:mm:ss')}]`,
+            description: `**[m.](${nmessage.url})** edited in ${nmessage.channel} by ${nmessage.author}\n**[m.](${nmessage.url})** created ${moment(omessage.createdAt).utc().fromNow()}\n[${moment(omessage.createdAt).utc().format('M/D/Y HH:mm:ss')}]`,
             fields: [
                 {
                     name: "Before" + (oldShortened ? ' (shortened)' : ''),
