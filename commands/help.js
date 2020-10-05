@@ -41,7 +41,7 @@ module.exports = {
                 // for some reason if you don't separate \` ${command.name} \` with a space it flips out
                 //                                         ^               ^
                 data.push(categories.filter(ca => ca.name !== "owner").map(ca => {
-                    return `${titleCase(ca.name)}${` ${ca.emoji} ` || ''}\n\` ${message.gprefix}${ca.name.toLowerCase()} \``
+                    return `${titleCase(ca.name)}${` ${ca.emoji} ` || ''}\n\` ${message.gprefix}help ${ca.name.toLowerCase()} \``
                 }).join('\n'));
                 data.push(`**Send \`${message.gprefix}help [command name]\` to get help for a specific command!**`)
                 let cmdcount = commands.size; // commands.filter(co => co.category !== "owner").size;
