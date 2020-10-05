@@ -16,21 +16,38 @@ module.exports = {
     async execute(client, message, args) {
         var url = `https://api.nasa.gov/planetary/apod?api_key=${config.NASA.key}`;
         if (args.length) {
-            var apoddate = new Date(args.join(" "));
-            if (!apoddate || !apoddate.toISOString()) return;
-            url += `&date=${lux.DateTime.fromJSDate(apoddate).toISODate()}`;
+            try {
+                var apoddate = new Date(args.join(" "));
+                url += `&date=${lux.DateTime.fromJSDate(apoddate).toISODate()}`;
+            } catch (error) {
+                return;
+            }
         }
         fetch(url)
             .then(res => res.json())
             .then(async j => {
                 if (!j.url || !validURL(j.url)) {
+                    if (j.code && j.code == 400) return message.channel.send({
+                        embed: {
+                            color: parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10),
+                            title: "Error",
+                            description: "Invalid Date"
+                        }
+                    }).catch(xlg.error);
+                    if (j.code && j.code == 404) return message.channel.send({
+                        embed: {
+                            color: parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10),
+                            title: "Sorry",
+                            description: `**At this date there is no image data from NASA.**\nIf you are searching for today's data you may find that this changes later. You may also search for an APOD at a different date. I have no control over this.`
+                        }
+                    }).catch(xlg.error);
                     return message.channel.send({
                         embed: {
                             color: parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10),
                             title: "Sorry",
                             description: "The APOD could not be retrieved."
                         }
-                    })
+                    }).catch(xlg.error);
                 }
                 let embed = {
                     timestamp: j.date ? new Date(j.date) : new Date(),

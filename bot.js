@@ -35,15 +35,49 @@ const { timedMessagesHandler } = require('./utils/specialmsgs');
 //const chalk = require('chalk');
 
 // The Discord.js *client*
-client.commands = new Discord.Collection()
+client.commands = new Discord.Collection();
+client.categories = new Discord.Collection();
 // ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 var commNumber = 1;
+var catNumber = 1;
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
     // set a new item in the Collection
     // with the key as the command name and the value as the exported module
     client.commands.set(command.name, command);
+    let catdat = {
+        name: '',
+        id: catNumber,
+        count: 1
+    }
+    let catsem = {
+        "fun": "🎉",
+        "utility": "🔬",
+        "moderation": "🛠",
+        "misc": "🎃"
+    };
+    if (Object.keys(catsem).includes(command.category)) {
+        catdat.emoji = catsem[command.category];
+    } else {
+        if (!command.category) catdat.emoji = catsem["misc"];
+    }
+    if (command.category && typeof command.category === 'string') {
+        if (!client.categories.find(c => c.name == command.category)) {
+            catdat.name = command.category;
+            client.categories.set(command.category, catdat);
+            catNumber++;
+        } else {
+            client.categories.find(c => c.name == command.category).count++;
+        }
+    } else {
+        if (!client.categories.find(c => c.name == "misc")) {
+            catdat.name = 'misc';
+            client.categories.set('misc', catdat);
+        } else {
+            client.categories.find(c => c.name === "misc").count++;
+        }
+    }
     let noName = '';
     if (command.name == "" || command.name == null) {
         noName = ' \x1b[33mWARNING: \x1b[32mthis command has no name, it may not be configured properly\x1b[0m';
@@ -93,7 +127,7 @@ handleDisconnect();*/
 const cooldowns = new Discord.Collection();
 const xpcooldowns = new Discord.Collection();
 
-client.on("ready", async() => {// This event will run if the bot starts, and logs in, successfully.
+client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
     xlg.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     client.channels.cache.get('661614128204480522').send(`Started :green_square: :green_square:`).catch(console.error);
