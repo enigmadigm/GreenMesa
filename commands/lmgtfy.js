@@ -32,7 +32,7 @@ module.exports = {
             message.channel.startTyping();
             const browser = await puppeteer.launch();
             const page = await browser.newPage();
-            await page.goto(`https://google.com/search?q=${args.join("+")}`);
+            await page.goto(`https://google.com/search?q=${args.join("+")}${(message.channel.nsfw) ? "" : "&safe=active"}`);
             sc = await page.screenshot();
             await browser.close();
         }
