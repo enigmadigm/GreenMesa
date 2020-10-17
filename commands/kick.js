@@ -33,7 +33,7 @@ module.exports = {
              */
             target.kick(reason).then(() => {
                 // We let the message author know we were able to kick the person
-                message.channel.send(`<a:spinning_light00:680291499904073739> ✅ Kicked ${target.user.tag}`);
+                message.channel.send(`<a:spinning_light00:680291499904073739>✅ Kicked ${target.user.tag}`);
                 //let logChannel = client.channels.get(config.logChannel.id) || member.guild.channels.find(ch => ch.name === config.logChannel.name);
                 /*logChannel.send({
                     embed: {
@@ -49,7 +49,7 @@ module.exports = {
                 // An error happened
                 // This is generally due to the bot not being able to kick the member,
                 // either due to missing permissions or role hierarchy
-                message.channel.send(`<a:spinning_light00:680291499904073739> 🆘 Could not kick ${target.user.tag}`);
+                message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Could not kick ${target.user.tag}`);
                 // Log the error
                 console.error(err);
             });
