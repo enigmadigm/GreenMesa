@@ -89,25 +89,6 @@ async function stringToUser(client, text) {
 }
 
 /**
- * Parses a string into a Role object or a String for 'everyone' or 'here'.
- * If the role name isn't accurate the function will use the stringSimilarity method.
- * Can parse following input:
- * - here / everyone name
- * - @here / @everyone mention
- * - role name
- * - role mention
- * - role id
- * - similar role name
- *
- * @export
- * @param {Guild} guild guild where the role is in
- * @param {string} text string to parse
- * @param {boolean} [byName=true] if it should also search by name (default true)
- * @param {boolean} [bySimilar=true] if it should also search by similar name (default true)
- * @returns
- */
-
-/**
  * Parses string into GuildMember object.
  * If the username isn't accurate the function will use the stringSimilarity method.
  * Can parse following inputs:
@@ -133,12 +114,12 @@ async function stringToMember(guild, text, byUsername = true, byNickname = true,
     // by id
     var member = guild.members.cache.get(text);
     if (!member && byUsername)
-        // by username
-        member = guild.members.cache.find(x => x.user.username == text);
+    // by username
+    member = guild.members.cache.find(x => x.user.username == text);
     if (!member && byNickname)
-        // by nickname
-        member = guild.members.cache.find(x => x.nickname == text);
-
+    // by nickname
+    member = guild.members.cache.find(x => x.nickname == text);
+    
     if (!member && bySimilar) {
         // closest matching username
         member = guild.members.cache.reduce(function (prev, curr) {
@@ -150,6 +131,25 @@ async function stringToMember(guild, text, byUsername = true, byNickname = true,
     }
     return member;
 }
+
+/**
+ * Parses a string into a Role object or a String for 'everyone' or 'here'.
+ * If the role name isn't accurate the function will use the stringSimilarity method.
+ * Can parse following input:
+ * - here / everyone name
+ * - @here / @everyone mention
+ * - role name
+ * - role mention
+ * - role id
+ * - similar role name
+ *
+ * @export
+ * @param {Guild} guild guild where the role is in
+ * @param {string} text string to parse
+ * @param {boolean} [byName=true] if it should also search by name (default true)
+ * @param {boolean} [bySimilar=true] if it should also search by similar name (default true)
+ * @returns
+ */
 
 function stringToRole(guild, text, byName = true, bySimilar = true) {
 
