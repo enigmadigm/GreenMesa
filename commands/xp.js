@@ -5,7 +5,7 @@ const xlg = require("../xlogger");
 
 module.exports = {
     name: 'xp',
-    description: 'Get the current amount of xp for the person requested or the author of the message. In short, earn xp by sending any kind of communication in any guild with this bot; to prevent spam, xp can only be generated once per minute.',
+    description: 'Get the amount of xp someone has. Earn xp by sending any message in a guild with this bot. Points can only be generated once per minute for spam protection.',
     aliases: ['exp', 'orbs', 'level', 'points'],
     usage: "[other user]",
     guildOnly: true,

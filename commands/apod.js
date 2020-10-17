@@ -12,6 +12,7 @@ module.exports = {
         long: 'Get the Astronomy Picture of the Day from NASA.'
     },
     usage: '[date]',
+    category: 'fun',
     args: false,
     async execute(client, message, args) {
         var url = `https://api.nasa.gov/planetary/apod?api_key=${config.NASA.key}`;
