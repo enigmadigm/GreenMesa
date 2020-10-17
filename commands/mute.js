@@ -34,57 +34,57 @@ module.exports = {
         if (!toMute.manageable) return message.channel.send(`I don't have a high enough role to manage ${toMute || 'that user'}.`);
 
         // Check if the user has the mutedRole
-        let mutedRole = message.guild.roles.cache.find(r => r.name === 'Muted' || r.name === 'mute');
+        let mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
         // If the mentioned user does not have the muted role execute the following
-        if (!mutedRole) {
-            try {
-                // Create a role called "Muted"
-                mutedRole = await message.guild.roles.create({
-                    data: {
-                        name: 'Muted',
-                        color: '#000000',
-                        permissions: 0,
-                        position: toMute.roles.highest.position + 1
-                    }
-                });
-
-                // Prevent the user from sending messages or reacting to messages
-                message.guild.channels.cache.each(async (channel) => {
-                    await channel.updateOverwrite(mutedRole, {
-                        SEND_MESSAGES: false,
-                        ADD_REACTIONS: false,
-                        //SPEAK: false,
-                        SEND_TTS_MESSAGES: false
+        try {
+            if (!mutedRole) {
+                    // Create a role called "Muted"
+                    mutedRole = await message.guild.roles.create({
+                        data: {
+                            name: 'Muted',
+                            color: '#708090',
+                            permissions: 0,
+                            position: 1
+                        }
                     });
-                });
-            } catch (e) {
-                console.log(e.stack);
+
+                    // Prevent the user from sending messages or reacting to messages
+                    message.guild.channels.cache.each(async (channel) => {
+                        await channel.updateOverwrite(mutedRole, {
+                            SEND_MESSAGES: false,
+                            ADD_REACTIONS: false
+                        });
+                    });
+                }
+                if (mutedRole.position < toMute.roles.highest.position) {
+                mutedRole.setPosition(toMute.roles.highest.position);
             }
+            
+            // If the mentioned user already has the "mutedRole" then that can not be muted again
+            if (toMute.roles.cache.has(mutedRole.id)) return message.channel.send('This user is already muted!');
+            
+            await toMute.roles.add(mutedRole, "muting").catch(e => console.log(e.stack));
+            if (toMute.voice.connection && !toMute.voice.mute) await toMute.voice.setMute(true).catch(console.error);
+            
+            let mendm = ""
+            let time = stringToDuration(args[1]);
+            if (!time || time == 0) {
+                mendm = ` ${durationToString(time)}`
+            }
+            
+            message.channel.send(`<a:spinning_light00:680291499904073739>✅ Muted ${toMute.user.tag}!${mendm.lengths > 0 ? mendm : ''}`);
+            
+            setTimeout(async () => {
+                if (!toMute.roles.cache.has(mutedRole.id)) return;
+                // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
+                await toMute.roles.remove(mutedRole, 'unmuting automatically');
+                if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
+            }, time)
+        } catch (e) {
+            console.log(e.stack);
+            message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Error muting ${toMute.user.tag}`);
         }
-        if (mutedRole.position < toMute.roles.highest.position) {
-            mutedRole.setPosition(toMute.roles.highest.position);
-        }
-
-        // If the mentioned user already has the "mutedRole" then that can not be muted again
-        if (toMute.roles.cache.has(mutedRole.id)) return message.channel.send('This user is already muted!');
         
-        await toMute.roles.add(mutedRole, "muting").catch(e => console.log(e.stack));
-        if (toMute.voice.connection && !toMute.voice.mute) await toMute.voice.setMute(true).catch(console.error);
-
-        let mendm = ""
-        let time = await stringToDuration(args[1]);
-        if (!time || time == 0) {
-            mendm = ` ${durationToString(time)}`
-        }
-
-        message.channel.send(`I have muted ${toMute.user.tag}!${mendm.lengths > 0 ? mendm : ''}`);
-
-        setTimeout(async () => {
-            if (!toMute.roles.cache.has(mutedRole.id)) return;
-            // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
-            await toMute.roles.remove(mutedRole, 'unmuting automatically');
-            if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
-        }, time)
         /*let logChannel = client.channels.get(.id) || toMute.guild.channels.find(ch => ch.name === "");
         logChannel.send({
             embed: {

@@ -33,6 +33,7 @@ module.exports = {
     },
     aliases:['tr'],
     cooldown: 20,
+    category: "fun",
     async execute(client, message, args, conn, scores = [], round = 1) {
         return fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986`)
             .then(res => res.json())
