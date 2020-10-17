@@ -26,7 +26,7 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
 const { timedMessagesHandler } = require('./utils/specialmsgs');
@@ -96,7 +96,6 @@ const tools = {
         }).join("\n");
     }
 }
-
 client.tools = tools;
 
 // ▼▼▼▼▼▼▼▼ A lot of this stuff below is all to manage database connections, these are passed through the conn argument in the execute function
@@ -317,13 +316,14 @@ client.on("message", async message => {// This event will run on every single me
     if (command.permLevel && permLevel < command.permLevel) return; // insufficient bot permissions
 
     let commandEnabledGlobal = await getGlobalSetting(`${command.name}_enabled`);
-    if (commandEnabledGlobal && commandEnabledGlobal[0].value == 'false') {
+    let commandEnabledGuild = await getGuildSetting(message.guild, `${command.name}_toggle`);
+    if ((commandEnabledGlobal && commandEnabledGlobal[0].value == 'false') || (commandEnabledGuild[0] && commandEnabledGuild[0].value === 'disable')) {
         message.channel.send({
             embed: {
                 title: `Command Disabled`,
-                description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0].value == "false") ? "**globally**" : "**on this server**"}.`,
+                description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? "**globally**" : "**on this server**"}.`,
                 footer: {
-                    text: `${(commandEnabledGlobal[0].value == "false") ? 'sorry, please be patient' : 'admins may re-enable it'}`
+                    text: `${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? 'sorry, please be patient' : 'admins may re-enable it'}`
                 }
             }
         });
