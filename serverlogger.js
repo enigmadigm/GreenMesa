@@ -17,6 +17,7 @@ async function logMember(member, joining) {
     let logChannel = await getLogChannel(member.guild);
     if (!logChannel || logChannel.type !== 'text') return;
 
+    // "color": joining ? 0x00ff00 : 0xff0000,
     let embed = {
         embed: {
             "author": {
@@ -30,7 +31,7 @@ async function logMember(member, joining) {
                     "value": `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`
                 }
             ],
-            "color": joining ? 0x00ff00 : 0xff0000,
+            "color": joining ? parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10) : parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
             "timestamp": joining ? member.joinedAt : new Date(),
             "footer": {
                 "text": `ID: ${member.id}`
@@ -94,7 +95,7 @@ async function logMessageBulkDelete(messageCollection) {
     let logMessage = await logChannel.send(attachment);
     logMessage.edit({
         embed: {
-            "color": parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000,
+            "color": parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10) || 0xff0000,
             "author": {
                 "name": `${messageCollection.first().channel.name}`,
                 "icon_url": messageCollection.first().guild.iconURL
