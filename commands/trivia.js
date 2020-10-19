@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const fetch = require('node-fetch');
 const xlg = require('../xlogger')
+const { getGlobalSetting } = require("../dbmanager");
 
 /*async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
@@ -100,7 +101,7 @@ module.exports = {
                 collector.on('end', async (collected, reason) => {
                     round += 1;
                     if (reason == 'time') {
-                        triviaMessage.embeds[0].color = 16711680;
+                        triviaMessage.embeds[0].color = parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10);
                         triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
                             if (i != correctIndex) return `🟥${e}`;
                             return `✅${e}`;
@@ -126,7 +127,7 @@ module.exports = {
                         return;
                     }
                     let collectedLast = collected.last().member.displayName;
-                    triviaMessage.embeds[0].color = 65280;
+                    triviaMessage.embeds[0].color = parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10);
                     triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
                         if (i != correctIndex) return `🟥${e}`;
                         return `✅${e}`;
