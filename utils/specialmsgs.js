@@ -12,6 +12,40 @@ async function sendModerationDisabled(channel) {
     }).catch(xlg.error);
 }
 
+async function argsNumRequire(channel, args, num) {
+    if (args.length == num) return true;
+    let fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
+    channel.send({
+        embed: {
+            color: fail_embed_color,
+            description: `The wrong number of arguments was provided.\nThis command requires \` ${num} \` arguments.`
+        }
+    }).catch(xlg.error);
+    return false;
+}
+
+async function argsMustBeNum(channel, args) {
+    if (!args || !args.length) return false;
+    let forResult = true;
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (!parseInt(arg, 10)) {
+            forResult = false;
+        }
+    }
+    if (!forResult) {
+        channel.send({
+            embed: {
+                color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
+                title: "invalid arguments",
+                description: "all arguments must be numbers (floating or integer)"
+            }
+        }).catch(xlg.error);
+        return false;
+    }
+    return true;
+}
+
 async function timedMessagesHandler(client) {
     setInterval(async () => {
         if (moment().utcOffset(-5).format('M/D HH:mm') == "9/26 21:30") {
@@ -22,3 +56,5 @@ async function timedMessagesHandler(client) {
 
 exports.sendModerationDisabled = sendModerationDisabled;
 exports.timedMessagesHandler = timedMessagesHandler;
+exports.argsNumRequire = argsNumRequire;
+exports.argsMustBeNum = argsMustBeNum;
