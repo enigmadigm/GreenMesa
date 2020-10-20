@@ -26,7 +26,7 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
 const { timedMessagesHandler } = require('./utils/specialmsgs');
@@ -247,6 +247,7 @@ client.on('channelDelete', ochannel => {
 
 // the actual command processing
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
+    logMsgReceive();
 
     if (message.author.bot) return;
     if (message.system) return;

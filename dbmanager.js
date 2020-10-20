@@ -383,6 +383,10 @@ async function deleteAllLevelRoles(guild) {
     return false;
 }
 
+/**
+ * Log command usage (after execution)
+ * @param {string} name name of command being logged
+ */
 async function logCmdUsage(name) {
     try {
         let oresult = await query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
@@ -403,9 +407,29 @@ async function logCmdUsage(name) {
     }
 }
 
+/**
+ * Get total number of commands sent from db
+ * @returns {number} result object with edit information, or string for promise rejection
+ */
 async function getTotalCmdUsage() {
     try {
         return await query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
+/**
+ * Update a setting for config in the global settings database
+ */
+async function logMsgReceive() {
+    try {
+        let result = await query(`SELECT * FROM globalsettings WHERE name = 'mreceived'`);
+        if (!result || result.length === 0) {
+            await query(`INSERT INTO globalsettings (name, value) VALUES ('mreceived', '1')`);
+        } else {
+            await query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`= value + 1 WHERE \`name\`='mreceived'`);
+        }
     } catch (error) {
         xlog.error(error);
     }
@@ -432,3 +456,4 @@ exports.setLevelRole = setLevelRole;
 exports.deleteAllLevelRoles = deleteAllLevelRoles;
 exports.logCmdUsage = logCmdUsage;
 exports.getTotalCmdUsage = getTotalCmdUsage;
+exports.logMsgReceive = logMsgReceive;
