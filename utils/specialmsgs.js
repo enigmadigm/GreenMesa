@@ -29,7 +29,7 @@ async function argsMustBeNum(channel, args) {
     let forResult = true;
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
-        if (!parseInt(arg, 10)) {
+        if (isNaN(arg)) {
             forResult = false;
         }
     }
