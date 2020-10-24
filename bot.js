@@ -338,7 +338,7 @@ client.on("message", async message => {// This event will run on every single me
         let reply = `I need arguments to make that work, ${message.author}!`;
 
         if (command.usage) {
-            reply += `\nThe proper usage would be: \`${message.gprefix}${command.name} ${command.usage}\``;
+            reply += `\nUsage: \`${message.gprefix}${command.name} ${command.usage}\``;
         }
 
         return message.channel.send({
