@@ -1,11 +1,14 @@
 const xlg = require("../xlogger");
 const { getGlobalSetting } = require("../dbmanager");
+const { stringToChannel } = require('../utils/parsers');
+const { permLevels } = require('../permissions');
 
 module.exports = {
     name: "cpchan",
     description: "copy a channel",
     usage: "<channel id>",
     args: true,
+    permLevel: permLevels.botMaster,
     async execute(client, message, args) {
         message.channel.send({
             embed: {
@@ -21,5 +24,7 @@ module.exports = {
                 }
             }).catch(xlg.error);
         }
+        let target = stringToChannel(message.guild, args.join(" "), true, true);
+        message.guild.channels.create(target);
     }
 }
