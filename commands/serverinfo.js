@@ -9,6 +9,7 @@ module.exports = {
     aliases: ['server'],
     guildOnly: true,
     cooldown: 8,
+    category: "utility",
     async execute(client, message) {
         let createdAt = moment(message.guild.createdAt).utc();
         var memberCount = message.guild.memberCount;
