@@ -29,5 +29,9 @@ There are *quite a few* ignored files (found in [.gitignore](.gitignore)) that a
 ```
 Some required sections of the config file will be generated if not provided (the logging parts), all parts with keys are required.
 
+## Docker
+
+Don't try to use the Docker files.
+
 
 End.

@@ -26,7 +26,7 @@ const config = require("./auth.json"); // Loading app config file
 //const dbm = require("./dbmanager");
 //const mysql = require("mysql");
 const client = new Discord.Client();
-var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting } = require("./dbmanager");
+var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
 const { timedMessagesHandler } = require('./utils/specialmsgs');
@@ -247,6 +247,7 @@ client.on('channelDelete', ochannel => {
 
 // the actual command processing
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
+    logMsgReceive();
 
     if (message.author.bot) return;
     if (message.system) return;
@@ -337,7 +338,7 @@ client.on("message", async message => {// This event will run on every single me
         let reply = `I need arguments to make that work, ${message.author}!`;
 
         if (command.usage) {
-            reply += `\nThe proper usage would be: \`${message.gprefix}${command.name} ${command.usage}\``;
+            reply += `\nUsage: \`${message.gprefix}${command.name} ${command.usage}\``;
         }
 
         return message.channel.send({

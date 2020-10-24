@@ -1,6 +1,6 @@
 {
     "name": "greenmesa",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
     "main": "bot.js",
     "scripts": {
@@ -14,19 +14,19 @@
     "author": "Stefan Hauge",
     "dependencies": {
         "@discordjs/opus": "^0.3.2",
-        "discord.js": "^12.3.1",
+        "discord.js": "^12.4.1",
         "get-image-colors": "^2.0.1",
         "ibm-watson": "^5.7.1",
         "jsdom": "^16.4.0",
         "luxon": "^1.25.0",
-        "moment": "^2.29.0",
+        "moment": "^2.29.1",
         "mysql": "^2.18.1",
         "node-fetch": "^2.6.1",
         "plotly": "^1.0.6",
         "pm2": "^4.5.0",
-        "puppeteer": "^5.3.1",
+        "puppeteer": "^5.4.0",
         "rpg-dice-roller": "^4.5.1",
-        "ytdl-core": "^3.3.0"
+        "ytdl-core": "^3.4.2"
     },
     "license": "ISC",
     "bugs": {
@@ -34,12 +34,12 @@
     },
     "homepage": "https://github.com/enigmadigm/greenmesa#readme",
     "devDependencies": {
-        "dayjs": "^1.9.1",
-        "eslint": "^7.10.0",
-        "jsonschema": "^1.2.8",
+        "dayjs": "^1.9.4",
+        "eslint": "^7.12.0",
+        "jsonschema": "^1.4.0",
         "reddit": "^1.2.0",
-        "twitch": "^4.2.5",
-        "twitch-webhooks": "^4.2.5",
+        "twitch": "^4.2.7",
+        "twitch-webhooks": "^4.2.7",
         "uniqid": "^5.2.0"
     },
     "type": "commonjs"

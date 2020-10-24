@@ -11,6 +11,7 @@ module.exports = {
         long: 'Get a wyr question and choices.'
     },
     guildOnly: true,
+    category: "fun",
     async execute(client, message) {
         try {
             message.channel.startTyping();

@@ -10,6 +10,7 @@ module.exports = {
     },
     usage: "[number of and die type (e.g. 4d6)]",
     aliases: ['r', 'dice', 'cast'],
+    category: "fun",
     async execute(client, message, args) {
         let notation = args.join(" ") || false;
         if (!notation) {

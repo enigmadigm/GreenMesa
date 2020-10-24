@@ -3,9 +3,9 @@ const { permLevels } = require('../permissions');
 const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
-    name: 'listroles',
-    aliases: ['lsroles'],
-    description: 'list all of the roles in a server',
+    name: 'roles',
+    aliases: ['listroles', 'lsroles'],
+    description: 'list all of the roles in the server',
     guildOnly: true,
     category: 'utility',
     permLevel: permLevels.trustedMember,
@@ -17,7 +17,7 @@ module.exports = {
                     name: `${message.guild.name} Roles`,
                     icon_url: message.guild.iconURL()
                 },
-                description: `${message.guild.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).array().map(r => `\`${r.name}\``).join("\n") || '*none*'}`,
+                description: `${message.guild.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).array().map(r => `${message.guild.roles.cache.get(r.id)}`).join("\n") || '*none*'}`,
                 footer: {
                     text: `Roles: ${message.guild.roles.cache.array().length}`
                 }
