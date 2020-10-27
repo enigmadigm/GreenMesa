@@ -5,7 +5,7 @@ const xlg = require("./xlogger");
 
 async function potatoRoler(member) {
     try {
-        if (!member.manageable) return xlg.log("potatoRoler: not manageable");
+        if (member.guild.id !== "725784760366006353") return;
         await member.roles.add("754071177156100136");
     } catch (error) {
         xlg.error(error);
