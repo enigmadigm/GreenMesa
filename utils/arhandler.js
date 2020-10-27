@@ -1,4 +1,4 @@
-const xlg = require("./xlogger");
+const xlg = require("../xlogger");
 //const { getGlobalSetting } = require("../dbmanager");
 
 // if (!message.channel.permissionsFor(message.guild.me).has(["SEND_MESSAGES"]) || !message.channel.manageable)
