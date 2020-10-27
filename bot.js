@@ -30,6 +30,7 @@ var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, mass
 const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
 const { timedMessagesHandler } = require('./utils/specialmsgs');
+const ar = require("./utils/arhandler");
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -180,7 +181,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
 
     //Generates invite link to put in console.
     try {
-        let link = await client.generateInvite(["ADMINISTRATOR"]);
+        let link = await client.generateInvite({ permissions: ["ADMINISTRATOR"] });
         console.log(link);
     } catch (e) {
         xlg.error(e);
@@ -207,6 +208,7 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
 
 client.on('guildMemberAdd', async member => {
     logMember(member, true);
+    ar.potatoRoler(member);
 });
 
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
