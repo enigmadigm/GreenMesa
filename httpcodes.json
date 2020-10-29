@@ -1,0 +1,254 @@
+[
+    {
+        "code": "100",
+        "description": ""
+    },
+    {
+        "code": "101",
+        "description": ""
+    },
+    {
+        "code": "102",
+        "description": ""
+    },
+    {
+        "code": "103",
+        "description": ""
+    },
+    {
+        "code": "200",
+        "description": "we're good"
+    },
+    {
+        "code": "201",
+        "description": ""
+    },
+    {
+        "code": "202",
+        "description": ""
+    },
+    {
+        "code": "203",
+        "description": ""
+    },
+    {
+        "code": "204",
+        "description": ""
+    },
+    {
+        "code": "205",
+        "description": ""
+    },
+    {
+        "code": "206",
+        "description": ""
+    },
+    {
+        "code": "207",
+        "description": ""
+    },
+    {
+        "code": "208",
+        "description": ""
+    },
+    {
+        "code": "226",
+        "description": ""
+    },
+    {
+        "code": "300",
+        "description": ""
+    },
+    {
+        "code": "301",
+        "description": "temporary redirect"
+    },
+    {
+        "code": "302",
+        "description": "permanent redirect"
+    },
+    {
+        "code": "303",
+        "description": ""
+    },
+    {
+        "code": "304",
+        "description": ""
+    },
+    {
+        "code": "305",
+        "description": ""
+    },
+    {
+        "code": "306",
+        "description": ""
+    },
+    {
+        "code": "307",
+        "description": ""
+    },
+    {
+        "code": "308",
+        "description": ""
+    },
+    {
+        "code": "400",
+        "description": ""
+    },
+    {
+        "code": "401",
+        "description": ""
+    },
+    {
+        "code": "402",
+        "description": ""
+    },
+    {
+        "code": "403",
+        "description": ""
+    },
+    {
+        "code": "404",
+        "description": "could not find resource"
+    },
+    {
+        "code": "405",
+        "description": ""
+    },
+    {
+        "code": "406",
+        "description": ""
+    },
+    {
+        "code": "407",
+        "description": ""
+    },
+    {
+        "code": "408",
+        "description": ""
+    },
+    {
+        "code": "409",
+        "description": ""
+    },
+    {
+        "code": "410",
+        "description": ""
+    },
+    {
+        "code": "411",
+        "description": ""
+    },
+    {
+        "code": "412",
+        "description": ""
+    },
+    {
+        "code": "413",
+        "description": ""
+    },
+    {
+        "code": "414",
+        "description": ""
+    },
+    {
+        "code": "415",
+        "description": ""
+    },
+    {
+        "code": "416",
+        "description": ""
+    },
+    {
+        "code": "417",
+        "description": ""
+    },
+    {
+        "code": "418",
+        "description": "teapot?"
+    },
+    {
+        "code": "421",
+        "description": ""
+    },
+    {
+        "code": "422",
+        "description": ""
+    },
+    {
+        "code": "423",
+        "description": ""
+    },
+    {
+        "code": "424",
+        "description": ""
+    },
+    {
+        "code": "425",
+        "description": ""
+    },
+    {
+        "code": "426",
+        "description": ""
+    },
+    {
+        "code": "428",
+        "description": ""
+    },
+    {
+        "code": "429",
+        "description": ""
+    },
+    {
+        "code": "431",
+        "description": ""
+    },
+    {
+        "code": "451",
+        "description": ""
+    },
+    {
+        "code": "500",
+        "description": "generic internal server error"
+    },
+    {
+        "code": "501",
+        "description": ""
+    },
+    {
+        "code": "502",
+        "description": ""
+    },
+    {
+        "code": "503",
+        "description": ""
+    },
+    {
+        "code": "504",
+        "description": ""
+    },
+    {
+        "code": "505",
+        "description": ""
+    },
+    {
+        "code": "506",
+        "description": ""
+    },
+    {
+        "code": "507",
+        "description": ""
+    },
+    {
+        "code": "508",
+        "description": ""
+    },
+    {
+        "code": "510",
+        "description": ""
+    },
+    {
+        "code": "511",
+        "description": ""
+    }
+]

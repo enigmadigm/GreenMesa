@@ -2121,7 +2121,7 @@
     },
     {
         "acronym": "FFS",
-        "description": "For *freak'*sakes"
+        "description": "For *freak'* sakes"
     },
     {
         "acronym": "FICCL",
@@ -2198,6 +2198,10 @@
     {
         "acronym": "FTFY",
         "description": "Fixed that for you"
+    },
+    {
+        "acronym": "FTFW",
+        "description": "For the *freak*in win"
     },
     {
         "acronym": "FTL",
