@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const fetch = require('node-fetch');
 const xlg = require('../xlogger')
 const { getGlobalSetting } = require("../dbmanager");
+let allowedTime = 15;
 
 /*async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
@@ -33,7 +34,7 @@ module.exports = {
         long: 'Starts a trivia game that can be played alone or with any number of people. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer!\nThis command has been well used, more features to come! Beware: sometimes questions pop up again, do not get angry, it is something about how the trivia pool is pulled from.'
     },
     aliases:['tr'],
-    cooldown: 20,
+    cooldown: allowedTime,
     category: "fun",
     async execute(client, message, args, conn, scores = [], round = 1) {
         return fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986`)
@@ -74,15 +75,14 @@ module.exports = {
                         }
                     }
                 }).catch(console.error);
-                let cdTime = 20;
-                const countDownMessage = await message.channel.send(`Enter the ***letter*** for the correct answer in \` < ${cdTime} \` seconds`);
+                const countDownMessage = await message.channel.send(`Enter the ***letter*** for the correct answer in \` < ${allowedTime} \` seconds`);
                 setInterval(function () {
-                    if (cdTime <= 0) return clearInterval();
-                    cdTime -= 5;
-                    countDownMessage.edit(`Enter the ***letter*** for the correct answer in \` < ${cdTime} \` seconds`).catch(xlg.error);
+                    if (allowedTime <= 0) return clearInterval();
+                    allowedTime -= 5;
+                    countDownMessage.edit(`Enter the ***letter*** for the correct answer in \` < ${allowedTime} \` seconds`).catch(xlg.error);
                 }, 5000);
                 const collector = message.channel.createMessageCollector(filter, {
-                    time: 20000
+                    time: allowedTime * 1000
                 });
                 
                 let usersResponded = [];
@@ -107,7 +107,7 @@ module.exports = {
                             return `✅${e}`;
                         }).join('\n');
                         await triviaMessage.edit(new Discord.MessageEmbed(triviaMessage.embeds[0])).catch(xlg.error);
-                        cdTime = -100;
+                        allowedTime = -100;
                         await countDownMessage.edit(`Game ended.`).catch(console.error);
                         const gameEndCallout = await message.channel.send('**Looks like nobody got the answer this time.** *Respond with ` tr ` in 10 sec to continue game.*').catch(console.error);
                         gameEndCallout.channel.awaitMessages(r => r.content.toLowerCase() == 'tr', {
@@ -133,7 +133,7 @@ module.exports = {
                         return `✅${e}`;
                     }).join('\n');
                     await triviaMessage.edit(new Discord.MessageEmbed(triviaMessage.embeds[0])).catch(xlg.error);
-                    cdTime = -100;
+                    allowedTime = -100;
 
                     if (scores.length == 0) {
                         scores = [
