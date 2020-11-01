@@ -1,6 +1,7 @@
 const fs = require("fs");
 const fetch = require("node-fetch");
 const { MWKEY } = require('../auth.json');
+const { logDefined } = require("../dbmanager")
 
 module.exports = {
     name: 'define',
@@ -143,13 +144,12 @@ module.exports = {
                                     * code property set to 'MODULE_NOT_FOUND'.
                                     */
                                     const config = require("../auth.json");
-                                    if (config.wordsDefinedCount) config.wordsDefinedCount += 1;
-                                    if (!config.wordsDefinedCount) config.wordsDefinedCount = 1;
                                     if (config.wordsDefined && !config.wordsDefined.includes(def)) config.wordsDefined.push(def);
                                     if (!config.wordsDefined) config.wordsDefined = [def];
                                     fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
                                         if (err) return console.log(err);
                                     });
+                                    logDefined();
                                     if (defsArray.join(", ").length < 1020) {
                                         let sDef = {
                                             name: `📖  ${r.hwi.hw.split('*').join("")} *${r.fl}*`,
