@@ -8,7 +8,7 @@ module.exports = {
     permLevel: permLevels.botMaster,
     async execute(client, message, args) {
         try {
-            let evalRet = await eval(`(async () => {return ${args.join(" ")}})()`);
+            let evalRet = await eval(`(async () => {${args.join(" ")}})()`);
             message.channel.send(`🟢 Executed:\n\`\`\`${evalRet ? evalRet : 'no return'}\`\`\``, {
                 split: true
             });
