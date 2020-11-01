@@ -9,11 +9,21 @@ module.exports = {
     },
     async execute(client, message) {
         try {
+            const config = require("../auth.json");
             let totalDefined = await getGlobalSetting("definedcount");
             message.channel.send({
                 embed: {
                     title: "`Define` Statistics",
-                    description: `${totalDefined}`
+                    fields: [
+                        {
+                            name: "Total Definitions Given",
+                            value: `${totalDefined[0] ? totalDefined[0].value : "0"}`
+                        },
+                        {
+                            name: "Unique Words Defined",
+                            value: config.wordsDefined.length
+                        }
+                    ]
                 }
             })
         } catch (error) {

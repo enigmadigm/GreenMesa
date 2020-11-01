@@ -439,12 +439,13 @@ async function logMsgReceive() {
  * Update a setting for config in the global settings database
  */
 async function logDefined() {
+    xlog.log("DEFINED")
     try {
         let result = await query(`SELECT * FROM globalsettings WHERE name = 'definedcount'`);
         if (!result || result.length === 0) {
             await query(`INSERT INTO globalsettings (name, value) VALUES ('definedcount', '1')`);
         } else {
-            await query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`= value + 1 WHERE \`name\`='definedcount'`);
+            await query(`UPDATE globalsettings SET previousvalue=value, value=value + 1 WHERE name='definedcount'`);
         }
     } catch (error) {
         xlog.error(error);
