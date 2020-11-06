@@ -57,8 +57,8 @@ module.exports = {
                         "inline": true
                     },
                     {
-                        "name": "Roles",
-                        "value": `<:atsign_1:757386730960584815> ${message.guild.roles.cache.size}`,
+                        "name": "Roles <:atsign_1:757386730960584815>",
+                        "value": `${message.guild.roles.cache.size}`,
                         "inline": true
                     },
                     {
