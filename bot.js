@@ -337,7 +337,7 @@ client.on("message", async message => {// This event will run on every single me
         const fec_gs = await getGlobalSetting("fail_embed_color");
         const fail_embed_color = parseInt(fec_gs[0].value);
 
-        let reply = `I need arguments to make that work, ${message.author}!`;
+        let reply = `Arguments are needed to make that work!`;
 
         if (command.usage) {
             reply += `\nUsage: \`${message.gprefix}${command.name} ${command.usage}\``;
