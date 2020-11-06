@@ -21,6 +21,15 @@ module.exports = {
             }).catch(xlg.error);
             return;
         }
+        if (target === "@everyone" || target === "@here") {
+            message.channel.send({
+                embed: {
+                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
+                    description: "no @everyone or @here!"
+                }
+            }).catch(xlg.error);
+            return;
+        }
         let userList = target.members.array().map(x => `${x}`);
         if (userList.join("\n").length > 1024) {
             while (userList.join("\n").length > 1018) {
