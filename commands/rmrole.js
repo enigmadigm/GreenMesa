@@ -1,12 +1,14 @@
 const xlg = require("../xlogger");
 const { getGlobalSetting } = require("../dbmanager");
 const { stringToRole } = require('../utils/parsers');
+const { permLevels } = require('../permissions');
 
 module.exports = {
     name: "rmrole",
     description: "remove a role",
     usage: "<role>",
     args: true,
+    permLevel: permLevels.admin,
     async execute(client, message, args) {
         try {
             if (!stringToRole(message.guild, args.join(" "), false, false)) {

@@ -1,5 +1,6 @@
 const xlg = require("../xlogger");
 const { getGlobalSetting } = require("../dbmanager");
+const { permLevels } = require('../permissions');
 
 module.exports = {
     name: "mkrole",
@@ -9,6 +10,7 @@ module.exports = {
     },
     usage: "<role name>,[role color]",
     args: true,
+    permLevel: permLevels.admin,
     async execute(client, message, args) {
         try {
             let param = args.join(" ").split(",");
