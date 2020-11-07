@@ -30,7 +30,7 @@ module.exports = {
             }).catch(xlg.error);
             return;
         }
-        let userList = target.members.array().map(x => `${x}`);
+        let userList = target.members.array().map(x => `${x.user.tag || "not identifiable"}`);
         if (userList.join("\n").length > 1024) {
             while (userList.join("\n").length > 1018) {
                 userList.pop();
