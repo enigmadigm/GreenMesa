@@ -4,7 +4,7 @@ const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
     name: 'commands',
-    description: 'get a command list or command help',
+    description: 'get the command list',
     cooldown: 5,
     async execute(client, message) {
         try {
