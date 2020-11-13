@@ -151,12 +151,12 @@ async function stringToMember(guild, text, byUsername = true, byNickname = true,
  * @returns
  */
 
-function stringToRole(guild, text, byName = true, bySimilar = true) {
+function stringToRole(guild, text, byName = true, bySimilar = true, everyone = false) {
 
-    if (text == 'here' || text == '@here') {
+    if (everyone && (text == 'here' || text == '@here')) {
         return '@here';
     }
-    if (text == 'everyone' || text == '@everyone') {
+    if (everyone && (text == 'everyone' || text == '@everyone')) {
         return '@everyone';
     }
 
