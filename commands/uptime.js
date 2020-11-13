@@ -18,7 +18,7 @@ module.exports = {
             if (err) return console.log(err);
         });
 
-        let uptime = getFriendlyUptime(client.uptime, true);
+        const uptime = getFriendlyUptime(client.uptime, true);
         
         message.channel.send({
             embed: {

@@ -40,7 +40,7 @@ module.exports = {
             embed: {
                 color: parseInt((await getGlobalSetting('info_embed_color'))[0].value),
                 title: `List of users with role \`${target.name}\``,
-                description: `***[${target.members.size}]** =>*\n${userList.join("\n")}`
+                description: `***[${userList.size}/${target.members.size}]** =>*\n${userList.join("\n")}`
             }
         }).catch(xlg.error);
     }
