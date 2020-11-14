@@ -5208,6 +5208,10 @@
         "description": "Too *freaking* funny"
     },
     {
+        "acronym": "TFW",
+        "description": "That face when"
+    },
+    {
         "acronym": "TFS",
         "description": "Thanks for sharing"
     },
@@ -5318,6 +5322,10 @@
     {
         "acronym": "TMYL",
         "description": "Tell me your location"
+    },
+    {
+        "acronym": "TMW",
+        "description": "Tomorrow"
     },
     {
         "acronym": "TMWFI",

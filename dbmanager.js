@@ -3,7 +3,7 @@ const { db_config } = require("./auth.json");
 const xlog = require("./xlogger");
 const util = require('util');
 const Discord = require('discord.js');
-var conn;
+let conn;
 const levelRoles = [
     {
         level: 70,
@@ -376,6 +376,10 @@ async function setLevelRole(level, guild, role, deleting = false) {
     return result;
 }
 
+/**
+ * Deletes all of the level roles for a given guild
+ * @param {Discord.Guild} guild the guild to delete the roles of
+ */
 async function deleteAllLevelRoles(guild) {
     if (!(guild instanceof Discord.Guild)) return;
     let result = await query(`DELETE FROM levelroles WHERE guildid = '${guild.id}'`);
@@ -452,6 +456,24 @@ async function logDefined() {
     }
 }
 
+/**
+ * Set that spidey saved a member
+ * @param {string} member object of the member who was saved
+ */
+async function setSpideySaved(target) {
+    try {
+        let result = await query(`SELECT * FROM dgmxp WHERE id = '${target.user.id}${target.guild.id}'`);
+        if (!result || result.length === 0) {
+            return false;
+        } else {
+            await query(`UPDATE dgmxp SET spideySaved = CURRENT_TIMESTAMP WHERE id = '${target.user.id}${target.guild.id}'`);
+            return true;
+        }
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
 exports.conn = conn;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
@@ -475,3 +497,4 @@ exports.logCmdUsage = logCmdUsage;
 exports.getTotalCmdUsage = getTotalCmdUsage;
 exports.logMsgReceive = logMsgReceive;
 exports.logDefined = logDefined;
+exports.setSpideySaved = setSpideySaved;

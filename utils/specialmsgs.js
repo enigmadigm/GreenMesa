@@ -12,6 +12,16 @@ async function sendModerationDisabled(channel) {
     }).catch(xlg.error);
 }
 
+async function sendError(channel, message) {
+    channel.send({
+        embed: {
+            color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value) || 16711680,
+            description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
+        }
+    }).catch(xlg.error)
+    return;
+}
+
 async function argsNumRequire(channel, args, num) {
     if (args.length == num) return true;
     let fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
@@ -55,6 +65,7 @@ async function timedMessagesHandler(client) {
 }
 
 exports.sendModerationDisabled = sendModerationDisabled;
+exports.sendError = sendError;
 exports.timedMessagesHandler = timedMessagesHandler;
 exports.argsNumRequire = argsNumRequire;
 exports.argsMustBeNum = argsMustBeNum;

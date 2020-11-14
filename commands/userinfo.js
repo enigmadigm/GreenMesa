@@ -1,5 +1,6 @@
 const moment = require('moment');
 const { getTop10, getXP, getGlobalSetting } = require("../dbmanager");
+const { stringToMember } = require("../utils/parsers");
 
 function getJoinRank(ID, guild) { // Call it with the ID of the user and the guild
     if (!guild.member(ID)) return; // It will return undefined if the ID is not valid
@@ -38,11 +39,11 @@ function getPresenceEmoji(target) {
 module.exports = {
     name: 'userinfo',
     description: 'get info on any member',
-    aliases: ['user', 'me', 'member', 'memberinfo'],
+    aliases: ['ui', 'user'],
     cooldown: 8,
     category: "utility",
     async execute(client, message, args) {
-        let target = message.mentions.members.first() || ((message.guild && message.guild.available) ? message.guild.members.cache.get(args[0]) : false) || message.member;
+        let target = stringToMember(message.guild, args.join(" ")) || message.member;
         let rank = await getTop10(target.guild.id, target.id);
         let xp = await getXP(target);
 

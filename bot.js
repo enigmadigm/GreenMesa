@@ -39,7 +39,7 @@ const ar = require("./utils/arhandler");
 client.commands = new Discord.Collection();
 client.categories = new Discord.Collection();
 // ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js') && !file.startsWith('[template]'));
 var commNumber = 1;
 var catNumber = 1;
 for (const file of commandFiles) {
