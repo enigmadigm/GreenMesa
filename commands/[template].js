@@ -14,12 +14,12 @@ module.exports = {
     permLevel: permLevels.trustedMember,
     guildOnly: false,
     ownerOnly: false,
-    execute(client, message, args) {
+    async execute(client, message, args) {
         try {
             if (!args);
         } catch (error) {
             xlg.error(error);
-            sendError(message.channel);
+            await sendError(message.channel);
             return false;
         }
     }
