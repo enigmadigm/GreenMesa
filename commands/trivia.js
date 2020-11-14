@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 const fetch = require('node-fetch');
 const xlg = require('../xlogger')
 const { getGlobalSetting } = require("../dbmanager");
-let allowedTime = 15;
+const deftime = 15;
 
 /*async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
@@ -34,7 +34,7 @@ module.exports = {
         long: 'Starts a trivia game that can be played alone or with any number of people. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer!\nThis command has been well used, more features to come! Beware: sometimes questions pop up again, do not get angry, it is something about how the trivia pool is pulled from.'
     },
     aliases:['tr'],
-    cooldown: allowedTime,
+    cooldown: deftime,
     category: "fun",
     async execute(client, message, args, conn, scores = [], round = 1) {
         return fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986`)
@@ -75,6 +75,7 @@ module.exports = {
                         }
                     }
                 }).catch(console.error);
+                let allowedTime = deftime;
                 const countDownMessage = await message.channel.send(`Enter the ***letter*** for the correct answer in \` < ${allowedTime} \` seconds`);
                 setInterval(function () {
                     if (allowedTime <= 0) return clearInterval();
