@@ -14,7 +14,6 @@ module.exports = {
     async execute(client, message) {
         try {
             const xpInfo = await getXP(message.member);
-            xlg.log(new Date(xpInfo[0].spideySaved))
             if (xpInfo && xpInfo[0].spideySaved && xpInfo[0].spideySaved !== null && new Date(xpInfo[0].spideySaved)) {
                 message.channel.send({
                     embed: {
