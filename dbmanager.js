@@ -1,6 +1,7 @@
 const mysql = require("mysql");
 const { db_config } = require("./auth.json");
 const xlog = require("./xlogger");
+const moment = require("moment");
 const util = require('util');
 const Discord = require('discord.js');
 let conn;
@@ -466,7 +467,8 @@ async function setSpideySaved(target) {
         if (!result || result.length === 0) {
             return false;
         } else {
-            await query(`UPDATE dgmxp SET spideySaved = CURRENT_TIMESTAMP WHERE id = '${target.user.id}${target.guild.id}'`);
+            const mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+            await query(`UPDATE dgmxp SET spideySaved = '${mysqlTimestamp}' WHERE id = '${target.user.id}${target.guild.id}'`);
             return true;
         }
     } catch (error) {
