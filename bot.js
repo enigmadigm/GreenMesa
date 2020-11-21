@@ -4,6 +4,9 @@
 // and change the package.json tyope to module, then replace all require()s and exports.method/module.exports with the types of
 // statements above. mayve one day I could do it because it might look better.
 
+require('dotenv').config();
+require('./website/app');
+
 const xlg = require("./xlogger");
 process.on('uncaughtException', function (e) {
     xlg.log(e);
@@ -31,6 +34,7 @@ const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
 const { timedMessagesHandler } = require('./utils/specialmsgs');
 const ar = require("./utils/arhandler");
+//const xtwitch = require("./utils/twitch");
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -179,10 +183,14 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
 
     await timedMessagesHandler(client);
 
-    //Generates invite link to put in console.
     try {
+        //Generates invite link to put in console.
         let link = await client.generateInvite({ permissions: ["ADMINISTRATOR"] });
         console.log(link);
+
+        // Twitch, I hope
+        /*await xtwitch.startTwitchListening();
+        await xtwitch.addTwitchWebhook();*/
     } catch (e) {
         xlg.error(e);
     }

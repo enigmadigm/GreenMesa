@@ -6,3 +6,4 @@ auth.archive.json
 desktop.ini
 media/usernumber-graph.png
 commands/test.js
+.env
