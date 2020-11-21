@@ -1,6 +1,7 @@
 const mysql = require("mysql");
 const { db_config } = require("./auth.json");
 const xlog = require("./xlogger");
+const moment = require("moment");
 const util = require('util');
 const Discord = require('discord.js');
 let conn;
@@ -466,9 +467,57 @@ async function setSpideySaved(target) {
         if (!result || result.length === 0) {
             return false;
         } else {
+            //const mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
             await query(`UPDATE dgmxp SET spideySaved = CURRENT_TIMESTAMP WHERE id = '${target.user.id}${target.guild.id}'`);
             return true;
         }
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
+/**
+ * Create a subscription entry for Twitch webhooks in the database
+ * @param {string} streamerid twitch id of streamer
+ * @param {string} guildid id of guild for subscription
+ * @param {*} expiredate a parseable date to be used to sort by timestamps for renewal
+ * @param {string} message (optional) the message that will be sent with the discord notification
+ */
+async function addTwitchSubscription(streamerid, guildid, expiredate, message = "") {
+    try {
+        if (!streamerid || !guildid || !expiredate) return false;
+        let result = await query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
+        const expiresTimestamp = moment(expiredate).format('YYYY-MM-DD HH:mm:ss');
+        if (!result || !result[0]) {
+            if (!message || !message.length || typeof message !== "string") {
+                await query(`INSERT INTO twitchhooks (id, streamerid, guildid, expires) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', ${expiresTimestamp})`);
+            } else {
+                await query(`INSERT INTO twitchhooks (id, streamerid, guildid, message, expires) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${message}', ${expiresTimestamp})`);
+            }
+            return true;
+        } else {
+            if (!message || !message.length || typeof message !== "string") {
+                await query(`UPDATE twitchhooks SET expiredate = '${expiredate}' WHERE id = '${streamerid}${guildid}'`);
+            } else {
+                await query(`UPDATE twitchhooks SET expiredate = '${expiredate}', message = '${message}' WHERE id = '${streamerid}${guildid}'`);
+            }
+            return true;
+        }
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
+/**
+ * get a list of database entries that use a specified streamer id
+ * @param {string} streamerid twitch id of streamer
+ */
+async function getTwitchSubsForID(streamerid) {
+    try {
+        if (!streamerid) return false;
+        let result = await query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}'`);
+        if (!result.length) return false;
+        return result;
     } catch (error) {
         xlog.error(error);
     }
@@ -498,3 +547,5 @@ exports.getTotalCmdUsage = getTotalCmdUsage;
 exports.logMsgReceive = logMsgReceive;
 exports.logDefined = logDefined;
 exports.setSpideySaved = setSpideySaved;
+exports.addTwitchSubscription = addTwitchSubscription;
+exports.getTwitchSubsForID = getTwitchSubsForID;

@@ -68,18 +68,20 @@ module.exports = {
             
             let mendm = ""
             let time = stringToDuration(args[1]);
-            if (!time || time == 0) {
+            if (time || time === 0) {
                 mendm = ` ${durationToString(time)}`
             }
             
             message.channel.send(`<a:spinning_light00:680291499904073739>✅ Muted ${toMute.user.tag}!${mendm.lengths > 0 ? mendm : ''}`);
             
-            setTimeout(async () => {
-                if (!toMute.roles.cache.has(mutedRole.id)) return;
-                // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
-                await toMute.roles.remove(mutedRole, 'unmuting automatically');
-                if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
-            }, time)
+            if (time || time === 0) {
+                setTimeout(async () => {
+                    if (!toMute.roles.cache.has(mutedRole.id)) return;
+                    // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
+                    await toMute.roles.remove(mutedRole, 'unmuting automatically');
+                    if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
+                }, time)
+            }
         } catch (e) {
             console.log(e.stack);
             message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Error muting ${toMute.user.tag}`);
