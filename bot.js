@@ -5,7 +5,7 @@
 // statements above. mayve one day I could do it because it might look better.
 
 require('dotenv').config();
-require('./website/app');
+//require('./website/app');
 
 const xlg = require("./xlogger");
 process.on('uncaughtException', function (e) {
@@ -32,9 +32,9 @@ const client = new Discord.Client();
 var { conn, updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
-const { timedMessagesHandler } = require('./utils/specialmsgs');
 const ar = require("./utils/arhandler");
-//const xtwitch = require("./utils/twitch");
+const MesaWebsite = require("./website/app");
+client.specials = require("./utils/specials");
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -93,15 +93,6 @@ for (const file of commandFiles) {
     console.log(`${commNumber} - %s$${command.name}%s has been loaded%s`, "\x1b[35m", "\x1b[0m", noName);
     commNumber++;
 }
-
-const tools = {
-    memoryUsage() {
-        return Object.entries(process.memoryUsage()).map(usage => {
-            return `${usage[0]} : ${(Math.round(usage[1] / 1024 / 1024 * 100) / 100).toFixed().split('.')[0]} MB`
-        }).join("\n");
-    }
-}
-client.tools = tools;
 
 // ▼▼▼▼▼▼▼▼ A lot of this stuff below is all to manage database connections, these are passed through the conn argument in the execute function
 // Connecting to MySQL, external connection
@@ -181,7 +172,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
 
-    await timedMessagesHandler(client);
+    await client.specials.timedMessagesHandler(client);
 
     try {
         //Generates invite link to put in console.
@@ -194,6 +185,8 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     } catch (e) {
         xlg.error(e);
     }
+
+    new MesaWebsite(client);
 });
 
 client.on("rateLimit", rateLimitInfo => {

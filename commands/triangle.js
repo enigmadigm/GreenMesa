@@ -1,6 +1,5 @@
 const xlg = require("../xlogger");
 const { getGlobalSetting } = require("../dbmanager");
-const { argsMustBeNum, argsNumRequire } = require('../utils/specialmsgs');
 
 module.exports = {
     name: "triangle",
@@ -8,8 +7,8 @@ module.exports = {
     usage: "<base> <height>",
     args: true,
     async execute(client, message, args) {
-        if (!(await argsNumRequire(message.channel, args, 2))) return false;
-        if (!(await argsMustBeNum(message.channel, args))) return false;
+        if (!(await client.specials.argsNumRequire(message.channel, args, 2))) return false;
+        if (!(await client.specials.argsMustBeNum(message.channel, args))) return false;
 
         let x = args[0];
         let y = args[1];

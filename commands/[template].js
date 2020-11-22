@@ -1,5 +1,4 @@
 const xlg = require("../xlogger");
-const { sendError } = require("../utils/specialmsgs");
 const { permLevels } = require('../permissions');
 
 module.exports = {
@@ -19,7 +18,7 @@ module.exports = {
             if (!args);
         } catch (error) {
             xlg.error(error);
-            await sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

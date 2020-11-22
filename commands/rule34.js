@@ -1,5 +1,5 @@
-const { default: fetch } = require("node-fetch")
 const xlg = require("../xlogger")
+const { default: fetch } = require("node-fetch")
 
 // https://github.com/Elementalmp4/GeraldCore/blob/master/commands/rule34.js
 
@@ -12,14 +12,14 @@ module.exports = {
     usage: '[tag]',
     args: false,
     execute(client, message, args) {
-        if (!message.channel.nsfw) return message.channel.send("channel not nsfw");
+        if (!message.channel.nsfw) return client.specials.sendError(message.channel, "channel not nsfw");
         var url = `https://gelbooru.com/index.php?page=dapi&s=post&q=index`;
         if (args.length) {
             return fetch(url)
                 .then(res => res.json())
                 .then(j => {
                     let embed = {
-                        title: 'r34',
+                        title: 'your r34',
                         image: {
                             url: j.url
                         }

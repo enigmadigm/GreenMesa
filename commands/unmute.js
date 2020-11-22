@@ -1,5 +1,4 @@
 const { getGuildSetting } = require("../dbmanager");
-const { sendModerationDisabled } = require('../utils/specialmsgs');
 const { permLevels } = require('../permissions');
 const { stringToMember } = require('../utils/parsers');
 
@@ -17,7 +16,7 @@ module.exports = {
     async execute(client, message, args) {
         let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
         if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-            return sendModerationDisabled(message.channel);
+            return client.specials.sendModerationDisabled(message.channel);
         }
         
         const toMute = await stringToMember(message.guild, args[0], false, false, false);

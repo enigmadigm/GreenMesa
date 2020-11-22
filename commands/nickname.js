@@ -1,6 +1,5 @@
 const xlg = require("../xlogger");
 const { getGuildSetting } = require("../dbmanager");
-const { sendModerationDisabled } = require('../utils/specialmsgs');
 const { permLevels, getPermLevel } = require("../permissions");
 const { stringToMember } = require("../utils/parsers");
 
@@ -18,7 +17,7 @@ module.exports = {
         if (target.id !== message.member.id) {
             let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return sendModerationDisabled(message.channel);
+                return client.specials.sendModerationDisabled(message.channel);
             }
             var permLevel = await getPermLevel(message.member);
             if (permLevel < permLevels.mod) return message.channel.send("Insufficient permissions.").catch(xlg.error);
