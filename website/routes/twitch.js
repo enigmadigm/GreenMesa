@@ -111,7 +111,7 @@ router
         }
     })
     .post((req, res) => {
-        console.log('Incoming Post request on /');
+        console.log('Incoming Post request on /api/twitch');
         // the middleware above ran
         // and it prepared the tests for us
         // so check if we event generated a twitch_hub
