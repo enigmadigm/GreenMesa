@@ -509,6 +509,24 @@ async function addTwitchSubscription(streamerid, guildid, expiredate, message = 
 }
 
 /**
+ * Create a subscription entry for Twitch webhooks in the database
+ * @param {string} streamerid twitch id of streamer
+ * @param {string} guildid id of guild for subscription
+ * @param {*} expiredate a parseable date to be used to sort by timestamps for renewal
+ * @param {string} message (optional) the message that will be sent with the discord notification
+ */
+async function removeTwitchSubscription(streamerid, guildid) {
+    if (!streamerid || !guildid) return false;
+    let result = await query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
+    if (result && result[0]) {
+        let delresult = await query(`DELETE FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
+        return delresult.affectedRows;
+    } else {
+        return "NO_DELETION";
+    }
+}
+
+/**
  * get a list of database entries that use a specified streamer id
  * @param {string} streamerid twitch id of streamer
  */
@@ -549,3 +567,4 @@ exports.logDefined = logDefined;
 exports.setSpideySaved = setSpideySaved;
 exports.addTwitchSubscription = addTwitchSubscription;
 exports.getTwitchSubsForID = getTwitchSubsForID;
+exports.removeTwitchSubscription = removeTwitchSubscription;

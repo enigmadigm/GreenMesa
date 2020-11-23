@@ -4,9 +4,11 @@ const express = require("express");
 const passport = require('passport');
 const PORT = process.env.WEBSITE_PORT || 3002;
 const routes = require('./routes');
+//const { configTwitchClient } =require("./routes/twitch")
 
 class MesaWebsite {
     constructor(client) {
+        //configTwitchClient(client)
         this.client = client;
         this.app = express();
         

@@ -28,6 +28,10 @@ const moment = require('moment');
 // url and querystring for parsing url queries
 const url = require('url');
 const querystring = require('querystring');
+// database functions
+const { addTwitchSubscription, getTwitchSubsForID } = require("../../dbmanager");
+// discord client
+const client = require("../../bot");
 
 let currToken;
 let tokenExpiresIn = 0;
@@ -63,8 +67,9 @@ router.use(bodyParser.json({
 }));
 
 router.get("/hooks", async (req, res) => {
-    if (req.query.pass !== "cantbreakin") return;
+    if (req.query.pass !== "cantbreakin") return res.send("no auth");
     await getOAuth();
+    if (!currToken || !currToken.length) return res.send("bad token");
     fetch("https://api.twitch.tv/helix/webhooks/subscriptions", {
         method: "GET",
         headers: {
@@ -154,13 +159,21 @@ router
         }
     });
 
-async function addTwitchWebhook(username, isID = false) {
+async function addTwitchWebhook(username, isID = false, guildid, message) {
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
     let uid = username;
     if (!isID) {
         uid = await idLookup(username);
+    }
+    if (!uid) return "ID_NOT_FOUND";
+    const existingSubs = await getTwitchSubsForID(uid)
+    if (existingSubs && existingSubs.length) {
+        for (let i = 0; i < existingSubs.length; i++) {
+            const sub = existingSubs[i];
+            if (sub.streamerid === uid) return "ALREADY_EXISTS";
+        }
     }
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
         method: 'POST',
@@ -177,6 +190,8 @@ async function addTwitchWebhook(username, isID = false) {
             "Client-ID": `${config.client_id}`
         }
     });
+    const subRes = await addTwitchSubscription(uid, guildid, res.expires_at, message);
+    if (!subRes) return false;
     //const json = res.json()
     return res;
 }
@@ -204,13 +219,16 @@ async function unregisterTwitchWebhook(username) {
 
 async function getOAuth() {
     if (tokenExpiresIn > 60) return;
-	const tokres = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${config.client_id}&client_secret=${config.client_secret}&grant_type=client_credentials&scope=user:read:email`, { method: "POST" });
-    const tokjson = tokres.json();
-    if (!tokjson || !tokjson.access_token) return false;
-    currToken = tokjson.access_token;
-	//return tokjson;
-    
-    console.log(currToken)
+    fetch(`https://id.twitch.tv/oauth2/token?client_id=${config.client_id}&client_secret=${config.client_secret}&grant_type=client_credentials&scope=user:read:email`, { method: "POST" })
+        .then(res => res.json())
+        .then(j => {
+        if (!j || !j.access_token) {
+            console.log("couldnt retrieve access token");
+            return false;
+        }
+        currToken = j.access_token;
+    }).catch(console.error);
+    //return tokjson;
 }
 
 async function idLookup(username) {
@@ -225,6 +243,11 @@ async function idLookup(username) {
 	const json = response.json();
 	return json;
 }
+
+/*function configTwitchClient(dclient) {
+    client = dclient;
+    client.channels.cache.get("660242946834038791").send("hi")
+}*/
 
 setInterval(async () => {
     await getOAuth();
@@ -257,7 +280,9 @@ setInterval(async () => {
 /*exports.addTwitchWebhook = addTwitchWebhook;
 exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.twitchIDLookup = idLookup;*/
-module.exports = router;
+exports.twitchRouter = router;
+exports.addTwitchWebhook = addTwitchWebhook;
+//exports.configTwitchClient = configTwitchClient;
 
 /*(async () => {
 	try {
