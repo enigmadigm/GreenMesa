@@ -250,152 +250,155 @@ client.on('channelDelete', ochannel => {
 
 // the actual command processing
 client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
-    logMsgReceive();
+    try {
 
-    if (message.author.bot) return;
-    if (message.system) return;
-
-    var dm = false; // checks if it's from a dm
-    if (!message.guild)
-        dm = true;
-
-    const now = Date.now();
-    if (!dm) {
-        if (!xpcooldowns.has(message.author.id)) {
-            updateXP(message);
-            xpcooldowns.set(message.author.id, now);
-            setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
-        }
-    }
+        logMsgReceive();
     
-    let special_prefix = false;
-    if (!dm) {
-        special_prefix = await getPrefix(message.guild.id)
-    } else {
-        special_prefix = await getGlobalSetting('global_prefix');
-    }
-    message.gprefix = special_prefix || config.prefix;
-
-    if (message.mentions && message.mentions.has(client.user)) {
-        if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
-            let iec_gs = await getGlobalSetting("info_embed_color");
-            let info_embed_color = parseInt(iec_gs[0].value);
+        if (message.author.bot) return;
+        if (message.system) return;
+    
+        var dm = false; // checks if it's from a dm
+        if (!message.guild)
+            dm = true;
+    
+        const now = Date.now();
+        if (!dm) {
+            if (!xpcooldowns.has(message.author.id)) {
+                updateXP(message);
+                xpcooldowns.set(message.author.id, now);
+                setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
+            }
+        }
+        
+        let special_prefix = false;
+        if (!dm) {
+            special_prefix = await getPrefix(message.guild.id)
+        } else {
+            special_prefix = await getGlobalSetting('global_prefix');
+        }
+        message.gprefix = special_prefix || config.prefix;
+    
+        if (message.mentions && message.mentions.has(client.user)) {
+            if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
+                let iec_gs = await getGlobalSetting("info_embed_color");
+                let info_embed_color = parseInt(iec_gs[0].value);
+                message.channel.send({
+                    embed: {
+                        "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **${message.gprefix}**`,
+                        "color": info_embed_color
+                    }
+                })
+                return;
+            }
+        }
+    
+        // Also good practice to ignore any message that does not start with our prefix,
+        // which is set in the configuration file.
+        if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;
+        // ▼▼▼▼▼ deprecated with the guild only command handler filter
+        //if (message.channel.type === "dm") return;
+    
+        const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
+        const commandName = args.shift().toLowerCase()
+    
+        var permLevel = permLevels.member;
+        let botmasters = await getGlobalSetting("botmasters").catch(xlg.error);
+        botmasters = botmasters[0].value.split(',');
+        if (!dm) { // gets perm level of member if message isn't from dms
+            permLevel = await getPermLevel(message.member);
+        } else if (botmasters.includes(message.author.id)) { // bot masters
+            permLevel = permLevels.botMaster;
+        }
+        
+        const command = client.commands.get(commandName)
+            || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+    
+        if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
+    
+        if (command.guildOnly && dm) {
+            return message.channel.send('I can\'t execute that command inside DMs!');
+        }
+        if (command.ownerOnly && message.author.id !== config.ownerID) return xlg.log(`${message.author.tag} attempted ownerOnly!`);
+        if (command.permLevel && permLevel < command.permLevel) return; // insufficient bot permissions
+    
+        let commandEnabledGlobal = await getGlobalSetting(`${command.name}_enabled`);
+        let commandEnabledGuild = await getGuildSetting(message.guild, `${command.name}_toggle`);
+        if ((commandEnabledGlobal && commandEnabledGlobal[0].value == 'false') || (commandEnabledGuild[0] && commandEnabledGuild[0].value === 'disable')) {
             message.channel.send({
                 embed: {
-                    "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **${message.gprefix}**`,
-                    "color": info_embed_color
+                    title: `Command Disabled`,
+                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? "**globally**" : "**on this server**"}.`,
+                    footer: {
+                        text: `${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? 'sorry, please be patient' : 'admins may re-enable it'}`
+                    }
                 }
-            })
+            });
             return;
         }
-    }
-
-    // Also good practice to ignore any message that does not start with our prefix,
-    // which is set in the configuration file.
-    if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;
-    // ▼▼▼▼▼ deprecated with the guild only command handler filter
-    //if (message.channel.type === "dm") return;
-
-    const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
-    const commandName = args.shift().toLowerCase()
-
-    var permLevel = permLevels.member;
-    let botmasters = await getGlobalSetting("botmasters").catch(xlg.error);
-    botmasters = botmasters[0].value.split(',');
-    if (!dm) { // gets perm level of member if message isn't from dms
-        permLevel = await getPermLevel(message.member);
-    } else if (botmasters.includes(message.author.id)) { // bot masters
-        permLevel = permLevels.botMaster;
-    }
     
-    const command = client.commands.get(commandName)
-        || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-
-    if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
-
-    if (command.guildOnly && dm) {
-        return message.channel.send('I can\'t execute that command inside DMs!');
-    }
-    if (command.ownerOnly && message.author.id !== config.ownerID) return xlg.log(`${message.author.tag} attempted ownerOnly!`);
-    if (command.permLevel && permLevel < command.permLevel) return; // insufficient bot permissions
-
-    let commandEnabledGlobal = await getGlobalSetting(`${command.name}_enabled`);
-    let commandEnabledGuild = await getGuildSetting(message.guild, `${command.name}_toggle`);
-    if ((commandEnabledGlobal && commandEnabledGlobal[0].value == 'false') || (commandEnabledGuild[0] && commandEnabledGuild[0].value === 'disable')) {
-        message.channel.send({
-            embed: {
-                title: `Command Disabled`,
-                description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? "**globally**" : "**on this server**"}.`,
-                footer: {
-                    text: `${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? 'sorry, please be patient' : 'admins may re-enable it'}`
-                }
+        if (command.args && !args.length) {
+            const fec_gs = await getGlobalSetting("fail_embed_color");
+            const fail_embed_color = parseInt(fec_gs[0].value);
+    
+            let reply = `Arguments are needed to make that work!`;
+    
+            if (command.usage) {
+                reply += `\nUsage: \`${message.gprefix}${command.name} ${command.usage}\``;
             }
-        });
-        return;
-    }
-
-    if (command.args && !args.length) {
-        const fec_gs = await getGlobalSetting("fail_embed_color");
-        const fail_embed_color = parseInt(fec_gs[0].value);
-
-        let reply = `Arguments are needed to make that work!`;
-
-        if (command.usage) {
-            reply += `\nUsage: \`${message.gprefix}${command.name} ${command.usage}\``;
-        }
-
-        return message.channel.send({
-            embed: {
-                description: reply,
-                color: fail_embed_color,
-                footer: {
-                    text: 'tip: separate arguments with spaces'
+    
+            return message.channel.send({
+                embed: {
+                    description: reply,
+                    color: fail_embed_color,
+                    footer: {
+                        text: 'tip: separate arguments with spaces'
+                    }
                 }
+            });
+        }
+    
+        if (!cooldowns.has(command.name)) {
+            cooldowns.set(command.name, new Discord.Collection());
+        }
+    
+        const timestamps = cooldowns.get(command.name);
+        const cooldownAmount = (command.cooldown || 2) * 1000;
+    
+        if (timestamps.has(message.author.id)) {
+            const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+    
+            if (now < expirationTime) {
+                const timeLeft = (expirationTime - now) / 1000;
+                return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
             }
-        });
-    }
-
-    if (!cooldowns.has(command.name)) {
-        cooldowns.set(command.name, new Discord.Collection());
-    }
-
-    const timestamps = cooldowns.get(command.name);
-    const cooldownAmount = (command.cooldown || 2) * 1000;
-
-    if (timestamps.has(message.author.id)) {
-        const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-
-        if (now < expirationTime) {
-            const timeLeft = (expirationTime - now) / 1000;
-            return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
         }
-    }
-    timestamps.set(message.author.id, now);
-    setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-
-    try {
-        command.execute(client, message, args, conn);
-        
-        // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this
-        /*if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
-        if (!config.commandsExecutedCount) config.commandsExecutedCount = 1;
-        fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
-            if (err) return console.log(err);
-        });*/
-
-        if (config.msgLogging) {
-            client.channels.cache.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+        timestamps.set(message.author.id, now);
+        setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+    
+        try {
+            command.execute(client, message, args, conn);
+            
+            // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this
+            /*if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
+            if (!config.commandsExecutedCount) config.commandsExecutedCount = 1;
+            fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
+                if (err) return console.log(err);
+            });*/
+    
+            if (config.msgLogging) {
+                client.channels.cache.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+            }
+    
+            logCmdUsage(commandName);
+        } catch (error) {
+            xlg.error(error);
+            client.specials.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');
         }
-
-        logCmdUsage(commandName);
-    } catch (error) {
-        xlg.error(error);
-        message.reply('error while executing! please create an issue at https://github.com/enigmadigm/GreenMesa/issues');
+    } catch (err) {
+        client.specials.sendError(message.channel, "Error while processing. If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).")
     }
 });
 
 client.on('error', xlg.error);
 
 client.login(config.token);
-
-module.exports = client;
