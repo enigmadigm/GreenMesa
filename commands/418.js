@@ -4,6 +4,6 @@ module.exports = {
     description: 'oh no!',
     category: 'fun',
     execute(client, message) {
-        message.channel.send("RESPONSE 418: I'm a teapot <:teapot_sm_2:755357581102415903>");
+        message.channel.send("Command outdated and is being used as a placeholder. The replacement command will be `sm http`.");
     }
 }

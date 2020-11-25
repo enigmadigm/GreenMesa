@@ -1,6 +1,6 @@
 const xlg = require("../xlogger");
-const { sendError } = require("../utils/specialmsgs");
 const { permLevels } = require('../permissions');
+//const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
     name: "",
@@ -9,17 +9,19 @@ module.exports = {
         short: "",
         long: ""
     },
+    category: "misc",
     usage: "",
     args: false,
+    specialArgs: undefined,
     permLevel: permLevels.trustedMember,
-    guildOnly: false,
+    guildOnly: true,
     ownerOnly: false,
     async execute(client, message, args) {
         try {
             if (!args);
         } catch (error) {
             xlg.error(error);
-            await sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

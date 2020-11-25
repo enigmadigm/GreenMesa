@@ -2,15 +2,33 @@
 //const { getGlobalSetting } = require('../dbmanager');
 const { getGlobalSetting } = require("../dbmanager");
 
+function titleCase(str) {
+    if (str == "nsfw") {
+        return "NSFW";
+    }
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+        // You do not need to check if i is larger than splitStr length, as your for does that for you
+        // Assign it back to the array
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    // Directly return the joined string
+    return splitStr.join(' ');
+}
+
 module.exports = {
     name: 'commands',
-    description: 'get the command list',
-    cooldown: 5,
+    description: {
+        short: 'command list',
+        long: "Get the nearly complete command list in categories."
+    },
+    cooldown: 60,
+    category: "misc",
     async execute(client, message) {
         try {
             const { commands } = message.client;
             const { categories } = message.client;
-            const cats = categories.map(c => c.name);
+            const cats = categories.map(c => c.name).filter(n => n != "owner" && n != "nsfw");
             const catnames = {
                 "moderation": "management"
             };
@@ -33,12 +51,13 @@ module.exports = {
                     }
                     return `\` ${command.name} \` - ${availableDesc}`
                 }).join('\n'));
-                data.push(`**You can send \`${message.gprefix}help [command name]\` to get help on a specific command!**`)
+                data.push('')
+                data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
                 let cmdcount = commands.filter(comd => !['botkill', 'botreset', 'creload', 'evaluate'].includes(comd.name) && ((comd.category && comd.category === cat) || (cat === 'misc' && !comd.category))).size;
                 await message.author.send({
                     embed: {
-                        title: `${categories.get(cat).emoji + ' ' || ''}${categories.get(cat).name}`,
-                        color: parseInt((await getGlobalSetting("darkred_embed_color") || ['7322774'])[0].value, 10),
+                        title: `${categories.get(cat).emoji || ''} ${categories.get(cat).emoji ? ' ' : ''}${titleCase(categories.get(cat).name)}`,
+                        color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
                             text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`

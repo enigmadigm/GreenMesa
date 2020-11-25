@@ -1,12 +1,11 @@
 const xlg = require("../xlogger");
-const { sendError } = require("../utils/specialmsgs");
 const { permLevels } = require('../permissions');
 
 module.exports = {
     name: "restrict",
     description: {
         short: "restrict command usage to a certain role",
-        long: ""
+        long: "Use to restrict the usage of all commands for this bot to a certain specified role in the server"
     },
     usage: "<command> <role>",
     args: true,
@@ -18,7 +17,7 @@ module.exports = {
             if (!args);
         } catch (error) {
             xlg.error(error);
-            sendError(message.channel);
+            client.specials.sendError(message.channel);
             return false;
         }
     }

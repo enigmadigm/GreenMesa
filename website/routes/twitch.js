@@ -28,6 +28,10 @@ const moment = require('moment');
 // url and querystring for parsing url queries
 const url = require('url');
 const querystring = require('querystring');
+// database functions
+const { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } = require("../../dbmanager");
+// discord client
+//no
 
 let currToken;
 let tokenExpiresIn = 0;
@@ -63,8 +67,9 @@ router.use(bodyParser.json({
 }));
 
 router.get("/hooks", async (req, res) => {
-    if (req.query.pass !== "cantbreakin") return;
+    if (req.query.pass !== "cantbreakin") return res.send("no auth");
     await getOAuth();
+    if (!currToken || !currToken.length) return res.send("bad token");
     fetch("https://api.twitch.tv/helix/webhooks/subscriptions", {
         method: "GET",
         headers: {
@@ -110,57 +115,22 @@ router
             res.send('Ok');
         }
     })
-    .post((req, res) => {
-        console.log('Incoming Post request on /');
-        // the middleware above ran
-        // and it prepared the tests for us
-        // so check if we event generated a twitch_hub
-        if (req.twitch_hub) {
-            if (req.twitch_hex == req.twitch_signature) {
-                console.log('The signature matched');
-                // the signature passed so it should be a valid payload from Twitch
-                // we ok as quickly as possible
-                res.send('Ok');
 
-                // you can do whatever you want with the data
-                // it's in req.body
-                if (req.query.streamer && req.query.streamer.length) {
-                    console.log(req.query.streamer);
-                } else {
-                    console.log('Received a Twitch payload with no id query param');
-                }
-
-                // write out the data to a log for now
-                fs.appendFileSync(path.join(
-                    __dirname,
-                    'webhooks.log'
-                ), JSON.stringify(req.body) + "\n");
-                // pretty print the last webhook to a file
-                fs.appendFileSync(path.join(
-                    __dirname,
-                    'last_webhooks.log'
-                ), JSON.stringify(req.body, null, 4));
-            } else {
-                console.log('The Signature did not match');
-                // the signature was invalid
-                res.send('Ok');
-                // we'll ok for now but there are other options
-            }
-        } else {
-            console.log('It didn\'t seem to be a Twitch Hook');
-            // again, not normally called
-            // but dump out a OK
-            res.send('Ok');
-        }
-    });
-
-async function addTwitchWebhook(username, isID = false) {
+async function addTwitchWebhook(username, isID = false, guildid, targetChannel, message) {
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
     let uid = username;
     if (!isID) {
         uid = await idLookup(username);
+    }
+    if (!uid) return "ID_NOT_FOUND";
+    const existingSubs = await getTwitchSubsForID(uid)
+    if (existingSubs && existingSubs.length) {
+        for (let i = 0; i < existingSubs.length; i++) {
+            const sub = existingSubs[i];
+            if (sub.streamerid === uid) return "ALREADY_EXISTS";
+        }
     }
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
         method: 'POST',
@@ -177,8 +147,11 @@ async function addTwitchWebhook(username, isID = false) {
             "Client-ID": `${config.client_id}`
         }
     });
+    const subRes = await addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message);
+    if (!subRes || !res) return false;
     //const json = res.json()
-    return res;
+    targetChannel.send("This is a test message for the set Twitch notification.\nhttps://twitch.tv/EnigmaDigm")
+    return true;
 }
 
 async function unregisterTwitchWebhook(username) {
@@ -187,7 +160,7 @@ async function unregisterTwitchWebhook(username) {
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
         method: 'POST',
         body: JSON.stringify({
-            "hub.callback": `http://atlasatmos.net:8000/?streamer=${uid.data[0].id}`,
+            "hub.callback": `${config.callback_domain}/?streamer=${uid.data[0].id}`,
             "hub.mode": "unsubscribe",
             "hub.topic": `https://api.twitch.tv/helix/streams?user_id=${uid.data[0].id}`,
             "hub.secret": config.hub_secret
@@ -195,22 +168,38 @@ async function unregisterTwitchWebhook(username) {
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${currToken}`,
-            "Client-ID": "3wwssw7s79xqt53x01i7rgnpz1jfgh"
+            "Client-ID": `${config.client_id}`
         }
     });
     //const json = res.json()
     return res;
 }
 
+async function unsubscribeTwitchWebhook(username, guildid) {
+    await getOAuth();
+    const uid = await idLookup(username);
+    if (!uid || !uid.data[0] || !uid.data[0].id) return false;
+    const remres = await removeTwitchSubscription(uid.data[0].id, guildid)
+    if (remres < 1) {
+        return false;
+    }
+    return true;
+}
+
 async function getOAuth() {
-    if (tokenExpiresIn > 60) return;
-	const tokres = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${config.client_id}&client_secret=${config.client_secret}&grant_type=client_credentials&scope=user:read:email`, { method: "POST" });
-    const tokjson = tokres.json();
-    if (!tokjson || !tokjson.access_token) return false;
-    currToken = tokjson.access_token;
-	//return tokjson;
-    
-    console.log(currToken)
+    try {
+        if (tokenExpiresIn > 60) return;
+        const result = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${config.client_id}&client_secret=${config.client_secret}&grant_type=client_credentials&scope=user:read:email`, { method: "POST" })
+        const j = await result.json()
+        if (!j || !j.access_token) {
+            console.log("couldn't retrieve access token");
+            return false;
+        }
+        currToken = j.access_token;
+    } catch (error) {
+        console.error(error)
+    }
+    //return tokjson;
 }
 
 async function idLookup(username) {
@@ -222,9 +211,14 @@ async function idLookup(username) {
             "Authorization": `Bearer ${currToken}`
 		}
 	})
-	const json = response.json();
+    const json = await response.json();
 	return json;
 }
+
+/*function configTwitchClient(dclient) {
+    client = dclient;
+    client.channels.cache.get("660242946834038791").send("hi")
+}*/
 
 setInterval(async () => {
     await getOAuth();
@@ -257,7 +251,11 @@ setInterval(async () => {
 /*exports.addTwitchWebhook = addTwitchWebhook;
 exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.twitchIDLookup = idLookup;*/
-module.exports = router;
+exports.twitchRouter = router;
+exports.addTwitchWebhook = addTwitchWebhook;
+exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
+exports.unsubscribeTwitchWebhook = unsubscribeTwitchWebhook;
+//exports.configTwitchClient = configTwitchClient;
 
 /*(async () => {
 	try {

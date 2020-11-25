@@ -1,6 +1,5 @@
 const xlg = require("../xlogger");
 const { getGlobalSetting } = require("../dbmanager")
-const { argsMustBeNum, argsNumRequire } = require('../utils/specialmsgs');
 
 module.exports = {
     name: "quadratic",
@@ -8,8 +7,8 @@ module.exports = {
     usage: "<a> <b> <c>",
     args: true,
     async execute(client, message, args) {
-        if (!(await argsNumRequire(message.channel, args, 3))) return false;
-        if (!(await argsMustBeNum(message.channel, args))) return false;
+        if (!(await client.specials.argsNumRequire(message.channel, args, 3))) return false;
+        if (!(await client.specials.argsMustBeNum(message.channel, args))) return false;
 
         /* Thanks, this saved me time
          * https://www.programiz.com/javascript/examples/quadratic-roots

@@ -20,8 +20,8 @@ module.exports = {
     },
     aliases:['sm', 'emotion', 'saltiness'],
     usage:"<message id to process / text content to process>",
-    args:true,
-    cooldown: 5,
+    args: true,
+    cooldown: 4,
     category: 'utility',
     ownerOnly: false,
     async execute(client, message, args) {
@@ -55,6 +55,7 @@ module.exports = {
                 }
 
                 wMsg.edit({
+                    content: "",
                     embed: {
                         "description": "Use an AI to tell you all about your text.",
                         "color": 9860623,

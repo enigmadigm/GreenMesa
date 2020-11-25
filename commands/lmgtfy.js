@@ -8,7 +8,7 @@ module.exports = {
     usage:"[explainer: -e] [plain text link: -t] <search terms>",
     args: true,
     guildOnly: false,
-    category: 'fun',
+    category: 'utility',
     async execute(client, message, args) {
         let sengine = "google.com/search";
         let iie = "";

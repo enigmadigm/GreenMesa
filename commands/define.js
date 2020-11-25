@@ -4,12 +4,15 @@ const { MWKEY } = require('../auth.json');
 const { logDefined } = require("../dbmanager")
 
 module.exports = {
-    name: 'define',
-    description: 'Use this sleek command that I spent hours creating to get the beautiful definition of any proper English word!',
+    name: "define",
+    description: {
+        short: "get a true definition",
+        long: "Use this sleek command that I spent hours creating to get the beautiful definition of any proper English word!"
+    },
     args: true,
     usage: "<some english word>",
-    aliases: ['def'],
-    category: 'utility',
+    aliases: ["def"],
+    category: "utility",
     execute(client, message, args) {
         if (args.length > 0 && args.length < 11) {
             if (message.channel.type === "text" && message.mentions.members.size && message.mentions.members.first().id !== message.guild.me.id) {

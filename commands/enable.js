@@ -1,6 +1,5 @@
 const xlg = require("../xlogger");
 const { getGuildSetting, editGuildSetting, getGlobalSetting } = require("../dbmanager");
-const { sendModerationDisabled } = require('../utils/specialmsgs');
 const { permLevels } = require('../permissions');
 
 module.exports = {
@@ -18,7 +17,7 @@ module.exports = {
     async execute(client, message, args) {
         let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
         if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-            return sendModerationDisabled(message.channel);
+            return client.specials.sendModerationDisabled(message.channel);
         }
 
         const commandName = args[0].toLowerCase();

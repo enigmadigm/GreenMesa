@@ -2,13 +2,12 @@ const { getGlobalSetting, getXP, setSpideySaved } = require("../dbmanager");
 const xlg = require("../xlogger");
 //const moment = require("moment");
 const { permLevels } = require('../permissions');
-const { sendError } = require("../utils/specialmsgs");
 
 module.exports = {
     name: 'spiderman',
     aliases: ['spidey'],
     description: 'ask spiderman for help',
-    category: 'misc',
+    category: 'fun',
     guildOnly: true,
     permLevel: permLevels.trustedMember,
     async execute(client, message) {
@@ -25,7 +24,7 @@ module.exports = {
             }
             const savedRes = await setSpideySaved(message.member);
             if (!savedRes) {
-                await sendError(message.channel, "**error**, Spiderman was unavailable :/")
+                await client.specials.sendError(message.channel, "**error**, Spiderman was unavailable :/")
                 return false;
             }
             message.channel.send({
@@ -38,7 +37,7 @@ module.exports = {
             return true;
         } catch (error) {
             xlg.error(error);
-            await sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

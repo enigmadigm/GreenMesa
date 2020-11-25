@@ -1,6 +1,5 @@
 const xlg = require("../xlogger");
 const { getGlobalSetting } = require("../dbmanager");
-const { argsMustBeNum, argsNumRequire } = require('../utils/specialmsgs');
 
 // https://www.w3resource.com/javascript-exercises/javascript-object-exercise-5.php
 function Cylinder(cyl_height, cyl_diameter) {
@@ -18,8 +17,8 @@ module.exports = {
     usage: "<height> <diameter>",
     args: true,
     async execute(client, message, args) {
-        if (!(await argsNumRequire(message.channel, args, 2))) return false;
-        if (!(await argsMustBeNum(message.channel, args))) return false;
+        if (!(await client.specials.argsNumRequire(message.channel, args, 2))) return false;
+        if (!(await client.specials.argsMustBeNum(message.channel, args))) return false;
 
         var cyl = new Cylinder(args[0], args[1]);
 

@@ -5,6 +5,7 @@ module.exports = {
     description: 'oopsie doopsie dropped the bot',
     cooldown: 60,
     ownerOnly: true,
+    category: "owner",
     async execute(client, message, args) {
         await message.channel.send('Shutting down...');
         if (args.length && args[0].toLowerCase() === 'pm2') {

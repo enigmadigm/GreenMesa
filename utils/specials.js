@@ -64,8 +64,15 @@ async function timedMessagesHandler(client) {
     }, 60000);
 }
 
+function memoryUsage() {
+    return Object.entries(process.memoryUsage()).map(usage => {
+        return `${usage[0]} : ${(Math.round(usage[1] / 1024 / 1024 * 100) / 100).toFixed().split('.')[0]} MB`
+    }).join("\n");
+}
+
 exports.sendModerationDisabled = sendModerationDisabled;
 exports.sendError = sendError;
 exports.timedMessagesHandler = timedMessagesHandler;
 exports.argsNumRequire = argsNumRequire;
 exports.argsMustBeNum = argsMustBeNum;
+exports.memoryUsage = memoryUsage;

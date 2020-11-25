@@ -3,7 +3,12 @@
 const { permLevels } = require('../permissions');
 const { getGlobalSetting } = require("../dbmanager");
 
+// —
+
 function titleCase(str) {
+    if (str == "nsfw") {
+        return "NSFW";
+    }
     var splitStr = str.toLowerCase().split(' ');
     for (var i = 0; i < splitStr.length; i++) {
         // You do not need to check if i is larger than splitStr length, as your for does that for you
@@ -37,24 +42,34 @@ module.exports = {
         if (!args.length) {
             try {
                 const data = [];
-                //data.push(`**My public commands: (${commands.array().length})**`);
-                // for some reason if you don't separate \` ${command.name} \` with a space it flips out
-                //                                         ^               ^
-                data.push(categories.filter(ca => ca.name !== "owner").map(ca => {
-                    return `${titleCase(ca.name)}${` ${ca.emoji} ` || ''}\n\` ${message.gprefix}help ${ca.name.toLowerCase()} \``
-                }).join('\n'));
-                data.push(`**Send \`${message.gprefix}help [command name]\` to get help for a specific command!**`)
+                //const helpfields = [];
+                const helpfields = categories.filter(ca => ca.name !== "owner").map(ca => {
+                    return {
+                        name: `${titleCase(ca.name)}${` ${ca.emoji || ""} ` || ''}`,
+                        value: `\`\`\` ${message.gprefix}help ${ca.name.toLowerCase()} \`\`\``,
+                        inline: true
+                    }
+                });
+
+                /*data.push(categories.filter(ca => ca.name !== "owner").map(ca => {
+                    return `${titleCase(ca.name)}${` ${ca.emoji || ""} ` || ''}\n\`\`\` ${message.gprefix}help ${ca.name.toLowerCase()} \`\`\``
+                }).join('\n'));*/
+
+                data.push(`Send \`${message.gprefix}help [command name]\` to get help for a specific command!`)
                 let cmdcount = commands.size; // commands.filter(co => co.category !== "owner").size;
+
                 await message.channel.send({
                     embed: {
-                        title: `help: categories`,
+                        title: `Help: Categories`,
                         color: parseInt((await getGlobalSetting("darkred_embed_color"))[0].value, 10),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too much to send'}`,
+                        fields: helpfields,
                         footer: {
-                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
+                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s) ● Full List: ${message.gprefix}commands`
                         }
                     }
                 }).catch(console.error);
+
             } catch (error) {
                 console.error(`Could not send help message in ${message.guiild.id}.\n`, error);
             }
@@ -110,11 +125,12 @@ module.exports = {
                 }
                 return `\` ${command.name} \` - ${availableDesc}`
             }).join('\n'));
-            data.push(`**You can send \`${message.gprefix}help [command name]\` to get help on a specific command!**`)
+            data.push('')
+            data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
             let cmdcount = commands.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
             await message.channel.send({
                 embed: {
-                    title: `${category.emoji + ' ' || ''}${category.name}`,
+                    title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
                     color: parseInt((await getGlobalSetting("darkred_embed_color"))[0].value, 10),
                     description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                     footer: {

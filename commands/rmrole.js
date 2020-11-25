@@ -9,6 +9,7 @@ module.exports = {
     usage: "<role>",
     args: true,
     permLevel: permLevels.admin,
+    category: "moderation",
     async execute(client, message, args) {
         try {
             if (!stringToRole(message.guild, args.join(" "), false, false)) {

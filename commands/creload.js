@@ -6,6 +6,7 @@ module.exports = {
     args: true,
     ownerOnly: true,
     cooldown: 1,
+    category: "owner",
     execute(client, message, args) {
         const commandName = args[0].toLowerCase();
         const command = message.client.commands.get(commandName)
