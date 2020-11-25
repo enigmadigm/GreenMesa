@@ -1,5 +1,6 @@
 const xlg = require("../xlogger");
 const { permLevels } = require('../permissions');
+//const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
     name: "",
@@ -8,6 +9,7 @@ module.exports = {
         short: "",
         long: ""
     },
+    category: "misc",
     usage: "",
     args: false,
     specialArgs: undefined,
