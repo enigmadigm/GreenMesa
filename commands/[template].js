@@ -10,8 +10,9 @@ module.exports = {
     },
     usage: "",
     args: false,
+    specialArgs: undefined,
     permLevel: permLevels.trustedMember,
-    guildOnly: false,
+    guildOnly: true,
     ownerOnly: false,
     async execute(client, message, args) {
         try {
