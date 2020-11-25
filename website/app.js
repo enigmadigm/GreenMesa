@@ -3,6 +3,7 @@ require('./strategies/discord');
 const express = require("express");
 const passport = require('passport');
 const PORT = process.env.WEBSITE_PORT || 3002;
+const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
 const routes = require('./routes');
 const fs = require("fs");
 const path = require("path");
@@ -18,7 +19,7 @@ class MesaWebsite {
         this.app.get("/", (req, res) => {
             res.sendFile(path.join(__dirname,"./static/index.html"));
         });
-        this.app.use(express.static(process.env.DASHBOARD_STATIC_LOC))
+        this.app.use(express.static(STATIC))
         this.app.use(passport.initialize());
         this.app.use(passport.session());
         this.app.use('/api', routes);
