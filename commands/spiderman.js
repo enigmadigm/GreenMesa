@@ -7,7 +7,7 @@ module.exports = {
     name: 'spiderman',
     aliases: ['spidey'],
     description: 'ask spiderman for help',
-    category: 'misc',
+    category: 'fun',
     guildOnly: true,
     permLevel: permLevels.trustedMember,
     async execute(client, message) {

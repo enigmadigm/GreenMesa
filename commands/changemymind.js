@@ -11,6 +11,7 @@ module.exports = {
     },
     usage: '<text>',
     args: true,
+    category: "fun",
     async execute(client, message, args) {
         try {
             message.channel.startTyping();

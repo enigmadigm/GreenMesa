@@ -6,6 +6,7 @@ module.exports = {
     description: "find the right bot for a topic",
     usage: "<topic>",
     args: true,
+    category: 'fun',
     async execute(client, message, args) {
         message.channel.send({
             embed: {

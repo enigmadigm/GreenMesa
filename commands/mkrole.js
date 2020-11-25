@@ -11,6 +11,7 @@ module.exports = {
     usage: "<role name>,[role color]",
     args: true,
     permLevel: permLevels.admin,
+    category: "moderation",
     async execute(client, message, args) {
         try {
             let param = args.join(" ").split(",");
