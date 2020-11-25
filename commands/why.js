@@ -11,7 +11,7 @@ module.exports = {
                     value: "because"
                 }],
                 footer: {
-                    text: `The dev knows this cmd is stupid | ${message.id}`
+                    text: `The dev knows this cmd is stupid`
                 }
             }
         });
