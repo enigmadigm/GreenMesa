@@ -18,7 +18,7 @@ class MesaWebsite {
         this.app.get("/", (req, res) => {
             res.sendFile(path.join(__dirname,"./static/index.html"));
         });
-        this.app.use(express.static(path.resolve(process.env.DASHBOARD_STATIC_LOC)))
+        this.app.use(express.static(process.env.DASHBOARD_STATIC_LOC))
         this.app.use(passport.initialize());
         this.app.use(passport.session());
         this.app.use('/api', routes);
