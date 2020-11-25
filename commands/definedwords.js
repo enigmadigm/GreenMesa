@@ -7,6 +7,7 @@ module.exports = {
         short: "list the words defined in the past",
         long: "This lists all of the words that have been defined using the define command in the past."
     },
+    category: "utility",
     async execute(client, message) {
         try {
             const config = require("../auth.json");
