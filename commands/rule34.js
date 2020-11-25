@@ -42,7 +42,6 @@ module.exports = {
             }
 
             const post = j[Math.floor(Math.random() * j.length)];
-            xlg.log(post)
             if (!post.file_url) {
                 client.specials.sendError(message.channel, "No image");
                 return;
