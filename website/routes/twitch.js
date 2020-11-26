@@ -124,12 +124,12 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
     if (!isID) {
         uid = await idLookup(username);
     }
-    if (!uid) return "ID_NOT_FOUND";
-    const existingSubs = await getTwitchSubsForID(uid)
-    if (existingSubs && existingSubs.length) {
+    if (!uid || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
+    const existingSubs = await getTwitchSubsForID(uid.data[0].id)
+    if (existingSubs.length > 0) {
         for (let i = 0; i < existingSubs.length; i++) {
             const sub = existingSubs[i];
-            if (sub.streamerid === uid) return "ALREADY_EXISTS";
+            if (sub.streamerid === uid.data[0].id) return "ALREADY_EXISTS";
         }
     }
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
