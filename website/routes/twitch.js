@@ -129,7 +129,7 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
     if (existingSubs.length > 0) {
         for (let i = 0; i < existingSubs.length; i++) {
             const sub = existingSubs[i];
-            if (sub.streamerid === uid.data[0].id) return "ALREADY_EXISTS";
+            if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) return "ALREADY_EXISTS";
         }
     }
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
