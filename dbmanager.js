@@ -505,6 +505,7 @@ async function addTwitchSubscription(streamerid, guildid, channelid, expiredate,
         }
     } catch (error) {
         xlog.error(error);
+        return false;
     }
 }
 
