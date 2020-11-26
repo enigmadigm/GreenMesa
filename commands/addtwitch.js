@@ -62,14 +62,12 @@ module.exports = {
                 }
             }
 
-            
-
-            let confMsg = await message.channel.send({
+            const confMsg = await message.channel.send({
                 content: message.author,
                 embed: {
-                    color: parseInt(process.env.NAVY_COLOR),
+                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
                     title: "Confirm",
-                    description: `Please confirm that you would like to proceed and complete the setup`
+                    description: `React to confirm and proceed to complete the setup`
                 }
             }).catch(xlg.error);
             await confMsg.react("🟢").catch(xlg.error);
@@ -91,41 +89,48 @@ module.exports = {
                     xlg.error(error);
                 }
             } else {
-                confMsg.embeds[0].color = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10)
-                confMsg.embeds[0].title = null;
-                confMsg.embeds[0].description = `Proceeding`;
-                await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                const hookRes = await addTwitchWebhook(targetUsername, false, message.guild.id, targetChannel, notifmsg);
+                if (!hookRes) {
+                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].title = null;
+                    confMsg.embeds[0].description = "Error when creating subscription with Twitch";
+                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    //client.specials.sendError(message.channel, "Error when creating subscription with Twitch");
+                    await confMsg.reactions.removeAll();
+                    
+                } else if (hookRes === "ID_NOT_FOUND") {
+                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].title = null;
+                    confMsg.embeds[0].description = `Your streamer, \`${targetUsername}\`, could not be found`;
+                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    //client.specials.sendError(message.channel, `Your streamer, \`${targetUsername}\`, could not be found`);
+                    await confMsg.reactions.removeAll();
+                    
+                } else if (hookRes === "ALREADY_EXISTS") {
+                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].title = null;
+                    confMsg.embeds[0].description = `A subscription for \`${targetUsername}\` already exists`;
+                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    //client.specials.sendError(message.channel, `A subscription for \`${targetUsername}\` already exists`);
+                    await confMsg.reactions.removeAll();
 
-                const reactsToRemove = confMsg.reactions.cache.filter(r => r.users.cache.has(client.user.id));
-                try {
-                    for (const reaction of reactsToRemove.values()) {
-                        await reaction.users.remove(client.id);
-                    }
-                } catch (error) {
-                    xlg.error(error);
+                } else {
+                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].title = "Subscribed";
+                    confMsg.embeds[0].description = `You server is now subscribed to notifications in ${targetChannel} for when **${targetUsername}** goes live.`;
+                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+
+                    const reactsToRemove = confMsg.reactions.cache.filter(r => r.users.cache.has(client.user.id));
+                    try {
+                        for (const reaction of reactsToRemove.values()) {
+                            await reaction.users.remove(client.id);
+                        }    
+                    } catch (error) {
+                        xlg.error(error);
+                    }    
+
                 }
-            }
-
-            const hookRes = await addTwitchWebhook(targetUsername, false, message.guild.id, targetChannel, notifmsg);
-            if (!hookRes) {
-                client.specials.sendError(message.channel, "Error when creating subscription with Twitch");
-                return false;
-            } else if (hookRes === "ID_NOT_FOUND") {
-                client.specials.sendError(message.channel, `Your streamer, \`${targetUsername}\`, could not be found`);
-                return false;
-            } else if (hookRes === "ALREADY_EXISTS") {
-                client.specials.sendError(message.channel, `A subscription for \`${targetUsername}\` already exists`);
-                return false;
-            } else {
-                await message.channel.send({
-                    embed: {
-                        color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
-                        title: "Subscribed",
-                        description: `You server is now subscribed to notifications in ${targetChannel} for when **${targetUsername}** goes live.`
-                    }
-                });
-                return;
-            }
+            }    
 
         } catch (error) {
             xlg.error(error);
