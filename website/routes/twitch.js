@@ -79,7 +79,7 @@ router.get("/hooks", async (req, res) => {
     }).then(res => res.json()).then(body => res.json(body))
 })
 
-router.get("/unsubscribe", async (req, res) => {
+/*router.get("/unsubscribe", async (req, res) => {
     if (req.query.pass !== "cantbreakin") return;
     const who = req.query.u;
     if (!who) {
@@ -90,7 +90,7 @@ router.get("/unsubscribe", async (req, res) => {
     await getOAuth();
     await unregisterTwitchWebhook(who);
     res.send(`Unsubscribed from: ${who}`)
-})
+})*/
 
 // Routes
 router
