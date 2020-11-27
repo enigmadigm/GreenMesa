@@ -123,7 +123,7 @@ module.exports = {
                 if (command.description && (command.description.short || command.description.long)) {
                     availableDesc = command.description.short || command.description.long;
                 }
-                return `\` ${command.name} \` - ${availableDesc}`
+                return `\`${message.gprefix}\`\u200b\`${command.name} \` - ${availableDesc}`
             }).join('\n'));
             data.push('')
             data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
