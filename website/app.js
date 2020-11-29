@@ -1,12 +1,13 @@
 require('./strategies/discord');
 
+//const xlg = require("../xlogger");
 const express = require("express");
 const passport = require('passport');
 const PORT = process.env.WEBSITE_PORT || 3002;
-const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
 const routes = require('./routes');
 const fs = require("fs");
 const path = require("path");
+const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
 const { getTwitchSubsForID } = require("../dbmanager");
 //const { configTwitchClient } =require("./routes/twitch")
 
@@ -17,11 +18,12 @@ class MesaWebsite {
         this.app = express();
         
         this.app.get("/", (req, res) => {
-            res.sendFile(path.join(__dirname,"./static/index.html"));
+            res.sendFile(path.join(STATIC, "index.html"));
         });
-        this.app.use(express.static(STATIC))
         this.app.use(passport.initialize());
         this.app.use(passport.session());
+        this.app.set('etag', false);
+        this.app.use(express.static(STATIC))
         this.app.use('/api', routes);
         this.app.listen(PORT, () => console.log(`Running on port ${PORT}`));
         this.app.post("/api/twitch", async (req, res) => {
