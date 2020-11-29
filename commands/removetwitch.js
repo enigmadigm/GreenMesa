@@ -19,7 +19,6 @@ module.exports = {
     async execute(client, message, args) {
         try {
                 let confMsg = await message.channel.send({
-                    content: message.author,
                     embed: {
                         color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
                         title: "Confirm",

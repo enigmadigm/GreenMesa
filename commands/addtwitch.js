@@ -12,41 +12,68 @@ module.exports = {
         short: "create a twitch notifier",
         long: "Create a Twitch Notifier. Using a Twitch username and channel that you provide, this will send notifications to the channel when your streamer goes live. Send the notification channel as an argument, and a wizard will guide you through the rest of the steps."
     },
-    usage: "<#channel> ...",
-    args: true,
+    usage: "",
+    args: false,
     permLevel: permLevels.admin,
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            const targetChannel = stringToChannel(message.guild, args.join(" "));
+            /*const targetChannel = stringToChannel(message.guild, args.join(" "));
             if (!targetChannel) {
                 client.specials.sendError(message.channel, "Invalid Channel");
                 return;
-            }
-            await message.channel.send({
-                embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
-                    title: "Twitch Notif Setup",
-                    description: "What is the username of your streamer? Send it in the chat. To change this later you must delete this notifier and start over."
+            }*/
+            const iec = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
+            
+            let targetUsername = args.join(" ") || "";
+            if (!targetUsername) {
+                await message.channel.send({
+                    embed: {
+                        color: iec,
+                        title: "Twitch Notif Setup",
+                        description: "What is the username of your streamer? Send it in the chat. To change this later you must delete this notifier and start over."
+                    }
+                });
+                const streamerCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 30000, max: 1 });
+                if (!streamerCollected || !streamerCollected.first()) {
+                    client.specials.sendError(message.channel, "No valid name was given within the time limit. This setup wizard has been cancelled.\nYou will be notified if the name was incorrect at the end of the process.");
+                    return false;
+                } else {
+                    targetUsername = streamerCollected.first().content;
                 }
-            });
-            const streamerCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 30000, max: 1 });
-            let targetUsername = "";
-            if (!streamerCollected || !streamerCollected.first()) {
-                client.specials.sendError(message.channel, "No valid names collected within the time limit. The names are not checked within this wizard, and the command will mysteriously fail if the name you enter is incorrect. This setup wizard has been cancelled.");
-                return false;
             } else {
-                targetUsername = streamerCollected.first().content;
+                await message.channel.send({
+                    embed: {
+                        color: iec,
+                        title: "Twitch Notif Setup",
+                        description: "Username already provided, skipping step."
+                    }
+                });
             }
             
             /*if (!targetUsername.length) {
                 client.specials.sendError(message.channel, "Streamer name not specified.")
             }*/
 
+            await message.channel.send({
+                embed: {
+                    color: iec,
+                    title: "Twitch Notif Setup",
+                    description: "What channel should the notifications be sent in? Send the channel in the chat. To change this later you must delete this notifier and start over."
+                }
+            });
+            const channelCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 20000, max: 1 });
+            let targetChannel = channelCollected.size ? stringToChannel(message.guild, channelCollected.first().content) : undefined;
+            if (!channelCollected || !channelCollected.first() || !targetChannel.id) {
+                client.specials.sendError(message.channel, "A valid channel was not given. This setup wizard has been cancelled.");
+                return false;
+            }
+            xlg.log(targetChannel.id)
+            
 
             await message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                    color: iec,
                     title: "Twitch Notif Setup",
                     description: "Would you like to send a customized message when your streamer goes live? **If no, type `no`, otherwise type your message.**\nThis cannot be customized later and will require you to delete the notifier and start over."
                 }
@@ -63,9 +90,8 @@ module.exports = {
             }
 
             const confMsg = await message.channel.send({
-                content: message.author,
                 embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                    color: iec,
                     title: "Confirm",
                     description: `React to confirm and proceed to complete the setup`
                 }
