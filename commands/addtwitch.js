@@ -65,7 +65,9 @@ module.exports = {
                 });
             }
             if (validateTwitchURL(targetUsername)) {
-                targetUsername = (new URL(targetUsername).pathname.split("/"))[1];
+                //targetUsername = (new URL(targetUsername).pathname.split("/"))[1];
+                const twitchURLParts = targetUsername.split("/") || [];
+                targetUsername = twitchURLParts[twitchURLParts.length - 1] || "";
             }
             xlg.log("uid:"+targetUsername)
             
