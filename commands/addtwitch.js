@@ -5,6 +5,20 @@ const { addTwitchWebhook } = require("../website/routes/twitch");
 const { getGlobalSetting } = require("../dbmanager");
 const Discord = require("discord.js");
 
+/*function validURL(str) {
+  const pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+  return pattern.test(str);
+}*/
+
+function validateTwitchURL(str) {
+    return /^((http|https):\/\/|)(www\.|)twitch\.tv\/[a-zA-Z0-9_]{1,}$/.test(str);
+}
+
 module.exports = {
     name: "addtwitch",
     aliases: ["addt"],
@@ -50,6 +64,10 @@ module.exports = {
                     }
                 });
             }
+            if (validateTwitchURL(targetUsername)) {
+                targetUsername = (new URL(targetUsername).pathname.split("/"))[1];
+            }
+            xlg.log("uid:"+targetUsername)
             
             /*if (!targetUsername.length) {
                 client.specials.sendError(message.channel, "Streamer name not specified.")
@@ -68,8 +86,6 @@ module.exports = {
                 client.specials.sendError(message.channel, "A valid channel was not given. This setup wizard has been cancelled.");
                 return false;
             }
-            xlg.log(targetChannel.id)
-            
 
             await message.channel.send({
                 embed: {
@@ -136,6 +152,9 @@ module.exports = {
                     confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = `A subscription for \`${targetUsername}\` already exists`;
+                    confMsg.embeds[0].footer = {
+                        text: "delete it with removetwitch"
+                    };
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                     //client.specials.sendError(message.channel, `A subscription for \`${targetUsername}\` already exists`);
                     await confMsg.reactions.removeAll();
