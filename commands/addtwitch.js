@@ -69,7 +69,7 @@ module.exports = {
                 const twitchURLParts = targetUsername.split("/") || [];
                 targetUsername = twitchURLParts[twitchURLParts.length - 1] || "";
             }
-            xlg.log("uid:"+targetUsername)
+            //xlg.log("uid:"+targetUsername)
             
             /*if (!targetUsername.length) {
                 client.specials.sendError(message.channel, "Streamer name not specified.")
