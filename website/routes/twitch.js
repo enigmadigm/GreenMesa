@@ -120,11 +120,12 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
+    
     let uid = username;
     if (!isID) {
         uid = await idLookup(username);
     }
-    if (!uid || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
+    if (!uid || !uid.data || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
     const existingSubs = await getTwitchSubsForID(uid.data[0].id)
     if (existingSubs.length > 0) {
         for (let i = 0; i < existingSubs.length; i++) {
@@ -132,6 +133,7 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
             if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) return "ALREADY_EXISTS";
         }
     }
+
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
         method: 'POST',
         body: JSON.stringify({
@@ -149,8 +151,13 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
     });
     const subRes = await addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message);
     if (!subRes || !res) return false;
-    //const json = res.json()
-    targetChannel.send("This is a test message for the set Twitch notification.\nhttps://twitch.tv/EnigmaDigm")
+
+    if (uid.data[0].display_name || uid.data[0].login) {
+        targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
+    } else {
+        targetChannel.send("This is a test message for the set Twitch notification.");
+    }
+
     return true;
 }
 
