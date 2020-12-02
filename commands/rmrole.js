@@ -6,7 +6,7 @@ const { permLevels } = require('../permissions');
 module.exports = {
     name: "rmrole",
     description: "remove a role",
-    usage: "<role>",
+    usage: "<@role>",
     args: true,
     permLevel: permLevels.admin,
     category: "moderation",
