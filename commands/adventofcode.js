@@ -18,7 +18,7 @@ module.exports = {
         long: "Use to first setup and then view your Advent of Code leaderboard. You will have to provide your private leaderboard number (e.g. `[number]-fsy8676sf`) as well as your session token. Because AoC doesn't provide a convenient API, you will have to access your cookies (you can search for how to do that in your browser) and copy the value of the cookie named `session`. YOU MUST be on the leaderboard you wish to set the command to already, the only way to access the leaderboard is by providing your credentials after adding the leaderboard on the website."
     },
     category: "fun",
-    usage: "[reset]",
+    usage: "[reset | reselect]",
     args: false,
     specialArgs: undefined,
     permLevel: permLevels.member,
@@ -30,16 +30,20 @@ module.exports = {
             let lb = await getGuildSetting(message.guild, "aoc_leaderboard");
             let year = await getGuildSetting(message.guild, "aoc_year")
             const iec = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
-            const resetting = args.join(" ").toLowerCase() === "reset";
-            
+            let resetting = false;
+            if (args.join(" ").toLowerCase() === "reset" || args.join(" ").toLowerCase() === "reselect") {
+                resetting = args.join(" ");
+            }
+            let refetching = false;
+
             if (!lb[0] || !session[0] || !year[0] || resetting) {
                 
-                if (!session[0] || [0].value || resetting) {
+                if (!session[0] || !session[0].value || resetting === "reset") {
                     await message.channel.send({
                         embed: {
                             color: iec,
                             title: "AoC Setup | 1️⃣",
-                            description: "**Enter your `session` cookie token.** Using your preferred browser, go to the [AoC website](https://adventofcode.com) and make sure you are logged in, then access your cookies for the site ([Firefox](https://support.mozilla.org/en-US/questions/1219653), [Chrome + Others](https://kb.iu.edu/d/ajfi#CHROME)). The cookie you are looking for is called `session`, it may look like `session=[token]`."
+                            description: "**Enter your `session` cookie token.**\nUsing your preferred browser, go to the [AoC website](https://adventofcode.com) and make sure you are logged in, then access your cookies for the site ([Firefox](https://support.mozilla.org/en-US/questions/1219653), [Chrome + Others](https://kb.iu.edu/d/ajfi#CHROME)). The cookie you are looking for is called `session`, it may look like `session=[token]`."
                         }
                     });
                     const sessionCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 60000, max: 1 });
@@ -58,6 +62,7 @@ module.exports = {
                             description: "Session already set, skipping step."
                         }
                     });
+                    session = session[0].value;
                 }
 
                 await message.channel.send({
@@ -93,26 +98,38 @@ module.exports = {
                         await editGuildSetting(message.guild, "aoc_leaderboard", lb);
                     }
                 }
+                refetching = true;
             } else {
                 session = session[0].value;
                 lb = lb[0].value;
                 year = year[0].value;
             }
+            xlg.log(session)
 
             //const now = new Date();
-            if (!lbdat.lastFetched || moment().diff(lbdat.lastFetched) > 1000 * 60 * 15) {
+            if (!lbdat.lastFetched || moment().diff(lbdat.lastFetched) > 1000 * 60 * 15 || refetching) {
                 try {
-                    let res = await fetch(`https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`, {
+                    const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
+                    let res = await fetch(url, {
                         headers: {
                             cookie: `session=${session}`
                         }
                     });
+                    xlg.log(res.url)
                     if (res.url === `https://adventofcode.com/${year}/leaderboard/private`) {
-                        client.specials.sendError(message.channel, "Could not access the leaderboard, the session variable may be bad.");
+                        client.specials.sendError(message.channel, "Could not access the leaderboard, the session variable may be expired.\nSend `aoc reset` to set the session again, or send `aoc reselect` to set the lb options again.");
+                        //await editGuildSetting(message.guild, "aoc_session", "", true);
                         return false;
                     }
-                    if (res.status !== 200) {
-                        client.specials.sendError(message.channel, "The service is unavailable.");
+                    if (res.status >= 500 && res.status < 600) {
+                        client.specials.sendError(message.channel, "Received a bad response from [AOC](https://adventofcode.com). It is likely that the session cookie is invalid.\nResend the command to set it again.");
+                        await editGuildSetting(message.guild, "aoc_session", "", true);
+                        return false;
+                    }
+                    if (res.status === 404) {
+                        client.specials.sendError(message.channel, `[Your leaderboard](${url}) could not be found.\nResend the command to set it again.`);
+                        await editGuildSetting(message.guild, "aoc_leaderboard", "", true);
+                        await editGuildSetting(message.guild, "aoc_year", "", true);
                         return false;
                     }
                     res = await res.json();
@@ -134,7 +151,7 @@ module.exports = {
             }
 
             lbdat.data.sort((a, b) => (a.local_score > b.local_score) ? -1 : 1)
-            let mapDat = lbdat.data.map((x, i) => ` .${i + 1} | ${x.local_score}/${x.global_score}⭐ | ${x.name || x.id}`).slice(0, 9);
+            let mapDat = lbdat.data.map((x, i) => ` ${i + 1}. | ${x.local_score}/${x.global_score}⭐ | ${x.name || x.id}`).slice(0, 9);
             let longest = 0;
             for (let i = 0; i < mapDat.length; i++) {
                 const dat = mapDat[i];
