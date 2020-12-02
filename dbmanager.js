@@ -488,24 +488,24 @@ async function setSpideySaved(target) {
  * @param {*} expiredate a parseable date to be used to sort by timestamps for renewal
  * @param {string} message (optional) the message that will be sent with the discord notification
  */
-async function addTwitchSubscription(streamerid, guildid, channelid, expiredate, message = "") {
+async function addTwitchSubscription(streamerid, guildid, channelid, expiredate, message = "", name) {
     try {
-        if (!streamerid || !guildid || !channelid || !expiredate) return false;
+        if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
         let result = await query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
         const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
         message = message.replace("'", "\\'");
         if (!result || !result[0]) {
             if (!message || !message.length || typeof message !== "string") {
-                await query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${expiresTimestamp}')`);
+                await query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${expiresTimestamp}', '${name}')`);
             } else {
-                await query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${message}', '${expiresTimestamp}')`);
+                await query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${message}', '${expiresTimestamp}', '${name}')`);
             }
             return true;
         } else {
             if (!message || !message.length || typeof message !== "string") {
-                await query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}' WHERE id = '${streamerid}${guildid}'`);
+                await query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}', streamerlogin = '${name}' WHERE id = '${streamerid}${guildid}'`);
             } else {
-                await query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}', message = '${message}' WHERE id = '${streamerid}${guildid}'`);
+                await query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}', streamerlogin = '${name}', message = '${message}' WHERE id = '${streamerid}${guildid}'`);
             }
             return true;
         }
@@ -543,6 +543,21 @@ async function getTwitchSubsForID(streamerid) {
     }
 }
 
+/**
+ * get a list of database entries that belong to a specific guild
+ * @param {string} streamerid twitch id of streamer
+ */
+async function getTwitchSubsGuild(guildid) {
+    try {
+        if (!guildid) return false;
+        let result = await query(`SELECT * FROM twitchhooks WHERE guildid = '${guildid}'`);
+        if (!result.length) return false;
+        return result;
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
 exports.conn = conn;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
@@ -568,5 +583,6 @@ exports.logMsgReceive = logMsgReceive;
 exports.logDefined = logDefined;
 exports.setSpideySaved = setSpideySaved;
 exports.addTwitchSubscription = addTwitchSubscription;
-exports.getTwitchSubsForID = getTwitchSubsForID;
 exports.removeTwitchSubscription = removeTwitchSubscription;
+exports.getTwitchSubsForID = getTwitchSubsForID;
+exports.getTwitchSubsGuild = getTwitchSubsGuild;

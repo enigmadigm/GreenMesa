@@ -150,7 +150,7 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
             "Client-ID": `${config.client_id}`
         }
     });
-    const subRes = await addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message);
+    const subRes = await addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
     if (!subRes || !res) return false;
 
     if (uid.data[0].display_name || uid.data[0].login) {
@@ -179,7 +179,6 @@ async function unregisterTwitchWebhook(username) {
             "Client-ID": `${config.client_id}`
         }
     });
-    //const json = res.json()
     return res;
 }
 
@@ -207,12 +206,15 @@ async function getOAuth() {
     } catch (error) {
         console.error(error)
     }
-    //return tokjson;
 }
 
-async function idLookup(username) {
+async function idLookup(username, isid = false) {
     await getOAuth();
-	const response = await fetch(`https://api.twitch.tv/helix/users?login=${username}`, {
+    let lquery = "login";
+    if (isid) {
+        lquery = "id";
+    }
+	const response = await fetch(`https://api.twitch.tv/helix/users?${lquery}=${username}`, {
 		method: 'GET',
 		headers: {
 			"Client-ID": `${config.client_id}`,
@@ -222,11 +224,6 @@ async function idLookup(username) {
     const json = await response.json();
 	return json;
 }
-
-/*function configTwitchClient(dclient) {
-    client = dclient;
-    client.channels.cache.get("660242946834038791").send("hi")
-}*/
 
 setInterval(async () => {
     try {
