@@ -1,5 +1,6 @@
 const { getGuildSetting } = require("../dbmanager");
 const { permLevels } = require('../permissions');
+const { getGlobalSetting } = require('../dbmanager');
 /*const Validator = require('jsonschema').Validator;
 var v = new Validator();
 var schema = {
@@ -57,7 +58,8 @@ module.exports = {
             seacolor = 0x4b0082;
             args.shift();
         } else {
-            seacolor = 0x3498db;
+            //seacolor = 0x3498db;
+            seacolor = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
             sclength = 0;
         }
         var embed = {
