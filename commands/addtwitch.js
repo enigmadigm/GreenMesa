@@ -155,7 +155,7 @@ module.exports = {
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = `A subscription for \`${targetUsername}\` already exists`;
                     confMsg.embeds[0].footer = {
-                        text: "delete it with removetwitch"
+                        text: "delete it with the remt command"
                     };
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                     //client.specials.sendError(message.channel, `A subscription for \`${targetUsername}\` already exists`);
@@ -177,7 +177,7 @@ module.exports = {
                     }    
 
                 }
-            }    
+            }
 
         } catch (error) {
             xlg.error(error);
