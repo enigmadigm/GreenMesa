@@ -301,7 +301,7 @@ client.on("message", async message => {// This event will run on every single me
         const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
         const commandName = args.shift().toLowerCase()
     
-        var permLevel = permLevels.member;
+        let permLevel = permLevels.member;
         let botmasters = await getGlobalSetting("botmasters").catch(xlg.error);
         botmasters = botmasters[0].value.split(',');
         if (!dm) { // gets perm level of member if message isn't from dms

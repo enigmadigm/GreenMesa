@@ -23,8 +23,9 @@ module.exports = {
 
             const streamers = subs.map((s) => {
                 const name = s.streamerlogin || s.streamerid;
+                const chan = message.guild.channels.cache.get(s.channelid);
                 if (name) {
-                    return `• [${name}](https://twitch.tv/${name})`
+                    return `• [${name}](https://twitch.tv/${name})${(chan && chan.id) ? ` ${chan}` : ''}`
                 }
             })
 
