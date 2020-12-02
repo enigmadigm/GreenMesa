@@ -15,7 +15,7 @@ module.exports = {
     aliases: ["aoc"],
     description: {
         short: "get your AoC leaderboard",
-        long: "Use to first setup and then view your Advent of Code leaderboard. You will have to provide your private leaderboard number (e.g. `[number]-fsy8676sf`) as well as your session token. Because AoC doesn't provide a convenient API, you will have to access your cookies (you can search for how to do that in your browser) and copy the value of the cookie named `session`. YOU MUST be on the leaderboard you wish to set the command to already, the only way to access the leaderboard is by providing your credentials after adding the leaderboard on the website."
+        long: "Use to first setup and then view your Advent of Code leaderboard.\nYou will have to provide your private leaderboard number (the number at the end of the LB's URL) as well as your session token. Because AoC doesn't allow automatic auth, you will have to access your cookies ([Chrome + Others](https://kb.iu.edu/d/ajfi#CHROME)) and copy the value of the cookie named `session`. YOU MUST already be on the leaderboard you wish to assign this command, the only way to access the leaderboard is by providing your credentials after joining the leaderboard on the website.\nThe credentials can be reset with the `reset` subcommand. The leaderboard alone can be reconfigured with the `reselect` subcommand."
     },
     category: "fun",
     usage: "[reset | reselect]",
