@@ -10,7 +10,7 @@ module.exports = {
         short: "assigns a member a role",
         long: "Assign a member or all members a role."
     },
-    usage: "<member|role> <role>",
+    usage: "<member|@role> <role>",
     args: true,
     permLevel: permLevels.trustedMember,
     guildOnly: true,

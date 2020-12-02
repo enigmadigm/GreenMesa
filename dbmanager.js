@@ -225,6 +225,8 @@ async function editGlobalSettings(selectortype = "", selectorvalue = "", updateu
     return new Promise((resolve, reject) => {
         if (!selectortype || !selectorvalue || !value || !updateuser || !updateuser.id || typeof selectorvalue !== "string" || typeof value !== "string") return reject("MISSING_VALUES");
         if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");
+        selectorvalue = selectorvalue.replace("'", "\\'");
+        value = value.replace("'", "\\'");
         conn.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}',\`updatedby\`='${updateuser.id}' WHERE \`${selectortype}\`='${selectorvalue}'`, (err, result) => {
             if (err) throw err;
             if (result.affectedRows > 0) {
@@ -251,6 +253,7 @@ async function getPrefix(guildid = "") {
 }
 
 async function setPrefix(guildid = "", newprefix = "") {
+    newprefix = newprefix.replace("'", "\\'");
     let rows = await query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
     if (rows.length > 0) {
         rows = await query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlog.error);
@@ -296,6 +299,8 @@ async function getGuildSetting(guild, name) {
 async function editGuildSetting(guild, name = "", value = "", deleting = false) {
     return new Promise((resolve, reject) => {
         if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
+        name = name.replace("'", "\\'");
+        value = value.replace("'", "\\'");
         if (deleting) {
             return conn.query(`DELETE FROM \`guildsettings\` WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result) => {
                 if (err) throw err;
@@ -488,6 +493,7 @@ async function addTwitchSubscription(streamerid, guildid, channelid, expiredate,
         if (!streamerid || !guildid || !channelid || !expiredate) return false;
         let result = await query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
         const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
+        message = message.replace("'", "\\'");
         if (!result || !result[0]) {
             if (!message || !message.length || typeof message !== "string") {
                 await query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${expiresTimestamp}')`);
