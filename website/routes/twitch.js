@@ -30,6 +30,7 @@ const url = require('url');
 const querystring = require('querystring');
 // database functions
 const { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } = require("../../dbmanager");
+const xlg = require('../../xlogger');
 // discord client
 //no
 
@@ -228,30 +229,34 @@ async function idLookup(username) {
 }*/
 
 setInterval(async () => {
-    await getOAuth();
-    const response = await fetch("https://api.twitch.tv/helix/webhooks/subscriptions", {
-        method: "GET",
-        headers: {
-            "Client-ID": `${config.client_id}`,
-            "Authorization": `Bearer ${currToken}`
-        }
-    }).catch(console.error);
-    const json = response.json();
-    // checking to see if any webhooks are registered
-    if (json.total > 0) {
-        const hooks = json.data;
-        // iterating through to renew ones that need it
-        for (let i = 0; i < hooks.length; i++) {
-            const hook = hooks[i];
-            if (moment(hook.expires_at).diff(moment()) <= 86400000) {
-                // parsing query strings from the callback url
-                const parsedUrl = url.parse(hook.callback);
-                const parsedQs = querystring.parse(parsedUrl.query);
-                if (parsedQs.streamer) {
-                    addTwitchWebhook(parsedQs.streamer, true);
+    try {
+        await getOAuth();
+        const response = await fetch("https://api.twitch.tv/helix/webhooks/subscriptions", {
+            method: "GET",
+            headers: {
+                "Client-ID": `${config.client_id}`,
+                "Authorization": `Bearer ${currToken}`
+            }
+        });
+        const json = response.json();
+        // checking to see if any webhooks are registered
+        if (json.total > 0) {
+            const hooks = json.data;
+            // iterating through to renew ones that need it
+            for (let i = 0; i < hooks.length; i++) {
+                const hook = hooks[i];
+                if (moment(hook.expires_at).diff(moment()) <= 86400000) {
+                    // parsing query strings from the callback url
+                    const parsedUrl = url.parse(hook.callback);
+                    const parsedQs = querystring.parse(parsedUrl.query);
+                    if (parsedQs.streamer) {
+                        addTwitchWebhook(parsedQs.streamer, true);
+                    }
                 }
             }
         }
+    } catch (error) {
+        xlg.error(error);
     }
 }, 60000)
 
