@@ -315,11 +315,16 @@ client.on("message", async message => {// This event will run on every single me
     
         if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
     
-        if (command.guildOnly && dm) {
+        if (command.guildOnly && dm) {// command is configured to only execute outside of dms
             return message.channel.send('I can\'t execute that command inside DMs!');
         }
-        if (command.ownerOnly && message.author.id !== config.ownerID) return xlg.log(`${message.author.tag} attempted ownerOnly!`);
-        if (command.permLevel && permLevel < command.permLevel) return; // insufficient bot permissions
+        if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only
+            xlg.log(`${message.author.tag} attempted ownerOnly`);
+            return;
+        }
+        if (command.permLevel && permLevel < command.permLevel) {// insufficient bot permissions
+            return;
+        }
     
         let commandEnabledGlobal = await getGlobalSetting(`${command.name}_enabled`);
         let commandEnabledGuild = await getGuildSetting(message.guild, `${command.name}_toggle`);
@@ -336,7 +341,7 @@ client.on("message", async message => {// This event will run on every single me
             return;
         }
     
-        if (command.args && !args.length) {
+        if (command.args && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
             const fec_gs = await getGlobalSetting("fail_embed_color");
             const fail_embed_color = parseInt(fec_gs[0].value);
     
