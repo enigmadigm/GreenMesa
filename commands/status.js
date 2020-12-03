@@ -3,7 +3,7 @@ const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
     name: "status",
-    description: "get bot status",
+    description: "returns ok",
     async execute(client, message) {
         message.channel.send({
             embed: {
