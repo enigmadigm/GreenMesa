@@ -11,7 +11,7 @@ module.exports = {
         let rowobj = await getTop10(message.guild.id, message.author.id);
         if (!rowobj.rows.length) return message.channel.send('No users');
         let xptype = (await getGlobalSetting('xp_type'))[0].value;
-        let joinedLb = rowobj.rows.map((row, i) => `${(row.userid == message.author.id) ? `[**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸](https://stratum.hauge.rocks "Your Rank")` : `**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸` } ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
+        let joinedLb = rowobj.rows.map((row, i) => `${(row.userid == message.author.id) ? `[\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\` ⫸](https://stratum.hauge.rocks "Your Rank")` : `**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸` } ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
         message.channel.send({
             embed: {
                 color: parseInt((await getGlobalSetting('info_embed_color'))[0].value) || 6969,
