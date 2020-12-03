@@ -1,5 +1,5 @@
 const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager");
+const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
 const { stringToRole } = require('../utils/parsers');
 const { permLevels } = require('../permissions');
 
@@ -12,6 +12,11 @@ module.exports = {
     category: "moderation",
     async execute(client, message, args) {
         try {
+            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+                return client.specials.sendModerationDisabled(message.channel);
+            }
+
             if (!stringToRole(message.guild, args.join(" "), false, false)) {
                 message.channel.send({
                     embed: {
