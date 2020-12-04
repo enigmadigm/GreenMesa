@@ -14,7 +14,7 @@ module.exports = {
     usage: "<#channel>",
     args: true,
     specialArgs: undefined,
-    permLevel: permLevels.botMaster,
+    permLevel: permLevels.admin,
     guildOnly: true,
     async execute(client, message, args) {
         try {
