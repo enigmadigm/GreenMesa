@@ -3,6 +3,31 @@ const fetch = require('node-fetch');
 const xlg = require('../xlogger')
 const { getGlobalSetting } = require("../dbmanager");
 const deftime = 15;
+const games = [];
+class TGame {
+    constructor(channelid, messageid, initround = 1) {
+        this.cid = channelid;
+        this.msg = messageid;
+        this.round = initround;
+        this.scores = [];
+    }
+
+    displayScores(message, ignoreround = false) {
+        const round = this.round - 1;
+        if (((round) % 5) === 0 || ignoreround) {
+            // Need to review this one for understanding \\\ Supposed to sort scores in descending order \\\ makes sense now
+            this.scores.sort((a, b) => b.score - a.score);
+            let newScoreList = this.scores.map((ela) => `${ela.score} ⁞ ${ela.user.displayName}`)
+            if (!newScoreList.length) newScoreList[0] = 'nobody scored';
+            message.channel.send({
+                embed: {
+                    color: 0xffa500,
+                    description: `\`\`\`\nRound ${round}\n${newScoreList.join("\n")}\n\`\`\``
+                }
+            }).catch(xlg.error)
+        }
+    }
+}
 
 /*async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
@@ -11,7 +36,7 @@ const deftime = 15;
     }, 2500);
 }*/
 
-function displayScores(message, round = 0, scores = [], ignoreround = false) {
+/*function displayScores(message, round = 0, scores = [], ignoreround = false) {
     round--;
     if (((round) % 5) === 0 || ignoreround) {
         // Need to review this one for understanding \\\ Supposed to sort scores in descending order \\\ makes sense now
@@ -25,7 +50,7 @@ function displayScores(message, round = 0, scores = [], ignoreround = false) {
             }
         }).catch(xlg.error)
     }
-}
+}*/
 
 module.exports = {
     name: 'trivia',
@@ -34,9 +59,9 @@ module.exports = {
         long: 'Starts a trivia game that can be played alone or with any number of people. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer!\nThis command has been well used, more features to come! Beware: sometimes questions pop up again, do not get angry, it is something about how the trivia pool is pulled from.'
     },
     aliases:['tr'],
-    cooldown: deftime,
+    cooldown: 3,
     category: "fun",
-    async execute(client, message, args, conn, scores = [], round = 1) {
+    async execute(client, message/*, args*/) {
         return fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986`)
             .then(res => res.json())
             .then(async j => {
@@ -46,13 +71,21 @@ module.exports = {
 
                 let triviaQuestion = decodeURIComponent(j.results[0].question);
                 let triviaCategory = decodeURIComponent(j.results[0].category);
-
                 let triviaChoices = j.results[0].incorrect_answers;
                 let triviaChoiceLetters = ['🇦', '🇧', '🇨', '🇩'];
                 let triviaChoiceASCII = ['a', 'b', 'c', 'd'];
                 // let triviaTFChoice = ['✅', '❌'];
 
                 const triviaCommand = client.commands.get('trivia')
+                let game = games.find(g => g.cid === message.channel.id);
+                if (!game) {
+                    game = new TGame(message.channel.id, message.id);
+                    games.push(game);
+                } else {
+                    if (game.msg !== message.id) {
+                        return client.specials.sendError(message.channel, "A game is already in progress");
+                    }
+                }
 
                 // *went with alternative
                 triviaChoices.splice(correctIndex, 0, `${j.results[0].correct_answer}`);
@@ -63,7 +96,7 @@ module.exports = {
                 const filter = response => {
                     return triviaChoiceASCII.includes(response.content.toLowerCase());
                 }
-                if (Math.floor(Math.random() * 100) >= 92 && round == 1) {
+                if (Math.floor(Math.random() * 100) >= 92 && game.round == 1) {
                     await message.channel.send('*This command is currently under development, any feedback is appreciated. Features like Questions by Category, Continuous Game, and Difficulty Options can be expected in the future.*').catch(console.error);
                 }
                 const triviaMessage = await message.channel.send({
@@ -71,7 +104,7 @@ module.exports = {
                         "title": triviaQuestion,
                         "description": triviaChoices.join('\n'),
                         "footer": {
-                            "text": 'Trivia | '+triviaCategory+' | Round '+round
+                            "text": 'Trivia | '+triviaCategory+' | Round ' + game.round
                         }
                     }
                 }).catch(console.error);
@@ -100,7 +133,7 @@ module.exports = {
                 });
                 
                 collector.on('end', async (collected, reason) => {
-                    round += 1;
+                    game.round += 1;
                     if (reason == 'time') {
                         triviaMessage.embeds[0].color = parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10);
                         triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
@@ -118,12 +151,15 @@ module.exports = {
                             })
                             .then(() => {
                                 gameEndCallout.edit(`**Looks like nobody got the answer this time.**`).catch(xlg.error);
-                                displayScores(message, round, scores);
-                                triviaCommand.execute(client, message, null, null, scores, round);
+                                //displayScores(message, game.round, game.scores);
+                                game.displayScores(message);
+                                triviaCommand.execute(client, message);
                             })
                             .catch(() => {
                                 gameEndCallout.edit('**Looks like nobody got the answer this time.** Scores deleted.').catch(xlg.error);
-                                displayScores(message, round, scores, true);
+                                //displayScores(message, round, scores, true);
+                                game.displayScores(message, true);
+                            games.splice(games.indexOf(game), 1);
                             });
                         return;
                     }
@@ -136,8 +172,8 @@ module.exports = {
                     await triviaMessage.edit(new Discord.MessageEmbed(triviaMessage.embeds[0])).catch(xlg.error);
                     allowedTime = -100;
 
-                    if (scores.length == 0) {
-                        scores = [
+                    if (game.scores.length == 0) {
+                        game.scores = [
                             {
                                 user: collected.last().member,
                                 score: 1
@@ -145,16 +181,16 @@ module.exports = {
                         ]
                     } else {
                         let existsIndex;
-                        for (let i = 0; i < scores.length; i++) {
-                            const elem = scores[i];
+                        for (let i = 0; i < game.scores.length; i++) {
+                            const elem = game.scores[i];
                             if (elem.user && elem.user.user.id == collected.last().author.id) {
                                 existsIndex = i;
                             }
                         }
                         if (!isNaN(existsIndex)) {
-                            scores[existsIndex].score += 1;
+                            game.scores[existsIndex].score += 1;
                         } else {
-                            scores.push({ user: collected.last().member, score: 1})
+                            game.scores.push({ user: collected.last().member, score: 1})
                         }
                     }
 
@@ -167,12 +203,15 @@ module.exports = {
                         })
                         .then(() => {
                             gameEndCallout.edit(`**${collectedLast} got the correct answer!**`).catch(xlg.error);
-                            displayScores(message, round, scores);
-                            triviaCommand.execute(client, message, null, null, scores, round);
+                            //displayScores(message, round, scores);
+                            game.displayScores(message);
+                            triviaCommand.execute(client, message);
                         })
                         .catch(() => {
                             gameEndCallout.edit(`**${collectedLast} got the correct answer!** Scores deleted.`).catch(xlg.error);
-                            displayScores(message, round, scores, true);
+                            //displayScores(message, round, scores, true);
+                            game.displayScores(message, true);
+                            games.splice(games.indexOf(game), 1);
                         });
                 });
         });

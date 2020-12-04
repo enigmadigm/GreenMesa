@@ -381,7 +381,7 @@ client.on("message", async message => {// This event will run on every single me
         setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
     
         try {
-            command.execute(client, message, args, conn);
+            command.execute(client, message, args);
             
             // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this
             /*if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
