@@ -24,7 +24,10 @@ module.exports = {
             const commandName = args[0].toLowerCase();
             const command = message.client.commands.get(commandName) || message.client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
             
-            if (!command) return message.channel.send(`No command with name or alias \`${commandName}\``).catch(xlg.error);
+            if (!command) {
+                await message.channel.send(`No command with name or alias \`${commandName}\``);
+                return;
+            }
 
             if (command.name === "enable" || command.name === "disable") {
                 await message.channel.send({
@@ -35,7 +38,7 @@ module.exports = {
                             text: `command toggle`
                         }
                     }
-                }).catch(console.error);
+                });
                 return;
             }
             
@@ -50,7 +53,7 @@ module.exports = {
                             text: `command toggle`
                         }
                     }
-                }).catch(console.error);
+                });
                 await message.channel.send({
                     embed: {
                         color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
@@ -59,7 +62,7 @@ module.exports = {
                             text: `command toggle`
                         }
                     }
-                }).catch(console.error);
+                });
                 return;
             }
             if (result[0].value && result[0].value == "enable") {
@@ -71,7 +74,7 @@ module.exports = {
                             text: `command toggle`
                         }
                     }
-                }).catch(console.error);
+                });
             }
         } catch (error) {
             xlg.error(error);
