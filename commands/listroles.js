@@ -3,8 +3,8 @@ const { permLevels } = require('../permissions');
 const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
-    name: 'roles',
-    aliases: ['listroles', 'lsroles'],
+    name: 'listroles',
+    aliases: ['lsroles'],
     description: 'list all of the roles in the server',
     guildOnly: true,
     category: 'utility',

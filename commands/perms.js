@@ -4,7 +4,7 @@ const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
     name: 'perms',
-    aliases: ['mp', 'userperms', 'memberperms'],
+    aliases: ['mp'],
     description: 'get a list of perms a member has in a channel',
     usage: '[target member]',
     category: 'utility',
