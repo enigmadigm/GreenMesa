@@ -1,6 +1,6 @@
 const xlg = require("../xlogger");
 const { permLevels } = require('../permissions');
-const { getGlobalSetting } = require("../dbmanager");
+const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
 const { stringToChannel } = require('../utils/parsers');
 
 module.exports = {
@@ -14,10 +14,15 @@ module.exports = {
     usage: "<#channel>",
     args: true,
     specialArgs: undefined,
-    permLevel: permLevels.botMaster,
+    permLevel: permLevels.admin,
     guildOnly: true,
     async execute(client, message, args) {
         try {
+            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+                return client.specials.sendModerationDisabled(message.channel);
+            }
+            
             let target = stringToChannel(message.guild, args.join(" "), true, true);
             if (!target) {
                 xlg.log(target)

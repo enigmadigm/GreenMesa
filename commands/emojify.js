@@ -45,26 +45,32 @@ module.exports = {
     usage: "<text>",
     args: true,
     async execute(client, message, args) {
-        let textArray = args.join(" ").split("");
-        let mappedText = [];
-        for (let i = 0; i < textArray.length; i++) {
-            const letter = textArray[i].toUpperCase();
-            if (emojiConversion[letter]) {
-                mappedText.push(`${emojiConversion[letter]}\u200b`);
-            } else {
-                mappedText.push(letter);
-            }
-        }
-        if (mappedText.length < 1) {
-            message.channel.send({
-                embed: {
-                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
-                    description: "no emojified content"
+        try {
+            let textArray = args.join(" ").split("");
+            let mappedText = [];
+            for (let i = 0; i < textArray.length; i++) {
+                const letter = textArray[i].toUpperCase();
+                if (emojiConversion[letter]) {
+                    mappedText.push(`${emojiConversion[letter]}\u200b`);
+                } else {
+                    mappedText.push(letter);
                 }
-            }).catch(xlg.error);
+            }
+            if (mappedText.length < 1) {
+                message.channel.send({
+                    embed: {
+                        color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
+                        description: "no emojified content"
+                    }
+                });
+                return false;
+            }
+            message.channel.send(mappedText.join(""));
+            return true;
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel);
             return false;
         }
-        message.channel.send(mappedText.join("")).catch(xlg.error);
-        return true;
     }
 }

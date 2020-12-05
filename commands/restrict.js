@@ -1,5 +1,6 @@
 const xlg = require("../xlogger");
 const { permLevels } = require('../permissions');
+const { getGuildSetting } = require("../dbmanager");
 
 module.exports = {
     name: "restrict",
@@ -12,8 +13,13 @@ module.exports = {
     permLevel: permLevels.admin,
     guildOnly: true,
     ownerOnly: true,
-    execute(client, message, args) {
+    async execute(client, message, args) {
         try {
+            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+                return client.specials.sendModerationDisabled(message.channel);
+            }
+            
             if (!args);
         } catch (error) {
             xlg.error(error);

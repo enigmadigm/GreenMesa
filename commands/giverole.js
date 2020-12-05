@@ -1,7 +1,7 @@
 const xlg = require("../xlogger");
 const { permLevels } = require('../permissions');
 const { stringToMember, stringToRole } = require("../utils/parsers");
-const { getGlobalSetting } = require("../dbmanager");
+const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
 
 module.exports = {
     name: "giverole",
@@ -12,11 +12,15 @@ module.exports = {
     },
     usage: "<member|@role> <role>",
     args: true,
-    permLevel: permLevels.trustedMember,
+    permLevel: permLevels.admin,
     guildOnly: true,
-    ownerOnly: false,
     async execute(client, message, args) {
         try {
+            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+                return client.specials.sendModerationDisabled(message.channel);
+            }
+
             let target = await stringToMember(message.guild, args[0], true, false, false) || stringToRole(message.guild, args[0], true, true, false);
             if (!target) {
                 if (args[0] === "all" || args[0] === "everyone" || args[0] === "@everyone") {

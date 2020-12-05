@@ -38,10 +38,21 @@ module.exports = {
                         icon_url: message.guild.iconURL()
                     },
                     title: "Server Management",
-                    description: `This command acts as the portal to configure the bot's moderation and management features to your needs.\n\n**Send one of the following commands for specific information about them.**\n\`levelroles\` set the roles rewarded for levels\n\`serverlog\` set the channel used to log server activity\n\`moderation\` (enable/disable all)\n:lock: \`case-logging\`\n:lock: \`adminrole\` set the role that gives admin powers\n:lock: \`modrole\` set the role that gives mod powers\n\n:lock: = in dev`,
+                    description: `This command acts as the portal to configure the bot's moderation and management features to your needs. *Some settings are not located here and have separate commands.*
+                    
+                    **Send one of the following commands for specific information about them:**
+                    - \`levelroles\` set the roles rewarded for levels
+                    - \`serverlog\` configure how the bot logs server activity for you
+                    - \`moderation\` enable or disable all moderation features
+                    \\🔒 \`caselogging\` log moderation events in an organized system
+                    \\🔒 \`adminrole\` set the role that gives admin powers
+                    \\🔒 \`modrole\` set the role that gives mod powers
+                    \\🔒 \`commandchannel\` set a channel to restrict all command usage to
+                    
+                    \\🔒 = in dev`,
                     color: info_embed_color || 0,
                     footer: {
-                        text: "Server Management"
+                        text: `${message.author.tag}`
                     }
                 }
             }).catch(xlg.error);
@@ -92,9 +103,7 @@ module.exports = {
                 }
                 break;
             }
-            case 'admins':
-            case 'adminrole':
-            case 'admininistrators': {
+            case 'adminrole': {
                 message.channel.send({
                     embed: {
                         description: 'This subcommand is currently in development.'
@@ -102,29 +111,10 @@ module.exports = {
                 }).catch(xlg.error);
                 break;
             }
-            case 'mods':
-            case 'modrole':
-            case 'moderators': {
-                message.channel.send({
-                    embed: {
-                        description: 'This subcommand is currently in development.'
-                    }
-                }).catch(xlg.error);
-                break;
-            }
-            case 'case-logging': {
-                message.channel.send({
-                    embed: {
-                        description: 'This subcommand is currently in development.'
-                    }
-                }).catch(xlg.error);
-                break;
-            }
-            case 'role-rewards':
-            case 'level-roles':
-            case 'xp-levelling':
-            case 'levels':
-            case 'xp-levels': {
+            case 'rolerewards':
+            case 'levelroles':
+            case 'levelling':
+            case 'levels': {
                 argIndex++;
                 let levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
                 if (!args[argIndex]) {
@@ -252,16 +242,14 @@ module.exports = {
                 break;
             }
             case 'megalog':
-            case 'serverlog':
-            case 'mega-log':
-            case 'server-log': {
+            case 'serverlog': {
                 argIndex++;
                 let slogValue = await getGuildSetting(message.guild, 'server_log');
                 let slogChannel = slogValue[0] && slogValue[0].value ? stringToChannel(message.guild, slogValue[0].value) : null;
                 if (!args[argIndex]) {
                     message.channel.send({
                         embed: {
-                            description: `The server-log is a useful moderation feature that is still being developed. When enabled, most events that occur throughout the server will be logged in the specified channel.\nSome supported events include: member joins/leaves, message deletion (+ purging), channels, roles, and more.\n**note:** \`purge\` command logs an option to view the deleted messages when server-log enabled`,
+                            description: `The server-log is a useful moderation feature that is always being added to. When enabled, many events that occur within the server will be logged in the specified channel.\nSome supported events include: member joins/leaves, message deletion (+ purging), channels, roles, and more.\n**note:** \`purge\` command logs an option to view the deleted messages when server-log enabled`,
                             fields: [{
                                     name: 'Setting',
                                     value: `The server log is currently ${(slogChannel) ? `**enabled** in ${slogChannel}` : '**disabled**'}.${(!slogChannel) ? ' Enable by appending the desired channel\'s ID to the command.' : ' Disable by appending `disable` to the command.'}`
@@ -309,13 +297,20 @@ module.exports = {
                 }
                 break;
             }
+            case 'modrole': {
+                await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                break;
+            }
+            case 'caselogging': {
+                await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                break;
+            }
+            case 'commandchannel': {
+                await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                break;
+            }
             default: {
-                message.channel.send({
-                    embed: {
-                        description: `You must send a valid option.\n\`${this.usage}\``,
-                        color: fail_embed_color
-                    }
-                }).catch(O_o => { O_o });
+                await client.specials.sendError(message.channel, `You must send a valid option.\n\`${this.usage}\``);
                 break;
             }
         }

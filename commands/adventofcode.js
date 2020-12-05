@@ -107,9 +107,9 @@ module.exports = {
             xlg.log(session)
 
             //const now = new Date();
+            const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
             if (!lbdat.lastFetched || moment().diff(lbdat.lastFetched) > 1000 * 60 * 15 || refetching) {
                 try {
-                    const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
                     let res = await fetch(url, {
                         headers: {
                             cookie: `session=${session}`
@@ -150,8 +150,12 @@ module.exports = {
                 }
             }
 
+            let hasTopScorer = false;
             lbdat.data.sort((a, b) => (a.local_score > b.local_score) ? -1 : 1)
-            let mapDat = lbdat.data.map((x, i) => ` ${i + 1}. | ${x.local_score}/${x.global_score}⭐ | ${x.name || x.id}`).slice(0, 9);
+            let mapDat = lbdat.data.map((x, i) => {
+                if (x.global_score) hasTopScorer = true;
+                return ` ${i + 1}. | ${x.local_score}${x.global_score ? "+" : ""}${x.global_score ? x.global_score : ""}⭐ | ${x.name || x.id}`
+            }).slice(0, 9);
             let longest = 0;
             for (let i = 0; i < mapDat.length; i++) {
                 const dat = mapDat[i];
@@ -162,11 +166,11 @@ module.exports = {
                 headerBar += "=";
             }
             mapDat.unshift(headerBar);
-            mapDat.unshift(" Ra | Score");
+            mapDat.unshift(` Ra | Score${hasTopScorer ? "[+Top 100]" : ""}`);
 
             let embed = {
                 color: iec,
-                description: `\`\`\`md\n${mapDat.join("\n")}\\n\`\`\``
+                description: `[Advent of Code Leaderboard](${url})\n\`\`\`md\n${mapDat.join("\n")}\\n\`\`\``
             };
             message.channel.send({ embed });
 
