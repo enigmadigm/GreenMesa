@@ -40,7 +40,7 @@ module.exports = {
                     title: "Server Management",
                     description: `This command acts as the portal to configure the bot's moderation and management features to your needs. *Some settings are not located here and have separate commands.*
                     
-                    **Send one of the following commands for specific information about them:**
+                    **Send one of the following sub-commands for specific information about them:**
                     - \`levelroles\` set the roles rewarded for levels
                     - \`serverlog\` configure how the bot logs server activity for you
                     - \`moderation\` enable or disable all moderation features
