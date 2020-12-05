@@ -38,10 +38,21 @@ module.exports = {
                         icon_url: message.guild.iconURL()
                     },
                     title: "Server Management",
-                    description: `This command acts as the portal to configure the bot's moderation and management features to your needs.\n\n**Send one of the following commands for specific information about them.**\n\`levelroles\` set the roles rewarded for levels\n\`serverlog\` configure how the bot logs server activity for you\n\`moderation\` (enable/disable all)\n:lock: \`case-logging\`\n\\🔒 \`adminrole\` set the role that gives admin powers\n\\🔒 \`modrole\` set the role that gives mod powers\n\n\\🔒 = in dev`,
+                    description: `This command acts as the portal to configure the bot's moderation and management features to your needs. *Some settings are not located here and have separate commands.*
+                    
+                    **Send one of the following commands for specific information about them:**
+                    - \`levelroles\` set the roles rewarded for levels
+                    - \`serverlog\` configure how the bot logs server activity for you
+                    - \`moderation\` enable or disable all moderation features
+                    \\🔒 \`caselogging\` log moderation events in an organized system
+                    \\🔒 \`adminrole\` set the role that gives admin powers
+                    \\🔒 \`modrole\` set the role that gives mod powers
+                    \\🔒 \`commandchannel\` set a channel to restrict all command usage to
+                    
+                    \\🔒 = in dev`,
                     color: info_embed_color || 0,
                     footer: {
-                        text: "Server Management"
+                        text: `${message.author.tag}`
                     }
                 }
             }).catch(xlg.error);
@@ -93,22 +104,6 @@ module.exports = {
                 break;
             }
             case 'adminrole': {
-                message.channel.send({
-                    embed: {
-                        description: 'This subcommand is currently in development.'
-                    }
-                }).catch(xlg.error);
-                break;
-            }
-            case 'modrole': {
-                message.channel.send({
-                    embed: {
-                        description: 'This subcommand is currently in development.'
-                    }
-                }).catch(xlg.error);
-                break;
-            }
-            case 'case-logging': {
                 message.channel.send({
                     embed: {
                         description: 'This subcommand is currently in development.'
@@ -302,13 +297,20 @@ module.exports = {
                 }
                 break;
             }
+            case 'modrole': {
+                await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                break;
+            }
+            case 'caselogging': {
+                await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                break;
+            }
+            case 'commandchannel': {
+                await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                break;
+            }
             default: {
-                message.channel.send({
-                    embed: {
-                        description: `You must send a valid option.\n\`${this.usage}\``,
-                        color: fail_embed_color
-                    }
-                }).catch(O_o => { O_o });
+                await client.specials.sendError(message.channel, `You must send a valid option.\n\`${this.usage}\``);
                 break;
             }
         }
