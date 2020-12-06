@@ -26,9 +26,11 @@ module.exports = {
 
         var sclength = 0;
         var seacolor;
-        if (isNaN(args[0]) == false && args[0] <= 16777215) {
-            seacolor = parseInt(args[0]);
-            sclength = 0;
+        if (parseInt(args[0], 10) && parseInt(args[0], 10) <= 16777215) {
+            seacolor = parseInt(args[0], 10);
+            args.shift();
+        } else if (parseInt(args[0], 16)) {
+            seacolor = parseInt(args[0], 16);
             args.shift();
         } else if (args[0].startsWith("0x") && args[0].length == 8 && /[a-zA-Z0-9]/.test(args[0])) {
             seacolor = args[0].parseInt();
