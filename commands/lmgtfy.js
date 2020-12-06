@@ -30,7 +30,7 @@ module.exports = {
         } else {
             plainText = false;
             message.channel.startTyping();
-            const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({ defaultViewport: { width: 1300, height: 1000 } });
             const page = await browser.newPage();
             await page.goto(`https://google.com/search?q=${args.join("+")}${(message.channel.nsfw) ? "" : "&safe=active"}`);
             sc = await page.screenshot();
