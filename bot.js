@@ -317,7 +317,7 @@ client.on("message", async message => {// This event will run on every single me
         if (command.guildOnly && dm) {// command is configured to only execute outside of dms
             return message.channel.send('I can\'t execute that command inside DMs!');
         }
-        if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only
+        if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only, THIS IS AN OUTDATED PROPERTY BUT IS STILL USED
             xlg.log(`${message.author.tag} attempted ownerOnly`);
             return;
         }
