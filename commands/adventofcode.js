@@ -179,7 +179,7 @@ module.exports = {
             }
             let mapDat = guildlbdat.data.map((x, i) => {
                 //if (x.global_score) hasTopScorer = true;
-                const len1 = starSpaces.length - ` ${x.stars || "0"} `.length - 1;
+                const len1 = starSpaces.length - ` ${x.stars || "0"} `.length;
                 const spaces1 = starSpaces.slice(0, len1 < 0 ? 0 : len1);
                 const len2 = scoreSpaces.length - ` ${x.local_score}${x.global_score ? "+" : ""}${x.global_score ? x.global_score : ""} `.length;
                 const spaces2 = scoreSpaces.slice(0, len2 < 0 ? 0 : len2);
