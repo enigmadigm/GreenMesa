@@ -104,7 +104,7 @@ module.exports = {
                 lb = lb[0].value;
                 year = year[0].value;
             }
-            xlg.log(session)
+            // xlg.log(session)// logging session to see how it is maintained after going through the setup and skipping that step
 
             //const now = new Date();
             const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
@@ -115,7 +115,6 @@ module.exports = {
                             cookie: `session=${session}`
                         }
                     });
-                    xlg.log(res.url)
                     if (res.url === `https://adventofcode.com/${year}/leaderboard/private`) {
                         client.specials.sendError(message.channel, "Could not access the leaderboard, the session variable may be expired.\nSend `aoc reset` to set the session again, or send `aoc reselect` to set the lb options again.");
                         //await editGuildSetting(message.guild, "aoc_session", "", true);
