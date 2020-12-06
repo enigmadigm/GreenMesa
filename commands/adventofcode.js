@@ -5,6 +5,7 @@ const moment = require("moment");
 const fetch = require("node-fetch");
 const lbdat = [
     {
+        guildID: "",
         data: [],
         lastFetched: null
     }
@@ -26,6 +27,7 @@ module.exports = {
     ownerOnly: false,
     async execute(client, message, args) {
         try {
+            console.log(lbdat)
             let session = await getGuildSetting(message.guild, "aoc_session");
             let lb = await getGuildSetting(message.guild, "aoc_leaderboard");
             let year = await getGuildSetting(message.guild, "aoc_year")
@@ -35,6 +37,11 @@ module.exports = {
                 resetting = args.join(" ");
             }
             let refetching = false;
+            let guildlbdat = lbdat.find(d => d.guildID === message.guild.id);
+            if (!guildlbdat) {
+                lbdat.push({ guildID: message.guild.id });
+                guildlbdat = lbdat.find(d => d.guildID === message.guild.id);
+            }
 
             if (!lb[0] || !session[0] || !year[0] || resetting) {
                 
@@ -108,7 +115,7 @@ module.exports = {
 
             //const now = new Date();
             const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
-            if (!lbdat.lastFetched || moment().diff(lbdat.lastFetched) > 1000 * 60 * 15 || refetching) {
+            if (!guildlbdat || !guildlbdat.lastFetched || moment().diff(guildlbdat.lastFetched) > 1000 * 60 * 15 || refetching) {
                 try {
                     let res = await fetch(url, {
                         headers: {
@@ -132,7 +139,7 @@ module.exports = {
                         return false;
                     }
                     res = await res.json();
-                    lbdat.data = Object.keys(res.members).map((mid) => {
+                    guildlbdat.data = Object.keys(res.members).map((mid) => {
                         const mdat = res.members[mid];
                         if (mdat && mdat.id) {
                             if (mdat.name) {
@@ -141,7 +148,8 @@ module.exports = {
                             return mdat;
                         }
                     });
-                    lbdat.lastFetched = new Date();
+                    guildlbdat.lastFetched = new Date();
+                    console.log("fetching")
                 } catch (error) {
                     xlg.error(error);
                     client.specials.sendError(message.channel, "Could not retrieve leaderboard information. Wrong details may have been entered.");
@@ -150,10 +158,10 @@ module.exports = {
             }
 
             //let hasTopScorer = false;
-            lbdat.data.sort((a, b) => (a.local_score > b.local_score) ? -1 : 1)
+            guildlbdat.data.sort((a, b) => (a.local_score > b.local_score) ? -1 : 1)
             let longestScore = 0
-            for (let i = 0; i < lbdat.data.length; i++) {
-                const x = lbdat.data[i];
+            for (let i = 0; i < guildlbdat.data.length; i++) {
+                const x = guildlbdat.data[i];
                 const scr = ` ${x.local_score}${x.global_score ? "+" : ""}${x.global_score ? x.global_score : ""} `;
                 if (scr.length > longestScore) longestScore = scr.length;
             }
@@ -162,8 +170,8 @@ module.exports = {
                 scoreSpaces += " ";
             }
             let longestStar = 0
-            for (let i = 0; i < lbdat.data.length; i++) {
-                const x = lbdat.data[i];
+            for (let i = 0; i < guildlbdat.data.length; i++) {
+                const x = guildlbdat.data[i];
                 const scr = ` ${x.stars || "0"} `;
                 if (scr.length > longestStar) longestStar = scr.length;
             }
@@ -171,7 +179,7 @@ module.exports = {
             for (let s = 0; s < longestStar; s++) {
                 starSpaces += " ";
             }
-            let mapDat = lbdat.data.map((x, i) => {
+            let mapDat = guildlbdat.data.map((x, i) => {
                 //if (x.global_score) hasTopScorer = true;
                 const len1 = starSpaces.length - ` ${x.stars || "0"} `.length - 1;
                 const spaces1 = starSpaces.slice(0, len1 < 0 ? 0 : len1);
