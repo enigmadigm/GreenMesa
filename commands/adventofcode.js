@@ -104,7 +104,7 @@ module.exports = {
                 lb = lb[0].value;
                 year = year[0].value;
             }
-            xlg.log(session)
+            // xlg.log(session)// logging session to see how it is maintained after going through the setup and skipping that step
 
             //const now = new Date();
             const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
@@ -115,7 +115,6 @@ module.exports = {
                             cookie: `session=${session}`
                         }
                     });
-                    xlg.log(res.url)
                     if (res.url === `https://adventofcode.com/${year}/leaderboard/private`) {
                         client.specials.sendError(message.channel, "Could not access the leaderboard, the session variable may be expired.\nSend `aoc reset` to set the session again, or send `aoc reselect` to set the lb options again.");
                         //await editGuildSetting(message.guild, "aoc_session", "", true);
@@ -150,12 +149,36 @@ module.exports = {
                 }
             }
 
-            let hasTopScorer = false;
+            //let hasTopScorer = false;
             lbdat.data.sort((a, b) => (a.local_score > b.local_score) ? -1 : 1)
+            let longestScore = 0
+            for (let i = 0; i < lbdat.data.length; i++) {
+                const x = lbdat.data[i];
+                const scr = ` ${x.local_score}${x.global_score ? "+" : ""}${x.global_score ? x.global_score : ""} `;
+                if (scr.length > longestScore) longestScore = scr.length;
+            }
+            let scoreSpaces = "";
+            for (let s = 0; s < longestScore; s++) {
+                scoreSpaces += " ";
+            }
+            let longestStar = 0
+            for (let i = 0; i < lbdat.data.length; i++) {
+                const x = lbdat.data[i];
+                const scr = ` ${x.stars || "0"} `;
+                if (scr.length > longestStar) longestStar = scr.length;
+            }
+            let starSpaces = "";
+            for (let s = 0; s < longestStar; s++) {
+                starSpaces += " ";
+            }
             let mapDat = lbdat.data.map((x, i) => {
-                if (x.global_score) hasTopScorer = true;
-                return ` ${i + 1}. | ${x.local_score}${x.global_score ? "+" : ""}${x.global_score ? x.global_score : ""}⭐ | ${x.name || x.id}`
-            }).slice(0, 9);
+                //if (x.global_score) hasTopScorer = true;
+                const len1 = starSpaces.length - ` ${x.stars || "0"} `.length - 1;
+                const spaces1 = starSpaces.slice(0, len1 < 0 ? 0 : len1);
+                const len2 = scoreSpaces.length - ` ${x.local_score}${x.global_score ? "+" : ""}${x.global_score ? x.global_score : ""} `.length;
+                const spaces2 = scoreSpaces.slice(0, len2 < 0 ? 0 : len2);
+                return `${i + 1 < 10 ? " " : ""}${i + 1}. │ ${x.stars || "0"}${spaces1} │ ${x.local_score || "0"}${x.global_score ? "+" : ""}${x.global_score ? x.global_score : ""}${spaces2} │ ${x.name || x.id}`
+            }).slice(0, 20);
             let longest = 0;
             for (let i = 0; i < mapDat.length; i++) {
                 const dat = mapDat[i];
@@ -166,7 +189,8 @@ module.exports = {
                 headerBar += "=";
             }
             mapDat.unshift(headerBar);
-            mapDat.unshift(` Ra | Score${hasTopScorer ? "[+Top 100]" : ""}`);
+            //mapDat.unshift(` Ra | ⭐ | Score${hasTopScorer ? "[+Top 100]" : ""}`);
+            mapDat.unshift(` Ra │ ⭐ │ Score`);
 
             let embed = {
                 color: iec,
