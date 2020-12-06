@@ -200,7 +200,7 @@ module.exports = {
 
             let embed = {
                 color: iec,
-                description: `[Advent of Code Leaderboard](${url})\n\`\`\`md\n${mapDat.join("\n")}\\n\`\`\``
+                description: `[Advent of Code Leaderboard](${url})\n\`\`\`md\n${mapDat.join("\n")}\n\`\`\``
             };
             message.channel.send({ embed });
 
