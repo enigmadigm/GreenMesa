@@ -27,7 +27,6 @@ module.exports = {
     ownerOnly: false,
     async execute(client, message, args) {
         try {
-            console.log(lbdat)
             let session = await getGuildSetting(message.guild, "aoc_session");
             let lb = await getGuildSetting(message.guild, "aoc_leaderboard");
             let year = await getGuildSetting(message.guild, "aoc_year")
@@ -149,7 +148,6 @@ module.exports = {
                         }
                     });
                     guildlbdat.lastFetched = new Date();
-                    console.log("fetching")
                 } catch (error) {
                     xlg.error(error);
                     client.specials.sendError(message.channel, "Could not retrieve leaderboard information. Wrong details may have been entered.");
