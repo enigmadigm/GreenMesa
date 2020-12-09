@@ -19,6 +19,9 @@ async function getPermLevel(member) {
     if (botmasters.includes(member.user.id)) {
         return permLevels.botMaster;
     }
+    if (!member.guild) {
+        return permLevels.member;
+    }
     if (member.hasPermission('ADMINISTRATOR')) { // if a user has admin rights he's automatically a admin
         return permLevels.admin;
     }
