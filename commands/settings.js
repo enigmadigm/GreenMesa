@@ -1,7 +1,7 @@
-const { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole, deleteAllLevelRoles } = require("../dbmanager");
 const xlg = require("../xlogger");
-//const moment = require("moment");
 const { permLevels } = require('../permissions');
+const { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole, deleteAllLevelRoles } = require("../dbmanager");
+//const moment = require("moment");
 const { stringToChannel, stringToRole } = require('../utils/parsers');
 
 module.exports = {
@@ -24,12 +24,9 @@ module.exports = {
      * @param {object}         conn
      */
     async execute(client, message, args) {
-        let fec_gs = await getGlobalSetting("fail_embed_color");
-        let fail_embed_color = parseInt(fec_gs[0].value);
-        let iec_gs = await getGlobalSetting("info_embed_color");
-        let info_embed_color = parseInt(iec_gs[0].value);
-        let sec_gs = await getGlobalSetting("success_embed_color");
-        let success_embed_color = parseInt(sec_gs[0].value);
+        let fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
+        let info_embed_color = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
+        let success_embed_color = parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10);
         if (!args.length) {
             return message.channel.send({
                 embed: {
@@ -40,7 +37,7 @@ module.exports = {
                     title: "Server Management",
                     description: `This command acts as the portal to configure the bot's moderation and management features to your needs. *Some settings are not located here and have separate commands.*
                     
-                    **Send one of the following sub-commands for specific information about them:**
+                    **Send one of the following sub-commands for further details:**
                     - \`levelroles\` set the roles rewarded for levels
                     - \`serverlog\` configure how the bot logs server activity for you
                     - \`moderation\` enable or disable all moderation features
