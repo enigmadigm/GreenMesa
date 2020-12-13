@@ -15,6 +15,10 @@ module.exports = {
     async execute(client, message, args) {
         try {
             let param = args.join(" ").split(",");
+            if (param[0] && param[0].length > 100) {// if the provided name is longer than the 100 character limit
+                await client.specials.sendError(message.channel, "Role name cannot exceed 100 characters");
+                return;
+            }
             let roleData = { name: param[0] };
             if (args[1] && parseInt(param[1], 16)) {
                 roleData.color = parseInt(param[1], 16);
@@ -29,12 +33,8 @@ module.exports = {
             });
         } catch (error) {
             xlg.error(error);
-            message.channel.send({
-                embed: {
-                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
-                    description: `Failure while creating role`
-                }
-            }).catch(xlg.error);
+            await client.specials.sendError(message.channel, "Failure while creating role");
+            return false;
         }
     }
 }
