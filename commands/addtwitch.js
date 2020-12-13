@@ -84,7 +84,7 @@ module.exports = {
             });
             const channelCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 20000, max: 1 });
             let targetChannel = channelCollected.size ? stringToChannel(message.guild, channelCollected.first().content) : undefined;
-            if (!channelCollected || !channelCollected.first() || !targetChannel.id) {
+            if (!channelCollected || !channelCollected.first() || !targetChannel || !targetChannel.id) {
                 client.specials.sendError(message.channel, "A valid channel was not given. This setup wizard has been cancelled.");
                 return false;
             }

@@ -46,15 +46,35 @@ module.exports = {
                     }
                 } else {
                     const unsubres = await unsubscribeTwitchWebhook(args.join(" "), message.guild.id);
-                    if (!unsubres) {
+                    if (unsubres === true) {
+                        confMsg.embeds[0].color = parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10)
+                        confMsg.embeds[0].title = null;
+                        confMsg.embeds[0].description = `Your notifier has been removed.`;
+                        await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    } else if (unsubres === "NO_DATA") {
+                        confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                        confMsg.embeds[0].title = "Error";
+                        confMsg.embeds[0].description = `Twitch is not responding, please try again later.`;
+                        await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    } else if (unsubres === "NO_USER") {
+                        confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                        confMsg.embeds[0].title = "Error";
+                        confMsg.embeds[0].description = `That streamer does not exist.`;
+                        await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    } else if (unsubres === "INVALID") {
+                        confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                        confMsg.embeds[0].title = "Error";
+                        confMsg.embeds[0].description = `Invalid input.`;
+                        await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    } else if (unsubres === "NO_SUBSCRIPTION") {
                         confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
                         confMsg.embeds[0].title = "Error";
                         confMsg.embeds[0].description = `Your notifier could not be removed, it may not exist.`;
                         await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                     } else {
-                        confMsg.embeds[0].color = parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10)
-                        confMsg.embeds[0].title = null;
-                        confMsg.embeds[0].description = `Your notifier has been removed.`;
+                        confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                        confMsg.embeds[0].title = "Error";
+                        confMsg.embeds[0].description = `Your notifier could not be removed.`;
                         await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                     }
 
