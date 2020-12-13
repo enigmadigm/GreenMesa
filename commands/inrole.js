@@ -43,7 +43,6 @@ module.exports = {
                     userList.pop();
                 }
             }
-            message.channel.send(userList.join("\n"), {code:true})
             message.channel.send({
                 embed: {
                     color: parseInt((await getGlobalSetting('info_embed_color'))[0].value),
