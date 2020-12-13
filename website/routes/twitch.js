@@ -185,10 +185,21 @@ async function unregisterTwitchWebhook(username) {
 async function unsubscribeTwitchWebhook(username, guildid) {
     await getOAuth();
     const uid = await idLookup(username);
-    if (!uid || !uid.data[0] || !uid.data[0].id) return false;
+    if (!uid) {
+        return "NO_DATA";
+    }
+    if (uid.status === 400 || !uid.data) {
+        return "INVALID";
+    }
+    if (!uid.data[0] || !uid.data[0].id) {
+        return "NO_USER";
+    }
+    /*if () {
+        return false;
+    }*/
     const remres = await removeTwitchSubscription(uid.data[0].id, guildid)
     if (remres < 1) {
-        return false;
+        return "NO_SUBSCRIPTION";
     }
     return true;
 }
