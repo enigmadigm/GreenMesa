@@ -7,7 +7,7 @@ const Discord = require("discord.js");
 
 module.exports = {
     name: "removetwitch",
-    aliases: ["remt"],
+    aliases: ["rmtwitch"],
     description: {
         short: "remove the existing twitch notifier",
         long: "Remove a Twitch Notifier. When you send this command, you will be prompted to destroy the current notifier that exists for your guild."

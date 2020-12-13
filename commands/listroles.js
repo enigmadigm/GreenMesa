@@ -10,18 +10,32 @@ module.exports = {
     category: 'utility',
     permLevel: permLevels.trustedMember,
     async execute(client, message) {
-        message.channel.send({
-            embed: {
-                color: parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10),
-                author: {
-                    name: `${message.guild.name} Roles`,
-                    icon_url: message.guild.iconURL()
-                },
-                description: `${message.guild.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).array().map(r => `${message.guild.roles.cache.get(r.id)}`).join("\n") || '*none*'}`,
-                footer: {
-                    text: `Roles: ${message.guild.roles.cache.array().length}`
+        try {
+            const roleArray = message.guild.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).filter((x) => x.name !== "@everyone").array().map(r => `${message.guild.roles.cache.get(r.id)}`);
+            if (roleArray.join("\n").length > 1024) {
+                while (roleArray.join("\n").length > 1010) {
+                    roleArray.pop();
                 }
+                roleArray.push("***...some not shown***")
             }
-        }).catch(xlg.error);
+
+            message.channel.send({
+                embed: {
+                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),//7322774
+                    author: {
+                        name: `${message.guild.name} Roles`,
+                        icon_url: message.guild.iconURL()
+                    },
+                    description: `${roleArray.join("\n") || '*none*'}`,
+                    footer: {
+                        text: `Roles: ${message.guild.roles.cache.array().length}`
+                    }
+                }
+            }).catch(xlg.error);
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel);
+            return false;
+        }
     }
 }

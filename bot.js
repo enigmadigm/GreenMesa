@@ -34,7 +34,7 @@ const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
 const ar = require("./utils/arhandler");
 const MesaWebsite = require("./website/app");
-client.specials = require("./utils/specials");
+client.specials = require("./utils/specials") || {};
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');

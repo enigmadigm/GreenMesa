@@ -73,7 +73,7 @@ module.exports = {
                 joinRank = getOrdinalSuffix(joinRank) + ' member joined';
             }
 
-            const permLev = await getPermLevel(message.member);
+            const permLev = await getPermLevel(target);
             //const permLevelNames = Object.keys(permLevels);
             //const permLevelName = permLevelNames[permLev];
             const permLevelName = Object.keys(permLevels)[permLev];
