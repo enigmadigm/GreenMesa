@@ -236,6 +236,9 @@ async function idLookup(username, isid = false) {
 	return json;
 }
 
+/*async function startHookExpirationManagement() {
+    return null;
+}*/
 setInterval(async () => {
     try {
         await getOAuth();
@@ -246,13 +249,14 @@ setInterval(async () => {
                 "Authorization": `Bearer ${currToken}`
             }
         });
-        const json = response.json();
+        const json = await response.json();
         // checking to see if any webhooks are registered
         if (json.total > 0) {
             const hooks = json.data;
             // iterating through to renew ones that need it
             for (let i = 0; i < hooks.length; i++) {
                 const hook = hooks[i];
+                //console.log(`time: ${moment(hook.expires_at).diff(moment()) <= 86400000} ${moment(hook.expires_at).diff(moment()) - 86400000}`)
                 if (moment(hook.expires_at).diff(moment()) <= 86400000) {
                     // parsing query strings from the callback url
                     const parsedUrl = url.parse(hook.callback);
@@ -271,6 +275,7 @@ setInterval(async () => {
 /*exports.addTwitchWebhook = addTwitchWebhook;
 exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.twitchIDLookup = idLookup;*/
+//startHookExpirationManagement();
 exports.twitchRouter = router;
 exports.addTwitchWebhook = addTwitchWebhook;
 exports.unregisterTwitchWebhook = unregisterTwitchWebhook;

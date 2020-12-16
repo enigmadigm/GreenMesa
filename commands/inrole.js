@@ -12,7 +12,7 @@ module.exports = {
     permLevel: permLevels.trustedMember,
     async execute(client, message, args) {
         try {
-            let target = stringToRole(message.guild, args.join(" "), true, true);
+            let target = stringToRole(await message.guild.fetch(), args.join(" "), true, true);
             if (!target) {
                 message.channel.send({
                     embed: {
