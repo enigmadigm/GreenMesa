@@ -114,7 +114,7 @@ module.exports = {
 
             //const now = new Date();
             const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
-            if (!guildlbdat || !guildlbdat.lastFetched || moment().diff(guildlbdat.lastFetched) > 1000 * 60 * 15 || refetching) {
+            if (!guildlbdat || !guildlbdat.lastFetched || moment().diff(guildlbdat.lastFetched) > 1000 * 60 * 5 || refetching) {
                 try {
                     let res = await fetch(url, {
                         headers: {
