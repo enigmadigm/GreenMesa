@@ -66,18 +66,23 @@ module.exports = {
             if (toMute.voice.connection && !toMute.voice.mute) await toMute.voice.setMute(true).catch(console.error);
             
             let mendm = ""
-            let time = stringToDuration(args[1]);
-            if (time || time === 0) {
-                mendm = ` ${durationToString(time)}`
+            let time = 0;
+            let dur = "";
+            if (args[1]) {
+                time = stringToDuration(args[1])
+            }
+            if (time) {
+                dur = durationToString(time);
+                mendm = ` Muted for ${dur}.`
             }
             
-            message.channel.send(`<a:spinning_light00:680291499904073739>✅ Muted ${toMute.user.tag}!${mendm.lengths > 0 ? mendm : ''}`);
+            message.channel.send(`<a:spinning_light00:680291499904073739>✅ Muted ${toMute.user.tag}!${mendm}`);
             
-            if (time || time === 0) {
+            if (time) {
                 setTimeout(async () => {
                     if (!toMute.roles.cache.has(mutedRole.id)) return;
                     // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
-                    await toMute.roles.remove(mutedRole, 'unmuting automatically');
+                    await toMute.roles.remove(mutedRole, `unmuting automatically after ${dur}`);
                     if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
                 }, time)
             }
