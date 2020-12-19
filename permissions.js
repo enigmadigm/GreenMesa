@@ -25,7 +25,8 @@ async function getPermLevel(member) {
     if (member.hasPermission('ADMINISTRATOR')) { // if a user has admin rights he's automatically a admin
         return permLevels.admin;
     }
-    if ((await getXP(member))[0].level > 0) {
+    const memberXP = await getXP(member)
+    if (memberXP && memberXP.length && memberXP[0].level > 0) {
         return permLevels.trustedMember;
     }
     return permLevels.member;
