@@ -12,8 +12,9 @@ module.exports = {
     category: "utility",
     async execute(client, message) {
         let createdAt = moment(message.guild.createdAt).utc();
-        var memberCount = message.guild.memberCount;
-        var botCount = message.guild.members.cache.filter(member => member.user.bot).size;
+        const mems = await message.guild.members.fetch();
+        var memberCount = mems.size;
+        var botCount = mems.filter(member => member.user.bot).size;
         var channels = [
             `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}`,
             `Text: ${message.guild.channels.cache.filter(x => x.type == 'text').size}`,
@@ -48,7 +49,7 @@ module.exports = {
                     },
                     {
                         "name": "Online <:736903507436896313:752118506950230067>",
-                        "value": `${message.guild.members.cache.filter(member => member.presence.status == 'online' && !member.user.bot).size} human`,
+                        "value": `${mems.filter(member => (member.presence.status == 'online' || member.presence.status == 'idle') && !member.user.bot).size} human`,
                         "inline": true
                     },
                     {
