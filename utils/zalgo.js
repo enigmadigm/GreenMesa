@@ -1,3 +1,7 @@
+/* Credit for the initial code:
+ * http://jsfiddle.net/JKirchartz/wwckP/
+ */
+
 const Z = {
     chars: {
         0: [ /* up */
