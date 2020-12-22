@@ -22,7 +22,7 @@ module.exports = {
             return message.channel.send({
                 embed: {
                     color: warn_embed_color,
-                    description: `Levelling is disabled. Enable with \`mod levels enable\`.`
+                    description: `Levelling is disabled. Enable by sending \`settings levels enable\`.`
                 }
             });
         }
