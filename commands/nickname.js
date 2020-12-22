@@ -37,7 +37,7 @@ module.exports = {
 
             try {
                 await target.setNickname(args.join(" "), 'adjustment thru nick command');
-                await message.channel.send(`✅ Nickname of: \`${target.user.tag}\` changed to \`${args.join(" ")}\``)
+                await message.channel.send(`✅ Nickname of \`${target.user.tag}\` changed to \`${args.join(" ")}\``)
             } catch (e) {
                 xlg.log(e.message);
                 message.channel.send(`◍ Command Error:\n\`${e.message}\``)
