@@ -12,10 +12,11 @@ async function sendModerationDisabled(channel) {
     }).catch(xlg.error);
 }
 
-async function sendError(channel, message) {
+async function sendError(channel, message, errorTitle = false) {
     channel.send({
         embed: {
             color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value) || 16711680,
+            title: (errorTitle) ? "Error" : undefined,
             description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
         }
     }).catch(xlg.error)
