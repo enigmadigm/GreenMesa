@@ -4,7 +4,7 @@ const ytdl = require('ytdl-core');
 
 module.exports = {
     name: 'stream',
-    aliases: ['p', 'play'],
+    aliases: ['play'],
     description: {
         short: '***PREVIEW COMMAND*** play audio from YouTube',
         long: '***PREVIEW COMMAND*** Play audio in a voice channel using this bot. This command currently takes only YouTube URLs. This is a preview command, there is more to come.'
