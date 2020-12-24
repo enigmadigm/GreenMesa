@@ -66,8 +66,16 @@ async function timedMessagesHandler(client) {
 }
 
 function memoryUsage() {
+    const memTypes = {
+        "rss": "Rss ---------------",
+        "heapTotal": "HeapTotal ---------",
+        "heapUsed": "HeapUsed ----------",
+        "external": "External ----------",
+        "arrayBuffers": "ArrayBuffers ------"
+    };
     return Object.entries(process.memoryUsage()).map(usage => {
-        return `${usage[0]} : ${(Math.round(usage[1] / 1024 / 1024 * 100) / 100).toFixed().split('.')[0]} MB`
+        const r = (Math.round(usage[1] / 1024 / 1024 * 100) / 100).toFixed().split('.')[0];
+        return `${memTypes[usage[0]]} ${r}MB`
     }).join("\n");
 }
 

@@ -50,8 +50,8 @@ module.exports = {
                             "inline": true
                         },
                         {
-                            "name": "Memory",
-                            "value": client.specials.memoryUsage()
+                            "name": "Resources",
+                            "value": `\`\`\`md\n${client.specials.memoryUsage()}\n\`\`\``
                         }
                     ],
                     footer: {
