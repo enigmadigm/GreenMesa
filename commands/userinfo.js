@@ -89,6 +89,7 @@ module.exports = {
                     thumbnail: {
                         url: target.user.displayAvatarURL()
                     },
+                    description: `${target}`,
                     fields: [
                         {
                             "name": "Status",
