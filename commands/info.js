@@ -51,7 +51,7 @@ module.exports = {
                         },
                         {
                             "name": "Resources",
-                            "value": `\`\`\`md\n${client.specials.memoryUsage()}\n\`\`\``
+                            "value": `\`\`\`prolog\n${client.specials.memoryUsage()}\n\`\`\``
                         }
                     ],
                     footer: {
