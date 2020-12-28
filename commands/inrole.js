@@ -46,7 +46,7 @@ module.exports = {
                     list.pop();
                 }
             }
-            list[0] = `***[${userList.length}/${target.members.size}]** =>*`;
+            list[0] = `***[${list.length - 1}/${target.members.size}]** =>*`;
             message.channel.send({
                 embed: {
                     color: parseInt((await getGlobalSetting('info_embed_color'))[0].value),
