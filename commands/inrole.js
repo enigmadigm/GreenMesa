@@ -32,6 +32,7 @@ module.exports = {
                 });
                 return;
             }
+            message.channel.startTyping();
             let list = [];
             const userList = target.members.array().map(x => {//˾
                 const tag = `${x.user.tag || "not identifiable"}`.split("").map((x) => {
@@ -47,6 +48,7 @@ module.exports = {
                 }
             }
             list[0] = `***[${list.length - 1}/${target.members.size}]** =>*`;
+
             message.channel.send({
                 embed: {
                     color: parseInt((await getGlobalSetting('info_embed_color'))[0].value),
@@ -54,8 +56,11 @@ module.exports = {
                     description: `${list.join("\n")}`
                 }
             });
+
+            message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
+            message.channel.stopTyping(true);
             await client.specials.sendError(message.channel);
             return false;
         }
