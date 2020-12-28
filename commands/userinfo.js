@@ -46,18 +46,20 @@ module.exports = {
     category: "utility",
     async execute(client, message, args) {
         try {
+            message.channel.startTyping();
+            await message.guild.fetch();
             let target = await stringToMember(message.guild, args.join(" ")) || message.member;
             let rank = await getTop10(message.guild.id, target.id);
             let xp = await getXP(target);
 
-            var roles = '';
-            var roleArray = target.roles.cache.array();
-            var roleCount = target.roles.cache.array().length - 1;
+            let roles = '';
+            const roleArray = target.roles.cache.array().sort((a, b) => a.position > b.position ? -1 : 1);
+            const roleCount = target.roles.cache.size - 1;
             roleArray.pop();
             for (const role of roleArray.slice(0, 40)) {
                 roles += role.toString() + ' ';
             }
-            if (roleArray.length > 40) roles += `and ${roleCount - 40} more`;
+            if (roleArray.length > 40) roles += `and ${roleCount - 40} more`;// BEWARE!! I don't think this really works; admittedly, I got this code elsewhere, but I now realize it probably doesn't really respect the character limit
             if (roles.length == 0) {
                 roles = 'no roles';
             }
@@ -136,8 +138,11 @@ module.exports = {
                     }
                 }
             });
+
+            message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
+            message.channel.stopTyping(true);
             await client.specials.sendError(message.channel);
             return false;
         }
