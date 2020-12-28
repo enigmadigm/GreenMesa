@@ -2,7 +2,7 @@
  * Generates the magic 8ball response
  */
 function doMagic8BallVoodoo() {
-    var rand = ['Yes', 'No', 'idk, maybe', 'occasionally', 'in your dreams', "before you're dead"];
+    var rand = ['Yes', 'No', 'idk, maybe', 'occasionally', 'in your dreams', "when you're dead that will be true"];
     return rand[Math.floor(Math.random() * rand.length)];
 }
 
