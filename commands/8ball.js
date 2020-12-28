@@ -1,5 +1,3 @@
-const { args } = require("./inrole");
-
 /**
  * Generates the magic 8ball response
  */
@@ -13,7 +11,7 @@ module.exports = {
     description: 'play some *magic* 8ball (not pool)',
     category: 'fun',
     args: true,
-    execute(client, message) {
+    execute(client, message, args) {
         if (args.join(" ").toLowerCase() === "what is the meaning of the universe" || args.join(" ").toLowerCase() === "what is the meaning of the universe?") {
             message.channel.send("42").catch(console.error);
         }
