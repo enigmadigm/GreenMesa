@@ -63,7 +63,7 @@ module.exports = {
                             text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
                         }
                     }
-                }).catch(console.error);
+                });
             }
 
             
