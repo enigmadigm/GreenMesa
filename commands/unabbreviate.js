@@ -5,7 +5,7 @@ const {genPhrase} = require("../utils/wordfromacronym.js");
 
 module.exports = {
     name: "unabbreviate",
-    aliases: ["ub"],
+    aliases: ["unabb"],
     description: {
         short: "tells you the expanded version of any acronym",
         long: "Give any set of letters (an acronym), and this bot will tell you what they mean."
