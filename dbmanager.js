@@ -143,6 +143,7 @@ async function updateLevelRole(member, level) {
     let levelsEnabled = await getGuildSetting(member.guild, 'xp_levels');
     levelsEnabled = levelsEnabled[0] ? levelsEnabled[0].value : false;
     if (levelsEnabled === "enabled") {
+        member.guild.roles = await member.guild.roles.fetch();
         let levelRows = await checkForLevelRoles(member.guild);
         let availableRoles = [];
         for (let i = 0; i < levelRows.length; i++) {
