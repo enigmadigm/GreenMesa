@@ -62,6 +62,9 @@ async function timedMessagesHandler(client) {
         if (moment().utcOffset(-5).format('M/D HH:mm') == "9/26 21:30") {
             (await client.channels.fetch((await getGlobalSetting('primchan'))[0].value)).send('happy birthday');
         }
+        if (moment().utcOffset(-6).format('M/D HH:mm') == "1/1 00:00") {
+            (await client.channels.fetch((await getGlobalSetting('primchan'))[0].value)).send("Welcome to the New Year (CST) @everyone");
+        }
     }, 60000);
 }
 
