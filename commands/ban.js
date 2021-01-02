@@ -28,7 +28,7 @@ module.exports = {
 
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target || !(target instanceof Discord.GuildMember)) {
-                await client.specials.sendError(message.channel);
+                await client.specials.sendError(message.channel, "Not a member");
                 return;
             }
             if (!target.bannable) {
