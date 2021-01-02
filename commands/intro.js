@@ -1,7 +1,10 @@
+const xlg = require("../xlogger");
+
 module.exports = {
     name: 'intro',
     description: 'provides a *crappy* introduction to the bot',
-    execute(client, message) {
+    async execute(client, message) {
+        try {
         message.channel.send({
             embed: {
                 color: 3447003,
@@ -32,6 +35,10 @@ module.exports = {
                 }
             }
         });
-
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel);
+            return false;
+        }
     }
 }

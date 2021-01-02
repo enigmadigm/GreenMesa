@@ -1,3 +1,5 @@
+const xlg = require("../xlogger");
+
 /**
  * Generates the magic 8ball response
  */
@@ -11,10 +13,17 @@ module.exports = {
     description: 'play some *magic* 8ball (not pool)',
     category: 'fun',
     args: true,
-    execute(client, message, args) {
-        if (args.join(" ").toLowerCase() === "what is the meaning of the universe" || args.join(" ").toLowerCase() === "what is the meaning of the universe?") {
-            message.channel.send("42").catch(console.error);
+    async execute(client, message, args) {
+        try {
+            if (args.join(" ").toLowerCase() === "what is the meaning of the universe" || args.join(" ").toLowerCase() === "what is the meaning of the universe?") {
+                await message.channel.send("42");
+                return;
+            }
+            await message.channel.send(doMagic8BallVoodoo());
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel, "Failure removing role");
+            return false;
         }
-        message.channel.send(doMagic8BallVoodoo()).catch(console.error);
     }
 }

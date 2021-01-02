@@ -32,8 +32,9 @@ module.exports = {
                 });
             message.channel.stopTyping();
         } catch (error) {
-            message.channel.send(`An error occurred while thinking of a w.y.r:\n\`${error.message}\``)
             xlg.error(error);
+            await client.specials.sendError(message.channel, `An error occurred while thinking of a WYR:\n\`${error.message}\``);
+            return false;
         }
 
     }
