@@ -1,6 +1,10 @@
 const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting } = require("../dbmanager");
+const {
+    permLevels
+} = require('../permissions');
+const {
+    getGlobalSetting
+} = require("../dbmanager");
 
 module.exports = {
     name: 'listroles',
@@ -21,7 +25,7 @@ module.exports = {
 
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),//7322774
+                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10), //7322774
                     author: {
                         name: `${message.guild.name} Roles`,
                         icon_url: message.guild.iconURL()

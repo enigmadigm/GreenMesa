@@ -1,6 +1,10 @@
 const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting } = require("../dbmanager");
+const {
+    permLevels
+} = require('../permissions');
+const {
+    getGlobalSetting
+} = require("../dbmanager");
 const fetch = require("node-fetch");
 
 module.exports = {
@@ -42,8 +46,7 @@ module.exports = {
                 embed: {
                     color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
                     title: "🔗 Link Shortener",
-                    fields: [
-                        {
+                    fields: [{
                             name: "Input",
                             value: `${url}`
                         },
