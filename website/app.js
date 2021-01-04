@@ -2,14 +2,17 @@ require('./strategies/discord');
 
 //const xlg = require("../xlogger");
 const express = require("express");
+const fs = require("fs");
 const passport = require('passport');
+const path = require("path");
 const PORT = process.env.WEBSITE_PORT || 3002;
 const routes = require('./routes');
-const fs = require("fs");
-const path = require("path");
-const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
+//const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
 const { getTwitchSubsForID } = require("../dbmanager");
-//const { configTwitchClient } =require("./routes/twitch")
+const session = require("express-session");
+const MySQLStore = require('express-mysql-session')(session);
+const { conn } = require("../dbmanager");
+const STATIC = "./website/static";
 
 class MesaWebsite {
     constructor(client) {
@@ -17,15 +20,23 @@ class MesaWebsite {
         this.client = client;
         this.app = express();
         
+        this.app.use(session({
+            secret: process.env.DASHBOARD_COOKIE_SECRET || "potato",
+            cookie: {
+                maxAge: 60000 * 60 * 24
+            },
+            resave: false,
+            saveUninitialized: false,
+            store: new MySQLStore({}, conn)
+        }));
+        this.app.use(express.static(STATIC));
+        this.app.use(passport.initialize());
+        this.app.use(passport.session());
+        this.app.use('/api', routes);
+        this.app.set('etag', false);
         this.app.get("/", (req, res) => {
             res.sendFile(path.join(STATIC, "index.html"));
         });
-        this.app.use(passport.initialize());
-        this.app.use(passport.session());
-        this.app.set('etag', false);
-        this.app.use(express.static(STATIC))
-        this.app.use('/api', routes);
-        this.app.listen(PORT, () => console.log(`Running on port ${PORT}`));
         this.app.post("/api/twitch", async (req, res) => {
             console.log('Incoming Post request on /api/twitch');
             // the middleware above ran
@@ -87,6 +98,7 @@ class MesaWebsite {
                 res.send('Ok');
             }
         });
+        this.app.listen(PORT, () => console.log(`Running on port ${PORT}`));
     }
 
 }

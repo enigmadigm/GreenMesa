@@ -71,6 +71,19 @@ handleDisconnect();
 
 const query = util.promisify(conn.query).bind(conn);
 
+query("CREATE TABLE IF NOT EXISTS `botstats` (`updateId` int(11) NOT NULL AUTO_INCREMENT, `logDate` timestamp NOT NULL DEFAULT current_timestamp(), `numUsers` int(11) NOT NULL DEFAULT 0, `numGuilds` int(11) NOT NULL DEFAULT 1, `numChannels` int(11) NOT NULL DEFAULT 0, PRIMARY KEY (`updateId`)) ENGINE=MyISAM AUTO_INCREMENT=76 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `clientstats` (`stat` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),`value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,`description` text COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`stat`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `cmdtracking` (`cmdname` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`used` int(11) NOT NULL DEFAULT 0,`iscmd` tinyint(1) NOT NULL DEFAULT 1,PRIMARY KEY (`cmdname`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `dgmxp` (`id` varchar(40) COLLATE utf8_unicode_ci NOT NULL,`userid` varchar(30) COLLATE utf8_unicode_ci NOT NULL,`guildid` varchar(30) COLLATE utf8_unicode_ci NOT NULL,`timeAdded` timestamp NOT NULL DEFAULT current_timestamp(),`timeUpdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),`xp` int(11) NOT NULL,`level` int(11) NOT NULL DEFAULT 0,`spideySaved` timestamp NULL DEFAULT NULL,UNIQUE KEY `id` (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `globalsettings` (`name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`value` varchar(5000) COLLATE utf8mb4_unicode_ci NOT NULL,`previousvalue` varchar(5000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,`description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`lastupdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),`updatedby` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '745780460034195536',`category` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',PRIMARY KEY (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `guildsettings` (`id` int(11) NOT NULL AUTO_INCREMENT,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`value` varchar(5000) COLLATE utf8mb4_unicode_ci NOT NULL,`previousvalue` varchar(5000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `levelroles` (`id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`roleid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`level` int(11) NOT NULL DEFAULT 1,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+/*async function dbInit() {
+}*/
+
 /**
  * query and retrieve values from the globalsettings table
  * @param {string} name name of setting to retrieve
@@ -228,8 +241,8 @@ async function editGlobalSettings(selectortype = "", selectorvalue = "", updateu
     return new Promise((resolve, reject) => {
         if (!selectortype || !selectorvalue || !value || !updateuser || !updateuser.id || typeof selectorvalue !== "string" || typeof value !== "string") return reject("MISSING_VALUES");
         if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");
-        selectorvalue = selectorvalue.replace("'", "\\'");
-        value = value.replace("'", "\\'");
+        selectorvalue = selectorvalue.replace(/'/g, "\\'");
+        value = value.replace(/'/g, "\\'");
         conn.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}',\`updatedby\`='${updateuser.id}' WHERE \`${selectortype}\`='${selectorvalue}'`, (err, result) => {
             if (err) throw err;
             if (result.affectedRows > 0) {
@@ -256,7 +269,7 @@ async function getPrefix(guildid = "") {
 }
 
 async function setPrefix(guildid = "", newprefix = "") {
-    newprefix = newprefix.replace("'", "\\'");
+    newprefix = newprefix.replace(/'/g, "\\'");
     let rows = await query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
     if (rows.length > 0) {
         rows = await query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlog.error);
@@ -302,8 +315,8 @@ async function getGuildSetting(guild, name) {
 async function editGuildSetting(guild, name = "", value = "", deleting = false) {
     return new Promise((resolve, reject) => {
         if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
-        name = name.replace("'", "\\'");
-        value = value.replace("'", "\\'");
+        name = name.replace(/'/g, "\\'");
+        value = value.replace(/'/g, "\\'");
         if (deleting) {
             return conn.query(`DELETE FROM \`guildsettings\` WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result) => {
                 if (err) throw err;
@@ -496,7 +509,7 @@ async function addTwitchSubscription(streamerid, guildid, channelid, expiredate,
         if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
         let result = await query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
         const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
-        message = message.replace("'", "\\'");
+        message = message.replace(/'/g, "\\'");
         if (!result || !result[0]) {
             if (!message || !message.length || typeof message !== "string") {
                 await query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${expiresTimestamp}', '${name}')`);
@@ -561,7 +574,46 @@ async function getTwitchSubsGuild(guildid) {
     }
 }
 
+async function updateDashUser(id, username, discriminator, avatar, guilds) {
+    try {
+        if (!id || !username || !discriminator || !avatar || !guilds) return false;
+        if (!(typeof guilds === "object")) {
+            return false;
+        }
+        username = username.replace(/'/g, "\\'");
+        avatar = avatar.replace(/'/g, "\\'");
+        const guildString = JSON.stringify(guilds).replace(/'/g, "\\'");
+        let result = await query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES ('${id}', '${username}#${discriminator}' , '${avatar}', '${guildString}') ON DUPLICATE KEY UPDATE tag = '${username}#${discriminator}', avatar = '${avatar}', guilds = '${guildString}'`);
+        if (!result || !result.affectedRows) {
+            return false;
+        }
+        return result;
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
+async function getDashUser(id) {
+    try {
+        if (!id) return false;
+        let result = await query(`SELECT * FROM dashusers WHERE userid = '${id}'`);
+        if (!result || !result[0] || !result[0].userid) {
+            return false;
+        }
+        const fr = result[0];
+        return {
+            id: fr.userid,
+            tag: fr.tag,
+            avatar: fr.avatar,
+            guilds: JSON.parse(fr.guilds) || {}
+        }
+    } catch (error) {
+        xlog.error(error);
+    }
+}
+
 exports.conn = conn;
+//exports.dbInit = dbInit;
 exports.getXP = getXP;
 exports.updateXP =  updateXP;
 exports.updateBotStats = updateBotStats;
@@ -589,3 +641,5 @@ exports.addTwitchSubscription = addTwitchSubscription;
 exports.removeTwitchSubscription = removeTwitchSubscription;
 exports.getTwitchSubsForID = getTwitchSubsForID;
 exports.getTwitchSubsGuild = getTwitchSubsGuild;
+exports.updateDashUser = updateDashUser;
+exports.getDashUser = getDashUser;
