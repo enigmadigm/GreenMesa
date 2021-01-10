@@ -34,16 +34,9 @@ module.exports = {
                     description: `Role removed successfully`
                 }
             });
-            
         } catch (error) {
             xlg.error(error);
-
-            message.channel.send({
-                embed: {
-                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
-                    description: `Failure removing role`
-                }
-            });
+            await client.specials.sendError(message.channel, "Failure removing role");
             return false;
         }
     }

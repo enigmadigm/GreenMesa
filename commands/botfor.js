@@ -8,14 +8,22 @@ module.exports = {
     args: true,
     category: 'fun',
     async execute(client, message, args) {
-        message.channel.send({
-            embed: {
-                color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
-                title: "Error 501",
-                description: "This command will deliver you the right bot for what you want, using AI!"
+        try {
+            message.channel.send({
+                embed: {
+                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
+                    title: "Error 501",
+                    description: "This command will deliver you the right bot for what you want, using AI!"
+                }
+            });
+            if (args.length) {
+                let term = args.join(" ");
+                message.channel.send(term);
             }
-        }).catch(xlg.error);
-        let term = args.join(" ");
-        message.channel.send(term);
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel, "Failure removing role");
+            return false;
+        }
     }
 }

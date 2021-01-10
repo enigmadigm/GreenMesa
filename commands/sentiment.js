@@ -1,6 +1,7 @@
 const config = require('../auth.json');
 const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
 const { IamAuthenticator } = require('ibm-watson/auth');
+const xlg = require('../xlogger');
 
 const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
     version: '2019-07-12',
@@ -25,6 +26,7 @@ module.exports = {
     category: 'utility',
     ownerOnly: false,
     async execute(client, message, args) {
+        try {
         var msgContent;
         if (args.length == 1 && !isNaN(args.toString()) && args.toString().length == 18) {
             await message.channel.messages.fetch(args[0])
@@ -88,5 +90,10 @@ module.exports = {
                 wMsg.edit('**FAILED** *please note* that you cannot send an id of an embed, they are not compatible.');
                 console.log('Sentiment File Error:', err);
             });
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel);
+            return false;
+        }
     }
 }

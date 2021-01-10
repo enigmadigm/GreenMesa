@@ -1,7 +1,16 @@
-const { getGuildSetting } = require("../dbmanager");
-const { permLevels } = require('../permissions');
-const { stringToMember, durationToString } = require('../utils/parsers');
-const { stringToDuration } = require('../utils/time');
+const {
+    getGuildSetting
+} = require("../dbmanager");
+const {
+    permLevels
+} = require('../permissions');
+const {
+    stringToMember,
+    durationToString
+} = require('../utils/parsers');
+const {
+    stringToDuration
+} = require('../utils/time');
 
 module.exports = {
     name: 'mute',
@@ -19,7 +28,7 @@ module.exports = {
         if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
             return client.specials.sendModerationDisabled(message.channel);
         }
-        
+
         const toMute = await stringToMember(message.guild, args[0], false, false, false);
         // Check perms, self, rank, etc
         if (!await message.guild.me.hasPermission("MANAGE_ROLES")) { // check if the bot has the permissions to mute  members
@@ -37,34 +46,34 @@ module.exports = {
         // If the mentioned user does not have the muted role execute the following
         try {
             if (!mutedRole) {
-                    // Create a role called "Muted"
-                    mutedRole = await message.guild.roles.create({
-                        data: {
-                            name: 'Muted',
-                            color: '#708090',
-                            permissions: 0,
-                            position: 1
-                        }
-                    });
+                // Create a role called "Muted"
+                mutedRole = await message.guild.roles.create({
+                    data: {
+                        name: 'Muted',
+                        color: '#708090',
+                        permissions: 0,
+                        position: 1
+                    }
+                });
 
-                    // Prevent the user from sending messages or reacting to messages
-                    message.guild.channels.cache.each(async (channel) => {
-                        await channel.updateOverwrite(mutedRole, {
-                            SEND_MESSAGES: false,
-                            ADD_REACTIONS: false
-                        });
+                // Prevent the user from sending messages or reacting to messages
+                message.guild.channels.cache.each(async (channel) => {
+                    await channel.updateOverwrite(mutedRole, {
+                        SEND_MESSAGES: false,
+                        ADD_REACTIONS: false
                     });
-                }
-                if (mutedRole.position < toMute.roles.highest.position) {
+                });
+            }
+            if (mutedRole.position < toMute.roles.highest.position) {
                 mutedRole.setPosition(toMute.roles.highest.position);
             }
-            
+
             // If the mentioned user already has the "mutedRole" then that can not be muted again
             if (toMute.roles.cache.has(mutedRole.id)) return message.channel.send('This user is already muted!');
-            
+
             await toMute.roles.add(mutedRole, "muting").catch(e => console.log(e.stack));
             if (toMute.voice.connection && !toMute.voice.mute) await toMute.voice.setMute(true).catch(console.error);
-            
+
             let mendm = ""
             let time = 0;
             let dur = "";
@@ -75,9 +84,9 @@ module.exports = {
                 dur = durationToString(time);
                 mendm = ` Muted for ${dur}.`
             }
-            
+
             message.channel.send(`<a:spinning_light00:680291499904073739>✅ Muted ${toMute.user.tag}!${mendm}`);
-            
+
             if (time) {
                 setTimeout(async () => {
                     if (!toMute.roles.cache.has(mutedRole.id)) return;
@@ -90,7 +99,7 @@ module.exports = {
             console.log(e.stack);
             message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Error muting ${toMute.user.tag}`);
         }
-        
+
         /*let logChannel = client.channels.get(.id) || toMute.guild.channels.find(ch => ch.name === "");
         logChannel.send({
             embed: {

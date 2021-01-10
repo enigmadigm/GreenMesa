@@ -79,7 +79,7 @@ module.exports = {
             //const permLevelNames = Object.keys(permLevels);
             //const permLevelName = permLevelNames[permLev];
             const permLevelName = Object.keys(permLevels)[permLev];
-            xlg.log(permLevelName)
+            //xlg.log(permLevelName) // this was uncommented for who knows how long for some reason, not looking at past commits
 
             message.channel.send({
                 embed: {
@@ -120,12 +120,12 @@ module.exports = {
                         },
                         {
                             name: 'Designation',
-                            value: `${permLevelName}`,
+                            value: `${permLevelName}\n[What is this?](https://stratum.hauge.rocks)`,// How the bot internally sees the member in terms of permissions
                             inline: true
                         },
                         {
-                            name: 'Rank & Level (xp)',
-                            value: `#${rank.personal ? rank.personal.rank : 'none'} | ${xp[0] ? xp[0].level : 'none'}`,
+                            name: 'XP',
+                            value: `Rank: ${rank.personal ? rank.personal.rank : 'none'}\nLevel: ${xp[0] ? xp[0].level : 'none'}`,
                             inline: true
                         },
                         {

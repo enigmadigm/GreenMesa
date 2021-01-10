@@ -1,5 +1,5 @@
-const { getGlobalSetting, getXP, setSpideySaved } = require("../dbmanager");
 const xlg = require("../xlogger");
+const { getGlobalSetting, getXP, setSpideySaved } = require("../dbmanager");
 //const moment = require("moment");
 const { permLevels } = require('../permissions');
 

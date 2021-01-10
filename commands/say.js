@@ -1,4 +1,5 @@
 const { permLevels } = require("../permissions");
+const xlg = require("../xlogger");
 
 module.exports = {
     name: 'say',
@@ -8,8 +9,14 @@ module.exports = {
     guildOnly: true,
     permLevel: permLevels.mod,
     category: 'utility',
-    execute(client, message, args) {
-        message.delete().catch();
-        message.channel.send(args.join(" "));
+    async execute(client, message, args) {
+        try {
+            message.delete();
+            message.channel.send(args.join(" "));
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel);
+            return false;
+        }
     }
 }

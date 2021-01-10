@@ -3,25 +3,31 @@ const { permLevels } = require('../permissions');
 const { stringToMember, stringToRole } = require("../utils/parsers");
 const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 module.exports = {
-    name: "giverole",
-    aliases: ["role"],
+    name: "role",
     description: {
-        short: "assigns a member a role",
-        long: "Assign a member or all members a role."
+        short: "toggles a role on a member",
+        long: "Toggles a role on a member or all members."
     },
-    usage: "<member|@role> <role>",
+    usage: "<@member|@role> <@role to toggle>",
     args: true,
     permLevel: permLevels.admin,
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+            if (!message || !message.guild) return;
+            const g = await message.guild.fetch();
+
+            let moderationEnabled = await getGuildSetting(g, 'all_moderation');
             if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
                 return client.specials.sendModerationDisabled(message.channel);
             }
 
-            let target = await stringToMember(message.guild, args[0], true, false, false) || stringToRole(message.guild, args[0], true, true, false);
+            let target = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true, false);
             if (!target) {
                 if (args[0] === "all" || args[0] === "everyone" || args[0] === "@everyone") {
                     target = "all";
@@ -31,35 +37,47 @@ module.exports = {
                 }
             }
             args.shift();
-            const targetRole = await stringToRole(message.guild, args.join(" "), true, true, false);
+            const targetRole = await stringToRole(g, args.join(" "), true, true, false);
             if (!targetRole) {
-                client.specials.sendError(message.channel, "Role-to-give not specified/valid.");
+                client.specials.sendError(message.channel, "Role-to-toggle not specified/valid.");
                 return false;
             }
             if (target === "all") {
-                const targets = await message.guild.members.fetch();
+                const targets = g.members.cache;
                 let errored = false;
                 await targets.each(async (m) => {
                     try {
-                        await m.roles.add(targetRole);
+                        if (m.roles.cache.has(targetRole.id)) {
+                            await m.roles.remove(targetRole);
+                            await sleep(500);
+                        } else {
+                            await m.roles.add(targetRole);
+                            await sleep(500);
+                        }
                     } catch (error) {
                         if (!errored) {
                             xlg.error(error);
-                            client.specials.sendError(message.channel, `Error giving ${targetRole} en mass`);
+                            client.specials.sendError(message.channel, `Error toggling ${targetRole} en mass.`);
                             errored = true;
                         }
                     }
                 });
             } else {
-                const targets = message.guild.members.cache.filter((m) => m.id === target.id || (m.roles && m.roles.cache.get(target.id) && !m.roles.cache.get(targetRole.id)));
+                const targets = g.members.cache.filter((m) => m.id === target.id || (m.roles && m.roles.cache.get(target.id) && !m.roles.cache.get(targetRole.id)));
                 let errored = false;
                 await targets.each(async (m) => {
                     try {
-                        await m.roles.add(targetRole);
+                        if (m.roles.cache.has(targetRole.id)) {
+                            await m.roles.remove(targetRole);
+                            await sleep(500);
+                        } else {
+                            await m.roles.add(targetRole);
+                            await sleep(500);
+                        }
                     } catch (error) {
                         if (!errored) {
                             xlg.error(error);
-                            client.specials.sendError(message.channel, `Error giving ${targetRole} en mass to ${target}`);
+                            client.specials.sendError(message.channel, `Error toggling ${targetRole} en mass to ${target}`);
                             errored = true;
                         }
                     }
@@ -68,7 +86,7 @@ module.exports = {
             await message.channel.send({
                 embed: {
                     color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
-                    description: `Role given to ${(target === "all") ? message.guild.members.cache.size : message.guild.members.cache.filter((m) => m.id === target.id || (m.roles && m.roles.cache.get(target.id) && !m.roles.cache.get(targetRole.id))).size} member(s)`
+                    description: `Role toggled on ${(target === "all") ? g.members.cache.size : g.members.cache.filter((m) => m.id === target.id || (m.roles && m.roles.cache.get(target.id) && !m.roles.cache.get(targetRole.id))).size} member(s)`
                 }
             })
 

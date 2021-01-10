@@ -20,7 +20,7 @@ module.exports = {
                 return client.specials.sendModerationDisabled(message.channel);
             }
             
-            if (!args);
+            client.specials.sendError(message.channel, "Command currently in development");
         } catch (error) {
             xlg.error(error);
             client.specials.sendError(message.channel);
