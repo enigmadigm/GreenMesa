@@ -71,7 +71,7 @@ module.exports = {
                 if (!targets.length) return;
 
                 const loop = delayedLoop(0, targets.length, 1, roleDelay);
-                const t = getFriendlyUptime(targets.length * roleDelay + 50);
+                const t = getFriendlyUptime(targets.length * roleDelay + 500);
                 const fu = parseFriendlyUptime(t);
                 await message.channel.send({
                     embed: {
@@ -111,7 +111,7 @@ module.exports = {
                 let errored = false;
 
                 const loop = delayedLoop(0, targets.length, 1, roleDelay);
-                const t = getFriendlyUptime(targets.length * roleDelay + 50);
+                const t = getFriendlyUptime(targets.length * roleDelay + 500);
                 const fu = parseFriendlyUptime(t);
                 await message.channel.send({
                     embed: {
