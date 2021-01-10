@@ -9,7 +9,8 @@ router.get('/discord/redirect', passport.authenticate( 'discord' ), (req, res) =
 
 router.get("/", (req, res) => {
     if (req.user) {
-        res.send(req.user);
+        //res.send(req.user);
+        res.redirect("../app.js")
     } else {
         res.status(401).send({ msg: "Unauthorized: Not Logged In" });
     }

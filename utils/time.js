@@ -4,6 +4,7 @@ timeUnits.hour = timeUnits.minute * 60;
 timeUnits.day = timeUnits.hour * 24;
 timeUnits.normalMonth = timeUnits.day * 30;
 
+
 /**
  * calculates and returns an object of time units that represent the distributed value of the provided duration
  * @param {number} msAlive duration in milliseconds
@@ -11,33 +12,45 @@ timeUnits.normalMonth = timeUnits.day * 30;
  */
 function getFriendlyUptime(msAlive = 0, leadingzero = false) {
     msAlive = Math.abs(msAlive);
-    let days = Math.floor(msAlive / timeUnits.day);
-    let hours = Math.floor(msAlive / timeUnits.hour) % 24;
-    let minutes = Math.floor(msAlive / timeUnits.minute) % 60;
-    let seconds = Math.floor(msAlive / timeUnits.second) % 60;
-    let milliseconds = msAlive % 1000;
+    const days = Math.floor(msAlive / timeUnits.day);
+    const hours = Math.floor(msAlive / timeUnits.hour) % 24;
+    const minutes = Math.floor(msAlive / timeUnits.minute) % 60;
+    const seconds = Math.floor(msAlive / timeUnits.second) % 60;
+    const milliseconds = msAlive % 1000;
+    // I made these separate vars for pretty much no reason, I was trying to figure out if I could gauarantee a return type of string or a return type of number
+    let d = `${days}`;
+    let h = `${hours}`;
+    let m = `${minutes}`;
+    let s = `${seconds}`;
+    const ms = `${milliseconds}`
     if (leadingzero) {
         if (days < 10) {
-            days = "00" + days;
+            d = "00" + days;
         } else if (days < 100) {
-            days = "0" + days;
+            d = "0" + days;
         }
         if (hours < 10) {
-            hours = "0" + hours;
+            h = "0" + hours;
         }
         if (minutes < 10) {
-            minutes = "0" + minutes;
+            m = "0" + minutes;
         }
         if (seconds < 10) {
-            seconds = "0" + seconds;
+            s = "0" + seconds;
         }
     }
+    // I ended up making it just return a full object with the same values but in two different types (therefore two different properties)
     return {
         days,
         hours,
         minutes,
         seconds,
-        milliseconds
+        milliseconds,
+        d,
+        h,
+        m,
+        s,
+        ms
     };
 }
 
@@ -78,13 +91,13 @@ function getDurationDiff(timestamp0, timestamp1, duration) {
  */
 function stringToDuration(text) {
     let ms = 0;
-    let seconds = /(\d+)s/.exec(text);
+    const seconds = /(\d+)s/.exec(text);
     if (seconds) ms += Number(seconds[1]) * timeUnits.second;
-    let minutes = /(\d+)m/.exec(text);
+    const minutes = /(\d+)m/.exec(text);
     if (minutes) ms += Number(minutes[1]) * timeUnits.minute;
-    let hours = /(\d+)h/.exec(text);
+    const hours = /(\d+)h/.exec(text);
     if (hours) ms += Number(hours[1]) * timeUnits.hour;
-    let days = /(\d+)d/.exec(text);
+    const days = /(\d+)d/.exec(text);
     if (days) ms += Number(days[1]) * timeUnits.day;
 
     return ms;

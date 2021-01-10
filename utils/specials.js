@@ -82,9 +82,23 @@ function memoryUsage() {
     }).join("\n");
 }
 
+// iannis
+function delayedLoop(callback, start = 0, end = 1, increment = 1, delay = 0) {
+    let i = start;
+
+    const iteration = () => {
+        callback(i);
+        i += increment;
+        if (i < end) setTimeout(iteration, delay);
+    }
+
+    iteration();
+}
+
 exports.sendModerationDisabled = sendModerationDisabled;
 exports.sendError = sendError;
 exports.timedMessagesHandler = timedMessagesHandler;
 exports.argsNumRequire = argsNumRequire;
 exports.argsMustBeNum = argsMustBeNum;
 exports.memoryUsage = memoryUsage;
+exports.delayedLoop = delayedLoop;

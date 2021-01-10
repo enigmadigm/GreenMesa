@@ -33,7 +33,7 @@ passport.use(new DiscordStrategy({
             if (updateUser && updateUser.affectedRows) {
                 const newUser = await getDashUser(id);
                 if (newUser && newUser.id) {
-                    console.log("user was processed")
+                    //console.log("user was processed")
                     //console.log("user found")
                     /*const nuObject = {
                         id: newUser.userid,
