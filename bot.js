@@ -406,3 +406,5 @@ client.on("message", async message => {// This event will run on every single me
 client.on('error', xlg.error);
 
 client.login(config.token);
+
+module.exports = client;
