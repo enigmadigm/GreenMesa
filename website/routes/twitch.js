@@ -13,6 +13,7 @@ const config = JSON.parse(fs.readFileSync(path.join(
     __dirname,
     '../../auth.json'
 ))).TWITCH;
+const bot = require("../../bot");
 
 // Require depedancies
 // express is used for handling incoming HTTP requests "like a webserver"
@@ -78,7 +79,70 @@ router.get("/hooks", async (req, res) => {
             "Authorization": `Bearer ${currToken}`
         }
     }).then(res => res.json()).then(body => res.json(body))
-})
+});
+
+
+router.post("/", async (req, res) => {
+    console.log('Incoming Post request on /api/twitch');
+    // the middleware above ran
+    // and it prepared the tests for us
+    // so check if we event generated a twitch_hub
+    if (req.twitch_hub) {
+        if (req.twitch_hex == req.twitch_signature) {
+            console.log('The signature matched');
+            // the signature passed so it should be a valid payload from Twitch
+            // we ok as quickly as possible
+            res.send('Ok');
+
+            // you can do whatever you want with the data
+            // it's in req.body
+            try {
+                if (req.query.streamer && req.query.streamer.length) {
+                    if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live") {
+                        // twitch sender
+                        const subs = await getTwitchSubsForID(req.query.streamer);
+                        for (let i = 0; i < subs.length; i++) {
+                            const sub = subs[i];
+                            const guild = await bot.guilds.fetch(sub.guildid);
+                            if (guild) {
+                                const channel = guild.channels.cache.get(sub.channelid);
+                                if (channel) {
+                                    channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                                }
+                            }
+                        }
+
+                    }
+                } else {
+                    console.log('Received a Twitch payload with no id query param');
+                }
+            } catch (error) {
+                console.error(error)
+            }
+
+            // write out the data to a log for now
+            /*fs.appendFileSync(path.join(
+                __dirname,
+                'webhooks.log'
+            ), JSON.stringify(req.body) + "\n");*/
+            // pretty print the last webhook to a file
+            /*fs.appendFileSync(path.join(
+                __dirname,
+                'last_webhooks.log'
+            ), JSON.stringify(req.body, null, 4));*/
+        } else {
+            console.log('The Signature did not match');
+            // the signature was invalid
+            res.send('Ok');
+            // we'll ok for now but there are other options
+        }
+    } else {
+        console.log('It didn\'t seem to be a Twitch Hook');
+        // again, not normally called
+        // but dump out a OK
+        res.send('Ok');
+    }
+});
 
 /*router.get("/unsubscribe", async (req, res) => {
     if (req.query.pass !== "cantbreakin") return;
