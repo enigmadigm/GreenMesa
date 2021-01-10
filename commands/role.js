@@ -2,9 +2,33 @@ const xlg = require("../xlogger");
 const { permLevels } = require('../permissions');
 const { stringToMember, stringToRole } = require("../utils/parsers");
 const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
+const { getFriendlyUptime } = require("../utils/time");
+const { Role, GuildMember } = require("discord.js");
+const roleDelay = 1000;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+async function* delayedLoop(start, end, increment, delay) {
+    for (let i = start; i < end; i += increment) {
+        yield i
+        await sleep(delay)
+    }
+}
+
+function parseFriendlyUptime(t) {
+    const th = t.hours + (t.days * 24);
+    const tm = t.minutes;
+    const ts = t.seconds;
+    const ttypes = ["hours", "minutes", "seconds"];
+    if (!th)
+        ttypes.splice(ttypes.indexOf("hours"), 1);
+    if (!tm)
+        ttypes.splice(ttypes.indexOf("minutes"), 1);
+    if (!ts)
+        ttypes.splice(ttypes.indexOf("seconds"), 1);
+    const tt = [th, tm, ts].filter(x => x > 0).map((x, i, xt) => {
+        return `${x} ${ttypes[i]}${i !== (xt.length - 1) ? (xt.length > 1 && xt.length - 2 === i ? `${xt.length > 2 ? "," : ""} and ` : ", ") : ""}`;
+    });
+    return tt.join("");
 }
 
 module.exports = {
@@ -38,21 +62,34 @@ module.exports = {
             }
             args.shift();
             const targetRole = await stringToRole(g, args.join(" "), true, true, false);
-            if (!targetRole) {
+            if (!targetRole || !(targetRole instanceof Role)) {
                 client.specials.sendError(message.channel, "Role-to-toggle not specified/valid.");
                 return false;
             }
             if (target === "all") {
-                const targets = g.members.cache;
+                const targets = g.members.cache.array();
+                if (!targets.length) return;
+
+                const loop = delayedLoop(0, targets.length, 1, roleDelay);
+                const t = getFriendlyUptime(targets.length * roleDelay + 50);
+                const fu = parseFriendlyUptime(t);
+                await message.channel.send({
+                    embed: {
+                        color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                        description: `**ETA:**\n${fu}`
+                    }
+                });
+
                 let errored = false;
-                await targets.each(async (m) => {
+                for await (const i of loop) {
                     try {
+                        const m = targets[i];
                         if (m.roles.cache.has(targetRole.id)) {
                             await m.roles.remove(targetRole);
-                            await sleep(500);
+                            //await sleep(500);
                         } else {
                             await m.roles.add(targetRole);
-                            await sleep(500);
+                            //await sleep(500);
                         }
                     } catch (error) {
                         if (!errored) {
@@ -61,18 +98,37 @@ module.exports = {
                             errored = true;
                         }
                     }
+                }
+
+                await message.channel.send({
+                    embed: {
+                        color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
+                        description: `${targetRole || "Role"} toggled on ${targets.length} member(s)`
+                    }
                 });
-            } else {
-                const targets = g.members.cache.filter((m) => m.id === target.id || (m.roles && m.roles.cache.get(target.id) && !m.roles.cache.get(targetRole.id)));
+            } else if (target instanceof Role) {
+                const targets = g.members.cache.filter((m) => m.roles && m.roles.cache.get(target.id)).array();
                 let errored = false;
-                await targets.each(async (m) => {
+
+                const loop = delayedLoop(0, targets.length, 1, roleDelay);
+                const t = getFriendlyUptime(targets.length * roleDelay + 50);
+                const fu = parseFriendlyUptime(t);
+                await message.channel.send({
+                    embed: {
+                        color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                        description: `**ETA:**\n${fu}`
+                    }
+                });
+
+                for await (const i of loop) {
                     try {
+                        const m = targets[i];
                         if (m.roles.cache.has(targetRole.id)) {
                             await m.roles.remove(targetRole);
-                            await sleep(500);
+                            //await sleep(500);
                         } else {
                             await m.roles.add(targetRole);
-                            await sleep(500);
+                            //await sleep(500);
                         }
                     } catch (error) {
                         if (!errored) {
@@ -81,14 +137,37 @@ module.exports = {
                             errored = true;
                         }
                     }
-                });
-            }
-            await message.channel.send({
-                embed: {
-                    color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
-                    description: `Role toggled on ${(target === "all") ? g.members.cache.size : g.members.cache.filter((m) => m.id === target.id || (m.roles && m.roles.cache.get(target.id) && !m.roles.cache.get(targetRole.id))).size} member(s)`
                 }
-            })
+
+                await message.channel.send({
+                    embed: {
+                        color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
+                        description: `${targetRole || "Role"} toggled on ${targets.length} member(s)`
+                    }
+                });
+            } else if (target instanceof GuildMember) {
+                if (target.roles.cache.has(targetRole.id)) {
+                    await target.roles.remove(targetRole);
+                    //await sleep(500);
+                    await message.channel.send({
+                        embed: {
+                            color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
+                            description: `${targetRole || "Role"} removed from ${target}`
+                        }
+                    });
+                } else {
+                    await target.roles.add(targetRole);
+                    //await sleep(500);
+                    await message.channel.send({
+                        embed: {
+                            color: parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10),
+                            description: `${targetRole || "Role"} given to ${target}`
+                        }
+                    });
+                }
+            } else {
+                client.specials.sendError(message.channel, "No target to assign", true)
+            }
 
         } catch (error) {
             xlg.error(error);
