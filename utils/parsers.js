@@ -267,9 +267,18 @@ function durationToString(duration) {
     return durationString.trim();
 }
 
+/**
+ * Capitalizes the first letter in a string
+ * @param {string} string String to capitalize
+ */
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 exports.stringToUser = stringToUser;
 exports.stringToRole = stringToRole;
 exports.stringToChannel = stringToChannel;
 exports.stringToEmbed = stringToEmbed;
 exports.stringToMember = stringToMember;
 exports.durationToString = durationToString;
+exports.capitalizeFirstLetter = capitalizeFirstLetter;

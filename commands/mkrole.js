@@ -1,5 +1,5 @@
 const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager");
+const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
 const { permLevels } = require('../permissions');
 
 module.exports = {
@@ -14,6 +14,11 @@ module.exports = {
     category: "moderation",
     async execute(client, message, args) {
         try {
+            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
+                return client.specials.sendModerationDisabled(message.channel);
+            }
+
             let param = args.join(" ").split(",");
             if (param[0] && param[0].length > 100) {// if the provided name is longer than the 100 character limit
                 await client.specials.sendError(message.channel, "Role name cannot exceed 100 characters");
