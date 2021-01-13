@@ -31,7 +31,7 @@ const config = require("./auth.json"); // Loading app config file
 const client = new Discord.Client();
 var {  updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive } = require("./dbmanager");
 const { permLevels, getPermLevel } = require("./permissions");
-const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState } = require('./serverlogger')
+const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState } = require('./serverlogger')
 const ar = require("./utils/arhandler");
 const MesaWebsite = require("./website/app");
 client.specials = require("./utils/specials") || {};
@@ -246,6 +246,21 @@ client.on('channelCreate', nchannel => {
 client.on('channelDelete', ochannel => {
     if (!ochannel.guild) return;
     logChannelState(ochannel, true);
+});
+
+client.on('channelUpdate', (ochannel, nchannel) => {
+    if (!ochannel.guild) return;
+    logChannelUpdate(ochannel, nchannel);
+});
+
+client.on('emojiCreate', nemoji => {
+    if (!nemoji.guild) return;
+    logEmojiState(nemoji)
+});
+
+client.on('emojiDelete', oemoji => {
+    if (!oemoji.guild) return;
+    logEmojiState(oemoji, true);
 });
 
 // the actual command processing

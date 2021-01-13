@@ -210,7 +210,7 @@ async function logChannelState(channel, deletion = false) {
     try {
         let logChannel = await getLogChannel(channel.guild);
         if (!logChannel || logChannel.type !== 'text') return;
-        const typeref = channel.type !== "category" ? ` (${channel.type})` : "";
+        const nameref = channel.name ? ` (${channel.name})` : "";
         const titletyperef = channel.type !== "category" ? `${capitalizeFirstLetter(channel.type)} ` : "";
         
         await logChannel.send({
@@ -219,12 +219,177 @@ async function logChannelState(channel, deletion = false) {
                     name: `${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                     icon_url: channel.guild.iconURL()
                 },
-                description: `${deletion ? `#${channel.name}` : `${channel || channel.name}`}${typeref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
+                description: `${deletion ? `#${channel.name}` : `${channel || channel.name}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
                 color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
                 timestamp: deletion ? channel.createdAt : new Date(),
                 footer: {
                     text: "Channel ID: " + channel.id
                 }
+            }
+        });
+    } catch (err) {
+        xlg.error(err);
+    }
+}
+
+async function logChannelUpdate(oc, nc) {// grouping of all types of change in channels
+    try {
+        let logChannel = await getLogChannel(nc.guild);
+        if (!logChannel || !(logChannel instanceof Discord.TextChannel)) return;
+        if (!(oc instanceof Discord.GuildChannel) || !(nc instanceof Discord.GuildChannel)) return;
+
+        if (oc.name !== nc.name) {//change of channel name
+            await logChannel.send({
+                embed: {
+                    color: parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10),
+                    timestamp: new Date(),
+                    author: {
+                        name: `Channel Name Updated`,
+                        icon_url: logChannel.guild.iconURL()
+                    },
+                    description: `${nc}`,
+                    fields: [
+                        {
+                            name: `Previous`,
+                            value: `${oc.name}`,
+                            inline: true
+                        },
+                        {
+                            name: `Updated`,
+                            value: `${nc.name}`,
+                            inline: true
+                        }
+                    ]
+                }
+            });
+        }
+
+        /*const co = [];
+        for (const over of nc.permissionOverwrites) {
+            //console.log(JSON.stringify(over))
+            const common = {
+                allow: [],
+                deny: [],
+            }
+
+            for (const over2 of oc.permissionOverwrites) {
+                // ...
+            }
+        }*/
+        
+        // https://github.com/CodeBullet-Community/BulletBot/blob/d5e8f7f5e6649f6b552e4ad7fe5c31f6aa42b1b8/src/megalogger.ts#L125
+        // I am going to be honest here, I have no idea as to how this works. That's why I had to take the code from elsewhere.
+        // get permission difference between the old and new channel
+        const permDiff = oc.permissionOverwrites.filter(x => {
+            if (nc.permissionOverwrites.find(y => y.allow.bitfield == x.allow.bitfield && x.id === y.id) && nc.permissionOverwrites.find(y => y.deny.bitfield == x.deny.bitfield && y.id === x.id))
+                return false;
+            return true;
+        }).concat(nc.permissionOverwrites.filter(x => {
+            if (oc.permissionOverwrites.find(y => y.deny.bitfield == x.allow.bitfield) && oc.permissionOverwrites.find(y => y.deny.bitfield == x.deny.bitfield))
+                return false;
+            return true;
+        }));
+        if (permDiff.size) {
+            for (const id of permDiff.keys()) {
+                const oldPerm = oc.permissionOverwrites.get(id);
+                const newPerm = nc.permissionOverwrites.get(id);
+                const oldBitfield = {
+                    allow: oldPerm.allow.bitfield,
+                    deny: oldPerm.deny.bitfield
+                }
+                const newBitfield = {
+                    allow: newPerm.allow.bitfield,
+                    deny: newPerm.deny.bitfield
+                }
+                const subject = oldPerm.type == 'role' || newPerm.type == 'role' ? nc.guild.roles.cache.get(newPerm.id || oldPerm.id) : await nc.guild.members.fetch(newPerm.id || oldPerm.id);
+
+                const embed = {
+                    color: parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10),
+                    timestamp: new Date(),
+                    author: {
+                        name: `Channel Permissions Changed`,
+                        icon_url: logChannel.guild.iconURL()
+                    },
+                    description: `In channel: ${nc}\nPermissions updated for: \`${subject.name ? subject.name : subject.user.tag ? subject.user.tag : "unknown"}\``,
+                    footer: {
+                        text: `Channel ID: ${nc.id}`
+                    },
+                };
+                
+                let didsomething = false;
+                if (oldBitfield.allow !== newBitfield.allow && newBitfield.allow !== 0) {
+                    const flgs = new Discord.Permissions(newBitfield.allow).remove(oldBitfield.allow);
+                    embed.description += `\n**Allowed:**\n${flgs.toArray().map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
+                    didsomething = true;
+                    //console.log("arr: "+flgs.toArray());
+
+                    // VVV I started something below this and then stopped when I realized I could just do bit math
+                    /*const flgs2 = new Discord.Permissions(newBitfield.allow).toArray();
+                    for (const f of flgs) {
+                        
+                    }*/
+                }
+                if (oldBitfield.deny !== newBitfield.deny && newBitfield.deny !== 0) {
+                    const flgs = new Discord.Permissions(newBitfield.deny).remove(oldBitfield.deny);
+                    embed.description += `\n**Denied:**\n${flgs.toArray().map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
+                    didsomething = true;
+                }
+                // VVV Didn't work
+                /*const tb = new Discord.Permissions(newBitfield.allow).add(newBitfield.deny).remove(oldBitfield.allow).remove(oldBitfield.deny).missing();
+                console.log(tb)
+                if (tb.length) {
+                    embed.description += `\n**Neutralized:**\n${tb.map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
+                }*/
+
+                if (didsomething) {
+                    await logChannel.send({ embed });
+                }
+            }
+
+            //await logChannel.send({ embed });
+        }
+        /*
+        await logChannel.send({
+            embed: {
+                color: parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10),
+                author: {
+                    name: ``,
+                    icon_url: logChannel.guild.iconURL()
+                },
+                description: ``,
+            }
+        });
+        */
+    } catch (err) {
+        xlg.error(err);
+    }
+}
+
+async function logEmojiState(emoji, deletion = false) {
+    try {
+        let logChannel = await getLogChannel(emoji.guild);
+        if (!logChannel || logChannel.type !== 'text' || !(emoji instanceof Discord.GuildEmoji)) return;
+
+        let creator = null;
+        if (!deletion) {
+            creator = await emoji.fetchAuthor();
+        }
+
+        await logChannel.send({
+            embed: {
+                author: {
+                    name: `Emoji ${deletion ? 'Removed' : 'Added'}`,
+                    icon_url: logChannel.guild.iconURL()
+                },
+                description: `${deletion ? "created " + moment(emoji.createdAt).utc().fromNow() : `${creator ? `Created by: ${emoji.author.tag}` : ""}`}`,
+                color: parseInt((await getGlobalSetting('info_embed_color'))[0].value, 10),
+                image: {
+                    url: emoji.url,
+                },
+                timestamp: deletion ? emoji.createdAt : new Date(),
+                footer: {
+                    text: `Usage: :${emoji.name}:`
+                },
             }
         });
     } catch (err) {
@@ -238,3 +403,5 @@ exports.logMessageBulkDelete = logMessageBulkDelete;
 exports.logMessageUpdate = logMessageUpdate;
 exports.logRole = logRole;
 exports.logChannelState = logChannelState;
+exports.logChannelUpdate = logChannelUpdate;
+exports.logEmojiState = logEmojiState;
