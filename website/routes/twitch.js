@@ -185,27 +185,31 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
-    
     let uid = username;
-    if (!isID) {
+    if (isID) {
+        uid = await idLookup(username, true);
+    } else {
         uid = await idLookup(username);
     }
     if (!uid || !uid.data || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
-    const existingSubs = await getTwitchSubsForID(uid.data[0].id)
+    const existingSubs = await getTwitchSubsForID(uid.data[0].id);
     if (existingSubs.length > 0) {
         for (let i = 0; i < existingSubs.length; i++) {
             const sub = existingSubs[i];
-            if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) return "ALREADY_EXISTS";
+            if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) {
+                await addTwitchWebhook(uid.data[0].id, true);
+                return "ALREADY_EXISTS";
+            }
         }
     }
 
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
         method: 'POST',
         body: JSON.stringify({
-            "hub.callback": `${config.callback_domain}/?streamer=${uid.data[0].id}`,
+            "hub.callback": `${config.callback_domain}/api/twitch?streamer=${uid.data[0].id}`,
             "hub.mode": "subscribe",
             "hub.topic": `https://api.twitch.tv/helix/streams?user_id=${uid.data[0].id}`,
-            "hub.lease_seconds": 864000,
+            "hub.lease_seconds": 864000,// 864000
             "hub.secret": config.hub_secret
         }),
         headers: {
@@ -214,13 +218,15 @@ async function addTwitchWebhook(username, isID = false, guildid, targetChannel, 
             "Client-ID": `${config.client_id}`
         }
     });
-    const subRes = await addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
-    if (!subRes || !res) return false;
 
-    if (uid.data[0].display_name || uid.data[0].login) {
-        targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
-    } else {
-        targetChannel.send("This is a test message for the set Twitch notification.");
+    if (guildid && targetChannel) {
+        const subRes = await addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
+        if (!subRes || !res) return false;
+        if (uid.data[0].display_name || uid.data[0].login) {
+            targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
+        } else {
+            targetChannel.send("This is a test message for the set Twitch notification.");
+        }
     }
 
     return true;
@@ -321,12 +327,14 @@ setInterval(async () => {
             for (let i = 0; i < hooks.length; i++) {
                 const hook = hooks[i];
                 //console.log(`time: ${moment(hook.expires_at).diff(moment()) <= 86400000} ${moment(hook.expires_at).diff(moment()) - 86400000}`)
-                if (moment(hook.expires_at).diff(moment()) <= 86400000) {
+                const dff = moment(hook.expires_at).diff(moment());
+                //console.log(`${dff} < 86400000`)
+                if (dff <= 86400000) {
                     // parsing query strings from the callback url
                     const parsedUrl = url.parse(hook.callback);
                     const parsedQs = querystring.parse(parsedUrl.query);
                     if (parsedQs.streamer) {
-                        addTwitchWebhook(parsedQs.streamer, true);
+                        await addTwitchWebhook(parsedQs.streamer, true);
                     }
                 }
             }
