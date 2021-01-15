@@ -21,6 +21,14 @@ process.on('unhandledRejection', async (reason, promise) => {
     console.error(error, "Promise:", promise);
 });
 
+class Bot {
+    static init(client, website) {
+        if (!(client instanceof Discord.Client) || !(website instanceof MesaWebsite)) return;
+        this.client = client;
+        this.website = website;
+    }
+}
+
 const fs = require('fs'); // Get the filesystem library that comes with nodejs
 const Discord = require("discord.js"); // Load discord.js library
 const config = require("./auth.json"); // Loading app config file
@@ -182,11 +190,12 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
         // Twitch, I hope
         /*await xtwitch.startTwitchListening();
         await xtwitch.addTwitchWebhook();*/
+        new MesaWebsite(client);
     } catch (e) {
         xlg.error(e);
     }
-
-    new MesaWebsite(client);
+    
+    //Bot.init(client, );
 });
 
 client.on("rateLimit", rateLimitInfo => {
@@ -422,4 +431,4 @@ client.on('error', xlg.error);
 
 client.login(config.token);
 
-module.exports = client;
+module.exports = Bot;

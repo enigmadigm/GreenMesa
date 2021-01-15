@@ -69,73 +69,16 @@ router.use(bodyParser.json({
 }));
 
 router.get("/hooks", async (req, res) => {
-    if (req.query.pass !== "cantbreakin") return res.send("no auth");
+    if (req.query.pass !== "cantbreakin") return res.sendStatus(403);
     await getOAuth();
     if (!currToken || !currToken.length) return res.send("bad token");
-    fetch("https://api.twitch.tv/helix/webhooks/subscriptions", {
+    fetch("https://api.twitch.tv/helix/webhooks/subscriptions?first=100", {
         method: "GET",
         headers: {
             "Client-ID": `${config.client_id}`,
             "Authorization": `Bearer ${currToken}`
         }
     }).then(res => res.json()).then(body => res.json(body))
-});
-
-
-router.post("/", async (req, res, next) => {
-    console.log('Incoming Post request on /api/twitch');
-    // the middleware above ran
-    // and it prepared the tests for us
-    // so check if we event generated a twitch_hub
-    if (req.twitch_hub) {
-        if (req.twitch_hex == req.twitch_signature) {
-            console.log('The signature matched');
-            // the signature passed so it should be a valid payload from Twitch
-            // we ok as quickly as possible
-            res.send('Ok');
-
-            // you can do whatever you want with the data
-            // it's in req.body
-            try {
-                if (req.query.streamer && req.query.streamer.length) {
-                    if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live") {
-                        // twitch sender
-
-                        // below is the code to handle the "forward".
-                        // if we want to change the method: req.method = 'POST'        
-                        req.url = '/'
-                        return router._router.handle(req, res, next)
-
-                    }
-                } else {
-                    console.log('Received a Twitch payload with no id query param');
-                }
-            } catch (error) {
-                console.error(error)
-            }
-
-            // write out the data to a log for now
-            /*fs.appendFileSync(path.join(
-                __dirname,
-                'webhooks.log'
-            ), JSON.stringify(req.body) + "\n");*/
-            // pretty print the last webhook to a file
-            /*fs.appendFileSync(path.join(
-                __dirname,
-                'last_webhooks.log'
-            ), JSON.stringify(req.body, null, 4));*/
-        } else {
-            console.log('The Signature did not match');
-            // the signature was invalid
-            res.send('Ok');
-            // we'll ok for now but there are other options
-        }
-    } else {
-        console.log('It didn\'t seem to be a Twitch Hook');
-        // again, not normally called
-        // but dump out a OK
-        res.send('Ok');
-    }
 });
 
 /*router.get("/unsubscribe", async (req, res) => {
@@ -166,14 +109,14 @@ router
             // lets acknowledge it
             res.send(encodeURIComponent(req.query['hub.challenge']));
         } else {
-            console.log('May be a browser request, no challenge');
+            console.log('Apparent unauthorized request at API endpoint for Twitch');
             // normally won't get called
             // but we need to return something
             // someone direct called the URL for whatever reason
-            // so we'll just OK and be done with it
-            res.send('Ok');
+            res.sendStatus(403);// it is unauthorized, so treating it as such
+            //res.send('Ok');// so we'll just OK and be done with it
         }
-    })
+    });
 
 async function addTwitchWebhook(username, isID = false, guildid, targetChannel, message) {
     //if (!token) token = (await getOAuth()).access_token;
@@ -306,7 +249,7 @@ async function idLookup(username, isid = false) {
 setInterval(async () => {
     try {
         await getOAuth();
-        const response = await fetch("https://api.twitch.tv/helix/webhooks/subscriptions", {
+        const response = await fetch("https://api.twitch.tv/helix/webhooks/subscriptions?first=100", {
             method: "GET",
             headers: {
                 "Client-ID": `${config.client_id}`,
