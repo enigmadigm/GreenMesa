@@ -13,7 +13,6 @@ const config = JSON.parse(fs.readFileSync(path.join(
     __dirname,
     '../../auth.json'
 ))).TWITCH;
-const bot = require("../../bot");
 
 // Require depedancies
 // express is used for handling incoming HTTP requests "like a webserver"
@@ -33,6 +32,7 @@ const querystring = require('querystring');
 const { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } = require("../../dbmanager");
 const xlg = require('../../xlogger');
 // discord client
+//const Bot = require('../../bot');
 //no
 
 let currToken;
@@ -82,7 +82,7 @@ router.get("/hooks", async (req, res) => {
 });
 
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
     console.log('Incoming Post request on /api/twitch');
     // the middleware above ran
     // and it prepared the tests for us
@@ -100,17 +100,11 @@ router.post("/", async (req, res) => {
                 if (req.query.streamer && req.query.streamer.length) {
                     if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live") {
                         // twitch sender
-                        const subs = await getTwitchSubsForID(req.query.streamer);
-                        for (let i = 0; i < subs.length; i++) {
-                            const sub = subs[i];
-                            const guild = await bot.guilds.fetch(sub.guildid);
-                            if (guild) {
-                                const channel = guild.channels.cache.get(sub.channelid);
-                                if (channel) {
-                                    channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
-                                }
-                            }
-                        }
+
+                        // below is the code to handle the "forward".
+                        // if we want to change the method: req.method = 'POST'        
+                        req.url = '/'
+                        return router._router.handle(req, res, next)
 
                     }
                 } else {
