@@ -27,44 +27,37 @@ module.exports = {
                 message.channel.send("🟥 I do not have the permissions to do that");
                 return;
             }
-            if (!toMute) return message.channel.send('🟥 You did not specify a user mention or ID!');
-            if (toMute.id === message.author.id) return message.channel.send('🟥 You cannot unmute yourself!');
-            if (toMute.roles.highest.position >= message.member.roles.highest.position) return message.channel.send('🟥 You cannot unmute a member that is equal to or higher than yourself!');
-            if (!toMute.manageable) return message.channel.send(`🟥 I don't have a high enough role to manage ${toMute || 'that user'}.`);
+            if (!toMute) {
+                message.channel.send('🟥 You did not specify a user mention or ID!');
+                return;
+            }
+            if (toMute.id === message.author.id) {
+                message.channel.send('🟥 You cannot unmute yourself!');
+                return;
+            }
+            if (toMute.roles.highest.position >= message.member.roles.highest.position) {
+                message.channel.send('🟥 You cannot unmute a member that is equal to or higher than yourself!');
+                return;
+            }
+            if (!toMute.manageable) {
+                message.channel.send(`🟥 I don't have a high enough role to manage ${toMute || 'that user'}.`);
+                return;
+            }
 
             // Check if the user has the mutedRole ???? check if muted role exists
             let mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
 
             // If the mentioned user or ID does not have the "mutedRole" return a message
-            if (!mutedRole || !toMute.roles.cache.has(mutedRole.id)) return message.channel.send('🟥 User not muted');
+            if (!mutedRole || !toMute.roles.cache.has(mutedRole.id)) return message.channel.send('\\🟥 User not muted');
 
             // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
-            await toMute.roles.remove(mutedRole, 'unmuting');
+            await toMute.roles.remove(mutedRole, `unmuted by ${message.author.tag}`);
             if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
 
-            message.channel.send(`✅ Unmuted ${toMute.user.tag}`).catch(console.error);
-            //let logChannel = client.channels.get(config.logChannel.id) || member.guild.channels.find(ch => ch.name === config.logChannel.name);
-            /*logChannel.send({
-                embed: {
-                    "title": `User Unmuted`,
-                    "description": `${toMute} was unmuted by ${message.author}`,
-                    "color": 0x90ee90,
-                    "timestamp": new Date(),
-                    "footer": {
-                        "text": `Unmuted ID: ${toMute.id}`
-                    }
-                }
-            });*/
-
-            /*
-            setTimeout(function () {
-                tomute.removeRole(muterole.id);
-                message.channel.send(`<@${tomute.id}> has been unmuted!`);
-            }, ms(mutetime));
-            */
+            message.channel.send(`\\✅ Unmuted ${toMute.user.tag}`).catch(console.error);
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel, "Failure removing role");
+            await client.specials.sendError(message.channel, "Failure while removing mute");
             return false;
         }
     }

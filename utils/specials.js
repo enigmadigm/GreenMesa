@@ -70,7 +70,7 @@ async function timedMessagesHandler(client) {
 
 function memoryUsage() {
     const memTypes = {
-        "rss": "Rss ---------------",
+        "rss": "RSS ---------------",
         "heapTotal": "HeapTotal ---------",
         "heapUsed": "HeapUsed ----------",
         "external": "External ----------",

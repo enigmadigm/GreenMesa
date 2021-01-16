@@ -1,4 +1,4 @@
-var { getGlobalSetting, getGuildSetting, editGuildSetting } = require("./dbmanager");
+const { getGlobalSetting, getGuildSetting, editGuildSetting } = require("./dbmanager");
 const { stringToChannel, capitalizeFirstLetter } = require('./utils/parsers');
 const Discord = require('discord.js')
 const moment = require('moment');
@@ -293,6 +293,7 @@ async function logChannelUpdate(oc, nc) {// grouping of all types of change in c
             for (const id of permDiff.keys()) {
                 const oldPerm = oc.permissionOverwrites.get(id);
                 const newPerm = nc.permissionOverwrites.get(id);
+                if (!oldPerm || !newPerm) return;
                 const oldBitfield = {
                     allow: oldPerm.allow.bitfield,
                     deny: oldPerm.deny.bitfield
