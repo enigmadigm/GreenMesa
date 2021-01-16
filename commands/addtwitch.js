@@ -44,7 +44,7 @@ module.exports = {
                 await message.channel.send({
                     embed: {
                         color: iec,
-                        title: "Twitch Notif Setup | 1️⃣",
+                        title: "Twitch Notif Setup 1️⃣",
                         description: "What is the username of your streamer? Send it in the chat. To change this later you must delete this notifier and start over."
                     }
                 });
@@ -59,7 +59,7 @@ module.exports = {
                 await message.channel.send({
                     embed: {
                         color: iec,
-                        title: "Twitch Notif Setup | 1️⃣",
+                        title: "Twitch Notif Setup 1️⃣",
                         description: "Username already provided, skipping step."
                     }
                 });
@@ -78,7 +78,7 @@ module.exports = {
             await message.channel.send({
                 embed: {
                     color: iec,
-                    title: "Twitch Notif Setup | 2️⃣",
+                    title: "Twitch Notif Setup 2️⃣",
                     description: "What channel should the notifications be sent in? Send the channel in the chat. To change this later you must delete this notifier and start over."
                 }
             });
@@ -92,7 +92,7 @@ module.exports = {
             await message.channel.send({
                 embed: {
                     color: iec,
-                    title: "Twitch Notif Setup | 3️⃣",
+                    title: "Twitch Notif Setup 3️⃣",
                     description: "Would you like to send a customized message when your streamer goes live? **If no, type `no`, otherwise type your message.**\nThis cannot be customized later and will require you to delete the notifier and start over."
                 }
             });
