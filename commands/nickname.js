@@ -27,9 +27,7 @@ module.exports = {
             if (!target || !target.id) {
                 target = message.member;
             } else {
-                console.log(args)
                 args.shift();
-                console.log(args)
                 // I moved this up here to save some execution time
                 if (target.id !== message.member.id) {// if the found target is not the author
                     // now checking for moderation here because this means that someone elses name from the sender is being changed
@@ -42,7 +40,6 @@ module.exports = {
                     if (permLevel < permLevels.mod) return message.channel.send("Insufficient permissions.").catch(xlg.error);
                 }
             }
-            console.log(args)
 
             // This is probably an unecessary check but I probably had a reason so I'll keep it
             if (args[0] === message.member.id) args.shift();
