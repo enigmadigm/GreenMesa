@@ -45,6 +45,11 @@ module.exports = {
                             "inline": true
                         },
                         {
+                            "name": "Website",
+                            "value": "[stratum.hauge.rocks](https://stratum.hauge.rocks)",
+                            "inline": true
+                        },
+                        {
                             "name": "Repo",
                             "value": "🚫",
                             "inline": true

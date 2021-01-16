@@ -1,6 +1,6 @@
 {
     "name": "greenmesa",
-    "version": "2.1.21",
+    "version": "2.1.22",
     "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
     "main": "bot.js",
     "scripts": {
@@ -21,7 +21,7 @@
         "express-mysql-session": "^2.1.5",
         "ffmpeg-static": "^4.2.7",
         "get-image-colors": "^2.0.1",
-        "ibm-watson": "^5.7.3",
+        "ibm-watson": "^6.0.2",
         "jsdom": "^16.4.0",
         "luxon": "^1.25.0",
         "moment": "^2.29.1",
