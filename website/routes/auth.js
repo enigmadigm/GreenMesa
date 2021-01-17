@@ -4,15 +4,17 @@ const passport = require('passport');
 router.get('/discord', passport.authenticate( 'discord' ));
 
 router.get('/discord/redirect', passport.authenticate( 'discord' ), (req, res) => {
-    res.send('200')
+    //res.send('200')
+    res.redirect('http://localhost:3000/menu');//TODO: CHANGE THIS
 });
 
 router.get("/", (req, res) => {
     if (req.user) {
-        //res.send(req.user);
-        res.redirect("../app.js")
+        res.send(req.user);
+        //res.redirect("../app.js")
     } else {
-        res.status(401).send({ msg: "Unauthorized: Not Logged In" });
+        //res.status(401).send({ msg: "Unauthorized: Not Logged In" });
+        res.sendStatus(401);
     }
 })
 

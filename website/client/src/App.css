@@ -1,0 +1,27 @@
+body, html {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.top-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.h-title {
+  color: #001f3f;
+}
+
+.lnav-buttons button {
+  margin: 0 8px;
+  border-width: 2px;
+}
+
+.lspinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -100%);
+}

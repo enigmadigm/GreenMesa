@@ -10,19 +10,16 @@ const routes = require('./routes');
 const session = require("express-session");
 const MySQLStore = require('express-mysql-session')(session);
 const { conn, getTwitchSubsForID } = require("../dbmanager");
+const { Client } = require('discord.js');
 const STATIC = "./static";
 
 class MesaWebsite {
     constructor(client) {
+        if (!(client instanceof Client)) return;
         //configTwitchClient(client)
         this.client = client;
         this.app = express();
-        
-        this.app.listen(PORT, () => console.log(`Running on port ${PORT}`));
-        this.app.use('/api', routes);
-        this.app.get("/", (req, res) => {
-            res.sendFile(path.join(__dirname, STATIC, "index.html"));
-        });
+
         this.app.use(session({
             secret: process.env.DASHBOARD_COOKIE_SECRET || "potato",
             cookie: {
@@ -35,11 +32,20 @@ class MesaWebsite {
         this.app.use(express.static(path.join(__dirname, STATIC), {
             index: false,
             extensions: ['html']
-        })); // https://stackoverflow.com/a/40201169/10660033
+        }));// https://stackoverflow.com/a/40201169/10660033
+        this.app.set('etag', false);
+        this.app.use(express.json());
+        this.app.use(express.urlencoded({ extended: false }))
         this.app.use(passport.initialize());
         this.app.use(passport.session());
-        this.app.set('etag', false);
-        
+        this.app.use('/api', routes(this.client));
+        this.app.get("/", (req, res) => {
+            res.sendFile(path.join(__dirname, STATIC, "index.html"));
+        });
+        this.app.get("/invite", async (req, res) => {
+            const url = await this.client.generateInvite(2147483639);
+            res.redirect(301, url);
+        });
         // stuff for handling the api endpoint for twitch
         // it is here because it needs access to the bot client
         this.app.post("/api/twitch", async (req, res) => {
@@ -53,7 +59,6 @@ class MesaWebsite {
                     // the signature passed so it should be a valid payload from Twitch
                     // we ok as quickly as possible
                     res.send('Ok');
-
                     // you can do whatever you want with the data
                     // it's in req.body
                     try {
@@ -78,31 +83,19 @@ class MesaWebsite {
                     } catch (error) {
                         console.error(error)
                     }
-
-                    // write out the data to a log for now
-                    /*fs.appendFileSync(path.join(
-                        __dirname,
-                        'webhooks.log'
-                    ), JSON.stringify(req.body) + "\n");*/
-                    // pretty print the last webhook to a file
-                    /*fs.appendFileSync(path.join(
-                        __dirname,
-                        'last_webhooks.log'
-                    ), JSON.stringify(req.body, null, 4));*/
                 } else {
                     console.log('The Signature did not match');
                     // the signature was invalid
-                    res.sendStatus(403);
+                    res.sendStatus(401);
                     //res.send('Ok');// we'll ok for now but there are other options
                 }
             } else {
                 console.log('It didn\'t seem to be a Twitch Hook');
                 // again, not normally called
-                res.sendStatus(403);
+                res.sendStatus(401);
                 //res.send('Ok');// but dump out a OK
             }
         });
-
         // Since this is the last non-error-handling
         // middleware use()d, we assume 404, as nothing else
         // responded.
@@ -133,7 +126,7 @@ class MesaWebsite {
             // default to plain-text. send()
             res.type('txt').send('Not found');
         });
-
+        this.app.listen(PORT, () => console.log(`Running on port ${PORT}`));
     }
 
 }
