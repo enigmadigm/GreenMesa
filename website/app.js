@@ -46,6 +46,10 @@ class MesaWebsite {
             const url = await this.client.generateInvite(2147483639);
             res.redirect(301, url);
         });
+        this.app.get("/logout", (req, res) => {
+            req.logout();
+            res.redirect("/");
+        })
         // stuff for handling the api endpoint for twitch
         // it is here because it needs access to the bot client
         this.app.post("/api/twitch", async (req, res) => {
@@ -96,6 +100,14 @@ class MesaWebsite {
                 //res.send('Ok');// but dump out a OK
             }
         });
+
+        if (process.env.NODE_ENV === "production") {
+            this.app.use(express.static(path.join(__dirname, 'client/build')));
+            this.app.get('/*', function (req, res) {
+                res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+            });
+        }
+
         // Since this is the last non-error-handling
         // middleware use()d, we assume 404, as nothing else
         // responded.

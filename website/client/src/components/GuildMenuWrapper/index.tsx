@@ -16,8 +16,8 @@ export function GuildMenuWrapper(props: IGuildProps) {
             <Table variant="simple">
                 <Thead>
                     <Tr>
-                        <Th>Name</Th>
-                        <Th>Options</Th>
+                        <Th style={{ color: "#ffffff" }}>Name</Th>
+                        <Th style={{ color: "#ffffff" }}>Options</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
@@ -27,7 +27,7 @@ export function GuildMenuWrapper(props: IGuildProps) {
                                 {guild.name} {guild.owner ? <Badge>Owner</Badge> : ""}
                             </Td>
                             <Td>
-                                <Button onClick={() => { window.location.pathname = `/dash/${guild.id}`}}>View Dashboard</Button>
+                                <Button style={{ background: "rgba(60, 60, 70, 0.5)" }} onClick={() => { window.location.pathname = `/dash/${guild.id}`}}>View Dashboard</Button>
                             </Td>
                         </Tr>
                     ))}

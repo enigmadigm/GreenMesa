@@ -30,7 +30,7 @@ export function MenuPage(/*props: RouteComponentProps*/) {
             })
             .then(x => x.json())
             .then(d => {
-                setGuilds(d);
+                setGuilds(d.guilds);
                 setLoading(false);
                 setProgress(100);
             })
@@ -44,16 +44,19 @@ export function MenuPage(/*props: RouteComponentProps*/) {
     return (
         <div>
             <LoadingBar
-                color='#f11946'
+                color='#01FF70'
                 progress={progress}
                 onLoaderFinished={() => setProgress(0)}
             />
             {!loading ?
-            <div>
+            <div style={{ display: "flex" }}>
                 <DashHeader />
-                <GuildMenuWrapper guilds={guilds} />
-            </div>
-             : 
+                <div style={{ margin: "auto", marginTop: 100 }}>
+                    <div>
+                        <GuildMenuWrapper guilds={guilds} />
+                    </div>
+                </div>
+            </div> :
             <Center className="lspinner">
                 <Spinner color="red.500" size="xl" css="margin:auto" />
             </Center>

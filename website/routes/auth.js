@@ -5,7 +5,11 @@ router.get('/discord', passport.authenticate( 'discord' ));
 
 router.get('/discord/redirect', passport.authenticate( 'discord' ), (req, res) => {
     //res.send('200')
-    res.redirect('http://localhost:3000/menu');//TODO: CHANGE THIS
+    if (process.env.NODE_ENV === "production") {
+        res.redirect('/menu');
+    } else {
+        res.redirect('http://localhost:3000/menu');//TODO: CHANGE THIS
+    }
 });
 
 router.get("/", (req, res) => {

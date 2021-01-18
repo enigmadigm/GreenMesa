@@ -1,26 +1,34 @@
 import React from 'react';
-import { Heading, Box, Button, Divider } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { host } from '../../index';
 
 interface IProps {
     guildsButton?: boolean;
+    guildName?: string;
 }
 
 export function DashHeader(props: IProps) {
     return (
-        <header>
-            <Box className="top-header">
-                <Heading className="h-title">Stratum Dashboard</Heading>
-                <div className="lnav-buttons">
-                    {props.guildsButton ? (
-                        <Button variant="outline" type="submit" onClick={() => { window.location.pathname = `/menu` }}>Guilds</Button>
-                    ) : ""}
-                    <Button variant="outline" type="submit" onClick={() => { window.location.href = `${host}/invite` }}>Invite</Button>
-                    <Button variant="outline" type="submit" onClick={() => { window.location.href = `${host}/api/auth/logout` }}>Logout</Button>
-                </div>
+        <header className="top-header">
+            <Box className="h-title" style={{ fontSize: "1.5rem", paddingLeft: 10, paddingBottom: 4 }}>
+                Stratum Dashboard
             </Box>
-            <Divider />
-            <br />
+            <Box className="rnav">
+                <ul className="rnav-nav">
+                    <li>
+                        {props.guildName ? <span>{ props.guildName }</span> : ""}
+                    </li>
+                    <li>
+                        {props.guildsButton ? <a href={`/menu`}>Guilds</a> : ""}
+                    </li>
+                    <li>
+                        <a href={`https://stratum.hauge.rocks/invite`}>Invite</a>
+                    </li>
+                    <li>
+                        <a href={`${host}/logout`}>Logout</a>
+                    </li>
+                </ul>
+            </Box>
         </header>
     )
 }
