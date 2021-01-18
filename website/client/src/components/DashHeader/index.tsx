@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box } from '@chakra-ui/react';
+import { Box, Image } from '@chakra-ui/react';
 import { host } from '../../index';
 
 interface IProps {
     guildsButton?: boolean;
     guildName?: string;
+    icon?: string;
 }
 
 export function DashHeader(props: IProps) {
@@ -15,8 +16,18 @@ export function DashHeader(props: IProps) {
             </Box>
             <Box className="rnav">
                 <ul className="rnav-nav">
+                    <li className="rnav-img">
+                        {props.icon ? (
+                            <Box>
+                                <Image src={props.icon} alt="" objectFit="contain"></Image>
+                                <br/>
+                            </Box>
+                        ) : ""}
+                    </li>
                     <li>
-                        {props.guildName ? <span>{ props.guildName }</span> : ""}
+                        {props.guildName ? <div className="rnav-guild">
+                            {props.guildName}
+                        </div> : ""}
                     </li>
                     <li>
                         {props.guildsButton ? <a href={`/menu`}>Guilds</a> : ""}

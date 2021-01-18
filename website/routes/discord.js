@@ -80,6 +80,7 @@ const routerBuild = (client) => {
 
     router.get("/guilds/:id/config", async (req, res) => {
         const { id } = req.params;
+        console.log(id)
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
             return res.sendStatus(400);
         }
@@ -94,7 +95,7 @@ const routerBuild = (client) => {
         if (!g) return res.sendStatus(404);
         let prefix = await getPrefix(id);
         if (!prefix) {
-            prefix = await getGlobalSetting('global_prefix');
+            prefix = (await getGlobalSetting('global_prefix'))[0].value;
         }
         if (!prefix) {
             return res.status(500).send({ msg: "Unable to retrieve prefix" });

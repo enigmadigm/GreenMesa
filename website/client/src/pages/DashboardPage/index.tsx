@@ -43,11 +43,11 @@ function CustomNavItem(props: CNIProps) {
 export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
     const guildID = match.params.id;
 
-    const [user, setUser] = React.useState<IUser | {}>({});
+    const [user, setUser] = React.useState<IUser>({});
     const [loading, setLoading] = React.useState(true);
     const [page, setPage] = React.useState(match.params.page);
     //const [active, setActive] = React.useState("home");
-    const [meta, setMeta] = React.useState <GMeta | {}>({});
+    const [meta, setMeta] = React.useState <GMeta>({});
 
     React.useEffect(() => {
         fetch("/api/auth")
@@ -74,7 +74,7 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
 
     return !loading ? (
         <div className="app">
-            <DashHeader guildsButton={true} />
+            <DashHeader guildsButton={true} guildName={meta.name} icon={meta.icon || ""} />
             <Router>
                 <div className="controls-body">
                     <div className="x-sidebar">

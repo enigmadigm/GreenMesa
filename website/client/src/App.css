@@ -9,6 +9,13 @@ body, html {
   background-color: #2f353a !important;
 }
 
+.lspinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -100%);
+}
+
 .app {
   display: flex;
 }
@@ -38,6 +45,7 @@ body, html {
 .rnav-nav {
   list-style: none;
   display: flex;
+  transform: translateY(20%);
 }
 
 .rnav-nav li {
@@ -52,14 +60,27 @@ body, html {
   display: block;
 }
 
-.lspinner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -100%);
+.rnav-guild {
+  padding-right: 20px;
+  color: #daa520;
+  border-right: solid 2px #daa520;
+  max-height: 55px;
+  overflow: hidden;
+}
+
+.rnav-img {
+  height: 50px;
+  width: 50px;
+  transform: translateY(-7%);
+}
+
+.rnav-imag img {
+  position: fixed;
 }
 
 .controls-body {
+  /* Setting this to 100% actually gives the cards space */
+  /*width: 100%;*/
   display: flex;
   margin-top: 55px;
 }
@@ -151,14 +172,14 @@ body, html {
 
 .input-group {
   position: relative;
-  display: -webkit-box;
+  /*display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   -webkit-box-align: stretch;
   -ms-flex-align: stretch;
-  align-items: stretch;
+  align-items: stretch;*/
   width: 100%;
 }
 
@@ -169,4 +190,29 @@ body, html {
   margin-bottom: .5rem;
   line-height: 1.2;
   margin-top: 0;
+}
+
+.c-button {
+  background-color: #2F353A;
+  border: solid #fff 1px;
+  padding: 4px 10px;
+}
+
+.c-button:disabled {
+  background-color: #000000;
+}
+
+.field-alert {
+  position: relative;
+  padding: 5px;
+}
+
+.field-success {
+  color: limegreen;
+  background-color: rgba(0,200,0,0.4);
+}
+
+.field-error {
+  color: red;
+  background-color: rgba(200,0,0,0.4);
 }
