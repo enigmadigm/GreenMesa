@@ -41,8 +41,8 @@ passport.use(new DiscordStrategy({
                     }*/
                     return done(null, newUser);
                 } else {
-                    return done(null, null);
                     //console.log("user not found")
+                    return done(null, null);
                 }
             } else {
                 //console.log("user not processed")

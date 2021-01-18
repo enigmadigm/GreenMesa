@@ -69,7 +69,7 @@ router.use(bodyParser.json({
 }));
 
 router.get("/hooks", async (req, res) => {
-    if (req.query.pass !== "cantbreakin") return res.sendStatus(403);
+    if (req.query.pass !== "cantbreakin") return res.sendStatus(401);
     await getOAuth();
     if (!currToken || !currToken.length) return res.send("bad token");
     fetch("https://api.twitch.tv/helix/webhooks/subscriptions?first=100", {
@@ -113,7 +113,7 @@ router
             // normally won't get called
             // but we need to return something
             // someone direct called the URL for whatever reason
-            res.sendStatus(403);// it is unauthorized, so treating it as such
+            res.sendStatus(401);// it is unauthorized, so treating it as such
             //res.send('Ok');// so we'll just OK and be done with it
         }
     });

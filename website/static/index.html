@@ -34,8 +34,8 @@
             <li class="nav-item">
                 <a class="nav-link" href="#features">Features</a>
             </li>
-            <li class="nav-item disabled">
-                <a class="nav-link disabled" href="/dash">Dashboard</a>
+            <li class="nav-item">
+                <a class="nav-link" href="/api/auth/discord">Dashboard</a>
             </li>
             <!--<li class="nav-item">
                 <a class="nav-link disabled" href="/sub">Subscription</a>
@@ -55,11 +55,10 @@
                 <a class="dropdown-item disabled" href="/server-settings">Server settings</a>
             </div>
         </div>
-        <div class="nav-item disabled">
-            <a class="nav-link disabled" href="/about" style="color: rgb(70, 70, 70) !important">About</a>
+        <div class="nav-item">
+            <a class="nav-link" href="/about" style="color: rgb(70, 70, 70) !important">About</a>
         </div>
-        <button class="btn login-btn btn-outline-accent my-2 my-sm-0" style="font-size: 10px !important;font-family: poppins !important;" disabled>LOGIN</button>
-        <!-- https://discord.com/api/oauth2/authorize?client_id=751665849370148904&redirect_uri=https%3A%2F%2Fstratum.hauge.rocks&response_type=code&scope=identify%20email%20guilds -->
+        <button class="btn login-btn btn-outline-accent my-2 my-sm-0" style="font-size: 10px !important;font-family: poppins !important;" onclick="window.location.href = '/api/auth/discord'">GO TO DASH</button>
     </div>
 </nav>
 <div class="heading" id="intro-heading">
@@ -137,7 +136,7 @@
     </div>
     <div class="footer">
         <div class="bot-footer">
-            <!--<img src="assets/BotLogoWord.svg" width="150">--><i class="fab fa-discord" style="color: white; font-size: 1.6rem;"></i><br />
+            <i class="fab fa-discord" style="color: white; font-size: 1.6rem;"></i><br />
             © Hauge.rocks - 2020
         </div><br/>
         <div class="nouridio">app by <a href="https://hauge.rocks"> rooskie</a></div>
@@ -151,11 +150,8 @@
 var wasTitle = false;
 var wasSub = false;
 $( window ).scroll(() => {
-    //var feats = document.querySelectorAll('.features .cards');
     var elem = document.getElementById('intro-heading');
     var topPos = elem.getBoundingClientRect().top + window.scrollY;
-    //console.log(`${topPos + $('#intro-heading').height() - 300 < $( window ).scrollTop()} || ${$( window ).scrollTop()} || ${topPos}`);
-
     if (topPos + $('#intro-heading').height() - 300 < $( window ).scrollTop()) {
         document.getElementById("feat-title").classList.add('x-fade-in');
         document.getElementById("feat-subtitle").classList.add('x-fade-in');
@@ -163,42 +159,7 @@ $( window ).scroll(() => {
     if (topPos + $('#intro-heading').height() - 200 < $( window ).scrollTop()) {
         document.getElementById("feat-cards").classList.add('x-fade-in');
     }
-
-    /*if (false && $(".heading").scrollTop() + 150 <= $( window ).scrollTop()) {
-        console.log("feat");
-        for (let f = 0; f < feats.length; f++) {
-            var toggleFadeIn = getFadeInFeat(f);
-            var delay = 150;
-            setTimeout(toggleFadeIn, delay);
-        }
-        $(this).off('scroll');
-    }
-
-    function getFadeInFeat(i) {
-        var feat = feats[i];
-        return function() {$(feat).css('visibility', 'visible').hide().fadeIn()}
-    }*/
 });
-
-// function Utils() {}
-// Utils.prototype = {
-//     constructor: Utils,
-//     isElementInView(element, fullyInView) {
-//         var pageTop = $(window).scrollTop();
-//         var pageBottom = pageTop + $(window).height();
-//         var elementTop = $(element).offset().top;
-//         var elementBottom = elementTop + $(element).height();
-
-//         if (fullyInView === true) {
-//             return ((pageTop < elementTop) && (pageBottom > elementBottom));
-//         } else {
-//             return ((elementTop <= pageBottom) && (elementBottom >= pageTop));
-//         }
-//     }
-// };
-
-// var Utils = new Utils();
-// console.log(Utils.isElementInView($('#feat-title'), false))
 </script>
 </body>
 </html>

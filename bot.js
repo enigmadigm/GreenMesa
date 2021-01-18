@@ -297,7 +297,7 @@ client.on("message", async message => {// This event will run on every single me
         if (!dm) {
             special_prefix = await getPrefix(message.guild.id)
         } else {
-            special_prefix = await getGlobalSetting('global_prefix');
+            special_prefix = (await getGlobalSetting('global_prefix'))[0].value;
         }
         message.gprefix = special_prefix || config.prefix;
     
