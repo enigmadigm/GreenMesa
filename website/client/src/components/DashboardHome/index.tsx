@@ -1,5 +1,5 @@
 import React from 'react';
-import { /*Input, Button,*/ Container } from '@chakra-ui/react';
+import { /*Input, Button, Container*/ } from '@chakra-ui/react';
 import { Formik, ErrorMessage } from "formik";
 import { GMeta, IUser } from '../../pages/DashboardPage';
 import * as yup from 'yup';
@@ -24,8 +24,32 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
     });
 
     return (
-        <Container style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
+            <div className="control-row">
+                <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
+                    <div className="x-card">
+                        <div className="x-card-header">About This Dashboard</div>
+                        <div className="x-card-body">
+                            <p>This site is meant to be a place where server admins can come and configure the behavior of Stratum, and even their server, without having to mess around with commands or other decentralized settings panes.</p>
+                            <hr style={{ marginTop: 10, marginBottom: 15 }} />
+                            <h4 className="cardsubtitle">Dashboard Development</h4>
+                            <p>There obviously isn't much here right now, but this page was launched so that there would be a hint at a future full-featured dashboard. What you see now is probably not what the final product will look like/behave like, but it is the current rough design. This page was also launched so that I could be sure that the dashboard would turn on and be navigable, as well as perform with the backend API of Stratum.</p>
+                            <br/>
+                            <p>The main goal at the moment is coming to a final initial design. This means having a site that has full interactions (no dead buttons) with a mobile friendly UI (which may take a while). After that, the actual settings panes can enter the development phase. The prefix settings pane got to be first because it is special.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
+                    <div className="x-card">
+                        <div className="x-card-header">Moderation</div>
+                        <div className="x-card-body">
+                            <h4 className="cardsubtitle">Toggle Moderation Features</h4>
+                            <p style={{ marginBottom: "1rem" }}>Set whether moderation features are allowed to be used on Stratum.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div className="control-row">
                 <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
                     <div className="x-card">
@@ -88,18 +112,6 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                     </div>
                 </div>
             </div>
-            <br/>
-            <div className="control-row">
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
-                    <div className="x-card">
-                        <div className="x-card-header">Moderation</div>
-                        <div className="x-card-body">
-                            <h4 className="cardsubtitle">Toggle Moderation Features</h4>
-                            <p style={{ marginBottom: "1rem" }}>Set whether moderation features are allowed to be used on Stratum.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Container>
+        </div>
     )
 }

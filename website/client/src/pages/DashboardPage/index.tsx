@@ -2,9 +2,11 @@ import React, { Dispatch, SetStateAction } from 'react';
 //import { RouteComponentProps } from 'react-router-dom';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
-import { DashboardHome, DashboardLevelling, DashHeader } from '../../components';
+import { DashboardHome, DashboardLeveling, DashHeader } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
+import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
+import { faHomeLgAlt, faLevelUpAlt } from '@fortawesome/pro-solid-svg-icons';
 
 export interface IUser {
     guilds?: RESTAPIPartialCurrentUserGuild[];
@@ -32,11 +34,17 @@ interface CNIProps {
     text: string;
     active: boolean;
     oc: Dispatch<SetStateAction<string>>;
+    ico: FontAwesomeIconProps;
 }
 
 function CustomNavItem(props: CNIProps) {
     return (
-        <Link className="lanav-link" to={props.to} style={props.active ? { backgroundColor: "#343B41", color: "#00a2f8"} : {} } onClick={() => {props.oc(props.to)}} >{props.text}</Link>
+        <Link className="lanav-link" to={props.to} style={props.active ? { backgroundColor: "#343B41", color: "#00a2f8" } : {}} onClick={() => { props.oc(props.to) }} >
+            <div className="lanav-icon">
+                <FontAwesomeIcon {...props.ico} />
+            </div>
+            {props.text}
+        </Link>
     )
 }
 
@@ -81,10 +89,10 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                         <nav>
                             <ul className="lanav">
                                 <li className="lanav-item">
-                                    <CustomNavItem to="home" text="Home" active={ page === "home" } oc={setPage} />
+                                    <CustomNavItem to="home" text="Home" active={ page === "home" } oc={setPage} ico={{ icon: faHomeLgAlt }} />
                                 </li>
                                 <li>
-                                    <CustomNavItem to="levelling" text="Levelling" active={page === "levelling"} oc={setPage} />
+                                    <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
                                 </li>
                             </ul>
                         </nav>
@@ -94,7 +102,7 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                             <Route exact path="/dash/:id/home">
                                 <DashboardHome user={user} meta={meta} />
                             </Route>
-                            <Route exact path="/dash/:id/levelling" component={ DashboardLevelling } />
+                            <Route exact path="/dash/:id/leveling" component={ DashboardLeveling } />
                         </Switch>
                     </div>
                 </div>

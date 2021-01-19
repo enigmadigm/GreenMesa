@@ -37,6 +37,10 @@ body, html {
   /*color: #001f3f;*/
 }
 
+.rnav {
+  display: flex;
+}
+
 .rnav-nav button {
   margin: 0 8px;
   border-width: 2px;
@@ -50,8 +54,8 @@ body, html {
 
 .rnav-nav li {
   position: relative;
-  padding-left: .5rem !important;
-  padding-right: .5rem !important;
+  padding-left: .5rem;
+  padding-right: .5rem;
 }
 
 .rnav-link {
@@ -61,17 +65,23 @@ body, html {
 }
 
 .rnav-guild {
-  padding-right: 20px;
   color: #daa520;
-  border-right: solid 2px #daa520;
   max-height: 55px;
   overflow: hidden;
+  white-space: nowrap;
+}
+
+.rnav-guild-divider {
+  padding-left: 20px;
+  margin-right: 8px;
+  border-right: solid 2px #daa520;
+  height: 30px;
 }
 
 .rnav-img {
   height: 50px;
   width: 50px;
-  transform: translateY(-7%);
+  /*transform: translateY(-7%);*/
 }
 
 .rnav-imag img {
@@ -121,12 +131,24 @@ body, html {
   display: block;
   padding: .75rem 1rem;
   text-decoration: none;
+  position: relative;
+  white-space: nowrap;
+}
+
+.lanav-icon {
+  display: inline-block;
+  width: 1.09375rem;
+  margin: 0 .5rem 0 0;
+  font-size: .875rem;
+  color: #73818f;
+  text-align: center;
 }
 
 .x-main {
   margin-left: 200px;
   flex: 1;
   box-sizing: border-box;
+  display: block;
 }
 
 .control-row {
@@ -149,6 +171,8 @@ body, html {
   background-clip: border-box;
   border: 1px solid #23282c;
   border-radius: .25rem;
+  max-width: 100ch;
+  margin-bottom: 24px;
 }
 
 .x-card-header {
@@ -215,4 +239,35 @@ body, html {
 .field-error {
   color: red;
   background-color: rgba(200,0,0,0.4);
+}
+
+@media screen and (max-width: 800px) {
+  .app .x-sidebar {
+    width: 50px;
+  }
+  .x-main {
+    margin-left: 50px;
+  }
+  .lanav-icon {
+    display: block;
+    float: left;
+    width: 50px;
+    font-size: 18px;
+  }
+  .rnav-guild-divider {
+    display: none;
+  }
+  .top-header {
+    padding-left: 0;
+  }
+  .lanav-link {
+    padding-left: 0;
+    padding-bottom: 20px;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .h-title {
+    display: none;
+  }
 }

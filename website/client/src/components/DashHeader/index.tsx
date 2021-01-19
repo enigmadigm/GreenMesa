@@ -15,20 +15,21 @@ export function DashHeader(props: IProps) {
                 Stratum Dashboard
             </Box>
             <Box className="rnav">
+                <div className="rnav-img">
+                    {props.icon ? (
+                        <Box>
+                            <Image src={props.icon} alt="" objectFit="contain"></Image>
+                            <br/>
+                        </Box>
+                    ) : ""}
+                </div>
                 <ul className="rnav-nav">
-                    <li className="rnav-img">
-                        {props.icon ? (
-                            <Box>
-                                <Image src={props.icon} alt="" objectFit="contain"></Image>
-                                <br/>
-                            </Box>
-                        ) : ""}
-                    </li>
-                    <li>
-                        {props.guildName ? <div className="rnav-guild">
+                    {props.guildName ? <li>
+                        <div className="rnav-guild">
                             {props.guildName}
-                        </div> : ""}
-                    </li>
+                        </div>
+                    </li> : ""}
+                    {props.guildName ? <li className="rnav-guild-divider"></li> : ""}
                     <li>
                         {props.guildsButton ? <a href={`/menu`}>Guilds</a> : ""}
                     </li>
