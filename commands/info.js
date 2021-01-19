@@ -12,7 +12,7 @@ module.exports = {
                     color: parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10) || 3447003,
                     title: "GreenMesa Info",
                     url: "https://enigmadigm.com/apps/greenmesa/help",
-                    description: "this is a bot, it does stuff, stuff listed in `help`\nthis bot will be punished if it lets down its masters",
+                    description: "[Use the dashboard](https://stratum.hauge.rocks/dash) to intuitively control the bot.\n\nthis is a bot, it does stuff, stuff listed in `help`\nthis bot will be punished if it lets down its masters",
                     fields: [
                         {
                             "name": "Architect",

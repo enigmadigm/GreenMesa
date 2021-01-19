@@ -133,7 +133,7 @@ const xpcooldowns = new Discord.Collection();
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
     xlg.log(`Bot ${client.user.tag}(${client.user.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
-    client.channels.cache.get('661614128204480522').send(`Started :green_square: :green_square:`).catch(console.error);
+    client.channels.cache.get('661614128204480522').send(`Started \\🟩 \\🟩`).catch(console.error);
     setInterval(() => {
         client.channels.cache.get('661614128204480522').send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
         updateBotStats(client);

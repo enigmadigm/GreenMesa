@@ -80,7 +80,6 @@ const routerBuild = (client) => {
 
     router.get("/guilds/:id/config", async (req, res) => {
         const { id } = req.params;
-        console.log(id)
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
             return res.sendStatus(400);
         }
