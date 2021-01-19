@@ -3,7 +3,7 @@ require('./strategies/discord');
 //const xlg = require("../xlogger");
 const express = require("express");
 const passport = require('passport');
-const helmet = require("helmet");
+//const helmet = require("helmet");
 const path = require("path");
 const PORT = process.env.WEBSITE_PORT || 3002;
 const routes = require('./routes');
@@ -30,17 +30,17 @@ class MesaWebsite {
             saveUninitialized: false,
             store: new MySQLStore({}, conn)
         }));
-        this.app.set("x-powered-by", "your mom");// WHY DOES THIS NOT WORK 
+        //this.app.set("x-powered-by", "your mom");// WHY DOES THIS NOT WORK 
         this.app.set('etag', false);
-        this.app.use(express.json())
+        this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: false }))
-        this.app.use(helmet());
+        //this.app.use(helmet());
         this.app.use(passport.initialize());
         this.app.use(passport.session());
-        this.app.use(express.static(path.join(__dirname, STATIC), {
+        /*this.app.use(express.static(path.join(__dirname, STATIC), {
             index: false,
             extensions: ['html']
-        }));// https://stackoverflow.com/a/40201169/10660033
+        }));*/// https://stackoverflow.com/a/40201169/10660033
         this.app.use('/api', routes(this.client));
         this.app.get("/", (req, res) => {
             res.sendFile(path.join(__dirname, STATIC, "index.html"));
