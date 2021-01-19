@@ -1,5 +1,7 @@
 # GreenMesa
 ![](https://img.shields.io/github/package-json/v/enigmadigm/greenmesa)
+![](https://img.shields.io/github/license/enigmadigm/greenmesa)
+[![](https://img.shields.io/website?label=dashboard&url=https%3A%2F%2Fstratum.hauge.rocks%2Fdash)](https://stratum.hauge.rocks/dash)
 
 This is the repository for a Discord bot known as GreenMesa (GM). This page acts acts as a convenient way for @GalaxySH to store core files and other stuff for the bot. 
 
