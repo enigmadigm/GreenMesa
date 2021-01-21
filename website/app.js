@@ -37,10 +37,10 @@ class MesaWebsite {
         //this.app.use(helmet());
         this.app.use(passport.initialize());
         this.app.use(passport.session());
-        /*this.app.use(express.static(path.join(__dirname, STATIC), {
+        this.app.use(express.static(path.join(__dirname, STATIC), {
             index: false,
             extensions: ['html']
-        }));*/// https://stackoverflow.com/a/40201169/10660033
+        }));// https://stackoverflow.com/a/40201169/10660033
         this.app.use('/api', routes(this.client));
         this.app.get("/", (req, res) => {
             res.sendFile(path.join(__dirname, STATIC, "index.html"));
