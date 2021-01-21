@@ -3,6 +3,7 @@ const { permLevels } = require('../permissions');
 const { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole, deleteAllLevelRoles } = require("../dbmanager");
 //const moment = require("moment");
 const { stringToChannel, stringToRole } = require('../utils/parsers');
+const { Role, Message } = require("discord.js");
 
 module.exports = {
     name: "settings",
@@ -25,6 +26,7 @@ module.exports = {
      */
     async execute(client, message, args) {
         try {
+            if (!(message instanceof Message)) return;
             let fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
             let info_embed_color = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
             let success_embed_color = parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10);
@@ -42,9 +44,9 @@ module.exports = {
                         - \`levelroles\` set the roles rewarded for levels
                         - \`serverlog\` configure how the bot logs server activity for you
                         - \`moderation\` enable or disable all moderation features
+                        - \`modrole\` set the role that gives mod powers
                         \\🔒 \`caselogging\` log moderation events in an organized system
                         \\🔒 \`adminrole\` set the role that gives admin powers
-                        \\🔒 \`modrole\` set the role that gives mod powers
                         \\🔒 \`commandchannel\` set a channel to restrict all command usage to
                         
                         \\🔒 = in dev`,
@@ -296,7 +298,49 @@ module.exports = {
                     break;
                 }
                 case 'modrole': {
-                    await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                    //await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
+                    argIndex++;
+                    if (!args[argIndex]) {
+                        const result = await getGuildSetting(message.guild, "mod_role");
+                        let mrid = "";
+                        if (result && result[0] && result[0].value) {
+                            mrid = result[0].value;
+                        }
+                        const mr = message.guild.roles.cache.get(mrid);
+                        message.channel.send({
+                            embed: {
+                                color: info_embed_color,
+                                description: `${mr ? `Current Modrole:\n${mr} (${mr.id})\n\n` : ""}To set/unset the modrole please provide:\n\`<role @ or id | 'reset'>\``
+                            }
+                        });
+                        return;
+                    }
+                    if (args[argIndex] === "reset" && !args[argIndex + 1]) {
+                        await editGuildSetting(message.guild, "mod_role", ``, true);
+                        message.channel.send({
+                            embed: {
+                                color: success_embed_color,
+                                description: `Done. The moderator role has now been reset to none.`
+                            }
+                        });
+                        return;
+                    }
+                    const role = stringToRole(message.guild, args[argIndex], true, false, false);
+                    if (!role || !(role instanceof Role)) {
+                        client.specials.sendError(message.channel, 'Please send a valid role.');
+                        return;
+                    }
+                    const result = await editGuildSetting(message.guild, "mod_role", `${role.id}`)
+                    if (!result) {
+                        client.specials.sendError(message.channel, 'The role could not be registered.');
+                        return;
+                    }
+                    message.channel.send({
+                        embed: {
+                            color: success_embed_color,
+                            description: `Done. Users with ${role} will now be considered moderators.`
+                        }
+                    });
                     break;
                 }
                 case 'caselogging': {

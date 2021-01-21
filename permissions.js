@@ -1,5 +1,6 @@
 const xlg = require("./xlogger");
-const { getGlobalSetting, getXP } = require("./dbmanager");
+const { getGlobalSetting, getXP, getGuildSetting } = require("./dbmanager");
+const { GuildMember } = require("discord.js");
 
 const permLevels = {
     member: 0,
@@ -11,7 +12,7 @@ const permLevels = {
 }
 
 async function getPermLevel(member) {
-    if (member == null) {
+    if (member == null || !(member instanceof GuildMember)) {
         return permLevels.member;
     }
     let botmasters = await getGlobalSetting("botmasters").catch(xlg.error);
@@ -24,6 +25,12 @@ async function getPermLevel(member) {
     }
     if (member.hasPermission('ADMINISTRATOR')) { // if a user has admin rights he's automatically a admin
         return permLevels.admin;
+    }
+    const modrole = await getGuildSetting(member.guild, "mod_role");
+    if (modrole && modrole[0]) {
+        if (member.roles.cache.has(modrole[0].value)) {
+            return permLevels.mod;
+        }
     }
     const memberXP = await getXP(member)
     if (memberXP && memberXP.length && memberXP[0].level > 0) {
