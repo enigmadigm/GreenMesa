@@ -1,8 +1,9 @@
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
 const { Client } = require('discord.js');
-const { setPrefix, getPrefix, getGlobalSetting } = require('../../dbmanager');
+const { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } = require('../../dbmanager');
 const xlg = require('../../xlogger');
+const express = require('express');
 
 function getMutualGuilds(userGuilds, botGuilds) {
     return userGuilds.filter(g => {
@@ -18,8 +19,10 @@ function getMutualGuildsWithPerms(userGuilds, botGuilds) {
 
 const routerBuild = (client) => {
     if (!(client instanceof Client)) return;
-    const router = require('express').Router();
-    
+    const router = express.Router();
+
+    router.use(express.json());
+
     router.get('/guilds', (req, res) => {
         if (!req.user) {
             return res.sendStatus(401);
@@ -99,14 +102,20 @@ const routerBuild = (client) => {
         if (!prefix) {
             return res.status(500).send({ msg: "Unable to retrieve prefix" });
         }
+        const modAllRes = await getGuildSetting(id, 'all_moderation');
+        let modAll = false;
+        if (modAllRes && modAllRes[0] && modAllRes[0].value === "enabled") {
+            modAll = true;
+        }
         try {
             res.send({
                 id,
                 name: g.name,
                 prefix,
                 icon: g.iconURL(),
-                members: g.memberCount
-            })
+                members: g.memberCount,
+                moderation: modAll
+            });
         } catch (e) {
             xlg.error(e);
             res.sendStatus(500);

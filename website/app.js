@@ -10,7 +10,7 @@ const routes = require('./routes');
 //const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
 const session = require("express-session");
 const MySQLStore = require('express-mysql-session')(session);
-const { conn, getTwitchSubsForID } = require("../dbmanager");
+const { conn } = require("../dbmanager");
 const { Client } = require('discord.js');
 const STATIC = "./static";
 
@@ -32,8 +32,8 @@ class MesaWebsite {
         }));
         //this.app.set("x-powered-by", "your mom");// WHY DOES THIS NOT WORK 
         this.app.set('etag', false);
-        this.app.use(express.json());
-        this.app.use(express.urlencoded({ extended: false }))
+        //this.app.use(express.json());// THIS IS WHAT WAS BREAKING THE TWITCH SECURITY MIDDLEWARE
+        this.app.use(express.urlencoded({ extended: false }));
         //this.app.use(helmet());
         this.app.use(passport.initialize());
         this.app.use(passport.session());
@@ -53,60 +53,10 @@ class MesaWebsite {
             req.logout();
             res.redirect("/");
         })
-        // stuff for handling the api endpoint for twitch
-        // it is here because it needs access to the bot client
-        this.app.post("/api/twitch", async (req, res) => {
-            console.log('Incoming Post request on /api/twitch');
-            // the middleware above ran
-            // and it prepared the tests for us
-            // so check if we event generated a twitch_hub
-            if (req.twitch_hub) {
-                if (req.twitch_hex == req.twitch_signature) {
-                    console.log('The signature matched');
-                    // the signature passed so it should be a valid payload from Twitch
-                    // we ok as quickly as possible
-                    res.send('Ok');
-                    // you can do whatever you want with the data
-                    // it's in req.body
-                    try {
-                        if (req.query.streamer && req.query.streamer.length) {
-                            if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live") {
-                                // twitch sender
-                                const subs = await getTwitchSubsForID(req.query.streamer);
-                                for (let i = 0; i < subs.length; i++) {
-                                    const sub = subs[i];
-                                    const guild = await this.client.guilds.fetch(sub.guildid);
-                                    if (guild) {
-                                        const channel = guild.channels.cache.get(sub.channelid);
-                                        if (channel) {
-                                            channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            console.log('Received a Twitch payload with no id query param');
-                        }
-                    } catch (error) {
-                        console.error(error)
-                    }
-                } else {
-                    console.log('The Signature did not match');
-                    // the signature was invalid
-                    res.sendStatus(401);
-                    //res.send('Ok');// we'll ok for now but there are other options
-                }
-            } else {
-                console.log('It didn\'t seem to be a Twitch Hook');
-                // again, not normally called
-                res.sendStatus(401);
-                //res.send('Ok');// but dump out a OK
-            }
-        });
 
         if (process.env.NODE_ENV === "production") {
             this.app.use(express.static(path.join(__dirname, 'client/build')));
-            this.app.get(/(dash\/|menu\/?).*/, function (req, res) {
+            this.app.get(/(dash\/?|menu\/?).*/, function (req, res) {
                 res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
             });
         }
