@@ -16,7 +16,7 @@ const config = JSON.parse(fs.readFileSync(path.join(
 
 // Require depedancies
 // express is used for handling incoming HTTP requests "like a webserver"
-const router = require('express').Router();
+//const router = require('express').Router();
 // bodyparser is for reading incoming data
 const bodyParser = require('body-parser');
 // cypto handles Crpytographic functions, sorta like passwords (for a bad example)
@@ -31,6 +31,7 @@ const querystring = require('querystring');
 // database functions
 const { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } = require("../../dbmanager");
 const xlg = require('../../xlogger');
+const { Client } = require('discord.js');
 // discord client
 //const Bot = require('../../bot');
 //no
@@ -48,57 +49,60 @@ setInterval(() => {
     console.log('Server raised on', config.port);
 });*/
 
-// Middleware!
-// Express allows whats called middle ware
-// it runs before (or after) other parts of the route runs
-router.use(bodyParser.json({
-    verify: function(req, res, buf/*, encoding*/) {
-        // is there a hub to verify against
-        req.twitch_hub = false;
-        if (req.headers && req.headers['x-hub-signature']) {
-            req.twitch_hub = true;
 
-            var xHub = req.headers['x-hub-signature'].split('=');
-            // what the hell does this do
-            req.twitch_hex = crypto.createHmac(xHub[0], config.hub_secret)
-                .update(buf)
-                .digest('hex');
-            req.twitch_signature = xHub[1];
+const routerBuild = (client) => {
+    if (!(client instanceof Client)) return;
+    const router = require('express').Router();
+
+    // Middleware!
+    // Express allows whats called middle ware
+    // it runs before (or after) other parts of the route runs
+    router.use(bodyParser.json({
+        verify(req, res, buf/*, encoding*/) {
+            // is there a hub to verify against
+            req.twitch_hub = false;
+            if (req.headers && req.headers['x-hub-signature']) {
+                req.twitch_hub = true;
+
+                var xHub = req.headers['x-hub-signature'].split('=');
+                // what the hell does this do
+                req.twitch_hex = crypto.createHmac(xHub[0], config.hub_secret)
+                    .update(buf)
+                    .digest('hex');
+                req.twitch_signature = xHub[1];
+            }
         }
-    }
-}));
+    }));
 
-router.get("/hooks", async (req, res) => {
-    if (req.query.pass !== "cantbreakin") return res.sendStatus(401);
-    await getOAuth();
-    if (!currToken || !currToken.length) return res.send("bad token");
-    fetch("https://api.twitch.tv/helix/webhooks/subscriptions?first=100", {
-        method: "GET",
-        headers: {
-            "Client-ID": `${config.client_id}`,
-            "Authorization": `Bearer ${currToken}`
+    router.get("/hooks", async (req, res) => {
+        if (req.query.pass !== "cantbreakin") return res.sendStatus(401);
+        await getOAuth();
+        if (!currToken || !currToken.length) return res.send("bad token");
+        fetch("https://api.twitch.tv/helix/webhooks/subscriptions?first=100", {
+            method: "GET",
+            headers: {
+                "Client-ID": `${config.client_id}`,
+                "Authorization": `Bearer ${currToken}`
+            }
+        }).then(res => res.json()).then(body => res.json(body))
+    });
+    
+    /*router.get("/unsubscribe", async (req, res) => {
+        if (req.query.pass !== "cantbreakin") return;
+        const who = req.query.u;
+        if (!who) {
+            res.send("Username not specified")
+            console.log("unsub u not specified");
+            return
         }
-    }).then(res => res.json()).then(body => res.json(body))
-});
+        await getOAuth();
+        await unregisterTwitchWebhook(who);
+        res.send(`Unsubscribed from: ${who}`)
+    })*/
 
-/*router.get("/unsubscribe", async (req, res) => {
-    if (req.query.pass !== "cantbreakin") return;
-    const who = req.query.u;
-    if (!who) {
-        res.send("Username not specified")
-        console.log("unsub u not specified");
-        return
-    }
-    await getOAuth();
-    await unregisterTwitchWebhook(who);
-    res.send(`Unsubscribed from: ${who}`)
-})*/
-
-// Routes
-router
-    .route('/')
-    .get((req, res) => {
-        console.log('Incoming Get request on /');
+    // Routes
+    router.get('/', (req, res) => {
+        console.log('Incoming Get request on /api/twitch');
         // Twitch will send a verfiy to your handler
         // in order to verify that it can be access
         // we'll test if the call is from Twitch
@@ -117,6 +121,59 @@ router
             //res.send('Ok');// so we'll just OK and be done with it
         }
     });
+
+    // stuff for handling the api endpoint for twitch (post)
+    router.post("/", async (req, res) => {
+        console.log('Incoming Post request on /api/twitch');
+        // the middleware above ran
+        // and it prepared the tests for us
+        // so check if we event generated a twitch_hub
+        if (req.twitch_hub) {
+            if (req.twitch_hex == req.twitch_signature) {
+                console.log('The signature matched');
+                // the signature passed so it should be a valid payload from Twitch
+                // we ok as quickly as possible
+                res.send('Ok');
+                // you can do whatever you want with the data
+                // it's in req.body
+                try {
+                    if (req.query.streamer && req.query.streamer.length) {
+                        if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live") {
+                            // twitch sender
+                            const subs = await getTwitchSubsForID(req.query.streamer);
+                            for (let i = 0; i < subs.length; i++) {
+                                const sub = subs[i];
+                                const guild = await client.guilds.fetch(sub.guildid);
+                                if (guild) {
+                                    const channel = guild.channels.cache.get(sub.channelid);
+                                    if (channel) {
+                                        channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        console.log('Received a Twitch payload with no id query param');
+                    }
+                } catch (error) {
+                    console.error(error)
+                }
+            } else {
+                console.log('The Signature did not match');
+                // the signature was invalid
+                res.sendStatus(401);
+                //res.send('Ok');// we'll ok for now but there are other options
+            }
+        } else {
+            console.log('It didn\'t seem to be a Twitch Hook');
+            // again, not normally called
+            res.sendStatus(401);
+            //res.send('Ok');// but dump out a OK
+        }
+    });
+
+    return router;
+}
 
 async function addTwitchWebhook(username, isID = false, guildid, targetChannel, message) {
     //if (!token) token = (await getOAuth()).access_token;
@@ -285,7 +342,8 @@ setInterval(async () => {
 exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.twitchIDLookup = idLookup;*/
 //startHookExpirationManagement();
-exports.twitchRouter = router;
+//exports.twitchRouter = router;
+exports.twitchRouter = routerBuild;
 exports.addTwitchWebhook = addTwitchWebhook;
 exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.unsubscribeTwitchWebhook = unsubscribeTwitchWebhook;
