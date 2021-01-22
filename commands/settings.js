@@ -338,7 +338,7 @@ module.exports = {
                     message.channel.send({
                         embed: {
                             color: success_embed_color,
-                            description: `Done. Users with ${role} will now be considered moderators.`
+                            description: `The modrole has been set to ${role}. Only users with ${role} will now be considered moderators.`
                         }
                     });
                     break;

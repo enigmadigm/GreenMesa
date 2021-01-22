@@ -6,7 +6,10 @@ const { permLevels } = require('../permissions');
 module.exports = {
     name: 'spiderman',
     aliases: ['spidey'],
-    description: 'ask spiderman for help',
+    description: {
+        short: "a family guy reference",
+        long: "A family guy reference. Ask spiderman for help.",
+    },
     category: 'fun',
     guildOnly: true,
     permLevel: permLevels.trustedMember,
