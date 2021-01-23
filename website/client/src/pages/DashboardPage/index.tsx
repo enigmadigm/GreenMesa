@@ -21,6 +21,7 @@ export interface GMeta {
     name?: string;
     prefix?: string;
     members?: number;
+    moderation?: boolean;
 }
 
 interface MatchParams {

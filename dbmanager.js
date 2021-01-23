@@ -248,7 +248,7 @@ async function editGlobalSettings(selectortype = "", selectorvalue = "", updateu
             if (result.affectedRows > 0) {
                 return resolve(result);
             } else if (selectortype === "name") {
-                conn.query(`INSERT INTO \`globalsettings\`(\`name\`, \`value\`, \`updatedby\`) VALUES ('${selectorvalue}','${value}','${updateuser.id}')`, (err, result) => {
+                conn.query(`INSERT INTO \`globalsettings\`(\`name\`, \`value\`, \`updatedby\`, \`category\`) VALUES ('${selectorvalue}','${value}','${updateuser.id}', 'general')`, (err, result) => {
                     if (err) throw err;
                     resolve(result);
                 });
