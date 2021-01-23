@@ -36,7 +36,7 @@ const routerBuild = (client) => {
             user: req.user
         });
     });
-    
+
     router.get('/guildsall', (req, res) => {
         if (!req.user) {
             return res.sendStatus(401);

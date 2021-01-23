@@ -12,9 +12,9 @@ function App() {
   return (
     <Switch>
       <Route path="/menu" exact={false} component={ MenuPage } />
-      <Redirect exact from="/dash" to="/menu" />
-      <Redirect exact from="/dash/:id" to="/dash/:id/home" />
       <Route path="/dash/:id/:page" exact={true} component={ DashboardPage } />
+      <Redirect exact from="/dash/:id" to="/dash/:id/home" />
+      <Redirect from="/dash" to="/menu" />
     </Switch>
   );
 }

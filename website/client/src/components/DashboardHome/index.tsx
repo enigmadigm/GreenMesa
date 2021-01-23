@@ -1,5 +1,5 @@
-import React from 'react';
-import { /*Input, Button, Container*/ } from '@chakra-ui/react';
+import React, { ChangeEvent } from 'react';
+import { /*Input, Button, Container*/ Switch, FormControl, FormLabel } from '@chakra-ui/react';
 import { Formik, ErrorMessage } from "formik";
 import { GMeta, IUser } from '../../pages/DashboardPage';
 import * as yup from 'yup';
@@ -15,6 +15,10 @@ interface HomeProps {
 /*interface MatchParams {
     id: string;
 }*/
+
+function ModSwitch(event: ChangeEvent<HTMLInputElement>) {
+    console.log(event)
+}
 
 export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
     //const [prefix, setPrefix] = React.useState("sm");
@@ -46,6 +50,12 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                         <div className="x-card-body">
                             <h4 className="cardsubtitle">Toggle Moderation Features</h4>
                             <p style={{ marginBottom: "1rem" }}>Set whether moderation features are allowed to be used on Stratum.</p>
+                            <FormControl display="flex" alignItems="center">
+                                <FormLabel htmlFor="enable-moderation-all" mb="0">
+                                    Enable moderation?
+                                </FormLabel>
+                                <Switch id="enable-moderation-all" onChange={ModSwitch} defaultChecked={props.meta.moderation} />
+                            </FormControl>
                         </div>
                     </div>
                 </div>
