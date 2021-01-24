@@ -42,89 +42,16 @@ const { permLevels, getPermLevel } = require("./permissions");
 const { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState } = require('./serverlogger')
 const ar = require("./utils/arhandler");
 const MesaWebsite = require("./website/app");
+const Commands = require('./commands');
 client.specials = require("./utils/specials") || {};
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
 
 // The Discord.js *client*
-client.commands = new Discord.Collection();
-client.categories = new Discord.Collection();
-// ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js') && !file.startsWith('[template]'));
-var commNumber = 1;
-var catNumber = 1;
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    // set a new item in the Collection
-    // with the key as the command name and the value as the exported module
-    client.commands.set(command.name, command);
-    let catdat = {
-        name: '',
-        id: catNumber,
-        count: 1
-    }
-    let catsem = {
-        "fun": "🎉",
-        "utility": "🔬",
-        "moderation": "🛠",
-        "misc": "🎃"
-    };
-    if (Object.keys(catsem).includes(command.category)) {
-        catdat.emoji = catsem[command.category];
-    } else {
-        if (!command.category) catdat.emoji = catsem["misc"];
-    }
-    if (command.category && typeof command.category === 'string') {
-        if (!client.categories.find(c => c.name == command.category)) {
-            catdat.name = command.category;
-            client.categories.set(command.category, catdat);
-            catNumber++;
-        } else {
-            client.categories.find(c => c.name == command.category).count++;
-        }
-    } else {
-        if (!client.categories.find(c => c.name == "misc")) {
-            catdat.name = 'misc';
-            client.categories.set('misc', catdat);
-        } else {
-            client.categories.find(c => c.name === "misc").count++;
-        }
-    }
-    let noName = '';
-    if (command.name == "" || command.name == null) {
-        noName = ' \x1b[33mWARNING: \x1b[32mthis command has no name, it may not be configured properly\x1b[0m';
-    }
-    if (!command.execute) {
-        noName = ' \x1b[33mWARNING: \x1b[32mthis command has no function, it may not be configured properly\x1b[0m';
-    }
-    console.log(`${commNumber} - %s$${command.name}%s has been loaded%s`, "\x1b[35m", "\x1b[0m", noName);
-    commNumber++;
-}
-
-// ▼▼▼▼▼▼▼▼ A lot of this stuff below is all to manage database connections, these are passed through the conn argument in the execute function
-// Connecting to MySQL, external connection
-//var db_config = config.db_config;
-//var conn;
-/*function handleDisconnect() {
-    conn = mysql.createConnection(db_config);
-    conn.connect(function(err) {
-        if (err) {
-            console.log('error when connecting to db:', err);
-            setTimeout(handleDisconnect, 2000);
-        }
-        console.log("Connected to database");
-    });
-    conn.on('error', function(err) {
-        //console.log('db error', err);
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
-        } else {
-            throw err;
-        }
-    });
-}
-handleDisconnect();*/
+const co = new Commands();
+client.commands = co.commands;
+client.categories = co.categories;
 
 // ▼▼▼▼▼ command cooldowns section
 const cooldowns = new Discord.Collection();
@@ -138,7 +65,6 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
         client.channels.cache.get('661614128204480522').send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
         updateBotStats(client);
     }, 3600000);
-    //updateBotStats(client);
 
     setInterval(async () => {
         if (!config.longLife || config.longLife < client.uptime) config.longLife = client.uptime;
