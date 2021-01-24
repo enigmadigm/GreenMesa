@@ -1,54 +1,57 @@
 {
-    "name": "greenmesa",
-    "version": "3.1.2",
-    "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
-    "main": "bot.js",
-    "scripts": {
-        "start": "node bot.js",
-        "test": "echo \"Error: no test specified\" && exit 0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/enigmadigm/greenmesa.git"
-    },
-    "author": "Stefan Hauge",
-    "dependencies": {
-        "@discordjs/opus": "^0.3.3",
-        "body-parser": "^1.19.0",
-        "discord.js": "^12.4.1",
-        "dotenv": "^8.2.0",
-        "express": "^4.17.1",
-        "express-mysql-session": "^2.1.5",
-        "ffmpeg-static": "^4.2.7",
-        "get-image-colors": "^2.0.1",
-        "helmet": "^4.4.1",
-        "ibm-watson": "^6.0.2",
-        "jsdom": "^16.4.0",
-        "luxon": "^1.25.0",
-        "moment": "^2.29.1",
-        "mysql": "^2.18.1",
-        "node-fetch": "^2.6.1",
-        "passport": "^0.4.1",
-        "passport-discord": "^0.1.4",
-        "plotly": "^1.0.6",
-        "pm2": "^4.5.0",
-        "puppeteer": "^5.5.0",
-        "rpg-dice-roller": "^4.5.2",
-        "ytdl-core": "^3.4.2"
-    },
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/enigmadigm/greenmesa/issues"
-    },
-    "homepage": "https://github.com/enigmadigm/greenmesa#readme",
-    "devDependencies": {
-        "dayjs": "^1.9.6",
-        "eslint": "^7.13.0",
-        "jsonschema": "^1.4.0",
-        "reddit": "^1.2.1",
-        "twitch": "^4.3.0",
-        "twitch-webhooks": "^4.3.0",
-        "uniqid": "^5.2.0"
-    },
-    "type": "commonjs"
+  "name": "greenmesa",
+  "version": "3.1.2",
+  "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "snyk": "snyk test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enigmadigm/greenmesa.git"
+  },
+  "author": "Stefan Hauge",
+  "dependencies": {
+    "@discordjs/opus": "^0.3.3",
+    "body-parser": "^1.19.0",
+    "discord.js": "^12.4.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-mysql-session": "^2.1.5",
+    "ffmpeg-static": "^4.2.7",
+    "get-image-colors": "^2.0.1",
+    "helmet": "^4.4.1",
+    "ibm-watson": "^6.0.2",
+    "jsdom": "^16.4.0",
+    "lodash": "^4.17.20",
+    "luxon": "^1.25.0",
+    "moment": "^2.29.1",
+    "mysql": "^2.18.1",
+    "node-fetch": "^2.6.1",
+    "passport": "^0.4.1",
+    "passport-discord": "^0.1.4",
+    "plotly": "^1.0.6",
+    "pm2": "^4.5.0",
+    "puppeteer": "^5.5.0",
+    "rpg-dice-roller": "^4.5.2",
+    "ytdl-core": "^3.4.2"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/enigmadigm/greenmesa/issues"
+  },
+  "homepage": "https://github.com/enigmadigm/greenmesa#readme",
+  "devDependencies": {
+    "dayjs": "^1.9.6",
+    "eslint": "^7.13.0",
+    "jsonschema": "^1.4.0",
+    "reddit": "^1.2.1",
+    "snyk": "^1.439.0",
+    "twitch": "^4.3.0",
+    "twitch-webhooks": "^4.3.0",
+    "uniqid": "^5.2.0"
+  },
+  "type": "commonjs"
 }
