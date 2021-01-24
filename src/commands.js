@@ -2,6 +2,7 @@ const {
     Collection
 } = require("discord.js");
 const fs = require("fs");
+const path = require("path");
 
 class Commands {
     constructor() {
@@ -13,7 +14,7 @@ class Commands {
     // ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
 
     load() {
-        const cf = fs.readdirSync('./commands').filter(file => file.endsWith('.js') && !file.startsWith('[template]'));
+        const cf = fs.readdirSync(path.join(__dirname, './commands')).filter(file => file.endsWith('.js') && !file.startsWith('[template]'));
         // .filter(file => file.endsWith('.js') && !file.startsWith('[template]'))
         let commNumber = 1;
         let catNumber = 1;

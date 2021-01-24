@@ -1,6 +1,6 @@
 // https://github.com/Chew/AcronymGenerator/blob/master/assets/js/changemessage.js
 
-const words = require("../words.json");
+const words = require("../../words.json");
 
 function genPhraseFromAcronym(input) {
     input = input.toLowerCase();

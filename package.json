@@ -4,7 +4,7 @@
   "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
+    "start": "node src/bot.js",
     "test": "echo \"Error: no test specified\" && exit 0",
     "snyk": "snyk test"
   },

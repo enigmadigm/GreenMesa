@@ -1,4 +1,4 @@
-const config = require('../auth.json');
+const config = require('../../auth.json');
 const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
 const { IamAuthenticator } = require('ibm-watson/auth');
 const xlg = require('../xlogger');

@@ -1,5 +1,5 @@
 const mysql = require("mysql");
-const { db_config } = require("./auth.json");
+const { db_config } = require("../auth.json");
 const xlog = require("./xlogger");
 const moment = require("moment");
 const util = require('util');

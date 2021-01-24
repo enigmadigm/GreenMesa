@@ -2,7 +2,7 @@ const xlg = require("../xlogger");
 const { permLevels } = require('../permissions');
 const { getGlobalSetting } = require("../dbmanager");
 const { default: fetch } = require("node-fetch");
-const config = require("../auth.json");
+const config = require("../../auth.json");
 
 // https://github.com/Elementalmp4/GeraldCore/blob/master/commands/rule34.js
 
