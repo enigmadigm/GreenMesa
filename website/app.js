@@ -21,6 +21,11 @@ class MesaWebsite {
         this.client = client;
         this.app = express();
         
+        this.app.use(helmet({ frameguard: { action: "deny" } }));// will have to see if this actually protects
+        //this.app.set('x-powered-by', false);
+        this.app.set('etag', false);
+        //this.app.use(express.json());// THIS IS WHAT WAS BREAKING THE TWITCH SECURITY MIDDLEWARE
+        this.app.use(express.urlencoded({ extended: false }));
         this.app.use(session({
             secret: process.env.DASHBOARD_COOKIE_SECRET || "potato",
             cookie: {
@@ -30,13 +35,12 @@ class MesaWebsite {
             saveUninitialized: false,
             store: new MySQLStore({}, conn)
         }));
-        this.app.disable('x-powered-by');
-        this.app.set('etag', false);
-        //this.app.use(express.json());// THIS IS WHAT WAS BREAKING THE TWITCH SECURITY MIDDLEWARE
-        this.app.use(express.urlencoded({ extended: false }));
-        this.app.use(helmet());// will have to see if this actually protects
         this.app.use(passport.initialize());
         this.app.use(passport.session());
+        this.app.use(function (req, res, next) {
+            res.header("x-powered-by", "Sadness")
+            next();
+        });
         this.app.use(express.static(path.join(__dirname, STATIC), {
             index: false,
             extensions: ['html']
