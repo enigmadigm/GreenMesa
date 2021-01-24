@@ -43,7 +43,7 @@ import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, lo
 import ar from "./utils/arhandler";
 import MesaWebsite from "./website/app";
 import Commands from './commands';
-import { XClient } from "./gm";
+import { XClient, XMessage } from "./gm";
 client.specials = require("./utils/specials") || {};
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
@@ -210,14 +210,14 @@ client.on('emojiDelete', oemoji => {
 });
 
 // the actual command processing
-client.on("message", async message => {// This event will run on every single message received, from any channel or DM.
+client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
         logMsgReceive();
     
-        if (message.author.bot) return;
-        if (message.system) return;
+        if (message.author.bot || message.system) return;
+        if (!message.guild || !client.user || !client.commands || !client.categories) return;
     
-        var dm = false; // checks if it's from a dm
+        let dm = false; // checks if it's from a dm
         if (!message.guild)
             dm = true;
     
@@ -230,13 +230,13 @@ client.on("message", async message => {// This event will run on every single me
             }
         }
         
-        let special_prefix = false;
+        let special_prefix;
         if (!dm) {
             special_prefix = await getPrefix(message.guild.id)
         } else {
             special_prefix = (await getGlobalSetting('global_prefix'))[0].value;
         }
-        message.gprefix = special_prefix || config.prefix;
+        message.gprefix = special_prefix || config.prefix || "";
     
         if (message.mentions && message.mentions.has(client.user)) {
             if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
@@ -244,7 +244,7 @@ client.on("message", async message => {// This event will run on every single me
                 const info_embed_color = parseInt(iec_gs[0].value);
                 message.channel.send({
                     embed: {
-                        "description": `${message.guild.me.nickname || client.user.username}'s prefix for **${message.guild.name}** is **${message.gprefix}**`,
+                        "description": `${message.guild.me?.nickname || client.user?.username}'s prefix for **${message.guild.name}** is **${message.gprefix}**`,
                         "color": info_embed_color
                     }
                 })

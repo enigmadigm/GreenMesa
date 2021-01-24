@@ -1,6 +1,6 @@
-import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
+//import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
 import { stringToChannel, capitalizeFirstLetter } from './utils/parsers';
-import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildMember, Message, MessageEmbed, Role, TextChannel } from 'discord.js';
+import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbed, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
 import xlg from "./xlogger";
 
@@ -12,6 +12,9 @@ async function getLogChannel(guild?: Guild | null): Promise<TextChannel | false>
         editGuildSetting(guild, 'server_log', null, true);
         return false;
     }
+    if (!logChannel || !(logChannel instanceof TextChannel)) {
+        return false;
+    }
     return logChannel;
 }
 
@@ -21,26 +24,27 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
         if (!logChannel || logChannel.type !== 'text') return;
         
         // "color": joining ? 0x00ff00 : 0xff0000,
-        const embed: MessageEmbed = {
-            "author": {
-                "name": `Member ${joining ? 'Joined' : 'Left'}`,
-                "icon_url": member.user.displayAvatarURL()
-            },
-            "description": `${member.user.tag} (${member})${!joining ? `\n ${member.nickname || "***No nickname***"}` : ''}`,
-            "fields": [
-                {
-                    "name": `${joining ? 'Created' : 'Joined'}`,
-                    "value": `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`,
-                    inline: false
+        logChannel.send({
+            embed: {
+                "author": {
+                    "name": `Member ${joining ? 'Joined' : 'Left'}`,
+                    "iconURL": member.user.displayAvatarURL()
+                },
+                "description": `${member.user.tag} (${member})${!joining ? `\n ${member.nickname || "***No nickname***"}` : ''}`,
+                "fields": [
+                    {
+                        "name": `${joining ? 'Created' : 'Joined'}`,
+                        "value": `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`,
+                        inline: false
+                    }
+                ],
+                "color": joining ? parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10) : parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
+                "timestamp": joining ? member.joinedAt?.getTime() || new Date().getTime() : new Date().getTime(),
+                "footer": {
+                    "text": `ID: ${member.id}`
                 }
-            ],
-            "color": joining ? parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10) : parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
-            "timestamp": joining ? member.joinedAt : new Date(),
-            "footer": {
-                "text": `ID: ${member.id}`
             }
-        };
-        logChannel.send({ embed }).catch(console.error);
+        }).catch(console.error);
     } catch (err) {
         xlg.error(err)
     }
@@ -110,9 +114,9 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
                 "color": parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10) || 0xff0000,
                 "author": {
                     "name": `${first?.channel.name}`,
-                    "icon_url": first?.guild?.iconURL
+                    "icon_url": first?.guild?.iconURL() || ""
                 },
-                "timestamp": new Date().toISOString(),
+                "timestamp": new Date(),
                 "description": `**Bulk deleted messages in ${first?.channel.toString()}**`,
                 fields: [
                     {
@@ -121,7 +125,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
                     },
                     {
                         name: 'Messages',
-                        value: `[view](https://txt.discord.website/?txt=${logChannel.id}/${logMessage.attachments.first().id}/DeletedMessages)`
+                        value: `[view](https://txt.discord.website/?txt=${logChannel.id}/${logMessage.attachments.first()?.id}/DeletedMessages)`
                     }
                 ]
             }
@@ -190,7 +194,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
                 embed: {
                     author: {
                         name: `Role ${deletion ? 'Deleted' : 'Created'}`,
-                        icon_url: role.guild.iconURL()
+                        iconURL: role.guild.iconURL() || ""
                     },
                     description: `${deletion ? `@${role.name} (${role.hexColor})` : `${role}\nName: ${role.name}\nColor: ${role.hexColor}`}${deletion ? "\n created " + moment(role.createdAt).utc().fromNow() : ''}`,
                     color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
@@ -219,7 +223,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
             embed: {
                 author: {
                     name: `${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
-                    icon_url: channel.guild.iconURL()
+                    iconURL: channel.guild.iconURL() || ""
                 },
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
                 color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
@@ -247,7 +251,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                     timestamp: new Date(),
                     author: {
                         name: `Channel Name Updated`,
-                        icon_url: logChannel.guild.iconURL()
+                        iconURL: logChannel.guild.iconURL() || ""
                     },
                     description: `${nc}`,
                     fields: [
@@ -311,9 +315,9 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                     timestamp: new Date(),
                     author: {
                         name: `Channel Permissions Changed`,
-                        icon_url: logChannel.guild.iconURL()
+                        iconURL: logChannel.guild.iconURL() || ""
                     },
-                    description: `In channel: ${nc}\nPermissions updated for: \`${subject.name ? subject.name : subject.user.tag ? subject.user.tag : "unknown"}\``,
+                    description: `In channel: ${nc}\nPermissions updated for: \`${(subject instanceof Role ? subject?.name : subject?.user.tag)}\``,
                     footer: {
                         text: `Channel ID: ${nc.id}`
                     },
@@ -348,27 +352,13 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                     await logChannel.send({ embed });
                 }
             }
-
-            //await logChannel.send({ embed });
         }
-        /*
-        await logChannel.send({
-            embed: {
-                color: parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10),
-                author: {
-                    name: ``,
-                    icon_url: logChannel.guild.iconURL()
-                },
-                description: ``,
-            }
-        });
-        */
     } catch (err) {
         xlg.error(err);
     }
 }
 
-export async function logEmojiState(emoji, deletion = false): Promise<void> {
+export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promise<void> {
     try {
         const logChannel = await getLogChannel(emoji.guild);
         if (!logChannel || logChannel.type !== 'text' || !(emoji instanceof Discord.GuildEmoji)) return;
@@ -382,9 +372,9 @@ export async function logEmojiState(emoji, deletion = false): Promise<void> {
             embed: {
                 author: {
                     name: `Emoji ${deletion ? 'Removed' : 'Added'}`,
-                    icon_url: logChannel.guild.iconURL()
+                    iconURL: logChannel.guild.iconURL() || ""
                 },
-                description: `${deletion ? "created " + moment(emoji.createdAt).utc().fromNow() : `${creator ? `Created by: ${emoji.author.tag}` : ""}`}`,
+                description: `${deletion ? "created " + moment(emoji.createdAt).utc().fromNow() : `${creator ? `Created by: ${emoji.author?.tag}` : ""}`}`,
                 color: parseInt((await getGlobalSetting('info_embed_color'))[0].value, 10),
                 image: {
                     url: emoji.url,

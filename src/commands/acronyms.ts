@@ -1,6 +1,6 @@
-const xlg = require('../xlogger');
-const { getGlobalSetting } = require("../dbmanager");
-const acronyms = require('../../acronyms.json');
+import xlg from '../xlogger';
+import { getGlobalSetting } from "../dbmanager";
+import acronyms from '../../acronyms.json';
 const commonAcronyms = [
     {
         acronym: 'brb',

@@ -1,5 +1,6 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+import { XClient, XMessage } from "src/gm";
 //const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {
@@ -16,9 +17,9 @@ module.exports = {
     permLevel: permLevels.trustedMember,
     guildOnly: true,
     ownerOnly: false,
-    async execute(client, message, args) {
+    async execute(client: XClient, message: XMessage, args: string[]) {
         try {
-            if (!args);
+            //
         } catch (error) {
             xlg.error(error);
             await client.specials.sendError(message.channel);

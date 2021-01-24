@@ -1,7 +1,7 @@
-const { getGlobalSetting, getGuildSetting, getXP, checkForLevelRoles } = require("../dbmanager");
-const xlg = require("../xlogger");
+import { getGlobalSetting, getGuildSetting, getXP, checkForLevelRoles } from "../dbmanager";
+import xlg from "../xlogger";
 //const moment = require("moment");
-const { permLevels } = require('../permissions');
+import { permLevels } from '../permissions';
 
 module.exports = {
     name: "levels",

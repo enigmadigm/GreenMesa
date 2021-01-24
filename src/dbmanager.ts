@@ -5,8 +5,8 @@ import {
 import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
-import Discord from 'discord.js';
-import { GSRow, XPRow } from "./gm";
+import Discord, { Guild, GuildMember, Message, User } from 'discord.js';
+import { BSRow, ExpRow, GSRow, LevelRow, XClient } from "./gm";
 const levelRoles = [{
         level: 70,
         name: 'no-life',
@@ -136,9 +136,9 @@ export class DBManager {
      * Get the current amount of xp assigned to a user
      * @param {Discord.GuildMember} target discord user object to select in database
      */
-    async getXP(target: Discord.GuildMember): Promise<XPRow | false> {
+    async getXP(target: Discord.GuildMember): Promise<ExpRow | false> {
         if (!target) return false;
-        const rows = await <Promise<XPRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = '${target.user.id}${target.guild.id}'`);
+        const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = '${target.user.id}${target.guild.id}'`);
         if (rows && rows.length) {
             return rows[0];
         }
@@ -149,7 +149,8 @@ export class DBManager {
      * Uses a message sent by author to update their xp in the database
      * @param {object} message message sent to be counted for author
      */
-    async updateXP(message) {
+    async updateXP(message: Message): Promise<void> {
+        if (!message.guild) return;
         const maxs = await getGlobalSetting("max_xp");
 
         function genXP() {
@@ -160,7 +161,7 @@ export class DBManager {
             if (err) throw err;
             let sql;
             if (rows.length < 1) {
-                sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild.id}', '${message.author.id}', '${message.guild.id}', ${genXP()}, 0)`;
+                sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild?.id}', '${message.author.id}', '${message.guild?.id}', ${genXP()}, 0)`;
             } else {
                 // SENSITIVE AREA
                 // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
@@ -176,13 +177,16 @@ export class DBManager {
                 if (rows[0].level !== levelNow) {
                     rows[0].level = levelNow;
                 }*/
-                sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = '${message.author.id}${message.guild.id}'`
+                sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = '${message.author.id}${message.guild?.id}'`
 
-                this.updateLevelRole(message.member, levelNow);
+                if (message.member) {
+                    this.updateLevelRole(message.member, levelNow);
+                }
             }
             this.query(sql).catch((err) => {
                 if (err.code === "ER_DUP_ENTRY") {
-                    return xlog.error('error: ER_DUP_ENTRY caught and deflected');
+                    xlog.error('error: ER_DUP_ENTRY caught and deflected');
+                    return;
                 } else {
                     throw err;
                 }
@@ -190,8 +194,13 @@ export class DBManager {
         });
     }
 
-    async updateLevelRole(member, level) {
-        if (!member || !member.guild || !member.guild.id || !level) return;
+    /**
+     * Gets the level roles in a guild and gives them to the provided member if they are missing some
+     * @param member the member to apply the xp system to
+     * @param level the level of the member to apply
+     */
+    async updateLevelRole(member: GuildMember, level: number): Promise<boolean> {
+        if (!member || !member.guild || !member.guild.id || !level) return false;
         let levelsEnabled = await getGuildSetting(member.guild, 'xp_levels');
         levelsEnabled = levelsEnabled[0] ? levelsEnabled[0].value : false;
         if (levelsEnabled === "enabled") {
@@ -208,7 +217,7 @@ export class DBManager {
                 for (let i = 0; i < availableRoles.length; i++) {
                     const r = availableRoles[i];
                     if (r) {
-                        if (r.comparePositionTo(member.guild.me.roles.highest) < 0) {
+                        if (member.guild.me && r.comparePositionTo(member.guild.me.roles.highest) < 0) {
                             if (!member.roles.cache.find(ro => ro.id === r.id)) {
                                 member.roles.add(r, 'levelling up').catch(console.error);
                             }
@@ -217,54 +226,65 @@ export class DBManager {
 
                 }
             }
-            return;
+            return true;
         } else {
             return false;
         }
     }
 
-    async checkForLevelRoles(guild) {
-        if (!guild) return;
-        let levelRows = await this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
-        if (!levelRows || !levelRows.length) {
-            for (const ro of levelRoles) {
-                const roleToAdd = await guild.roles.create({
-                    data: {
-                        name: ro.name || `Level ${ro.level}`,
-                        color: ro.color || '#99AAB1',
-                        permissions: 0,
-                        position: 1
+    async checkForLevelRoles(guild: Guild): Promise<LevelRow[] | void> {
+        try {
+            if (!guild) return;
+            let levelRows = await <Promise<LevelRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
+            if (!levelRows || !levelRows.length) {
+                for (const ro of levelRoles) {
+                    const roleToAdd = await guild.roles.create({
+                        data: {
+                            name: ro.name || `Level ${ro.level}`,
+                            color: ro.color || '#99AAB1',
+                            permissions: 0,
+                            position: 1
+                        }
+                    });
+                    await this.query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + roleToAdd.id}', '${guild.id}', '${roleToAdd.id}', ${ro.level})`);
+                }
+                levelRows = await <Promise<LevelRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = ${guild.id} ORDER BY level DESC`);
+            } else {
+                for (let i = 0; i < levelRows.length; i++) {
+                    const dbro = guild.roles.cache.find(ro => ro.id === levelRows[i].roleid);
+                    if (!dbro) {
+                        await this.query(`DELETE FROM levelroles WHERE roleid = '${levelRows[i].roleid}'`).catch(e => console.log(e.stack))
+                        levelRows.splice(i, 1);
                     }
-                }).catch(console.error);
-                await this.query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + roleToAdd.id}', '${guild.id}', '${roleToAdd.id}', ${ro.level})`);
-            }
-            levelRows = await this.query(`SELECT * FROM levelroles WHERE guildid = ${guild.id} ORDER BY level DESC`);
-        } else {
-            for (let i = 0; i < levelRows.length; i++) {
-                const dbro = guild.roles.cache.find(ro => ro.id === levelRows[i].roleid);
-                if (!dbro) {
-                    await this.query(`DELETE FROM levelroles WHERE roleid = '${levelRows[i].roleid}'`).catch(e => console.log(e.stack))
-                    levelRows.splice(i, 1);
                 }
             }
+            return levelRows;
+        } catch (error) {
+            xlog.error(error);
         }
-        return levelRows;
     }
 
     /**
      * add a new row of current statistics to gm counters
      * @param {object} client running discord client
      */
-    async updateBotStats(client) {
-        this.query(`INSERT INTO botstats (numUsers, numGuilds, numChannels) VALUES (${client.users.cache.size}, ${client.guilds.cache.size}, ${client.channels.cache.size})`).catch(xlog.error);
+    async updateBotStats(client: XClient): Promise<void> {
+        try {
+            const users = client.users.cache.size;
+            const guilds = client.guilds.cache.size;
+            const channels = client.channels.cache.size;
+            this.query(`INSERT INTO botstats (numUsers, numGuilds, numChannels) VALUES (${users}, ${guilds}, ${channels})`);
+        } catch (error) {
+            xlog.error(error);
+        }
     }
 
     /**
      * get the current db stats for gm counters
      * @param {int} limiter number of past hours to retrieve
      */
-    async getGMStats(limiter = 24) {
-        const rows = await this.query(`SELECT * FROM botstats ORDER BY updateId DESC LIMIT ${limiter}`).catch(xlog.error);
+    async getGMStats(limiter = 24): Promise<BSRow[]> {
+        const rows = await <Promise<BSRow[]>>this.query(`SELECT * FROM botstats ORDER BY updateId DESC LIMIT ${limiter}`).catch(xlog.error);
         return rows;
     }
 
@@ -276,7 +296,7 @@ export class DBManager {
      * @param {object} updatedby user
      * @returns {object} result object with edit information, or string for promise rejection
      */
-    async editGlobalSettings(selectortype = "", selectorvalue = "", updateuser, value = "") {
+    async editGlobalSettings(selectortype = "", selectorvalue = "", updateuser: User, value = ""): Promise< | void> {
         return new Promise((resolve, reject) => {
             if (!selectortype || !selectorvalue || !value || !updateuser || !updateuser.id || typeof selectorvalue !== "string" || typeof value !== "string") return reject("MISSING_VALUES");
             if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");

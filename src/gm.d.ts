@@ -1,4 +1,4 @@
-import { Client, Collection, DMChannel, TextChannel } from "discord.js";
+import { Client, Collection, DMChannel, Message, TextChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import Specials from "./utils/specials";
 
@@ -12,11 +12,18 @@ export interface XClient extends Client {
 
 export interface Command {
     name: string;
-    aliases: string[];
-    description: string | {
+    aliases?: string[];
+    description?: string | {
         short: string,
         long: string
     }
+    category?: string;
+    usage?: string;
+    args?: boolean;
+    specialArgs?: number;
+    permLevel?: number;
+    guildOnly?: boolean;
+    ownerOnly?: boolean;
 }
 
 export interface Category {
@@ -51,7 +58,7 @@ export interface SSRow {
 
 }
 
-export interface XPRow {
+export interface ExpRow {
     id?: string;
     userid?: string;
     guildid?: string;
@@ -60,4 +67,23 @@ export interface XPRow {
     xp?: number;
     level?: number;
     spideySaved?: string;
+}
+
+export interface LevelRow {
+    id?: string;
+    guildid?: string;
+    roleid?: string;
+    level?: number;
+}
+
+export interface BSRow {
+    updatedId?: number;
+    logDate?: string;
+    numUsers?: number;
+    numGuilds?: number;
+    numChannels?: number;
+}
+
+export interface XMessage extends Message {
+    gprefix?: string;
 }

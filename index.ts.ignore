@@ -4,7 +4,7 @@
 // and change the package.json tyope to module, then replace all require()s and exports.method/module.exports with the types of
 // statements above. mayve one day I could do it because it might look better.
 
-require('dotenv').config();
+/*require('dotenv').config();
 
 const xlg = require("./src/xlogger");
 const client = require("./src/bot");
@@ -27,4 +27,4 @@ class Bot {
     }
 }
 
-module.exports = new Bot(client);
+module.exports = new Bot(client);*/

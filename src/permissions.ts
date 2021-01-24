@@ -1,8 +1,8 @@
-const xlg = require("./xlogger");
-const { getGlobalSetting, getXP, getGuildSetting } = require("./dbmanager");
-const { GuildMember } = require("discord.js");
+import xlg from "./xlogger";
+//import { getGlobalSetting, getXP, getGuildSetting } from "./dbmanager";
+import { GuildMember, User } from "discord.js";
 
-const permLevels = {
+export const permLevels = {
     member: 0,
     trustedMember: 1,
     immune: 2,
@@ -11,7 +11,7 @@ const permLevels = {
     botMaster: 5,
 }
 
-async function getPermLevel(member) {
+export async function getPermLevel(member: GuildMember | User): Promise<number> {
     if (member == null || !(member instanceof GuildMember)) {
         return permLevels.member;
     }
@@ -38,6 +38,3 @@ async function getPermLevel(member) {
     }
     return permLevels.member;
 }
-
-exports.permLevels = permLevels;
-exports.getPermLevel = getPermLevel;

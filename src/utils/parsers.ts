@@ -1,6 +1,9 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
+import { Channel, Guild, GuildMember, MessageEmbed, Role, User } from "discord.js";
+import { XClient } from "src/gm";
+
 /**
  * Returns similarity value based on Levenshtein distance.
  * The value is between 0 and 1
@@ -9,14 +12,14 @@
  * @param {string} s2 second string
  * @returns
  */
-function stringSimilarity(s1, s2) {
-    var longer = s1;
-    var shorter = s2;
+function stringSimilarity(s1: string, s2: string) {
+    let longer = s1;
+    let shorter = s2;
     if (s1.length < s2.length) {
         longer = s2;
         shorter = s1;
     }
-    var longerLength = longer.length;
+    const longerLength = longer.length;
     if (longerLength == 0) {
         return 1.0;
     }
@@ -26,23 +29,23 @@ function stringSimilarity(s1, s2) {
 /**
  * helper function for stringSimilarity
  *
- * @param {*} s1
- * @param {*} s2
+ * @param {string} s1
+ * @param {string} s2
  * @returns
  */
-function editDistance(s1, s2) {
+function editDistance(s1: string, s2: string) {
     s1 = s1.toLowerCase();
     s2 = s2.toLowerCase();
 
-    var costs = new Array();
-    for (var i = 0; i <= s1.length; i++) {
-        var lastValue = i;
-        for (var j = 0; j <= s2.length; j++) {
+    const costs = [];
+    for (let i = 0; i <= s1.length; i++) {
+        let lastValue = i;
+        for (let j = 0; j <= s2.length; j++) {
             if (i == 0)
                 costs[j] = j;
             else {
                 if (j > 0) {
-                    var newValue = costs[j - 1];
+                    let newValue = costs[j - 1];
                     if (s1.charAt(i - 1) != s2.charAt(j - 1))
                         newValue = Math.min(Math.min(newValue, lastValue),
                             costs[j]) + 1;
@@ -64,8 +67,8 @@ function editDistance(s1, s2) {
  * @param {RegExp} regex RegExp to search with
  * @returns
  */
-function extractString(str, regex) {
-    let result = regex.exec(str);
+function extractString(str: string, regex: RegExp) {
+    const result = regex.exec(str);
     if (!result)
         return undefined;
     return result[result.length - 1];
@@ -75,11 +78,11 @@ function extractString(str, regex) {
  * Extracts the id from a string and the fetches the User
  *
  * @export
- * @param {object} client the client
+ * @param {XClient} client the client
  * @param {string} text Text to extract id from
  * @returns User
  */
-async function stringToUser(client, text) {
+export async function stringToUser(client: XClient, text: string): Promise<User | undefined> {
     text = extractString(text, /<@!?(\d*)>/) || text;
     try {
         return await client.users.fetch(text) || undefined;
@@ -106,13 +109,13 @@ async function stringToUser(client, text) {
  * @param {boolean} [bySimilar=true] if it should also search by similar username (default true)
  * @returns
  */
-async function stringToMember(guild, text, byUsername = true, byNickname = true, bySimilar = true) {
+export async function stringToMember(guild: Guild, text: string, byUsername = true, byNickname = true, bySimilar = true): Promise<GuildMember | undefined> {
     if (!text) return undefined;
     text = extractString(text, /<@!?(\d*)>/) || extractString(text, /([^#@:]{2,32})#\d{4}/) || text;
     guild.members.cache = await guild.members.fetch();
 
     // by id
-    var member = guild.members.cache.get(text);
+    let member = guild.members.cache.get(text);
     if (!member && byUsername)
     // by username
     member = guild.members.cache.find(x => x.user.username == text);
@@ -122,10 +125,10 @@ async function stringToMember(guild, text, byUsername = true, byNickname = true,
     
     if (!member && bySimilar) {
         // closest matching username
-        member = guild.members.cache.reduce(function (prev, curr) {
-            return (stringSimilarity(curr.user.username, text) > stringSimilarity(prev.user.username, text) ? curr : prev);
+        member = guild.members.cache.reduce((prev, curr) => {
+            return (stringSimilarity(curr.user.username, text) > stringSimilarity(prev?.user.username || "", text) ? curr : prev);
         });
-        if (stringSimilarity(member.user.username, text) < 0.4) {
+        if (stringSimilarity(member?.user.username || "", text) < 0.4) {
             member = undefined;
         }
     }
@@ -151,7 +154,7 @@ async function stringToMember(guild, text, byUsername = true, byNickname = true,
  * @returns
  */
 
-function stringToRole(guild, text, byName = true, bySimilar = true, everyone = false) {
+export function stringToRole(guild: Guild, text: string, byName = true, bySimilar = true, everyone = false): Role | string | undefined {
 
     if (everyone && (text == 'here' || text == '@here')) {
         return '@here';
@@ -163,17 +166,17 @@ function stringToRole(guild, text, byName = true, bySimilar = true, everyone = f
     text = extractString(text, /<@&(\d*)>/) || text;
 
     // by id
-    var role = guild.roles.cache.get(text);
+    let role = guild.roles.cache.get(text);
     if (!role && byName) {
         // by name
         role = guild.roles.cache.find(x => x.name == text);
     }
     if (!role && bySimilar) {
         // closest matching name
-        role = guild.roles.cache.reduce(function (prev, curr) {
-            return (stringSimilarity(curr.name, text) > stringSimilarity(prev.name, text) ? curr : prev);
+        role = guild.roles.cache.reduce((prev, curr) => {
+            return (stringSimilarity(curr.name, text) > stringSimilarity(prev?.name || "", text) ? curr : prev);
         });
-        if (stringSimilarity(role.name, text) < 0.4) {
+        if (stringSimilarity(role?.name || "", text) < 0.4) {
             role = undefined;
         }
     }
@@ -193,18 +196,18 @@ function stringToRole(guild, text, byName = true, bySimilar = true, everyone = f
  * @param {string} text string to parse
  * @returns
  */
-function stringToChannel(guild, text, byName = true, bySimilar = true) {
-    if (!guild || !text) return null;
+export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): Channel | undefined {
+    if (!guild || !text) return undefined;
     text = extractString(text, /<#(\d*)>/) || text;
 
     let channel = guild.channels.cache.get(text);
     if (!channel && byName) channel = guild.channels.cache.find(x => x.name == text);
     if (!channel && bySimilar) {
         // closest matching name
-        channel = guild.channels.cache.reduce(function (prev, curr) {
-            return (stringSimilarity(curr.name, text) > stringSimilarity(prev.name, text) ? curr : prev);
+        channel = guild.channels.cache.reduce((prev, curr) => {
+            return (stringSimilarity(curr.name, text) > stringSimilarity(prev?.name || "", text) ? curr : prev);
         });
-        if (stringSimilarity(channel.name, text) < 0.4) {
+        if (stringSimilarity(channel?.name || "", text) < 0.4) {
             channel = undefined;
         }
     }
@@ -218,8 +221,8 @@ function stringToChannel(guild, text, byName = true, bySimilar = true) {
  * @param {string} text string to parse
  * @returns
  */
-function stringToEmbed(text) {
-    var embed = null;
+export function stringToEmbed(text: string): MessageEmbed | null {
+    let embed = null;
     try {
         //text = text.replace(/(\r\n|\n|\r|\t| {2,})/gm, '');
         embed = JSON.parse(text);
@@ -244,18 +247,18 @@ function stringToEmbed(text) {
  * @param {number} duration duration in milliseconds
  * @returns
  */
-function durationToString(duration) {
+export function durationToString(duration: number): string {
 
-    var ms = duration % 1000;
+    const ms = duration % 1000;
     duration = (duration - ms) / 1000;
-    var seconds = duration % 60;
+    const seconds = duration % 60;
     duration = (duration - seconds) / 60;
-    var minutes = duration % 60;
+    const minutes = duration % 60;
     duration = (duration - minutes) / 60;
-    var hours = duration % 24;
-    var days = (duration - hours) / 24;
+    const hours = duration % 24;
+    const days = (duration - hours) / 24;
 
-    var durationString = '';
+    let durationString = '';
 
     if (days != 0) durationString += days + 'd ';
     if (hours != 0) durationString += hours + 'h ';
@@ -271,14 +274,6 @@ function durationToString(duration) {
  * Capitalizes the first letter in a string
  * @param {string} string String to capitalize
  */
-function capitalizeFirstLetter(string) {
+export function capitalizeFirstLetter(string: string): string {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
-
-exports.stringToUser = stringToUser;
-exports.stringToRole = stringToRole;
-exports.stringToChannel = stringToChannel;
-exports.stringToEmbed = stringToEmbed;
-exports.stringToMember = stringToMember;
-exports.durationToString = durationToString;
-exports.capitalizeFirstLetter = capitalizeFirstLetter;
