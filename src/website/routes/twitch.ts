@@ -175,7 +175,7 @@ const routerBuild = (client) => {
     return router;
 }
 
-async function addTwitchWebhook(username, isID = false, guildid, targetChannel, message) {
+async function addTwitchWebhook(username, isID = false, guildid?, targetChannel?, message?) {
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();

@@ -16,8 +16,8 @@ module.exports = {
     cooldown: 5,
     category: 'fun',
     async execute(client, message) {
-        let levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
-        let warn_embed_color = parseInt((await getGlobalSetting("warn_embed_color") || ['7322774'])[0].value, 10);
+        const levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
+        const warn_embed_color = parseInt((await getGlobalSetting("warn_embed_color") || ['7322774'])[0].value, 10);
         if (!levellingEnabled || levellingEnabled[0].value === 'disabled') {
             return message.channel.send({
                 embed: {
@@ -26,11 +26,11 @@ module.exports = {
                 }
             });
         }
-        let levelRows = await checkForLevelRoles(message.guild);
-        let targetRow = await getXP(message.member);
-        let targetLevel = targetRow[0] ? targetRow[0].level : 0;
+        const levelRows = await checkForLevelRoles(message.guild);
+        const targetRow = await getXP(message.member);
+        const targetLevel = targetRow[0] ? targetRow[0].level : 0;
         let alreadyAbove = false;
-        let joinedLevels = levelRows.map((lvl) => {
+        const joinedLevels = levelRows.map((lvl) => {
             let curr = false;
             if (!alreadyAbove && targetLevel >= lvl.level) {
                 curr = true;
@@ -39,7 +39,7 @@ module.exports = {
             return `${curr ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild.roles.cache.find(ro => ro.id = lvl.roleid) || 'no role found'}${curr ? ' < you' : ''}`
         });
         
-        let info_embed_color = parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
+        const info_embed_color = parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
         message.channel.send({
             embed: {
                 color: info_embed_color,

@@ -5,6 +5,11 @@ const { getGlobalSetting } = require("../dbmanager");
 const deftime = 15;
 const games = [];
 class TGame {
+	public cid: any;
+	public msg: any;
+	public round: any;
+	public scores: any;
+
     constructor(channelid, messageid, initround = 1) {
         this.cid = channelid;
         this.msg = messageid;

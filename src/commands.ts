@@ -1,10 +1,12 @@
-const {
-    Collection
-} = require("discord.js");
-const fs = require("fs");
-const path = require("path");
+import { Collection } from "discord.js";
+import fs from "fs";
+import path from "path";
+import { Category, Command } from "./gm";
 
 class Commands {
+	public commands: Collection<string, Command>;
+	public categories: Collection<string, Category>;
+
     constructor() {
         this.commands = new Collection();
         this.categories = new Collection();
@@ -13,13 +15,16 @@ class Commands {
 
     // ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
 
-    load() {
+    async load() {
         const cf = fs.readdirSync(path.join(__dirname, './commands')).filter(file => file.endsWith('.js') && !file.startsWith('[template]'));
         // .filter(file => file.endsWith('.js') && !file.startsWith('[template]'))
         let commNumber = 1;
         let catNumber = 1;
         for (const file of cf) {
-            const command = require(`./commands/${file}`);
+            
+            const command = await import(`./commands/${file}`);
+            //const command = require(`./commands/${file}`);
+
             // set a new item in the Collection
             // with the key as the command name and the value as the exported module
             this.commands.set(command.name, command);
@@ -27,13 +32,13 @@ class Commands {
             // ▲▲▲▲▲ for commands
             // ▼▼▼▼▼ for categories
 
-            let catdat = {
+            const catdat: Category = {
                 name: '',
                 id: catNumber,
                 count: 1
             }
 
-            let catsem = {
+            const catsem = {
                 "fun": "🎉",
                 "utility": "🔬",
                 "moderation": "🛠",

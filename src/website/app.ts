@@ -15,6 +15,9 @@ const { Client } = require('discord.js');
 const STATIC = "./static";
 
 class MesaWebsite {
+	public client: any;
+	public app: any;
+
     constructor(client) {
         if (!(client instanceof Client)) return;
         //configTwitchClient(client)

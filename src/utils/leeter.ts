@@ -1,6 +1,10 @@
 "use strict";
 
 class Leeter {
+	public textin: any;
+	public transtype: any;
+	public advmode: any;
+
     contructor(tt, advanced) {
         this.textin = "";
         this.transtype = tt || 1;

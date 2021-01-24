@@ -14,7 +14,11 @@ process.on('uncaughtException', function (e) {
 });
 
 class Bot {
-    constructor(client, website, config) {
+	public client: any;
+	public website: any;
+	public config: any;
+
+    constructor(client, website?, config?) {
         this.client = client;
         this.website = website;
         if (config) {

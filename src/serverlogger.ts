@@ -1,57 +1,57 @@
-const { getGlobalSetting, getGuildSetting, editGuildSetting } = require("./dbmanager");
-const { stringToChannel, capitalizeFirstLetter } = require('./utils/parsers');
-const Discord = require('discord.js')
-const moment = require('moment');
-const xlg = require("./xlogger");
+import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
+import { stringToChannel, capitalizeFirstLetter } from './utils/parsers';
+import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildMember, Message, MessageEmbed, Role, TextChannel } from 'discord.js';
+import moment from 'moment';
+import xlg from "./xlogger";
 
-async function getLogChannel(guild) {
-    let logValue = await getGuildSetting(guild, 'server_log');
-    let logChannel = logValue[0] && logValue[0].value ? stringToChannel(guild, logValue[0].value, false, false) : null;
-    if (logValue && !logChannel) {
+async function getLogChannel(guild?: Guild | null): Promise<TextChannel | false> {
+    if (!guild) return false;
+    const logValue = await getGuildSetting(guild, 'server_log');
+    const logChannel = logValue[0] && logValue[0].value ? stringToChannel(guild, logValue[0].value, false, false) : null;
+    if (logValue && (!logChannel || !(logChannel instanceof TextChannel))) {
         editGuildSetting(guild, 'server_log', null, true);
-        return null;
+        return false;
     }
     return logChannel;
 }
 
-async function logMember(member, joining) {
+export async function logMember(member: GuildMember, joining: boolean): Promise<void> {
     try {
-        let logChannel = await getLogChannel(member.guild);
+        const logChannel = await getLogChannel(member.guild);
         if (!logChannel || logChannel.type !== 'text') return;
         
         // "color": joining ? 0x00ff00 : 0xff0000,
-        let embed = {
-            embed: {
-                "author": {
-                    "name": `Member ${joining ? 'Joined' : 'Left'}`,
-                    "icon_url": member.user.displayAvatarURL()
-                },
-                "description": `${member.user.tag} (${member})${!joining ? `\n ${member.nickname || "***No nickname***"}` : ''}`,
-                "fields": [
-                    {
-                        "name": `${joining ? 'Created' : 'Joined'}`,
-                        "value": `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`
-                    }
-                ],
-                "color": joining ? parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10) : parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
-                "timestamp": joining ? member.joinedAt : new Date(),
-                "footer": {
-                    "text": `ID: ${member.id}`
+        const embed: MessageEmbed = {
+            "author": {
+                "name": `Member ${joining ? 'Joined' : 'Left'}`,
+                "icon_url": member.user.displayAvatarURL()
+            },
+            "description": `${member.user.tag} (${member})${!joining ? `\n ${member.nickname || "***No nickname***"}` : ''}`,
+            "fields": [
+                {
+                    "name": `${joining ? 'Created' : 'Joined'}`,
+                    "value": `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`,
+                    inline: false
                 }
+            ],
+            "color": joining ? parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10) : parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
+            "timestamp": joining ? member.joinedAt : new Date(),
+            "footer": {
+                "text": `ID: ${member.id}`
             }
         };
-        logChannel.send(embed).catch(console.error);
+        logChannel.send({ embed }).catch(console.error);
     } catch (err) {
         xlg.error(err)
     }
 }
 
-async function logMessageDelete(message) {
+export async function logMessageDelete(message: Message): Promise<void> {
     try {
-        let logChannel = await getLogChannel(message.guild);
+        const logChannel = await getLogChannel(message.guild);
         if (!logChannel || logChannel.type !== 'text') return;
         if (logChannel.id === message.channel.id) return;
-        if (message.author.id == message.client.user.id) return;
+        if (message.author.id == message.client.user?.id) return;
         // shorten message if it's longer then 1024 (thank you bulletbot)
         let shortened = false;
         let content = message.content;
@@ -59,7 +59,7 @@ async function logMessageDelete(message) {
             content = content.slice(0, 1020) + '...';
             shortened = true;
         }
-    
+
         logChannel.send({
             embed: {
                 "color": parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000,
@@ -74,7 +74,7 @@ async function logMessageDelete(message) {
                         value: message.content.length > 0 ? content : '*content unavailable*'
                     }
                 ],
-                "timestamp": new Date(message.createdAt).toISOString(),
+                "timestamp": new Date(message.createdAt),
                 "footer": {
                     "text": `Message ID: ${message.id} | Author ID: ${message.author.id}`
                 }
@@ -85,33 +85,35 @@ async function logMessageDelete(message) {
     }
 }
 
-async function logMessageBulkDelete(messageCollection) {
+export async function logMessageBulkDelete(messageCollection: Collection<string, Message | Discord.PartialMessage>): Promise<void> {
     try {
-        let logChannel = await getLogChannel(messageCollection.first().guild);
+        const first = messageCollection.first();
+        if (messageCollection instanceof DMChannel || first?.channel instanceof DMChannel) return;
+        const logChannel = await getLogChannel(first?.guild);
         if (!logChannel || logChannel.type !== 'text') return;
-        if (logChannel.id === messageCollection.first().channel.id) return;
+        if (logChannel.id === messageCollection.first()?.channel.id) return;
     
-        let humanLog = `**Deleted Messages from #${messageCollection.first().channel.name} (${messageCollection.first().channel.id}) in ${messageCollection.first().guild.name} (${messageCollection.first().guild.id})**`;
+        let humanLog = `**Deleted Messages from #${first?.channel.name} (${first?.channel.id}) in ${first?.guild?.name} (${first?.guild?.id})**`;
         for (const message of messageCollection.array().reverse()) {
-            humanLog += `\r\n\r\n[${moment(message.createdAt).format()}] ${message.author.tag} (${message.id})`;
+            humanLog += `\r\n\r\n[${moment(message.createdAt).format()}] ${message.author?.tag} (${message.id})`;
             humanLog += ' : ' + message.content;
             if (message.attachments.size) {
                 humanLog += '\n*Attachments:*';
                 humanLog += '\n*No cache found*'
             }
         }
-        let attachment = new Discord.MessageAttachment(Buffer.from(humanLog, 'utf-8'), 'DeletedMessages.txt');
+        const attachment = new Discord.MessageAttachment(Buffer.from(humanLog, 'utf-8'), 'DeletedMessages.txt');
     
-        let logMessage = await logChannel.send(attachment);
+        const logMessage = await logChannel.send(attachment);
         logMessage.edit({
             embed: {
                 "color": parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10) || 0xff0000,
                 "author": {
-                    "name": `${messageCollection.first().channel.name}`,
-                    "icon_url": messageCollection.first().guild.iconURL
+                    "name": `${first?.channel.name}`,
+                    "icon_url": first?.guild?.iconURL
                 },
                 "timestamp": new Date().toISOString(),
-                "description": `**Bulk deleted messages in ${messageCollection.first().channel.toString()}**`,
+                "description": `**Bulk deleted messages in ${first?.channel.toString()}**`,
                 fields: [
                     {
                         name: 'Message Count',
@@ -129,13 +131,13 @@ async function logMessageBulkDelete(messageCollection) {
     }
 }
 
-async function logMessageUpdate(omessage, nmessage) {
+export async function logMessageUpdate(omessage: Message, nmessage: Message): Promise<void> {
     try {
         if (omessage.content == nmessage.content) return;
-        let logChannel = await getLogChannel(nmessage.guild);
+        const logChannel = await getLogChannel(nmessage.guild);
         if (!logChannel || logChannel.type !== 'text') return;
         if (logChannel.id === nmessage.channel.id) return;
-        if (nmessage.author.id == nmessage.client.user.id) return;
+        if (nmessage.author.id == nmessage.client.user?.id) return;
     
         // shorten both messages when the content is larger then 1024 chars
         let oldShortened = false;
@@ -178,9 +180,9 @@ async function logMessageUpdate(omessage, nmessage) {
     }
 }
 
-async function logRole(role, deletion = false) {
+export async function logRole(role: Role, deletion = false): Promise<void> {
     try {
-        let logChannel = await getLogChannel(role.guild);
+        const logChannel = await getLogChannel(role.guild);
         if (!logChannel || logChannel.type !== 'text') return;
     
         try {
@@ -206,9 +208,9 @@ async function logRole(role, deletion = false) {
     }
 }
 
-async function logChannelState(channel, deletion = false) {
+export async function logChannelState(channel: GuildChannel, deletion = false): Promise<void> {
     try {
-        let logChannel = await getLogChannel(channel.guild);
+        const logChannel = await getLogChannel(channel.guild);
         if (!logChannel || logChannel.type !== 'text') return;
         const nameref = channel.name ? ` (${channel.name})` : "";
         const titletyperef = channel.type !== "category" ? `${capitalizeFirstLetter(channel.type)} ` : "";
@@ -219,7 +221,7 @@ async function logChannelState(channel, deletion = false) {
                     name: `${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                     icon_url: channel.guild.iconURL()
                 },
-                description: `${deletion ? `#${channel.name}` : `${channel || channel.name}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
+                description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
                 color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
                 timestamp: deletion ? channel.createdAt : new Date(),
                 footer: {
@@ -232,9 +234,9 @@ async function logChannelState(channel, deletion = false) {
     }
 }
 
-async function logChannelUpdate(oc, nc) {// grouping of all types of change in channels
+export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Promise<void> {// grouping of all types of change in channels
     try {
-        let logChannel = await getLogChannel(nc.guild);
+        const logChannel = await getLogChannel(nc.guild);
         if (!logChannel || !(logChannel instanceof Discord.TextChannel)) return;
         if (!(oc instanceof Discord.GuildChannel) || !(nc instanceof Discord.GuildChannel)) return;
 
@@ -366,9 +368,9 @@ async function logChannelUpdate(oc, nc) {// grouping of all types of change in c
     }
 }
 
-async function logEmojiState(emoji, deletion = false) {
+export async function logEmojiState(emoji, deletion = false): Promise<void> {
     try {
-        let logChannel = await getLogChannel(emoji.guild);
+        const logChannel = await getLogChannel(emoji.guild);
         if (!logChannel || logChannel.type !== 'text' || !(emoji instanceof Discord.GuildEmoji)) return;
 
         let creator = null;
@@ -398,11 +400,3 @@ async function logEmojiState(emoji, deletion = false) {
     }
 }
 
-exports.logMember = logMember;
-exports.logMessageDelete = logMessageDelete;
-exports.logMessageBulkDelete = logMessageBulkDelete;
-exports.logMessageUpdate = logMessageUpdate;
-exports.logRole = logRole;
-exports.logChannelState = logChannelState;
-exports.logChannelUpdate = logChannelUpdate;
-exports.logEmojiState = logEmojiState;

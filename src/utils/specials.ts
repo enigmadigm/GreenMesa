@@ -1,9 +1,11 @@
-const { getGlobalSetting } = require('../dbmanager');
-const xlg = require("../xlogger");
-const moment = require('moment');
+import { getGlobalSetting } from '../dbmanager';
+import xlg from "../xlogger";
+import moment from 'moment';
+import { SendableChannel, XClient } from '../gm';
+import { TextChannel } from 'discord.js';
 
-async function sendModerationDisabled(channel) {
-    let fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
+async function sendModerationDisabled(channel: SendableChannel) {
+    const fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
     channel.send({
         embed: {
             color: fail_embed_color,
@@ -12,7 +14,7 @@ async function sendModerationDisabled(channel) {
     }).catch(xlg.error);
 }
 
-async function sendError(channel, message, errorTitle = false) {
+async function sendError(channel: SendableChannel, message: string, errorTitle = false) {
     channel.send({
         embed: {
             color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value) || 16711680,
@@ -23,9 +25,9 @@ async function sendError(channel, message, errorTitle = false) {
     return;
 }
 
-async function argsNumRequire(channel, args, num) {
+async function argsNumRequire(channel: SendableChannel, args: string[], num: number) {
     if (args.length == num) return true;
-    let fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
+    const fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
     channel.send({
         embed: {
             color: fail_embed_color,
@@ -35,12 +37,13 @@ async function argsNumRequire(channel, args, num) {
     return false;
 }
 
-async function argsMustBeNum(channel, args) {
+async function argsMustBeNum(channel: SendableChannel, args: string[]) {
     if (!args || !args.length) return false;
     let forResult = true;
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
-        if (isNaN(arg)) {
+        const nr = parseInt(arg, 10);
+        if (isNaN(nr)) {
             forResult = false;
         }
     }
@@ -57,16 +60,30 @@ async function argsMustBeNum(channel, args) {
     return true;
 }
 
-async function timedMessagesHandler(client) {
+function timedMessagesHandler(client: XClient) {
     setInterval(async () => {
         if (moment().utcOffset(-5).format('M/D HH:mm') == "9/26 21:30") {
-            (await client.channels.fetch((await getGlobalSetting('primchan'))[0].value)).send('happy birthday');
+            const primchan = await client.channels.fetch((await getGlobalSetting('primchan'))[0].value);
+            if (primchan instanceof TextChannel) {
+                primchan.send('happy birthday');
+            }
         }
         if (moment().utcOffset(-6).format('M/D HH:mm') == "1/1 00:00") {
-            (await client.channels.fetch((await getGlobalSetting('primchan'))[0].value)).send("Welcome to the New Year (CST) @everyone");
+            const primchan = await client.channels.fetch((await getGlobalSetting('primchan'))[0].value);
+            if (primchan instanceof TextChannel) {
+                primchan.send("Welcome to the New Year (CST) @everyone");
+            }
         }
     }, 60000);
 }
+
+/*interface MemTypes {
+    rss: string;
+    heapTotal: string;
+    heapUsed: string;
+    external: string;
+    arrayBuffers: string;
+}*/
 
 function memoryUsage() {
     const memTypes = {
@@ -77,13 +94,15 @@ function memoryUsage() {
         "arrayBuffers": "ArrayBuffers ------"
     };
     return Object.entries(process.memoryUsage()).map(usage => {
+        const u = usage[0];
+        if (u !== "rss" && u !== "heapTotal" && u !== "heapUsed" && u !== "external" && u !== "arrayBuffers") return;
         const r = (Math.round(usage[1] / 1024 / 1024 * 100) / 100).toFixed().split('.')[0];
-        return `${memTypes[usage[0]]} ${r}MB`
+        return `${memTypes[u]} ${r}MB`
     }).join("\n");
 }
 
 // iannis
-function delayedLoop(callback, start = 0, end = 1, increment = 1, delay = 0) {
+function delayedLoop(callback: (arg0: number) => void, start = 0, end = 1, increment = 1, delay = 0) {
     let i = start;
 
     const iteration = () => {
