@@ -21,7 +21,7 @@ class MesaWebsite {
         this.client = client;
         this.app = express();
         
-        this.app.use(helmet({ frameguard: { action: "deny" } }));// will have to see if this actually protects
+        //this.app.use(helmet({ frameguard: { action: "deny" } }));// will have to see if this actually protects
         //this.app.set('x-powered-by', false);
         this.app.set('etag', false);
         //this.app.use(express.json());// THIS IS WHAT WAS BREAKING THE TWITCH SECURITY MIDDLEWARE
