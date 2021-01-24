@@ -1,2 +1,2 @@
-nodemon bot.js
+nodemon npm start
 pause

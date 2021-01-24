@@ -1,6 +1,6 @@
 const xlg = require("../xlogger");
 const { getGlobalSetting } = require("../dbmanager");
-const httpdcodes = require("../httpcodes.json");
+const httpdcodes = require("../../httpcodes.json");
 const { permLevels } = require('../permissions');
 
 module.exports = {

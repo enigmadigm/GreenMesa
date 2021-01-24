@@ -1,6 +1,6 @@
 const { default: fetch } = require("node-fetch");
 const xlg = require("../xlogger");
-const config = require('../auth.json');
+const config = require('../../auth.json');
 const { getGlobalSetting } = require("../dbmanager");
 const lux = require("luxon");
 const { validURL } = require('../utils/urls');

@@ -1,5 +1,5 @@
 const xlg = require("../xlogger");
-const apppkg = require('../package.json');
+const apppkg = require('../../package.json');
 const { getGlobalSetting } = require("../dbmanager");
 
 module.exports = {

@@ -31,7 +31,7 @@ class Bot {
 
 const fs = require('fs'); // Get the filesystem library that comes with nodejs
 const Discord = require("discord.js"); // Load discord.js library
-const config = require("./auth.json"); // Loading app config file
+const config = require("../auth.json"); // Loading app config file
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
 //const dbm = require("./dbmanager");

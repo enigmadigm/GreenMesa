@@ -40,13 +40,23 @@ module.exports = {
                 message.channel.send(`<a:spinning_light00:680291499904073739>✅ ${bc} users unbanned`);
                 return;
             }
-            
-            const ub = await message.guild.fetchBan(args[0])
-            
-            if (!ub || !ub.user) {
-                await client.specials.sendError(message.channel, "That user does not appear to be banned");
+
+            if (!/^[0-9]{18}$/.test(args[0])) {
+                await client.specials.sendError(message.channel, "A valid user ID (Snowflake) is required");
                 return;
             }
+            let ub;
+            try {
+                ub = await message.guild.fetchBan(args[0]);
+            } catch (e) {
+                if (e.message === "Unknown Ban") {
+                    await client.specials.sendError(message.channel, "There is no banned user matching that ID");
+                    return;
+                } else {
+                    throw new Error("Error fetching ban");
+                }
+            }
+            
             
             args.shift();
             const reason = args.join(" ");

@@ -11,7 +11,7 @@ const path = require('path');
 // Load configuation
 const config = JSON.parse(fs.readFileSync(path.join(
     __dirname,
-    '../../auth.json'
+    '../../../auth.json'
 ))).TWITCH;
 
 // Require depedancies

@@ -2,7 +2,7 @@
 // At startup (in bot.js) the bot would create a Date() and subtract when this command is executed to get uptime.
 
 const fs = require('fs');
-const config = require('../auth.json');
+const config = require('../../auth.json');
 const { getFriendlyUptime } = require('../utils/time');
 const xlg = require('../xlogger');
 

@@ -1,6 +1,6 @@
 const fs = require("fs");
 const fetch = require("node-fetch");
-const { MWKEY } = require('../auth.json');
+const { MWKEY } = require('../../auth.json');
 const { logDefined } = require("../dbmanager")
 
 module.exports = {

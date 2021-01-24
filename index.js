@@ -6,8 +6,8 @@
 
 require('dotenv').config();
 
-const xlg = require("./xlogger");
-const client = require("./bot");
+const xlg = require("./src/xlogger");
+const client = require("./src/bot");
 process.on('uncaughtException', function (e) {
     xlg.log(e);
     process.exit(1);
