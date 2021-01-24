@@ -44,7 +44,7 @@ module.exports = {
                 await page.setExtraHTTPHeaders({// https://stackoverflow.com/a/47292022/10660033
                     'Accept-Language': 'en'
                 });
-                await page.goto(`https://google.com/search?q=${args.join("+")}${(message.channel.nsfw) ? "" : "&safe=active"}`);
+                await page.goto(`https://google.com/search?q=${args.join("+")}${(message.channel.nsfw) ? "" : "&safe=active"}&hl=en`);
                 sc = await page.screenshot();
                 await browser.close();
             }
