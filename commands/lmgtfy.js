@@ -11,6 +11,7 @@ module.exports = {
     guildOnly: false,
     category: 'utility',
     async execute(client, message, args) {
+        if (!(message instanceof Discord.Message)) return;
         try {
             let sengine = "google.com/search";
             let iie = "";
@@ -32,8 +33,17 @@ module.exports = {
             } else {
                 plainText = false;
                 message.channel.startTyping();
-                const browser = await puppeteer.launch({ defaultViewport: { width: 1300, height: 1000 } });
+                const browser = await puppeteer.launch({
+                    defaultViewport: {
+                        width: 1300,
+                        height: 950
+                    },
+                    args: ['--lang="en-US"']
+                });
                 const page = await browser.newPage();
+                await page.setExtraHTTPHeaders({// https://stackoverflow.com/a/47292022/10660033
+                    'Accept-Language': 'en'
+                });
                 await page.goto(`https://google.com/search?q=${args.join("+")}${(message.channel.nsfw) ? "" : "&safe=active"}`);
                 sc = await page.screenshot();
                 await browser.close();
@@ -63,8 +73,9 @@ module.exports = {
                 });
             }
         } catch (error) {
+            message.channel.stopTyping(true);
             xlg.error(error);
-            await client.specials.sendError(message.channel, "Failure removing role");
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
