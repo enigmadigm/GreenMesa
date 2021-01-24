@@ -92,6 +92,11 @@ module.exports = {
                         inline: true
                     },
                     {
+                        name: "Caching",
+                        value: "Due to caching, data may show drops in counts",
+                        inline: true
+                    },
+                    {
                         name: 'Total Channels',
                         value: rows[0].numChannels,
                         inline: true
@@ -103,7 +108,8 @@ module.exports = {
                     },
                     {
                         name: "Avg. user change (24hr)",
-                        value: chngPrefix + avgUserChange + "/hr"
+                        value: chngPrefix + avgUserChange + "/hr",
+                        inline: true
                     },
                     {
                         name: "Unique Words Defined",
