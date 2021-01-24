@@ -57,7 +57,7 @@ module.exports = {
                         return `${titleCase(ca.name)}${` ${ca.emoji || ""} ` || ''}\n\`\`\` ${message.gprefix}help ${ca.name.toLowerCase()} \`\`\``
                     }).join('\n'));*/
 
-                    data.push(`Send \`${message.gprefix}help [command name]\` to get help for a specific command!`)
+                    data.push(`Send \`${message.gprefix}help [command name]\` to get help for a specific command!`);
                     let cmdcount = commands.size; // commands.filter(co => co.category !== "owner").size;
 
                     await message.channel.send({
@@ -153,7 +153,7 @@ module.exports = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel, "Failure removing role");
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

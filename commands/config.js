@@ -133,7 +133,7 @@ module.exports = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel, "Failure removing role");
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
