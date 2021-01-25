@@ -24,6 +24,7 @@ export interface Command {
     permLevel?: number;
     guildOnly?: boolean;
     ownerOnly?: boolean;
+    execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean>;
 }
 
 export interface Category {
@@ -43,7 +44,7 @@ export interface Category {
 //export type SendableChannel = TextChannel & DMChannel;
 export interface SendableChannel extends TextChannel, DMChannel { }
 
-export interface GSRow {
+export interface GlobalSettingRow {
     name?: string;
     value?: string;
     previousvalue?: string;
@@ -69,11 +70,18 @@ export interface ExpRow {
     spideySaved?: string;
 }
 
-export interface LevelRow {
+/*export interface LevelRow {
     id?: string;
     guildid?: string;
     roleid?: string;
     level?: number;
+}*/
+
+export interface LevelRolesRow {
+    id: string;
+    guildid: string;
+    roleid: string;
+    level: number;
 }
 
 export interface BSRow {
@@ -86,4 +94,55 @@ export interface BSRow {
 
 export interface XMessage extends Message {
     gprefix?: string;
+}
+
+export interface InsertionResult {
+    fieldCount: number;
+    affectedRows: number;
+    insertId: number;
+    serverStatus: number;
+    warningCount: number;
+    message: string;
+    //protocol41: boolean;
+    changedRows: number;
+}
+
+export interface GuildSettingsRow {
+    id?: number;
+    guildid?: string;
+    property?: string;
+    value?: string;
+    previousvalue?: string;
+}
+
+export interface CmdTrackingRow {
+    cmdname: string;
+    used: number;
+    iscmd: number
+}
+
+export interface TwitchHookRow {
+    id: string;
+    streamerid: string;
+    guildid: string;
+    channelid: string;
+    streamerlogin: string;
+    message: string;
+    expires: string;
+}
+
+export interface PartialGuildObject {
+    id: string;
+    name: string;
+    icon?: string;
+    owner?: boolean;
+    permissions?: string;
+    features?: string[];
+}
+
+export interface DashUserObject {
+    id: string;
+    tag: string;
+    avatar: string;
+    guilds: PartialGuildObject[];
 }

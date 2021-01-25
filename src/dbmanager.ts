@@ -5,8 +5,8 @@ import {
 import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
-import Discord, { Guild, GuildMember, Message, User } from 'discord.js';
-import { BSRow, ExpRow, GSRow, LevelRow, XClient } from "./gm";
+import Discord, { Guild, GuildMember, Message, Role, User } from 'discord.js';
+import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, TwitchHookRow, XClient } from "./gm";
 const levelRoles = [{
         level: 70,
         name: 'no-life',
@@ -110,10 +110,10 @@ export class DBManager {
      * query and retrieve values from the globalsettings table
      * @param {string} name name of setting to retrieve
      */
-    async getGlobalSetting(name: string): Promise<GSRow[] | false> {
-        const rows = await <Promise<GSRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
+    async getGlobalSetting(name: string): Promise<GlobalSettingRow | false> {
+        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
         if (rows && rows.length > 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -122,7 +122,7 @@ export class DBManager {
     async getColor(name: string): Promise<number> {
         if (!name.endsWith("_embed_color")) return 0;
         // color cache lookup and management should go here
-        const rows = await <Promise<GSRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
+        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
         if (!rows || rows.length == 0) {
             if (name === "info_embed_color") return 279673;
             if (name === "fail_embed_color") return 16711680;
@@ -232,10 +232,10 @@ export class DBManager {
         }
     }
 
-    async checkForLevelRoles(guild: Guild): Promise<LevelRow[] | void> {
+    async checkForLevelRoles(guild: Guild): Promise<LevelRolesRow[] | void> {
         try {
             if (!guild) return;
-            let levelRows = await <Promise<LevelRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
+            let levelRows = await <Promise<LevelRolesRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
             if (!levelRows || !levelRows.length) {
                 for (const ro of levelRoles) {
                     const roleToAdd = await guild.roles.create({
@@ -248,7 +248,7 @@ export class DBManager {
                     });
                     await this.query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + roleToAdd.id}', '${guild.id}', '${roleToAdd.id}', ${ro.level})`);
                 }
-                levelRows = await <Promise<LevelRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = ${guild.id} ORDER BY level DESC`);
+                levelRows = await <Promise<LevelRolesRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = ${guild.id} ORDER BY level DESC`);
             } else {
                 for (let i = 0; i < levelRows.length; i++) {
                     const dbro = guild.roles.cache.find(ro => ro.id === levelRows[i].roleid);
@@ -293,21 +293,21 @@ export class DBManager {
      * @param {string} selectortype column being used to select (name, category)
      * @param {string} selectorvalue value of column for selection
      * @param {string} value setting value
-     * @param {object} updatedby user
+     * @param {Discord.User} updatedby user
      * @returns {object} result object with edit information, or string for promise rejection
      */
-    async editGlobalSettings(selectortype = "", selectorvalue = "", updateuser: User, value = ""): Promise< | void> {
+    async editGlobalSettings(selectortype = "", selectorvalue = "", updateuser: User, value = ""): Promise<InsertionResult | string> {
         return new Promise((resolve, reject) => {
             if (!selectortype || !selectorvalue || !value || !updateuser || !updateuser.id || typeof selectorvalue !== "string" || typeof value !== "string") return reject("MISSING_VALUES");
             if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");
             selectorvalue = selectorvalue.replace(/'/g, "\\'");
             value = value.replace(/'/g, "\\'");
-            this.db.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}',\`updatedby\`='${updateuser.id}' WHERE \`${selectortype}\`='${selectorvalue}'`, (err, result) => {
+            this.db.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}',\`updatedby\`='${updateuser.id}' WHERE \`${selectortype}\`='${selectorvalue}'`, (err, result: InsertionResult) => {
                 if (err) throw err;
                 if (result.affectedRows > 0) {
                     return resolve(result);
                 } else if (selectortype === "name") {
-                    this.db.query(`INSERT INTO \`globalsettings\`(\`name\`, \`value\`, \`updatedby\`, \`category\`) VALUES ('${selectorvalue}','${value}','${updateuser.id}', 'general')`, (err, result) => {
+                    this.db.query(`INSERT INTO \`globalsettings\`(\`name\`, \`value\`, \`updatedby\`, \`category\`) VALUES ('${selectorvalue}','${value}','${updateuser.id}', 'general')`, (err, result: InsertionResult) => {
                         if (err) throw err;
                         resolve(result);
                     });
@@ -318,8 +318,12 @@ export class DBManager {
         });
     }
 
-    async getPrefix(guildid = "") {
-        const rows = await this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+    /**
+     * Get the prefix for a guild if it has one, otherwise it will be the default prefix stored in GlobalSettings
+     * @param guildid Guild ID
+     */
+    async getPrefix(guildid = ""): Promise<string | false> {
+        const rows = await <Promise<{guildid: string, prefix:string}[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
         if (rows.length > 0) {
             return rows[0].prefix;
         } else {
@@ -327,13 +331,18 @@ export class DBManager {
         }
     }
 
-    async setPrefix(guildid = "", newprefix = "") {
+    /**
+     * Change the prefix (before commands) per guilds
+     * @param guildid ID of guild to update
+     * @param newprefix New prefix for guild
+     */
+    async setPrefix(guildid = "", newprefix = ""): Promise<void> {
         newprefix = newprefix.replace(/'/g, "\\'");
-        let rows = await this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+        const rows = await <Promise<{guildid: string, prefix: string}[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
         if (rows.length > 0) {
-            rows = await this.query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlog.error);
+            await <Promise<InsertionResult>>this.query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlog.error);
         } else {
-            rows = await this.query(`INSERT INTO \`prefix\`(\`guildid\`, \`prefix\`) VALUES ('${guildid}', '${newprefix}')`).catch(xlog.error);
+            await <Promise<InsertionResult>>this.query(`INSERT INTO \`prefix\`(\`guildid\`, \`prefix\`) VALUES ('${guildid}', '${newprefix}')`).catch(xlog.error);
         }
     }
 
@@ -342,9 +351,9 @@ export class DBManager {
      * @param {string} guildid id of guild to look up
      * @param {string} memberid id of member in guild to look up
      */
-    async getTop10(guildid = "", memberid = "") {
-        const rows = await this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 10`);
-        const personalrows = await this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
+    async getTop10(guildid = "", memberid = ""): Promise<{rows: ExpRow[], personal: ExpRow} | false> {
+        const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 10`);
+        const personalrows = await <Promise<ExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
         if (!rows.length) return false;
         return {
             rows: rows || [],
@@ -357,11 +366,11 @@ export class DBManager {
      * @param {object} guild guild object
      * @param {string} name property name
      */
-    async getGuildSetting(guild, name) {
+    async getGuildSetting(guild: Guild, name: string): Promise<GuildSettingsRow | false> {
         if (!guild || !guild.available) return false;
-        const rows = await this.query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND property = '${name}'`).catch(xlog.error);
+        const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND property = '${name}'`).catch(xlog.error);
         if (rows.length > 0) {
-            return rows;
+            return rows[0];
         } else {
             return false;
         }
@@ -369,18 +378,18 @@ export class DBManager {
 
     /**
      * Edits or deletes a setting for an individual Discord Guild.
-     * @param {object} guild guild object to edit the settings for
+     * @param {Discord.Guild} guild guild object to edit the settings for
      * @param {string} name property name of the setting
      * @param {string} value value to set for the property
      * @param {boolean} deleting whether to delete the setting
      */
-    async editGuildSetting(guild, name = "", value = "", deleting = false) {
+    async editGuildSetting(guild: Guild, name = "", value = "", deleting = false): Promise<InsertionResult | string> {
         return new Promise((resolve, reject) => {
             if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
             name = name.replace(/'/g, "\\'");
             value = value.replace(/'/g, "\\'");
             if (deleting) {
-                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result) => {
+                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result: InsertionResult) => {
                     if (err) throw err;
                     if (result.affectedRows > 0) {
                         return resolve(result);
@@ -390,12 +399,12 @@ export class DBManager {
                 });
             }
             if (!value) return reject("MISSING_VALUES");
-            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}' WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result) => {
+            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}' WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result: InsertionResult) => {
                 if (err) throw err;
                 if (result.affectedRows > 0) {
                     return resolve(result);
                 } else {
-                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES ('${guild.id}', '${name}', '${value}')`, (err, result) => {
+                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES ('${guild.id}', '${name}', '${value}')`, (err, result: InsertionResult) => {
                         if (err) throw err;
                         resolve(result);
                     });
@@ -408,20 +417,20 @@ export class DBManager {
      * Deletes the xp entry for a member of a guild.
      * @param {object} member guild member to delete the xp for
      */
-    async clearXP(member) {
-        if (!member || !member.id || !member.guild || !member.guild.id) return false;
-        const result = await this.query(`DELETE FROM dgmxp WHERE guildid = '${member.guild.id}' AND userid = '${member.id}'`).catch(xlog.error);
-        return result.affectedRows || false;
+    async clearXP(member: GuildMember): Promise<number> {
+        if (!member || !member.id || !member.guild || !member.guild.id) return 0;
+        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM dgmxp WHERE guildid = '${member.guild.id}' AND userid = '${member.id}'`).catch(xlog.error);
+        return result.affectedRows || 0;
     }
 
     /**
      * Deletes all xp entries for a guild.
      * @param {object} guild guild to delete the xp from
      */
-    async massClearXP(guild) {
-        if (!guild) return false;
-        const result = await this.query(`DELETE FROM dgmxp WHERE guildid = '${guild.id}'`).catch(xlog.error);
-        return result.affectedRows || false;
+    async massClearXP(guild: Guild): Promise<number> {
+        if (!guild) return 0;
+        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM dgmxp WHERE guildid = '${guild.id}'`).catch(xlog.error);
+        return result.affectedRows || 0;
     }
 
     /**
@@ -431,31 +440,31 @@ export class DBManager {
      * @param {Discord.Role} role the role to be added or configured
      * @param {boolean} deleting whether or not the given role should be deleted from the database, if true the level param will be ignored
      */
-    async setLevelRole(level, guild, role, deleting = false) {
+    async setLevelRole(level: number, guild: Guild, role: Role, deleting = false): Promise<LevelRolesRow[] | number | false> {
         if (!guild || !guild.id) return false;
         let result;
         if (role && deleting) {
             if (!role.id) return false;
-            result = await this.query(`DELETE FROM levelroles WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
+            result = await <Promise<InsertionResult>>this.query(`DELETE FROM levelroles WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
             return result.affectedRows || false;
         }
         if (level && role) {
             if (isNaN(level) || !role.id) return false;
-            result = await this.query(`UPDATE levelroles SET level = ${level} WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
+            result = await <Promise<InsertionResult>>this.query(`UPDATE levelroles SET level = ${level} WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
             if (!result) return false;
             if (result.affectedRows === 0) {
                 //guild.roles.create()
-                result = await this.query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + role.id}', '${guild.id}', '${role.id}', ${level})`)
+                result = await <Promise<InsertionResult>>this.query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + role.id}', '${guild.id}', '${role.id}', ${level})`);
             }
             return result.affectedRows;
         }
         if (role) {
             if (!role.id) return false;
-            result = await this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
+            result = await <Promise<LevelRolesRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
             if (!result.length) return false;
             return result;
         }
-        result = await this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
+        result = await <Promise<LevelRolesRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = '${guild.id}' ORDER BY level DESC`);
         if (!result[0]) return false;
         return result;
     }
@@ -464,9 +473,9 @@ export class DBManager {
      * Deletes all of the level roles for a given guild
      * @param {Discord.Guild} guild the guild to delete the roles of
      */
-    async deleteAllLevelRoles(guild) {
-        if (!(guild instanceof Discord.Guild)) return;
-        const result = await this.query(`DELETE FROM levelroles WHERE guildid = '${guild.id}'`);
+    async deleteAllLevelRoles(guild: Guild): Promise<InsertionResult | false> {
+        if (!(guild instanceof Discord.Guild)) return false;
+        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM levelroles WHERE guildid = '${guild.id}'`);
         if (result && result.affectedRows > 0) return result;
         return false;
     }
@@ -475,20 +484,20 @@ export class DBManager {
      * Log command usage (after execution)
      * @param {string} name name of command being logged
      */
-    async logCmdUsage(name) {
+    async logCmdUsage(name: string): Promise<void> {
         try {
-            const oresult = await this.query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
-            const result = await this.query(`SELECT * FROM cmdtracking WHERE cmdname = '${name}'`);
+            const oresult = await <Promise<CmdTrackingRow[]>>this.query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
+            const result = await <Promise<CmdTrackingRow[]>>this.query(`SELECT * FROM cmdtracking WHERE cmdname = '${name}'`);
             if (!oresult || oresult.length === 0) {
-                await this.query(`INSERT INTO cmdtracking (cmdname, used) VALUES ('all', 1)`);
+                await <Promise<InsertionResult>>this.query(`INSERT INTO cmdtracking (cmdname, used) VALUES ('all', 1)`);
             } else {
-                await this.query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = 'all'`);
+                await <Promise<InsertionResult>>this.query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = 'all'`);
 
             }
             if (!result || result.length === 0) {
-                await this.query(`INSERT INTO cmdtracking (cmdname, used) VALUES ('${name}', 1)`);
+                await <Promise<InsertionResult>>this.query(`INSERT INTO cmdtracking (cmdname, used) VALUES ('${name}', 1)`);
             } else {
-                await this.query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = '${name}'`);
+                await <Promise<InsertionResult>>this.query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = '${name}'`);
             }
         } catch (error) {
             xlog.error(error);
@@ -499,9 +508,9 @@ export class DBManager {
      * Get total number of commands sent from db
      * @returns {number} result object with edit information, or string for promise rejection
      */
-    async getTotalCmdUsage() {
+    async getTotalCmdUsage(): Promise<CmdTrackingRow[] | undefined> {
         try {
-            return await this.query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
+            return await <Promise<CmdTrackingRow[]>>this.query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
         } catch (error) {
             xlog.error(error);
         }
@@ -510,13 +519,13 @@ export class DBManager {
     /**
      * Update a setting for config in the global settings database
      */
-    async logMsgReceive() {
+    async logMsgReceive(): Promise<void> {
         try {
-            const result = await this.query(`SELECT * FROM globalsettings WHERE name = 'mreceived'`);
+            const result = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = 'mreceived'`);
             if (!result || result.length === 0) {
-                await this.query(`INSERT INTO globalsettings (name, value) VALUES ('mreceived', '1')`);
+                await <Promise<InsertionResult>>this.query(`INSERT INTO globalsettings (name, value) VALUES ('mreceived', '1')`);
             } else {
-                await this.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`= value + 1 WHERE \`name\`='mreceived'`);
+                await <Promise<InsertionResult>>this.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`= value + 1 WHERE \`name\`='mreceived'`);
             }
         } catch (error) {
             xlog.error(error);
@@ -526,14 +535,14 @@ export class DBManager {
     /**
      * Update a setting for config in the global settings database
      */
-    async logDefined() {
+    async logDefined(): Promise<void> {
         xlog.log("DEFINED")
         try {
-            const result = await this.query(`SELECT * FROM globalsettings WHERE name = 'definedcount'`);
+            const result = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = 'definedcount'`);
             if (!result || result.length === 0) {
-                await this.query(`INSERT INTO globalsettings (name, value) VALUES ('definedcount', '1')`);
+                await <Promise<InsertionResult>>this.query(`INSERT INTO globalsettings (name, value) VALUES ('definedcount', '1')`);
             } else {
-                await this.query(`UPDATE globalsettings SET previousvalue=value, value=value + 1 WHERE name='definedcount'`);
+                await <Promise<InsertionResult>>this.query(`UPDATE globalsettings SET previousvalue=value, value=value + 1 WHERE name='definedcount'`);
             }
         } catch (error) {
             xlog.error(error);
@@ -542,11 +551,11 @@ export class DBManager {
 
     /**
      * Set that spidey saved a member
-     * @param {string} member object of the member who was saved
+     * @param {Discord.GuildMember} member object of the member who was saved
      */
-    async setSpideySaved(target) {
+    async setSpideySaved(target: GuildMember): Promise<boolean> {
         try {
-            const result = await this.query(`SELECT * FROM dgmxp WHERE id = '${target.user.id}${target.guild.id}'`);
+            const result = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = '${target.user.id}${target.guild.id}'`);
             if (!result || result.length === 0) {
                 return false;
             } else {
@@ -556,6 +565,7 @@ export class DBManager {
             }
         } catch (error) {
             xlog.error(error);
+            return false;
         }
     }
 
@@ -566,10 +576,10 @@ export class DBManager {
      * @param {*} expiredate a parseable date to be used to sort by timestamps for renewal
      * @param {string} message (optional) the message that will be sent with the discord notification
      */
-    async addTwitchSubscription(streamerid, guildid, channelid, expiredate, message = "", name) {
+    async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string): Promise<boolean> {
         try {
             if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
-            const result = await this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
+            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
             const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
             message = message.replace(/'/g, "\\'");
             if (!result || !result[0]) {
@@ -600,24 +610,30 @@ export class DBManager {
      * @param {*} expiredate a parseable date to be used to sort by timestamps for renewal
      * @param {string} message (optional) the message that will be sent with the discord notification
      */
-    async removeTwitchSubscription(streamerid, guildid) {
-        if (!streamerid || !guildid) return false;
-        const delresult = await this.query(`DELETE FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
-        return delresult.affectedRows;
+    async removeTwitchSubscription(streamerid: string, guildid: string): Promise<number | false> {
+        try {
+            if (!streamerid || !guildid) return false;
+            const delresult = await <Promise<InsertionResult>>this.query(`DELETE FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
+            return delresult.affectedRows;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
     }
 
     /**
      * get a list of database entries that use a specified streamer id
      * @param {string} streamerid twitch id of streamer
      */
-    async getTwitchSubsForID(streamerid) {
+    async getTwitchSubsForID(streamerid: string): Promise<false | TwitchHookRow[]> {
         try {
             if (!streamerid) return false;
-            const result = await this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}'`);
+            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}'`);
             if (!result.length) return false;
             return result;
         } catch (error) {
             xlog.error(error);
+            return false;
         }
     }
 
@@ -625,18 +641,19 @@ export class DBManager {
      * get a list of database entries that belong to a specific guild
      * @param {string} streamerid twitch id of streamer
      */
-    async getTwitchSubsGuild(guildid) {
+    async getTwitchSubsGuild(guildid: string): Promise<false | TwitchHookRow[]> {
         try {
             if (!guildid) return false;
-            const result = await this.query(`SELECT * FROM twitchhooks WHERE guildid = '${guildid}'`);
+            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE guildid = '${guildid}'`);
             if (!result.length) return false;
             return result;
         } catch (error) {
             xlog.error(error);
+            return false;
         }
     }
 
-    async updateDashUser(id, username, discriminator, avatar, guilds) {
+    async updateDashUser(id: string, username: string, discriminator: string, avatar: string, guilds: PartialGuildObject[]): Promise<false | InsertionResult> {
         try {
             if (!id || !username || !discriminator || !avatar || !guilds) return false;
             if (!(typeof guilds === "object")) {
@@ -645,32 +662,36 @@ export class DBManager {
             username = username.replace(/'/g, "\\'");
             avatar = avatar.replace(/'/g, "\\'");
             const guildString = JSON.stringify(guilds).replace(/'/g, "\\'");
-            const result = await this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES ('${id}', '${username}#${discriminator}' , '${avatar}', '${guildString}') ON DUPLICATE KEY UPDATE tag = '${username}#${discriminator}', avatar = '${avatar}', guilds = '${guildString}'`);
+            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES ('${id}', '${username}#${discriminator}' , '${avatar}', '${guildString}') ON DUPLICATE KEY UPDATE tag = '${username}#${discriminator}', avatar = '${avatar}', guilds = '${guildString}'`);
             if (!result || !result.affectedRows) {
                 return false;
             }
             return result;
         } catch (error) {
             xlog.error(error);
+            return false;
         }
     }
 
-    async getDashUser(id) {
+    async getDashUser(id: string): Promise<false | DashUserObject> {
         try {
             if (!id) return false;
-            const result = await this.query(`SELECT * FROM dashusers WHERE userid = '${id}'`);
+            id = id.replace(/'/g, "\\'");
+            const result = await <Promise<{userid: string, tag: string, avatar: string, guilds: string}[]>>this.query(`SELECT * FROM dashusers WHERE userid = '${id}'`);
             if (!result || !result[0] || !result[0].userid) {
                 return false;
             }
             const fr = result[0];
-            return {
+            const dashuser: DashUserObject = {
                 id: fr.userid,
                 tag: fr.tag,
                 avatar: fr.avatar,
-                guilds: JSON.parse(fr.guilds) || {}
+                guilds: JSON.parse(fr.guilds) || []
             }
+            return dashuser;
         } catch (error) {
             xlog.error(error);
+            return false;
         }
     }
 }
