@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
+import { GuildMember } from "discord.js";
+import xlg from "../xlogger";
 //const { getGlobalSetting } = require("../dbmanager");
 
 // if (!message.channel.permissionsFor(message.guild.me).has(["SEND_MESSAGES"]) || !message.channel.manageable)
 
-async function potatoRoler(member) {
+export default async function potatoRoler(member: GuildMember): Promise<void> {
     try {
         if (member.guild.id !== "725784760366006353") return;
         if (member.user.bot) {
@@ -15,5 +16,3 @@ async function potatoRoler(member) {
         xlg.error(error);
     }
 }
-
-exports.potatoRoler = potatoRoler;

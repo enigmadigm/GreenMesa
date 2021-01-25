@@ -1,24 +1,25 @@
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
-const { Client } = require('discord.js');
-const { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } = require('../../dbmanager');
-const xlg = require('../../xlogger');
-const express = require('express');
+import { Client, Guild } from 'discord.js';
+//import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
+import xlg from '../../xlogger';
+import express from 'express';
+import { PartialGuildObject, XClient } from 'src/gm';
+import { Bot } from 'src/bot';
 
-function getMutualGuilds(userGuilds, botGuilds) {
+function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
     return userGuilds.filter(g => {
         return botGuilds.find(g2 => (g.id === g2.id))
     });
 }
 
-function getMutualGuildsWithPerms(userGuilds, botGuilds) {
+function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
     return userGuilds.filter(g => {
         return botGuilds.find(g2 => (g.id === g2.id) && (g.permissions & 0x20) === 0x20)
     });
 }
 
-const routerBuild = (client) => {
-    if (!(client instanceof Client)) return;
+export default function routerBuild (client: XClient): express.Router {
     const router = express.Router();
 
     router.use(express.json());
@@ -30,6 +31,7 @@ const routerBuild = (client) => {
         if (!(client instanceof Client) || !Array.isArray(req.user.guilds) || !req.user.guilds.length) {
             return res.sendStatus(500);
         }
+
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         res.send({
             guilds: mg,
@@ -95,7 +97,7 @@ const routerBuild = (client) => {
         }
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
-        let prefix = await getPrefix(id);
+        let prefix = await Bot.client.database?.getPrefix(id);
         if (!prefix) {
             prefix = (await getGlobalSetting('global_prefix'))[0].value;
         }

@@ -1,9 +1,22 @@
 import xlg from "../xlogger";
 import { permLevels } from '../permissions';
-import { XClient, XMessage } from "src/gm";
+import { Command, XClient, XMessage } from "src/gm";
 //const { getGlobalSetting } = require("../dbmanager");
 
-module.exports = {
+/*export class Template implements Command {
+    name = "";
+    async execute(client: XClient, message: XMessage, args: string[]): Promise<boolean | void> {
+        try {
+            //
+        } catch (error) {
+            xlg.error(error);
+            await client.specials.sendError(message.channel);
+            return false;
+        }
+    }
+}*/
+
+const command: Command = {
     name: "",
     aliases: [""],
     description: {
@@ -27,3 +40,5 @@ module.exports = {
         }
     }
 }
+
+export default command;

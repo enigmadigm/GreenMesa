@@ -22,28 +22,29 @@ process.on('unhandledRejection', async (reason, promise) => {
     console.error(error, "Promise:", promise);
 });
 
-class Bot {
-	public client: any;
-	public website: any;
-
-    static init(client, website) {
-        if (!(client instanceof Discord.Client) || !(website instanceof MesaWebsite)) return;
-        this.client = client;
-        this.website = website;
-    }
-}
-
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
 import Discord, { TextChannel } from "discord.js"; // Load discord.js library
 import config from "../auth.json"; // Loading app config file
-const client: XClient = new Discord.Client();
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
 import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState } from './serverlogger';
 import ar from "./utils/arhandler";
 import MesaWebsite from "./website/app";
-import Commands from './commands';
+import { Commands } from './commands';
 import { XClient, XMessage } from "./gm";
+import { DBManager } from "./dbmanager";
+
+export class Bot {
+    static client: XClient;
+    static website: MesaWebsite;
+
+    static init(client: XClient, website: MesaWebsite): void {
+        this.client = client;
+        this.website = website;
+    }
+}
+
+const client: XClient = new Discord.Client();
 client.specials = require("./utils/specials") || {};
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
@@ -60,7 +61,7 @@ const xpcooldowns = new Discord.Collection();
 
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
-    client.db = await new DBManager().handleDisconnect();
+    client.database = await new DBManager().handleDisconnect();
     xlg.log(`Bot ${client.user?.tag}(${client.user?.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     const lo = client.channels.cache.get('661614128204480522');
     if (lo instanceof TextChannel) {
@@ -367,5 +368,3 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 client.on('error', xlg.error);
 
 client.login(config.token);
-
-module.exports = Bot;

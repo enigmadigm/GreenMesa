@@ -1,13 +1,14 @@
 import { Client, Collection, DMChannel, Message, TextChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import Specials from "./utils/specials";
+import DiscordStrategy from 'passport-discord';
 
 export interface XClient extends Client {
     commands?: Collection<string, Command>;
     categories?: Collection<string, Category>;
     gprefix?: string;
     specials?: typeof Specials;
-    db?: DBManager;
+    database?: DBManager;
 }
 
 export interface Command {
@@ -25,6 +26,10 @@ export interface Command {
     guildOnly?: boolean;
     ownerOnly?: boolean;
     execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean>;
+}
+
+export interface RCommand extends Command {
+    category: string;
 }
 
 export interface Category {
@@ -131,13 +136,9 @@ export interface TwitchHookRow {
     expires: string;
 }
 
-export interface PartialGuildObject {
-    id: string;
-    name: string;
-    icon?: string;
-    owner?: boolean;
-    permissions?: string;
+export interface PartialGuildObject extends DiscordStrategy.GuildInfo {
     features?: string[];
+    permissions_new?: string;
 }
 
 export interface DashUserObject {

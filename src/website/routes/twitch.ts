@@ -5,38 +5,40 @@ https://github.com/BarryCarlyon/twitch_misc/blob/master/webhooks/handlers/nodejs
 
 */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Load configuation
-const config = JSON.parse(fs.readFileSync(path.join(
-    __dirname,
-    '../../../auth.json'
-))).TWITCH;
+const config = JSON.parse(fs.readFileSync(path.join( __dirname, '../../../auth.json')).toString()).TWITCH;
 
 // Require depedancies
 // express is used for handling incoming HTTP requests "like a webserver"
 //const router = require('express').Router();
 // bodyparser is for reading incoming data
-const bodyParser = require('body-parser');
+import bodyParser from 'body-parser';
 // cypto handles Crpytographic functions, sorta like passwords (for a bad example)
-const crypto = require('crypto');
+import crypto from 'crypto';
 // node-fetch
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 // moment.js
-const moment = require('moment');
+import moment from 'moment';
 // url and querystring for parsing url queries
-const url = require('url');
-const querystring = require('querystring');
+import url from 'url';
+import querystring from 'querystring';
+
 // database functions
-const { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } = require("../../dbmanager");
-const xlg = require('../../xlogger');
-const { Client } = require('discord.js');
+//import { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } from "../../dbmanager";
+
+import xlg from '../../xlogger';
+import { XClient } from 'src/gm';
 // discord client
 //const Bot = require('../../bot');
 //no
 
-let currToken;
+import express, { Router } from 'express';
+import { IncomingMessage } from 'http';
+
+let currToken: string;
 let tokenExpiresIn = 0;
 setInterval(() => {
     tokenExpiresIn--;
@@ -49,22 +51,26 @@ setInterval(() => {
     console.log('Server raised on', config.port);
 });*/
 
+interface CustomIncoming extends IncomingMessage {
+    twitch_hub: boolean;
+    twitch_hex: string;
+    twitch_signature: string;
+}
 
-const routerBuild = (client) => {
-    if (!(client instanceof Client)) return;
-    const router = require('express').Router();
+export function twitchRouter(client: XClient): Router {
+    const router = express.Router();
 
     // Middleware!
     // Express allows whats called middle ware
     // it runs before (or after) other parts of the route runs
     router.use(bodyParser.json({
-        verify(req, res, buf/*, encoding*/) {
+        verify(req: CustomIncoming, res, buf/*, encoding*/) {
             // is there a hub to verify against
             req.twitch_hub = false;
             if (req.headers && req.headers['x-hub-signature']) {
                 req.twitch_hub = true;
 
-                var xHub = req.headers['x-hub-signature'].split('=');
+                const xHub = req.headers['x-hub-signature'].split('=');
                 // what the hell does this do
                 req.twitch_hex = crypto.createHmac(xHub[0], config.hub_secret)
                     .update(buf)
@@ -343,7 +349,6 @@ exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.twitchIDLookup = idLookup;*/
 //startHookExpirationManagement();
 //exports.twitchRouter = router;
-exports.twitchRouter = routerBuild;
 exports.addTwitchWebhook = addTwitchWebhook;
 exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.unsubscribeTwitchWebhook = unsubscribeTwitchWebhook;

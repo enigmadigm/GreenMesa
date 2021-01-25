@@ -1,5 +1,6 @@
-const router = require('express').Router();
-const passport = require('passport');
+import express from 'express';
+import passport from 'passport';
+const router = express.Router();
 
 router.get('/discord', passport.authenticate( 'discord' ));
 
@@ -22,4 +23,4 @@ router.get("/", (req, res) => {
     }
 })
 
-module.exports = router;
+export default router;

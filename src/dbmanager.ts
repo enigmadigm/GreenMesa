@@ -1,12 +1,11 @@
 import mysql from "mysql";
-import {
-    db_config
-} from "../auth.json";
+import { db_config } from "../auth.json";
 import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, Message, Role, User } from 'discord.js';
 import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, TwitchHookRow, XClient } from "./gm";
+
 const levelRoles = [{
         level: 70,
         name: 'no-life',
@@ -49,8 +48,10 @@ const levelRoles = [{
     }
 ];
 
+// https://www.tutorialkart.com/nodejs/nodejs-mysql-result-object/#Example-Nodejs-MySQL-INSERT-INTO-Result-Object
+
 export class DBManager {
-    private db!: mysql.Connection;
+    public db!: mysql.Connection;
     private query!: (arg1: string | mysql.QueryOptions) => Promise < unknown > ;
 
     constructor() {
@@ -655,7 +656,10 @@ export class DBManager {
 
     async updateDashUser(id: string, username: string, discriminator: string, avatar: string, guilds: PartialGuildObject[]): Promise<false | InsertionResult> {
         try {
-            if (!id || !username || !discriminator || !avatar || !guilds) return false;
+            if (!id || !username || !discriminator || !guilds) return false;
+            if (!avatar) {
+                avatar = "";
+            }
             if (!(typeof guilds === "object")) {
                 return false;
             }

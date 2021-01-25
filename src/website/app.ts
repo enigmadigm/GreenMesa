@@ -1,26 +1,25 @@
+import { XClient } from "src/gm";
+
 require('./strategies/discord');
 
 //const xlg = require("../xlogger");
-const express = require("express");
-const passport = require('passport');
-const helmet = require("helmet");
-const path = require("path");
+import express from "express";
+import passport from 'passport';
+import helmet from "helmet";
+import path from "path";
 const PORT = process.env.WEBSITE_PORT || 3002;
-const routes = require('./routes');
+import routes from './routes';
 //const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
-const session = require("express-session");
-const MySQLStore = require('express-mysql-session')(session);
-const { conn } = require("../dbmanager");
-const { Client } = require('discord.js');
+import session from "express-session";
+import mstore from 'express-mysql-session';
+const MySQLStore = mstore(session);
 const STATIC = "./static";
 
-class MesaWebsite {
-	public client: any;
-	public app: any;
+export default class MesaWebsite {
+	public client: XClient;
+	public app: express.Application;
 
-    constructor(client) {
-        if (!(client instanceof Client)) return;
-        //configTwitchClient(client)
+    constructor(client: XClient) {
         this.client = client;
         this.app = express();
         
@@ -36,7 +35,7 @@ class MesaWebsite {
             },
             resave: false,
             saveUninitialized: false,
-            store: new MySQLStore({}, conn)
+            store: new MySQLStore({}, client.database?.db)
         }));
         this.app.use(passport.initialize());
         this.app.use(passport.session());
@@ -102,5 +101,3 @@ class MesaWebsite {
     }
 
 }
-
-module.exports = MesaWebsite;
