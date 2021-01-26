@@ -1,6 +1,6 @@
 //import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
 import { stringToChannel, capitalizeFirstLetter } from './utils/parsers';
-import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbed, Role, TextChannel } from 'discord.js';
+import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
 import xlg from "./xlogger";
 

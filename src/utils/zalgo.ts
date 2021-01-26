@@ -2,7 +2,7 @@
  * http://jsfiddle.net/JKirchartz/wwckP/
  */
 
-const Z = {
+export const Z = {
     chars: {
         0: [ /* up */
             '\u030d', /*     ̍     */
@@ -125,16 +125,16 @@ const Z = {
         ]
 
     },
-    random(len) {
+    random(len: number): number {
         if (len == 1) return 0;
         return len ? Math.floor(Math.random() * len + 1) - 1 : Math.random();
     },
-    generate(str) {
-        var str_arr = str.split(''),
+    generate(str: string): string {
+        const str_arr = str.split(''),
             output = str_arr.map(function (a) {
                 if (a == " ") return a;
-                for (var i = 0, l = Z.random(16); i < l; i++) {
-                    var rand = Z.random(3);
+                for (let i = 0, l = Z.random(16); i < l; i++) {
+                    const rand = <0 | 1 | 2>Z.random(3);
                     a += Z.chars[rand][
                         Z.random(Z.chars[rand].length)
                     ];
@@ -144,5 +144,3 @@ const Z = {
         return output.join('');
     }
 };
-
-module.exports = Z;

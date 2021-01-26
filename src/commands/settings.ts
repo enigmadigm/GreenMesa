@@ -1,11 +1,11 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole, deleteAllLevelRoles } = require("../dbmanager");
-//const moment = require("moment");
-const { stringToChannel, stringToRole } = require('../utils/parsers');
-const { Role, Message } = require("discord.js");
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+import { stringToChannel, stringToRole } from '../utils/parsers';
+import { Role } from "discord.js";
+import { Command, XClient, XMessage } from "src/gm";
+//import { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole, deleteAllLevelRoles } from "../dbmanager";
 
-module.exports = {
+const command: Command = {
     name: "settings",
     description: {
         short: "manage the server settings for the bot",
@@ -24,50 +24,52 @@ module.exports = {
      * @param {array}          args
      * @param {object}         conn
      */
-    async execute(client, message, args) {
+    async execute(client: XClient, message: XMessage, args: string[]) {
         try {
-            if (!(message instanceof Message)) return;
-            let fail_embed_color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
-            let info_embed_color = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
-            let success_embed_color = parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10);
+            if (!message.guild) return;
+            const fail_embed_color = await client.database?.getColor("fail_embed_color");
+            const info_embed_color = await client.database?.getColor("info_embed_color");
+            const success_embed_color = await client.database?.getColor("success_embed_color");
             if (!args.length) {
-                return message.channel.send({
+                message.channel.send({
                     embed: {
                         author: {
                             name: message.guild.name,
-                            icon_url: message.guild.iconURL()
+                            iconURL: message.guild.iconURL() || ""
                         },
                         title: "Server Management",
                         description: `This command acts as the portal to configure the bot's moderation and management features to your needs. *Some settings are not located here and have separate commands.*
-                        
-                        **Send one of the following sub-commands for further details:**
-                        - \`levelroles\` set the roles rewarded for levels
-                        - \`serverlog\` configure how the bot logs server activity for you
-                        - \`moderation\` enable or disable all moderation features
-                        - \`modrole\` set the role that gives mod powers
-                        \\🔒 \`caselogging\` log moderation events in an organized system
-                        \\🔒 \`adminrole\` set the role that gives admin powers
-                        \\🔒 \`commandchannel\` set a channel to restrict all command usage to
-                        
-                        \\🔒 = in dev`,
-                        color: info_embed_color || 0,
+
+**Send one of the following sub-commands for further details:**
+- \`levelroles\` set the roles rewarded for levels
+- \`serverlog\` configure how the bot logs server activity for you
+- \`moderation\` enable or disable all moderation features
+- \`modrole\` set the role that gives mod powers
+\\🔒 \`caselogging\` log moderation events in an organized system
+\\🔒 \`adminrole\` set the role that gives admin powers
+\\🔒 \`commandchannel\` set a channel to restrict all command usage to
+
+\\🔒 = in dev`,
+                        color: info_embed_color,
                         footer: {
                             text: `${message.author.tag}`
                         }
                     }
-                }).catch(xlg.error);
+                });
+                return;
             }
-            var argIndex = 0;
+            let argIndex = 0;
             switch (args[argIndex]) {
                 case 'moderation': {
                     argIndex++;
-                    let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
+                    const moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
                     switch (args[argIndex]) {
                         case 'enable': {
                             if (moderationEnabled[0] && moderationEnabled[0].value === 'enabled') {
-                                return message.channel.send('Moderation is already **enabled**.');
+                                message.channel.send('Moderation is already **enabled**.');
+                                return;
                             }
-                            let editResult = await editGuildSetting(message.guild, 'all_moderation', 'enabled');
+                            const editResult = await editGuildSetting(message.guild, 'all_moderation', 'enabled');
                             if (editResult.affectedRows == 1) {
                                 message.channel.send('Moderation **enabled**!');
                             } else {
@@ -77,9 +79,10 @@ module.exports = {
                         }
                         case 'disable': {
                             if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                                return message.channel.send('Moderation is already **disabled**.');
+                                message.channel.send('Moderation is already **disabled**.');
+                                return;
                             }
-                            let editResult = await editGuildSetting(message.guild, 'all_moderation', 'disabled', true);
+                            const editResult = await editGuildSetting(message.guild, 'all_moderation', 'disabled', true);
                             if (editResult.affectedRows == 1) {
                                 message.channel.send('Moderation **disabled**!');
                             } else {
@@ -116,7 +119,7 @@ module.exports = {
                 case 'levelling':
                 case 'levels': {
                     argIndex++;
-                    let levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
+                    const levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
                     if (!args[argIndex]) {
                         message.channel.send({
                             embed: {
@@ -138,66 +141,82 @@ module.exports = {
                     switch (args[argIndex]) {
                         case 'enable': {
                             if (levellingEnabled[0] && levellingEnabled[0].value === 'enabled') {
-                                return message.channel.send('Levels are already **enabled**.');
+                                message.channel.send('Levels are already **enabled**.');
+                                return;
                             }
-                            let rolesResult = await checkForLevelRoles(message.guild);
-                            let editResult = await editGuildSetting(message.guild, 'xp_levels', 'enabled');
-                            if (editResult.affectedRows == 1 && rolesResult.length > 0) {
-                                message.channel.send('Levelling **enabled**!').catch(console.error);
+                            const rolesResult = await client.database?.checkForLevelRoles(message.guild);
+                            const editResult = await client.database?.editGuildSetting(message.guild, 'xp_levels', 'enabled');
+                            if (editResult && editResult.affectedRows == 1 && rolesResult && rolesResult.length > 0) {
+                                message.channel.send('Levelling **enabled**!');
                             } else {
-                                message.channel.send('Failed to enable levelling.').catch(console.error);
+                                message.channel.send('Failed to enable levelling.');
                             }
                             break;
                         }
                         case 'disable': {
                             argIndex++;
                             if (!levellingEnabled || levellingEnabled[0].value === 'disabled') {
-                                return message.channel.send('Levels are already **disabled**.').catch(console.error);
+                                message.channel.send('Levels are already **disabled**.');
+                                return;
                             }
-                            let editResult = await editGuildSetting(message.guild, 'xp_levels', 'disabled');
+                            const editResult = await editGuildSetting(message.guild, 'xp_levels', 'disabled');
                             let massDeletionResult = true;
                             if (args[argIndex] == '--forget') {
-                                massDeletionResult = await deleteAllLevelRoles(message.guild);
-                                if (!massDeletionResult || massDeletionResult.affectedRows == 0) {
+                                const massdeletion = await client.database?.deleteAllLevelRoles(message.guild)
+                                if (!massdeletion || massdeletion.affectedRows == 0) {
                                     massDeletionResult = false;
                                 }
                             }
                             if (editResult.affectedRows == 1 && massDeletionResult) {
-                                message.channel.send('Levelling **disabled**!').catch(console.error);
+                                message.channel.send('Levelling **disabled**!');
                             } else {
-                                message.channel.send('Failed to disable levelling.').catch(console.error);
+                                message.channel.send('Failed to disable levelling.');
                             }
                             break;
                         }
                         case 'ls':
                         case 'list': {
                             if (!levellingEnabled || levellingEnabled[0].value === 'disabled') {
-                                return message.channel.send(`Levelling is disabled. Enable with \`mod levels enable\`.`);
+                                message.channel.send(`Levelling is disabled. Enable with \`mod levels enable\`.`);
+                                return;
                             }
-                            let levelRows = await checkForLevelRoles(message.guild);
-                            let joinedLevels = levelRows.map(lvl => `🔹**${lvl.level}**: ${message.guild.roles.cache.find(ro => ro.id = lvl.roleid) || 'sorry no role'}`);
+                            const levelRows = await client.database?.checkForLevelRoles(message.guild);
+                            if (!levelRows) {
+                                throw new Error();
+                            }
+                            const joinedLevels = levelRows.map(lvl => `🔹**${lvl.level}**: ${message.guild?.roles.cache.find(ro => ro.id == lvl.roleid) || 'sorry no role'}`);
                             message.channel.send({
                                 embed: {
                                     color: info_embed_color,
                                     title: 'Level Roles',
                                     description: `Each level and its role:\n${joinedLevels.join("\n")}`
                                 }
-                            }).catch(xlg.error);
+                            });
                             break;
                         }
                         case 'edit':
                         case 'set': {
                             argIndex++;
-                            if (!args[argIndex]) return message.channel.send('Please provide: `<the role @ or id>, <the new level>`');
-                            let role = stringToRole(message.guild, args[argIndex]);
-                            if (!role) return message.channel.send('Please send a valid role.');
+                            if (!args[argIndex]) {
+                                message.channel.send('Please provide: `<the role @ or id>, <the new level>`');
+                                return;
+                            }
+                            const role = stringToRole(message.guild, args[argIndex]);
+                            if (!role || typeof role === "string") {
+                                message.channel.send('Please send a valid role.');
+                                return;
+                            }
                             argIndex++;
-                            let newlevel = (args[argIndex] && args[argIndex].length < 6) ? parseInt(args[argIndex]) : undefined;
-                            if (!newlevel || isNaN(newlevel) || newlevel > 1000) return message.channel.send('Please send a valid level < 1001.');
-                            let result = await setLevelRole(newlevel, message.guild, role);
+                            const newlevel = (args[argIndex] && args[argIndex].length < 6) ? parseInt(args[argIndex]) : undefined;
+                            if (!newlevel || isNaN(newlevel) || newlevel > 1000) {
+                                message.channel.send('Please send a valid level < 1001.');
+                                return;
+                            }
+                            const result = await client.database?.setLevelRole(newlevel, message.guild, role);
                             if (!result || result !== 1) {
                                 xlg.log('UNABLE to REGISTER role');
-                                return message.channel.send('The role could not be registered.');
+                                message.channel.send('The role could not be registered.');
+                                return;
                             }
                             message.channel.send({
                                 embed: {
@@ -211,22 +230,30 @@ module.exports = {
                         case 'rm':
                         case 'remove': {
                             argIndex++;
-                            if (!args[argIndex]) return message.channel.send('Please provide a valid role to deactivate. Users that have it will keep it.');
-                            let role = stringToRole(message.guild, args[argIndex]);
-                            if (!role) return message.channel.send('Please send a valid role.');
-                            let roleEntry = await setLevelRole(null, message.guild, role);
+                            if (!args[argIndex]) {
+                                message.channel.send('Please provide a valid role to deactivate. Users that have it will keep it.');
+                                return;
+                            }
+                            const role = stringToRole(message.guild, args[argIndex]);
+                            if (!role || typeof role === "string") {
+                                message.channel.send('Please send a valid role.');
+                                return;
+                            }
+                            const roleEntry = await client.database?.setLevelRole(null, message.guild, role);
                             if (!roleEntry) {
-                                return message.channel.send({
+                                message.channel.send({
                                     embed: {
                                         color: fail_embed_color,
                                         description: `${role} is not a reward role. Please send a role that is being rewarded.`
                                     }
-                                }).catch(xlg.error);
+                                });
+                                return;
                             }
-                            let result = await setLevelRole(null, message.guild, role, true);
+                            const result = await client.database?.setLevelRole(null, message.guild, role, true);
                             if (!result || result !== 1) {
                                 xlg.log('UNABLE to DELETE role');
-                                return message.channel.send('The role could not be removed.');
+                                message.channel.send('The role could not be removed.');
+                                return;
                             }
                             message.channel.send({
                                 embed: {
@@ -244,8 +271,8 @@ module.exports = {
                 case 'megalog':
                 case 'serverlog': {
                     argIndex++;
-                    let slogValue = await getGuildSetting(message.guild, 'server_log');
-                    let slogChannel = slogValue[0] && slogValue[0].value ? stringToChannel(message.guild, slogValue[0].value) : null;
+                    const slogValue = await client.database?.getGuildSetting(message.guild, 'server_log');
+                    const slogChannel = slogValue && slogValue.value ? stringToChannel(message.guild, slogValue.value) : null;
                     if (!args[argIndex]) {
                         message.channel.send({
                             embed: {
@@ -265,17 +292,20 @@ module.exports = {
                     }
                     switch (args[argIndex]) {
                         case 'disable': {
-                            if (!slogValue) return message.channel.send('The server log is already disabled.').catch(console.error);
-                            let result = await editGuildSetting(message.guild, 'server_log', null, true);
-                            if (result.affectedRows === 1) {
-                                message.channel.send('Server log has been disabled.').catch(xlg.error);
+                            if (!slogValue) {
+                                message.channel.send('The server log is already disabled.');
+                                return;
+                            }
+                            const result = await client.database?.editGuildSetting(message.guild, 'server_log', undefined, true);
+                            if (result && result.affectedRows === 1) {
+                                message.channel.send('Server log has been disabled.');
                             }
                             break;
                         }
                         default: {
-                            let newSlogChannel = stringToChannel(message.guild, args[argIndex]);
+                            const newSlogChannel = stringToChannel(message.guild, args[argIndex]);
                             if (!newSlogChannel) {
-                                message.channel.send('Coudn\'t find specified channel').catch(console.error);
+                                message.channel.send('Coudn\'t find specified channel');
                                 return false;
                             }
                             if (newSlogChannel.type !== 'text') {
@@ -286,7 +316,7 @@ module.exports = {
                                 message.channel.send('Server log **already set** to specified channel.')
                                 return false;
                             }
-                            let result = await editGuildSetting(message.guild, 'server_log', newSlogChannel.id)
+                            const result = await editGuildSetting(message.guild, 'server_log', newSlogChannel.id)
                             if (result.affectedRows === 1) {
                                 message.channel.send(`The megalog has been **enabled** in ${newSlogChannel}. Soon you will be able to set custom functions.`);
                             } else {
@@ -363,3 +393,5 @@ module.exports = {
         }
     }
 }
+
+export default command;

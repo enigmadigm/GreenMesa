@@ -7,12 +7,13 @@ import express from "express";
 import passport from 'passport';
 import helmet from "helmet";
 import path from "path";
-const PORT = process.env.WEBSITE_PORT || 3002;
 import routes from './routes';
-//const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
 import session from "express-session";
 import mstore from 'express-mysql-session';
-const MySQLStore = mstore(session);
+const PORT = process.env.WEBSITE_PORT || 3002;
+//const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MySQLStore = mstore(<any>session);
 const STATIC = "./static";
 
 export default class MesaWebsite {

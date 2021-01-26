@@ -19,7 +19,7 @@ import bodyParser from 'body-parser';
 // cypto handles Crpytographic functions, sorta like passwords (for a bad example)
 import crypto from 'crypto';
 // node-fetch
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 // moment.js
 import moment from 'moment';
 // url and querystring for parsing url queries
@@ -37,6 +37,8 @@ import { XClient } from 'src/gm';
 
 import express, { Router } from 'express';
 import { IncomingMessage } from 'http';
+import { Bot } from 'src/bot';
+import { Channel, TextChannel } from 'discord.js';
 
 let currToken: string;
 let tokenExpiresIn = 0;
@@ -67,7 +69,7 @@ export function twitchRouter(client: XClient): Router {
         verify(req: CustomIncoming, res, buf/*, encoding*/) {
             // is there a hub to verify against
             req.twitch_hub = false;
-            if (req.headers && req.headers['x-hub-signature']) {
+            if (req.headers && req.headers['x-hub-signature'] && typeof req.headers['x-hub-signature'] === "string") {
                 req.twitch_hub = true;
 
                 const xHub = req.headers['x-hub-signature'].split('=');
@@ -113,7 +115,7 @@ export function twitchRouter(client: XClient): Router {
         // in order to verify that it can be access
         // we'll test if the call is from Twitch
         // the key contats a period so we are using array style access here
-        if (req.query['hub.challenge']) {
+        if (req.query['hub.challenge'] && typeof req.query['hub.challenge'] === "string") {
             console.log('Got a challenge', req.query['hub.challenge']);
             // it's a challenge from Twitch
             // lets acknowledge it
@@ -144,16 +146,18 @@ export function twitchRouter(client: XClient): Router {
                 // it's in req.body
                 try {
                     if (req.query.streamer && req.query.streamer.length) {
-                        if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live") {
+                        if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live" && typeof req.query.streamer === "string") {
                             // twitch sender
-                            const subs = await getTwitchSubsForID(req.query.streamer);
-                            for (let i = 0; i < subs.length; i++) {
-                                const sub = subs[i];
-                                const guild = await client.guilds.fetch(sub.guildid);
-                                if (guild) {
-                                    const channel = guild.channels.cache.get(sub.channelid);
-                                    if (channel) {
-                                        channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                            const subs = await Bot.client.database?.getTwitchSubsForID(req.query.streamer);
+                            if (subs) {
+                                for (let i = 0; i < subs.length; i++) {
+                                    const sub = subs[i];
+                                    const guild = await client.guilds.fetch(sub.guildid);
+                                    if (guild) {
+                                        const channel = guild.channels.cache.get(sub.channelid);
+                                        if (channel && channel instanceof TextChannel) {
+                                            channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                                        }
                                     }
                                 }
                             }
@@ -181,19 +185,19 @@ export function twitchRouter(client: XClient): Router {
     return router;
 }
 
-async function addTwitchWebhook(username, isID = false, guildid?, targetChannel?, message?) {
+export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string): Promise<boolean | string> {
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
-    let uid = username;
+    let uid;
     if (isID) {
         uid = await idLookup(username, true);
     } else {
         uid = await idLookup(username);
     }
     if (!uid || !uid.data || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
-    const existingSubs = await getTwitchSubsForID(uid.data[0].id);
-    if (existingSubs.length > 0) {
+    const existingSubs = await Bot.client.database?.getTwitchSubsForID(uid.data[0].id);
+    if (existingSubs && existingSubs.length > 0) {
         for (let i = 0; i < existingSubs.length; i++) {
             const sub = existingSubs[i];
             if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) {
@@ -219,8 +223,8 @@ async function addTwitchWebhook(username, isID = false, guildid?, targetChannel?
         }
     });
 
-    if (guildid && targetChannel) {
-        const subRes = await addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
+    if (guildid && targetChannel && targetChannel instanceof TextChannel) {
+        const subRes = await Bot.client.database?.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
         if (!subRes || !res) return false;
         if (uid.data[0].display_name || uid.data[0].login) {
             targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
@@ -232,7 +236,7 @@ async function addTwitchWebhook(username, isID = false, guildid?, targetChannel?
     return true;
 }
 
-async function unregisterTwitchWebhook(username) {
+export async function unregisterTwitchWebhook(username: string): Promise<Response> {
     await getOAuth();
 	const uid = await idLookup(username);
     const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
@@ -252,7 +256,7 @@ async function unregisterTwitchWebhook(username) {
     return res;
 }
 
-async function unsubscribeTwitchWebhook(username, guildid) {
+export async function unsubscribeTwitchWebhook(username: string, guildid: string): Promise<boolean | string> {
     await getOAuth();
     const uid = await idLookup(username);
     if (!uid) {
@@ -267,8 +271,8 @@ async function unsubscribeTwitchWebhook(username, guildid) {
     /*if () {
         return false;
     }*/
-    const remres = await removeTwitchSubscription(uid.data[0].id, guildid)
-    if (remres < 1) {
+    const remres = await Bot.client.database?.removeTwitchSubscription(uid.data[0].id, guildid)
+    if ((remres || remres === 0) && remres < 1) {
         return "NO_SUBSCRIPTION";
     }
     return true;
@@ -289,7 +293,7 @@ async function getOAuth() {
     }
 }
 
-async function idLookup(username, isid = false) {
+async function idLookup(username: string, isid = false) {
     await getOAuth();
     let lquery = "login";
     if (isid) {
@@ -332,8 +336,8 @@ setInterval(async () => {
                 if (dff <= 86400000) {
                     // parsing query strings from the callback url
                     const parsedUrl = url.parse(hook.callback);
-                    const parsedQs = querystring.parse(parsedUrl.query);
-                    if (parsedQs.streamer) {
+                    const parsedQs = querystring.parse(parsedUrl.query || "");
+                    if (parsedQs.streamer && typeof parsedQs.streamer === "string") {
                         await addTwitchWebhook(parsedQs.streamer, true);
                     }
                 }
@@ -349,9 +353,9 @@ exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
 exports.twitchIDLookup = idLookup;*/
 //startHookExpirationManagement();
 //exports.twitchRouter = router;
-exports.addTwitchWebhook = addTwitchWebhook;
-exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
-exports.unsubscribeTwitchWebhook = unsubscribeTwitchWebhook;
+//exports.addTwitchWebhook = addTwitchWebhook;
+//exports.unregisterTwitchWebhook = unregisterTwitchWebhook;
+//exports.unsubscribeTwitchWebhook = unsubscribeTwitchWebhook;
 //exports.configTwitchClient = configTwitchClient;
 
 /*(async () => {

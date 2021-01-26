@@ -1,16 +1,39 @@
-const timeUnits = { second: 1000 };
-timeUnits.minute = timeUnits.second * 60;
-timeUnits.hour = timeUnits.minute * 60;
-timeUnits.day = timeUnits.hour * 24;
-timeUnits.normalMonth = timeUnits.day * 30;
+interface TUnits {
+    second: number;
+    minute: number;
+    hour: number;
+    day: number;
+    normalMonth: number;
+}
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const timeUnitsTemp: any = { second: 1000 };
+timeUnitsTemp.minute = timeUnitsTemp.second * 60;
+timeUnitsTemp.hour = timeUnitsTemp.minute * 60;
+timeUnitsTemp.day = timeUnitsTemp.hour * 24;
+timeUnitsTemp.normalMonth = timeUnitsTemp.day * 30;
+export const timeUnits: TUnits = timeUnitsTemp;
+
+
+interface FriendlyTime {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+    milliseconds: number;
+    d: string;
+    h: string;
+    m: string;
+    s: string;
+    ms: string;
+}
 
 /**
  * calculates and returns an object of time units that represent the distributed value of the provided duration
  * @param {number} msAlive duration in milliseconds
  * @param {boolean} leadingzero whether times should have leading zeroes
  */
-function getFriendlyUptime(msAlive = 0, leadingzero = false) {
+export function getFriendlyUptime(msAlive = 0, leadingzero = false): FriendlyTime {
     msAlive = Math.abs(msAlive);
     const days = Math.floor(msAlive / timeUnits.day);
     const hours = Math.floor(msAlive / timeUnits.hour) % 24;
@@ -62,7 +85,7 @@ function getFriendlyUptime(msAlive = 0, leadingzero = false) {
  * @param {number} timestamp1 second timestamp
  * @returns
  */
-function getDayDiff(timestamp0, timestamp1) {
+export function getDayDiff(timestamp0: number, timestamp1: number): number {
     return Math.round(getDurationDiff(timestamp0, timestamp1, timeUnits.day));
 }
 
@@ -74,7 +97,7 @@ function getDayDiff(timestamp0, timestamp1) {
  * @param {(number | timeUnits)} duration duration of time
  * @returns
  */
-function getDurationDiff(timestamp0, timestamp1, duration) {
+export function getDurationDiff(timestamp0: number, timestamp1: number, duration: number): number {
     return Math.abs(timestamp0 - timestamp1) / duration;
 }
 
@@ -89,7 +112,7 @@ function getDurationDiff(timestamp0, timestamp1, duration) {
  * @param {string} text input text
  * @returns
  */
-function stringToDuration(text) {
+export function stringToDuration(text: string): number {
     let ms = 0;
     const seconds = /(\d+)s/.exec(text);
     if (seconds) ms += Number(seconds[1]) * timeUnits.second;
@@ -102,9 +125,3 @@ function stringToDuration(text) {
 
     return ms;
 }
-
-exports.timeUnits = timeUnits;
-exports.getFriendlyUptime = getFriendlyUptime;
-exports.getDayDiff = getDayDiff;
-exports.getDurationDiff = getDurationDiff;
-exports.stringToDuration = stringToDuration;

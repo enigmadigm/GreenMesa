@@ -3,7 +3,7 @@ import { db_config } from "../auth.json";
 import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
-import Discord, { Guild, GuildMember, Message, Role, User } from 'discord.js';
+import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
 import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, TwitchHookRow, XClient } from "./gm";
 
 const levelRoles = [{
@@ -152,11 +152,11 @@ export class DBManager {
      */
     async updateXP(message: Message): Promise<void> {
         if (!message.guild) return;
-        const maxs = await getGlobalSetting("max_xp");
+        const maxs = await this.getGlobalSetting("max_xp");
 
         function genXP() {
-            if (!maxs[0]) return 28;
-            return Math.floor(Math.random() * (maxs[0].value - 15) + 15);
+            if (!maxs) return 28;
+            return Math.floor(Math.random() * (parseInt(maxs.value, 10) - 15) + 15);
         }
         this.db.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}${message.guild.id}'`, (err, rows) => {
             if (err) throw err;
@@ -206,7 +206,8 @@ export class DBManager {
         levelsEnabled = levelsEnabled[0] ? levelsEnabled[0].value : false;
         if (levelsEnabled === "enabled") {
             member.guild.roles = await member.guild.roles.fetch();
-            const levelRows = await checkForLevelRoles(member.guild);
+            const levelRows = await this.checkForLevelRoles(member.guild);
+            if (!levelRows) return false;
             const availableRoles = [];
             for (let i = 0; i < levelRows.length; i++) {
                 const r = levelRows[i];
@@ -384,7 +385,7 @@ export class DBManager {
      * @param {string} value value to set for the property
      * @param {boolean} deleting whether to delete the setting
      */
-    async editGuildSetting(guild: Guild, name = "", value = "", deleting = false): Promise<InsertionResult | string> {
+    async editGuildSetting(guild: Guild, name = "", value = "", deleting = false): Promise<InsertionResult> {
         return new Promise((resolve, reject) => {
             if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
             name = name.replace(/'/g, "\\'");
@@ -418,7 +419,7 @@ export class DBManager {
      * Deletes the xp entry for a member of a guild.
      * @param {object} member guild member to delete the xp for
      */
-    async clearXP(member: GuildMember): Promise<number> {
+    async clearXP(member: GuildMember | PartialGuildMember): Promise<number> {
         if (!member || !member.id || !member.guild || !member.guild.id) return 0;
         const result = await <Promise<InsertionResult>>this.query(`DELETE FROM dgmxp WHERE guildid = '${member.guild.id}' AND userid = '${member.id}'`).catch(xlog.error);
         return result.affectedRows || 0;
@@ -441,7 +442,7 @@ export class DBManager {
      * @param {Discord.Role} role the role to be added or configured
      * @param {boolean} deleting whether or not the given role should be deleted from the database, if true the level param will be ignored
      */
-    async setLevelRole(level: number, guild: Guild, role: Role, deleting = false): Promise<LevelRolesRow[] | number | false> {
+    async setLevelRole(level: number | null, guild: Guild, role: Role, deleting = false): Promise<LevelRolesRow[] | number | false> {
         if (!guild || !guild.id) return false;
         let result;
         if (role && deleting) {

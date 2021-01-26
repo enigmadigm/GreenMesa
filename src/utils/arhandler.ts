@@ -4,7 +4,7 @@ import xlg from "../xlogger";
 
 // if (!message.channel.permissionsFor(message.guild.me).has(["SEND_MESSAGES"]) || !message.channel.manageable)
 
-export default async function potatoRoler(member: GuildMember): Promise<void> {
+export async function potatoRoler(member: GuildMember): Promise<void> {
     try {
         if (member.guild.id !== "725784760366006353") return;
         if (member.user.bot) {

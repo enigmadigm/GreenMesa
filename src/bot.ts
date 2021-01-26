@@ -23,15 +23,15 @@ process.on('unhandledRejection', async (reason, promise) => {
 });
 
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
-import Discord, { TextChannel } from "discord.js"; // Load discord.js library
+import Discord, { GuildChannel, TextChannel } from "discord.js"; // Load discord.js library
 import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
 import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState } from './serverlogger';
-import ar from "./utils/arhandler";
+import * as ar from "./utils/arhandler";
 import MesaWebsite from "./website/app";
 import { Commands } from './commands';
-import { XClient, XMessage } from "./gm";
+import { Command, XClient, XMessage } from "./gm";
 import { DBManager } from "./dbmanager";
 
 export class Bot {
@@ -56,8 +56,8 @@ client.commands = co.commands;
 client.categories = co.categories;
 
 // ▼▼▼▼▼ command cooldowns section
-const cooldowns = new Discord.Collection();
-const xpcooldowns = new Discord.Collection();
+const cooldowns: Discord.Collection<Command["name"], Discord.Collection<string, number>> = new Discord.Collection();
+const xpcooldowns: Discord.Collection<string, number> = new Discord.Collection();
 
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
@@ -72,7 +72,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
         if (lo instanceof TextChannel) {
             lo.send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
         }
-        updateBotStats(client);
+        client.database?.updateBotStats(client);
     }, 3600000);
 
     setInterval(async () => {
@@ -81,16 +81,16 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
             if (err) return console.log(err);
         });
 
-        const game = await getGlobalSetting('game_name');
-        const gamePrefix = await getGlobalSetting('game_prefix');
-        const gameStatus = await getGlobalSetting('game_status');
-        if (game[0] && game[0].value !== 'default') {
+        const game = await client.database?.getGlobalSetting('game_name');
+        const gamePrefix = await client.database?.getGlobalSetting('game_prefix');
+        const gameStatus = await client.database?.getGlobalSetting('game_status');
+        if (game && game.value !== 'default') {
             client.user?.setPresence({
                 activity: {
-                    name: game[0].value || 'nothing',
-                    type: (gamePrefix[0] && gamePrefix[0].value) ? gamePrefix[0].value : 'WATCHING'
+                    name: game.value || 'nothing',
+                    type: (gamePrefix && gamePrefix.value && (gamePrefix.value === "WATCHING" || gamePrefix.value === "PLAYING" || gamePrefix.value === "STREAMING" || gamePrefix.value === "LISTENING" || gamePrefix.value === "CUSTOM_STATUS" || gamePrefix.value === "COMPETING")) ? gamePrefix.value : 'WATCHING'
                 },
-                status: (gameStatus[0] && gameStatus[0].value) ? gameStatus[0].value : 'idle'
+                status: (gameStatus && gameStatus.value && (gameStatus.value === "idle" || gameStatus.value === "online" || gameStatus.value === "dnd" || gameStatus.value === "invisible")) ? gameStatus.value : 'idle'
             }).catch(console.error);
         } else {
             if (Math.floor(Math.random() * 10) <= 8) {
@@ -153,7 +153,7 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
         lo.send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     }
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
-    const clearRes = await massClearXP(guild);
+    const clearRes = await client.database?.massClearXP(guild);
     if (!clearRes) xlg.log(`Couldn't clear XP of guild: ${guild.id}`);
 });
 
@@ -163,13 +163,17 @@ client.on('guildMemberAdd', async member => {
 });
 
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
-    const clearRes = await clearXP(member);
+    if (!member.partial) {
+    const clearRes = await client.database?.clearXP(member) || 0;
     if (!clearRes) xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
-    logMember(member, false);
+        logMember(member, false);
+    }
 });
 
 client.on('messageDelete', message => {
-    logMessageDelete(message);
+    if (!message.partial) {
+        logMessageDelete(message);
+    }
 });
 
 client.on('messageDeleteBulk', messageCollection => {
@@ -177,7 +181,9 @@ client.on('messageDeleteBulk', messageCollection => {
 });
 
 client.on('messageUpdate', (omessage, nmessage) => {
-    logMessageUpdate(omessage, nmessage);
+    if (!omessage.partial && !nmessage.partial) {
+        logMessageUpdate(omessage, nmessage);
+    }
 });
 
 client.on('roleCreate', nrole => {
@@ -189,15 +195,21 @@ client.on('roleDelete', orole => {
 });
 
 client.on('channelCreate', nchannel => {
-    logChannelState(nchannel);
+    if (nchannel instanceof GuildChannel) {
+        logChannelState(nchannel);
+    }
 });
 
 client.on('channelDelete', ochannel => {
-    logChannelState(ochannel, true);
+    if (ochannel instanceof GuildChannel) {
+        logChannelState(ochannel, true);
+    }
 });
 
 client.on('channelUpdate', (ochannel, nchannel) => {
-    logChannelUpdate(ochannel, nchannel);
+    if (ochannel instanceof GuildChannel && nchannel instanceof GuildChannel) {
+        logChannelUpdate(ochannel, nchannel);
+    }
 });
 
 client.on('emojiCreate', nemoji => {
@@ -213,7 +225,7 @@ client.on('emojiDelete', oemoji => {
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
-        logMsgReceive();
+        client.database?.logMsgReceive();
     
         if (message.author.bot || message.system) return;
         if (!message.guild || !client.user || !client.commands || !client.categories) return;
@@ -225,7 +237,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const now = Date.now();
         if (!dm) {
             if (!xpcooldowns.has(message.author.id)) {
-                updateXP(message);
+                client.database?.updateXP(message);
                 xpcooldowns.set(message.author.id, now);
                 setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
             }
@@ -233,20 +245,26 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         
         let special_prefix;
         if (!dm) {
-            special_prefix = await getPrefix(message.guild.id)
+            const gpr = await client.database?.getPrefix(message.guild.id);
+            if (gpr) {
+                special_prefix = gpr;
+            } else {
+                const gsr = await client.database?.getGlobalSetting('global_prefix');
+                if (gsr) special_prefix = gsr.value;
+            }
         } else {
-            special_prefix = (await getGlobalSetting('global_prefix'))[0].value;
+            const gsr = await client.database?.getGlobalSetting('global_prefix');
+            if (gsr) special_prefix = gsr.value;
         }
-        message.gprefix = special_prefix || config.prefix || "";
+        message.gprefix = special_prefix || "";
     
         if (message.mentions && message.mentions.has(client.user)) {
             if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
-                const iec_gs = await getGlobalSetting("info_embed_color");
-                const info_embed_color = parseInt(iec_gs[0].value);
+                const iec_gs = await client.database?.getColor("info_embed_color");
                 message.channel.send({
                     embed: {
                         "description": `${message.guild.me?.nickname || client.user?.username}'s prefix for **${message.guild.name}** is **${message.gprefix}**`,
-                        "color": info_embed_color
+                        "color": iec_gs
                     }
                 })
                 return;
@@ -260,19 +278,24 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         //if (message.channel.type === "dm") return;
     
         const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
-        const commandName = args.shift().toLowerCase()
+        const commandName = args.shift()?.toLowerCase() || "";
     
         let permLevel = permLevels.member;
-        let botmasters = await getGlobalSetting("botmasters").catch(xlg.error);
-        botmasters = botmasters[0].value.split(',');
+        const bmr = await client.database?.getGlobalSetting("botmasters").catch(xlg.error);
+        let botmasters: string[];
+        if (bmr) {
+            botmasters = bmr.value.split(',');
+        } else {
+            botmasters = [];
+        }
         if (!dm) { // gets perm level of member if message isn't from dms
-            permLevel = await getPermLevel(message.member);
+            permLevel = await getPermLevel(message.member || message.author);
         } else if (botmasters.includes(message.author.id)) { // bot masters
             permLevel = permLevels.botMaster;
         }
-        
-        const command = client.commands.get(commandName)
-            || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+        const command = client.commands.get(commandName || "")
+            || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
     
         if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
     
@@ -287,15 +310,15 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             return;
         }
     
-        const commandEnabledGlobal = await getGlobalSetting(`${command.name}_enabled`);
-        const commandEnabledGuild = await getGuildSetting(message.guild, `${command.name}_toggle`);
-        if ((commandEnabledGlobal && commandEnabledGlobal[0].value == 'false') || (commandEnabledGuild[0] && commandEnabledGuild[0].value === 'disable')) {
+        const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
+        const commandEnabledGuild = await client.database?.getGuildSetting(message.guild, `${command.name}_toggle`);
+        if ((commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable')) {
             message.channel.send({
                 embed: {
                     title: `Command Disabled`,
-                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? "**globally**" : "**on this server**"}.`,
+                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? "**globally**" : "**on this server**"}.`,
                     footer: {
-                        text: `${(commandEnabledGlobal[0] && commandEnabledGlobal[0].value == 'false') ? 'sorry, please be patient' : 'admins may re-enable it'}`
+                        text: `${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? 'sorry, please be patient' : 'admins may re-enable it'}`
                     }
                 }
             });
@@ -303,11 +326,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
     
         if (command.args && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
-            const fec_gs = await getGlobalSetting("fail_embed_color");
-            const fail_embed_color = parseInt(fec_gs[0].value);
-    
+            const fec_gs = await client.database?.getColor("fail_embed_color");
+
             let reply = `Arguments are needed to make that work!`;
-    
             if (command.usage) {
                 reply += `\nUsage: \`${message.gprefix}${command.name} ${command.usage}\``;
             }
@@ -315,7 +336,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             return message.channel.send({
                 embed: {
                     description: reply,
-                    color: fail_embed_color,
+                    color: fec_gs,
                     footer: {
                         text: 'tip: separate arguments with spaces'
                     }
@@ -330,16 +351,21 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const timestamps = cooldowns.get(command.name);
         const cooldownAmount = (command.cooldown || 2) * 1000;
     
-        if (timestamps.has(message.author.id)) {
-            const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-    
-            if (now < expirationTime) {
-                const timeLeft = (expirationTime - now) / 1000;
-                return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
+        if (timestamps) {
+            if (timestamps.has(message.author.id)) {
+                const usertimestamp = timestamps.get(message.author.id);
+                if (usertimestamp) {
+                    const expirationTime = usertimestamp + cooldownAmount;
+            
+                    if (now < expirationTime) {
+                        const timeLeft = (expirationTime - now) / 1000;
+                        return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
+                    }
+                }
             }
+            timestamps.set(message.author.id, now);
+            setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
         }
-        timestamps.set(message.author.id, now);
-        setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
     
         try {
             command.execute(client, message, args);
@@ -352,10 +378,13 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             });*/
     
             if (config.msgLogging) {
-                client.channels.cache.get('661614128204480522').send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+                const logChannel = client.channels.cache.get('661614128204480522');
+                if (logChannel && logChannel instanceof TextChannel) {
+                    logChannel.send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+                }
             }
-    
-            logCmdUsage(commandName);
+
+            client.database?.logCmdUsage(commandName);
         } catch (error) {
             xlg.error(error);
             client.specials.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');

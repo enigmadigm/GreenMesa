@@ -1,9 +1,12 @@
-module.exports = {
+import { Command } from "src/gm";
+
+const command: Command = {
     name: '418',
-    aliases: ['http418', 'error418'],
     description: 'oh no!',
     category: 'fun',
-    execute(client, message) {
+    async execute(client, message) {
         message.channel.send("Command outdated and is being used as a placeholder. The replacement command will be `sm http`.");
     }
 }
+
+export default command;

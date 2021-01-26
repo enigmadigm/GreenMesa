@@ -43,7 +43,8 @@ export class Commands {
                 const catdat: Category = {
                     name: '',
                     id: catNumber,
-                    count: 1
+                    count: 1,
+                    commands: []
                 }
     
                 if (Object.prototype.hasOwnProperty.call(catsem, folder)) {
@@ -81,11 +82,26 @@ export class Commands {
                 const storedmisc = this.categories.find(c => c.name === "misc");
                 if (storedmisc) {
                     storedmisc.count++;
+                    storedmisc.commands.push(command)
                 } else {
                     this.categories.set("misc", {
                         name: "misc",
                         id: catNumber,
-                        count: 1
+                        count: 1,
+                        commands: [command]
+                    });
+                }
+            } else {
+                const storedcat = this.categories.find(c => c.name === cpos[cpos.length - 1]);
+                if (storedcat) {
+                    storedcat.count++;
+                    storedcat.commands.push(command);
+                } else {
+                    this.categories.set(cpos[cpos.length - 1], {
+                        name: cpos[cpos.length - 1],
+                        id: catNumber,
+                        count: 1,
+                        commands: [command]
                     });
                 }
             }

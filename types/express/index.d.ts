@@ -2,6 +2,8 @@ declare namespace Express {
     interface Request {
         user: User;
         twitch_hub: string;
+        twitch_hex: string;
+        twitch_signature: string;
     }
     interface User {
         id: string;

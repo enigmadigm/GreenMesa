@@ -1,17 +1,17 @@
 "use strict";
 
-class Leeter {
-	public textin: any;
-	public transtype: any;
-	public advmode: any;
+export default class Leeter {
+	private textin!: string;
+	private transtype!: number;
+	private advmode!: boolean;
 
-    contructor(tt, advanced) {
+    contructor(tt?: number, advanced?: boolean): void {
         this.textin = "";
         this.transtype = tt || 1;
-        this.advmode = advanced;
+        this.advmode = advanced || false;
     }
 
-    changewords() {
+    changewords(): void {
         this.cchange("pwn", "own");
         this.cchange(" ownzor", " own");
         this.achange(" is good ", " owns ");
@@ -213,8 +213,8 @@ class Leeter {
             this.textin = this.textin.replace(/(?:are|is|am) good (me|you|him|her|them|y'all|my|your|his|her|their|our)/g, "defeat $1");
         }
     }
-    
-    changeletters() {
+
+    changeletters(): void {
         this.achange("a", "4");
         this.achange("b", "8");
         this.achange("e", "3");
@@ -315,7 +315,7 @@ class Leeter {
         }
     }
 
-    punct() {
+    punct(): void {
         this.change(".", "   [%]   ");
         this.change(",", "   [@]   ");
         this.change("?", "   [Â©]   ");
@@ -327,22 +327,22 @@ class Leeter {
         this.change("\r", "");
     }
 
-    randomcase(what) {
-        var tr = "";
+    randomcase(what: string): string {
+        let tr = "";
         for (let i = 0; i < what.length; i++) {
             if (Math.random() > 0.5) tr += what.substr(i, 1).toLowerCase();
             else tr += what.substr(i, 1).toUpperCase();
         }
         return tr;
     }
-    
-    stripspaces(what) {
+
+    stripspaces(what: string): string {
         what = what.replace(/^ */, "");
         what = what.replace(/ *$/, "");
         return what;
     }
-    
-    unpunct() {
+
+    unpunct(): void {
         this.change("   [%]   ", ".");
         this.change("   [@]   ", ",");
         this.change("   [a]   ", ",");
@@ -353,33 +353,33 @@ class Leeter {
         this.change("   [~]   ", ")");
         this.change("   [*]   ", "\n");
     }
-    
-    change(t1, t2) {
-        var tr = this.textin;
-        var lp = 0;
+
+    change(t1: string, t2: string): string | undefined {
+        let tr = this.textin;
+        let lp = 0;
         while (tr.indexOf(t1) > -1) {
             if (++lp > 200) {
                 return tr;
             }
-            var occ = tr.indexOf(t1);
+            const occ = tr.indexOf(t1);
             tr = tr.substr(0, occ) + t2 + tr.substr(occ + t1.length);
         }
         this.textin = tr;
     }
     
-    achange(t1, t2) {
+    achange(t1: string, t2: string): void {
         if (this.transtype == 1) {
             if (Math.random() <= 0.8) this.change(t1, t2);
         }
         if (this.transtype == 2) this.change(t2, t1);
     }
     
-    cchange(t1, t2) {
+    cchange(t1: string, t2: string): void {
         if (this.transtype == 2) this.change(t1, t2);
     }
-    checkadv() {
+    checkadv(): string | undefined {
         if (this.textin.length < 15) return;
-        var spccount = 0; // space count
+        let spccount = 0; // space count
         for (let i = 0; i < this.textin.length; i++) {
             if (this.textin.substr(i, 1) == " ") spccount++;
         }
@@ -387,8 +387,8 @@ class Leeter {
             this.change("  ", "##");
             this.change(" ", "");
             this.change("##", " ");
-            var lgsword = 0;
-            var cword = 0;
+            let lgsword = 0;
+            let cword = 0;
             for (let i = 0; i < this.textin.length; i++) {
                 if (this.textin.substr(i, 1) == " ") {
                     if (cword > lgsword) lgsword = cword;
@@ -401,7 +401,7 @@ class Leeter {
         }
     }
     
-    tol33t(text) {
+    tol33t(text: string): string {
         this.transtype = 1;
         this.textin = " " + text + " ";
         this.textin = this.textin.toLowerCase();
@@ -412,15 +412,15 @@ class Leeter {
         return this.stripspaces(this.randomcase(this.textin));
     }
     
-    tolame(text) {
+    tolame(text: string): string {
         this.transtype = 2;
         this.textin = " " + text + " ";
         this.textin = this.textin.toLowerCase();
         this.textin = this.textin.replace(/(\s)!(\s)/g, "$1i$2");
-        var rxp = /!+\W/g;
+        const rxp = /!+\W/g;
         this.textin = this.textin.replace(rxp, ".");
         this.changeletters();
-        let caRes = this.checkadv();
+        const caRes = this.checkadv();
         if (caRes === 'bad text') return 'bad text';
         this.punct();
         // if (!document.getElementById("lit").checked) changewords();
@@ -447,9 +447,6 @@ class Leeter {
     //exports.lamechanged = lamechanged;
     //exports.l33tchanged = l33tchanged;
 }
-
-module.exports = Leeter;
-
 
 /*
      FILE ARCHIVED ON 21:28:41 Jun 03, 2017 AND RETRIEVED FROM THE

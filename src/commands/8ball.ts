@@ -1,14 +1,16 @@
-const xlg = require("../xlogger");
+import { Command } from "src/gm";
+
+import xlg from "../xlogger";
 
 /**
  * Generates the magic 8ball response
  */
 function doMagic8BallVoodoo() {
-    var rand = ['Yes', 'No', 'idk, maybe', 'occasionally', 'in your dreams', "when you're dead that will be true", "never", "that could happen if you sacrifice something you love"];
+    const rand = ['Yes', 'No', 'idk, maybe', 'occasionally', 'in your dreams', "when you're dead that will be true", "never", "that could happen if you sacrifice something you love"];
     return rand[Math.floor(Math.random() * rand.length)];
 }
 
-module.exports = {
+const command: Command = {
     name: '8ball',
     description: 'play some *magic* 8ball (not pool)',
     category: 'fun',
@@ -27,3 +29,5 @@ module.exports = {
         }
     }
 }
+
+export default command;

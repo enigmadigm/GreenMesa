@@ -22,6 +22,7 @@ export interface Command {
     usage?: string;
     args?: boolean;
     specialArgs?: number;
+    cooldown?: number;
     permLevel?: number;
     guildOnly?: boolean;
     ownerOnly?: boolean;
@@ -37,6 +38,7 @@ export interface Category {
     id: number;
     count: number;
     emoji?: string;
+    commands: Command[];
 }
 
 /*export interface ClientSpecials {// NOT USING, JUST DID typeof
@@ -50,12 +52,12 @@ export interface Category {
 export interface SendableChannel extends TextChannel, DMChannel { }
 
 export interface GlobalSettingRow {
-    name?: string;
-    value?: string;
+    name: string;
+    value: string;
     previousvalue?: string;
     description?: string;
     lastupdated?: string;
-    updatedby?: string;
+    updatedby: string;
     category?: string;
 }
 
