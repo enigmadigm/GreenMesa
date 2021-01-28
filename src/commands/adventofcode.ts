@@ -1,17 +1,20 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting, getGuildSetting, editGuildSetting } = require("../dbmanager");
-const moment = require("moment");
-const fetch = require("node-fetch");
-const lbdat = [
-    {
-        guildID: "",
-        data: [],
-        lastFetched: null
-    }
-];
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+//import { getGlobalSetting, getGuildSetting, editGuildSetting } from "../dbmanager";
+import moment from "moment";
+import fetch from "node-fetch";
+import { Command } from "src/gm";
 
-module.exports = {
+interface AdventLeaderBoardData {
+    guildID: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any[];
+    lastFetched: null | Date;
+}
+
+const lbdat: AdventLeaderBoardData[] = [];
+
+const command: Command = {
     name: "adventofcode",
     aliases: ["aoc"],
     description: {
@@ -27,24 +30,37 @@ module.exports = {
     ownerOnly: false,
     async execute(client, message, args) {
         try {
-            let session = await getGuildSetting(message.guild, "aoc_session");
-            let lb = await getGuildSetting(message.guild, "aoc_leaderboard");
-            let year = await getGuildSetting(message.guild, "aoc_year")
-            const iec = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
-            let resetting = false;
+            if (!message.guild) return;
+            const tempsession = await client.database?.getGuildSetting(message.guild, "aoc_session");
+            let session = "";
+            if (tempsession) {
+                session = tempsession.value;
+            }
+            const templb = await client.database?.getGuildSetting(message.guild, "aoc_leaderboard");
+            let lb = "";
+            if (templb) {
+                lb = templb.value;
+            }
+            const tempyear = await client.database?.getGuildSetting(message.guild, "aoc_year")
+            let year = "";
+            if (tempyear) {
+                year = tempyear.value;
+            }
+            const iec = await client.database?.getColor("info_embed_color");
+            let resetting = "";
             if (args.join(" ").toLowerCase() === "reset" || args.join(" ").toLowerCase() === "reselect") {
                 resetting = args.join(" ");
             }
             let refetching = false;
-            let guildlbdat = lbdat.find(d => d.guildID === message.guild.id);
+            let guildlbdat = lbdat.find(d => d.guildID === message.guild?.id);
             if (!guildlbdat) {
-                lbdat.push({ guildID: message.guild.id });
-                guildlbdat = lbdat.find(d => d.guildID === message.guild.id);
+                lbdat.push({ guildID: message.guild.id, data: [], lastFetched: null });
+                guildlbdat = <AdventLeaderBoardData>lbdat.find(d => d.guildID === message.guild?.id);
             }
 
-            if (!lb[0] || !session[0] || !year[0] || resetting) {
+            if (!lb || !session || !year || resetting) {
                 
-                if (!session[0] || !session[0].value || resetting === "reset") {
+                if (!session || resetting === "reset") {
                     await message.channel.send({
                         embed: {
                             color: iec,
@@ -54,12 +70,12 @@ module.exports = {
                     });
                     const sessionCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 60000, max: 1 });
                     if (!sessionCollected || !sessionCollected.first()) {
-                        client.specials.sendError(message.channel, "No session token provided. Setup cancelled.");
+                        client.specials?.sendError(message.channel, "No session token provided. Setup cancelled.");
                         return false;
                     } else {
-                        session = sessionCollected.first().content;
+                        session = sessionCollected.first()?.content || "";
                     }
-                    await editGuildSetting(message.guild, "aoc_session", session);
+                    await client.database?.editGuildSetting(message.guild, "aoc_session", session);
                 } else {
                     await message.channel.send({
                         embed: {
@@ -68,7 +84,6 @@ module.exports = {
                             description: "Session already set, skipping step."
                         }
                     });
-                    session = session[0].value;
                 }
 
                 await message.channel.send({
@@ -79,11 +94,11 @@ module.exports = {
                     }
                 });
                 const yearCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 20000, max: 1 });
-                if (!yearCollected || !yearCollected.first() || !parseInt(yearCollected.first().content, 10)) {
-                    client.specials.sendError(message.channel, "No valid year provided. The setup has been cancelled.");
+                if (!yearCollected || !yearCollected.first() || !parseInt(yearCollected.first()?.content || "", 10)) {
+                    client.specials?.sendError(message.channel, "No valid year provided. The setup has been cancelled.");
                     return false;
                 } else {
-                    year = yearCollected.first().content;
+                    year = yearCollected.first()?.content || "";
                     await editGuildSetting(message.guild, "aoc_year", year);
                 }
 
@@ -96,61 +111,63 @@ module.exports = {
                 });
                 const numCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 1800, { time: 40000, max: 1 });
                 if (!numCollected || !numCollected.first()) {
-                    client.specials.sendError(message.channel, "A response message was not received within the time limit, the setup wizard has been cancelled.");
+                    client.specials?.sendError(message.channel, "A response message was not received within the time limit, the setup wizard has been cancelled.");
                     return false;
                 } else {
-                    if (numCollected.first().content.toLowerCase() !== "no") {
-                        lb = numCollected.first().content;
+                    if (numCollected.first()?.content.toLowerCase() !== "no") {
+                        lb = numCollected.first()?.content || "";
                         await editGuildSetting(message.guild, "aoc_leaderboard", lb);
                     }
                 }
                 refetching = true;
             } else {
-                session = session[0].value;
-                lb = lb[0].value;
-                year = year[0].value;
+                //session = session[0].value;
+                //lb = lb[0].value;
+                //year = year[0].value;
             }
             // xlg.log(session)// logging session to see how it is maintained after going through the setup and skipping that step
 
             //const now = new Date();
             const url = `https://adventofcode.com/${year}/leaderboard/private/view/${lb}.json`;
-            if (!guildlbdat || !guildlbdat.lastFetched || moment().diff(guildlbdat.lastFetched) > 1000 * 60 * 5 || refetching) {
+            if (!guildlbdat.lastFetched || moment().diff(guildlbdat.lastFetched) > 1000 * 60 * 5 || refetching) {
                 try {
-                    let res = await fetch(url, {
+                    const res = await fetch(url, {
                         headers: {
                             cookie: `session=${session}`
                         }
                     });
                     if (res.url === `https://adventofcode.com/${year}/leaderboard/private`) {
-                        client.specials.sendError(message.channel, "Could not access the leaderboard, the session variable may be expired.\nSend `aoc reset` to set the session again, or send `aoc reselect` to set the lb options again.");
+                        client.specials?.sendError(message.channel, "Could not access the leaderboard, the session variable may be expired.\nSend `aoc reset` to set the session again, or send `aoc reselect` to set the lb options again.");
                         //await editGuildSetting(message.guild, "aoc_session", "", true);
                         return false;
                     }
                     if (res.status >= 500 && res.status < 600) {
-                        client.specials.sendError(message.channel, "Received a bad response from [AOC](https://adventofcode.com). It is likely that the session cookie is invalid.\nResend the command to set it again.");
+                        client.specials?.sendError(message.channel, "Received a bad response from [AOC](https://adventofcode.com). It is likely that the session cookie is invalid.\nResend the command to set it again.");
                         await editGuildSetting(message.guild, "aoc_session", "", true);
                         return false;
                     }
                     if (res.status === 404) {
-                        client.specials.sendError(message.channel, `[Your leaderboard](${url}) could not be found.\nResend the command to set it again.`);
+                        client.specials?.sendError(message.channel, `[Your leaderboard](${url}) could not be found.\nResend the command to set it again.`);
                         await editGuildSetting(message.guild, "aoc_leaderboard", "", true);
                         await editGuildSetting(message.guild, "aoc_year", "", true);
                         return false;
                     }
-                    res = await res.json();
-                    guildlbdat.data = Object.keys(res.members).map((mid) => {
-                        const mdat = res.members[mid];
-                        if (mdat && mdat.id) {
-                            if (mdat.name) {
-                                mdat.name = mdat.name.replace("_", "˾");
+                    const j = await res.json();
+                    if (j) {
+                        guildlbdat.data = Object.keys(j.members).map((mid) => {
+                            const mdat = j.members[mid];
+                            if (mdat && mdat.id) {
+                                if (mdat.name) {
+                                    mdat.name = mdat.name.replace("_", "˾");
+                                }
+                                return mdat;
                             }
-                            return mdat;
-                        }
-                    });
-                    guildlbdat.lastFetched = new Date();
+                        });
+                        guildlbdat.lastFetched = new Date();
+                    }
                 } catch (error) {
                     xlg.error(error);
-                    client.specials.sendError(message.channel, "Could not retrieve leaderboard information. Wrong details may have been entered.");
+                    client.specials?.sendError(message.channel, "Could not retrieve leaderboard information. Wrong details may have been entered.");
                     return false;
                 }
             }
@@ -177,7 +194,7 @@ module.exports = {
             for (let s = 0; s < longestStar; s++) {
                 starSpaces += " ";
             }
-            let mapDat = guildlbdat.data.map((x, i) => {
+            const mapDat = guildlbdat.data.map((x, i) => {
                 //if (x.global_score) hasTopScorer = true;
                 const len1 = starSpaces.length - ` ${x.stars || "0"} `.length;
                 const spaces1 = starSpaces.slice(0, len1 < 0 ? 0 : len1);
@@ -198,7 +215,7 @@ module.exports = {
             //mapDat.unshift(` Ra | ⭐ | Score${hasTopScorer ? "[+Top 100]" : ""}`);
             mapDat.unshift(` Ra │ ⭐ │ Score`);
 
-            let embed = {
+            const embed = {
                 color: iec,
                 description: `[Advent of Code Leaderboard](${url})\n\`\`\`md\n${mapDat.join("\n")}\n\`\`\``
             };
@@ -206,8 +223,10 @@ module.exports = {
 
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

@@ -1,7 +1,7 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Channel, Guild, GuildMember, MessageEmbed, Role, User } from "discord.js";
+import { Channel, Guild, GuildChannel, GuildMember, MessageEmbed, Role, User } from "discord.js";
 import { XClient } from "src/gm";
 
 /**
@@ -196,7 +196,7 @@ export function stringToRole(guild: Guild, text: string, byName = true, bySimila
  * @param {string} text string to parse
  * @returns
  */
-export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): Channel | undefined {
+export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): GuildChannel | undefined {
     if (!guild || !text) return undefined;
     text = extractString(text, /<#(\d*)>/) || text;
 

@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
-const { stringToChannel } = require('../utils/parsers');
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+//import { getGlobalSetting, getGuildSetting } from "../dbmanager";
+import { stringToChannel } from '../utils/parsers';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "copychannel",
     aliases: ["cpchan"],
     description: {
@@ -13,27 +14,41 @@ module.exports = {
     category: "moderation",
     usage: "<#channel>",
     args: true,
-    specialArgs: undefined,
     permLevel: permLevels.admin,
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+            if (!message.guild) return;
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
             
-            let target = stringToChannel(message.guild, args.join(" "), true, true);
+            const target = stringToChannel(message.guild, args.join(" "), true, true);
             if (!target) {
                 xlg.log(target)
-                await client.specials.sendError(message.channel, "Invalid channel");
+                await client.specials?.sendError(message.channel, "Invalid channel");
                 return;
             }
+
             try {
-                await message.guild.channels.create(target.name, { type: target.type, parent: target.parent, permissionOverwrites: target.permissionOverwrites, position: target.position });
+                if (target.parent) {
+                    await message.guild.channels.create(target.name, {
+                        type: target.type,
+                        parent: target.parent,
+                        permissionOverwrites: target.permissionOverwrites,
+                        position: target.position
+                    });
+                } else {
+                    await message.guild.channels.create(target.name, {
+                        type: target.type,
+                        permissionOverwrites: target.permissionOverwrites,
+                        position: target.position
+                    });
+                }
             } catch (error) {
                 xlg.error(error);
-                client.specials.sendError(message.channel, "Could not copy the channel. Do I lack permissions?");
+                client.specials?.sendError(message.channel, "Could not copy the channel. Do I lack permissions?");
                 return false;
             }
             
@@ -45,8 +60,10 @@ module.exports = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

@@ -1,7 +1,8 @@
-const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager")
+import { Command } from "src/gm";
+import xlg from "../xlogger";
+//import { getGlobalSetting } from "../dbmanager";
 
-module.exports = {
+const command: Command = {
     name: "botfor",
     description: "find the right bot for a topic",
     usage: "<topic>",
@@ -11,19 +12,21 @@ module.exports = {
         try {
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
+                    color: await client.database?.getColor("fail_embed_color"),
                     title: "Error 501",
                     description: "This command will deliver you the right bot for what you want, using AI!"
                 }
             });
             if (args.length) {
-                let term = args.join(" ");
+                const term = args.join(" ");
                 message.channel.send(term);
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

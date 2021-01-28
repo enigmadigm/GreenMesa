@@ -1,13 +1,15 @@
 //const { prefix } = require('../auth.json');
 //const { getGlobalSetting } = require('../dbmanager');
-const { getGlobalSetting } = require("../dbmanager");
+//const { getGlobalSetting } = require("../dbmanager");
 
-function titleCase(str) {
+import { Command } from "src/gm";
+
+function titleCase(str: string) {
     if (str == "nsfw") {
         return "NSFW";
     }
-    var splitStr = str.toLowerCase().split(' ');
-    for (var i = 0; i < splitStr.length; i++) {
+    const splitStr = str.toLowerCase().split(' ');
+    for (let i = 0; i < splitStr.length; i++) {
         // You do not need to check if i is larger than splitStr length, as your for does that for you
         // Assign it back to the array
         splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
@@ -16,7 +18,7 @@ function titleCase(str) {
     return splitStr.join(' ');
 }
 
-module.exports = {
+const command: Command = {
     name: 'commands',
     description: {
         short: 'command list',
@@ -26,15 +28,19 @@ module.exports = {
     category: "misc",
     async execute(client, message) {
         try {
-            const { commands } = message.client;
-            const { categories } = message.client;
+            const { commands } = client;
+            const { categories } = client;
+            if (!commands || !categories) return;
             const cats = categories.map(c => c.name).filter(n => n != "owner" && n != "nsfw");
             const catnames = {
                 "moderation": "management"
             };
             categories.each((c) => {
                 if (Object.keys(catnames).includes(c)) {
-                    categories.get(c).name = catnames[c];
+                    const c1 = categories.get(c);
+                    if (c1) {
+                        c1.name = catnames[c];
+                    }
                 }
             });
             
@@ -76,3 +82,5 @@ module.exports = {
         return;
     }
 }
+
+export default command;

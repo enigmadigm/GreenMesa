@@ -33,6 +33,7 @@ import MesaWebsite from "./website/app";
 import { Commands } from './commands';
 import { Command, XClient, XMessage } from "./gm";
 import { DBManager } from "./dbmanager";
+import * as specials from './utils/specials';
 
 export class Bot {
     static client: XClient;
@@ -45,7 +46,7 @@ export class Bot {
 }
 
 const client: XClient = new Discord.Client();
-client.specials = require("./utils/specials") || {};
+client.specials = specials;
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -115,7 +116,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
 
-    await client.specials.timedMessagesHandler(client);
+    await client.specials?.timedMessagesHandler(client);
 
     try {
         //Generates invite link to put in console.
@@ -300,16 +301,18 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
     
         if (command.guildOnly && dm) {// command is configured to only execute outside of dms
-            return message.channel.send('I can\'t execute that command inside DMs!');
+            message.channel.send('I can\'t execute that command inside DMs!');
+            return;
         }
         if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only, THIS IS AN OUTDATED PROPERTY BUT IS STILL USED
             xlg.log(`${message.author.tag} attempted ownerOnly`);
             return;
         }
         if (command.permLevel && permLevel < command.permLevel) {// insufficient bot permissions
+            // TODO: add admin option to make it notify users that they don't have permissions
             return;
         }
-    
+
         const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
         const commandEnabledGuild = await client.database?.getGuildSetting(message.guild, `${command.name}_toggle`);
         if ((commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable')) {
@@ -387,10 +390,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             client.database?.logCmdUsage(commandName);
         } catch (error) {
             xlg.error(error);
-            client.specials.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');
+            client.specials?.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');
         }
     } catch (err) {
-        client.specials.sendError(message.channel, "Error while processing. If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).")
+        client.specials?.sendError(message.channel, "Error while processing. If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).")
     }
 });
 

@@ -1,9 +1,10 @@
-const { default: fetch } = require("node-fetch")
-const xlg = require("../xlogger")
-const { validURL } = require('../utils/urls');
-const { getGlobalSetting } = require("../dbmanager");
+import { default as fetch } from "node-fetch";
+import xlg from "../xlogger";
+import { validURL } from '../utils/urls';
+//import { getGlobalSetting } from "../dbmanager";
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: 'changemymind',
     description: {
         short: 'make an image',
@@ -18,7 +19,7 @@ module.exports = {
             if (args.length > 1000) {
                 message.channel.send({
                     embed: {
-                        color: parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10),
+                        color: await client.database?.getColor("fail_embed_color"),
                         title: "Nope",
                         description: "I will not accept text longer than 1000 characters."
                     }
@@ -26,7 +27,7 @@ module.exports = {
                 message.channel.stopTyping();
                 return false;
             }
-            var url = `https://nekobot.xyz/api/imagegen?type=changemymind&text=${args.join(" ")}`;
+            const url = `https://nekobot.xyz/api/imagegen?type=changemymind&text=${args.join(" ")}`;
             await fetch(url)
                 .then(res => res.json())
                 .then(async j => {
@@ -47,13 +48,10 @@ module.exports = {
             message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
-            message.channel.stopTyping().catch(xlg.error);
-            message.channel.send({
-                embed: {
-                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
-                    description: `Failure while generating image`
-                }
-            }).catch(xlg.error);
+            message.channel.stopTyping();
+            client.specials?.sendError(message.channel, "Failure while generating image");
         }
     }
 }
+
+export default command;

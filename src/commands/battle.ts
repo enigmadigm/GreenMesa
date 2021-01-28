@@ -1,15 +1,16 @@
-const xlg = require('../xlogger');
-const { getGlobalSetting } = require('../dbmanager')
-const { stringToMember } = require('../utils/parsers');
+import { Command } from "src/gm";
+import xlg from '../xlogger';
+//import { getGlobalSetting } from '../dbmanager';
+import { stringToMember } from '../utils/parsers';
 
 const actions = ['shoot', 'punch', 'kick', 'drop', 'choke', 'torture', 'shoot', 'superhero battle', 'cleave', 'big cgi fight'];
 
-module.exports = {
+const command: Command = {
     name: 'battle',
     aliases: ['fight'],
     description: {
         short: 'fight with another user',
-        long: 'Fight with another user. There\'s a chance you\'ll get caught!! THIS COMMAND WILL BE DEVELOPED IN THE FUTURE'
+        long: 'Fight with another user. There\'s a chance you\'ll get caught!! THIS COMMAND WILL BE DEVELOPED IN THE FUTURE.'
     },
     guildOnly: true,
     cooldown: 1,
@@ -18,16 +19,14 @@ module.exports = {
     usage: '<person to fight with>',
     async execute(client, message, args) {
         try {
-            let fec_gs = await getGlobalSetting("fail_embed_color");
-            let fail_embed_color = parseInt(fec_gs[0].value);
-            let iec_gs = await getGlobalSetting("info_embed_color");
-            let info_embed_color = parseInt(iec_gs[0].value);
-            let sec_gs = await getGlobalSetting("success_embed_color");
-            let success_embed_color = parseInt(sec_gs[0].value);
+            if (!message.guild) return;
+            const fail_embed_color = await client.database?.getColor("fail_embed_color");
+            const info_embed_color = await client.database?.getColor("info_embed_color");
+            const success_embed_color = await client.database?.getColor("success_embed_color");
 
-            let target = await stringToMember(message.guild, args.join(" ")) || message.mentions.members.first();
-            let action = actions[Math.floor(Math.random() * actions.length)];
-            let outcome = [true, false][Math.floor(Math.random() * 2)];
+            const target = await stringToMember(message.guild, args.join(" ")) || message.mentions.members?.first();
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const outcome = [true, false][Math.floor(Math.random() * 2)];
 
             if (!target) {
                 await message.channel.send({
@@ -55,8 +54,10 @@ module.exports = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

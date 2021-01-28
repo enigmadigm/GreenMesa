@@ -1,14 +1,10 @@
-const {
-    getGlobalSetting,
-    editGlobalSettings
-} = require("../dbmanager");
-const xlg = require("../xlogger");
-const moment = require("moment");
-const {
-    permLevels
-} = require('../permissions');
+//import { getGlobalSetting, editGlobalSettings } from "../dbmanager";
+import xlg from "../xlogger";
+import moment from "moment";
+import { permLevels } from '../permissions';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: 'config',
     description: {
         short: `edit config`,
@@ -29,10 +25,9 @@ module.exports = {
      */
     async execute(client, message, args) {
         try {
-            let fec_gs = await getGlobalSetting("fail_embed_color");
-            let fail_embed_color = parseInt(fec_gs[0].value);
+            const fail_embed_color = await client.database?.getColor("fail_embed_color");
             if (!args.length) {
-                return message.channel.send({
+                message.channel.send({
                     embed: {
                         title: "Global Configuration Editing",
                         description: "This command allows for the editing of various configuration variables in the database from the text-line. For it to work, you must supply arguments like `view` or `edit` along with their various selectors. In order to use this command you must be a sys admin.",
@@ -41,11 +36,11 @@ module.exports = {
                             text: "*GlobalSettings"
                         }
                     }
-                }).catch(xlg.error);
+                });
+                return;
             }
-            let iec_gs = await getGlobalSetting("info_embed_color");
-            let info_embed_color = parseInt(iec_gs[0].value);
-            var argIndex = 0;
+            const info_embed_color = await client.database?.getColor("info_embed_color");
+            let argIndex = 0;
             switch (args[argIndex]) {
                 case 'view': {
                     argIndex++;
@@ -53,22 +48,22 @@ module.exports = {
                         message.channel.send("Please retry and supply a setting name to view.");
                         return false;
                     }
-                    let setting = await getGlobalSetting(args[argIndex]).catch(xlg.error);
+                    const setting = await client.database?.getGlobalSetting(args[argIndex]);
                     if (!setting) {
                         message.channel.send("The property does not exist. You may create it with the `edit` option.");
                         return false;
                     }
-                    setting = setting[0];
-                    let updatedby = client.users.cache.get(setting.updatedby);
+                    const updatedby = client.users.cache.get(setting.updatedby);
 
-                    let embed = {
-                        author: {
-                            name: 'Settings',
-                            icon_url: client.user.displayAvatarURL()
-                        },
-                        title: `${setting.name}`,
-                        description: `${setting.value}`,
-                        fields: [{
+                    message.channel.send({
+                        embed: {
+                            author: {
+                                name: 'Settings',
+                                icon_url: client.user?.displayAvatarURL()
+                            },
+                            title: `${setting.name}`,
+                            description: `${setting.value}`,
+                            fields: [{
                                 name: "Description",
                                 value: `${setting.description}`,
                                 inline: true
@@ -86,16 +81,14 @@ module.exports = {
                                 name: "Updated By",
                                 value: `${updatedby}`
                             }
-                        ],
-                        color: info_embed_color || 0,
-                        footer: {
-                            text: 'Viewing GlobalSettings',
-                            icon_url: message.author.displayAvatarURL(),
+                            ],
+                            color: info_embed_color || 0,
+                            footer: {
+                                text: 'Viewing GlobalSettings',
+                                icon_url: message.author.displayAvatarURL(),
+                            }
                         }
-                    }
-                    message.channel.send({
-                        embed: embed
-                    }).catch(xlg.error);
+                    });
                     break;
                 }
                 case 'edit': {
@@ -104,27 +97,30 @@ module.exports = {
                         message.channel.send("Please retry and supply:```\nSELECTOR : SELECTOR VALUE : NEW VALUE\n```");
                         return false;
                     }
-                    let status = await editGlobalSettings(args[argIndex], args[argIndex + 1], message.author, args.slice(argIndex + 2).join("_")).catch(xlg.error);
+                    const status = await client.database?.editGlobalSettings(args[argIndex], args[argIndex + 1], message.author, args.slice(argIndex + 2).join("_"));
+                    if (!status) {
+                        client.specials?.sendError(message.channel);
+                        return;
+                    }
                     let changed = "Updated Setting"
                     if (status.changedRows == 0 && status.affectedRows > 0) {
                         changed = "Inserted Setting";
                     }
-                    let embed = {
-                        author: {
-                            name: 'Settings',
-                            icon_url: client.user.displayAvatarURL()
-                        },
-                        title: changed,
-                        description: status.affectedRows + ' settings affected',
-                        color: info_embed_color || 0,
-                        footer: {
-                            text: 'Viewing GlobalSettings',
-                            icon_url: message.author.displayAvatarURL(),
-                        }
-                    }
                     message.channel.send({
-                        embed: embed
-                    }).catch(xlg.error);
+                        embed: {
+                            author: {
+                                name: 'Settings',
+                                icon_url: client.user?.displayAvatarURL()
+                            },
+                            title: changed,
+                            description: status.affectedRows + ' settings affected',
+                            color: info_embed_color || 0,
+                            footer: {
+                                text: 'Viewing GlobalSettings',
+                                icon_url: message.author.displayAvatarURL(),
+                            }
+                        }
+                    });
                     break;
                 }
                 default: {
@@ -133,8 +129,10 @@ module.exports = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

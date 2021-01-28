@@ -31,12 +31,13 @@ const command: Command = {
     permLevel: permLevels.trustedMember,
     guildOnly: true,
     ownerOnly: false,
-    async execute(client: XClient, message: XMessage, args: string[]) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async execute(client, message, args) {
         try {
             //
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }

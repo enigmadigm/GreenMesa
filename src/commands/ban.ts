@@ -1,10 +1,11 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGuildSetting } = require("../dbmanager");
-const { stringToMember } = require("../utils/parsers");
-const Discord = require('discord.js');
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+//import { getGuildSetting } from "../dbmanager";
+import { stringToMember } from "../utils/parsers";
+import Discord from 'discord.js';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "ban",
     aliases: ["b"],
     description: {
@@ -19,20 +20,20 @@ module.exports = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!(message instanceof Discord.Message)) return;
+            if (!message.guild) return;
             
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
 
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target || !(target instanceof Discord.GuildMember)) {
-                await client.specials.sendError(message.channel, "Not a member");
+                await client.specials?.sendError(message.channel, "Not a member");
                 return;
             }
             if (!target.bannable) {
-                await client.specials.sendError(message.channel, `${target} is not bannable`);
+                await client.specials?.sendError(message.channel, `${target} is not bannable`);
                 return;
             }
 
@@ -46,8 +47,10 @@ module.exports = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

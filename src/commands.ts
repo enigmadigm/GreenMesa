@@ -71,14 +71,10 @@ export class Commands {
             const command: Command = await import(`${dir}${cmdfile}`);
             //const command = require(`./commands/${file}`);
 
-            // set a new item in the Collection
-            // with the key as the command name and the value as the exported module
-            this.commands.set(command.name, command);
-
             // ▲▲▲▲▲ for commands
             // ▼▼▼▼▼ for categories
             const cpos = dir.replace(this.rootCommandPath, "").split("/");
-            if (cpos.length < 1) {
+            if (cpos.length < 1) {// if no directory structure for the command can be found, default to misc
                 const storedmisc = this.categories.find(c => c.name === "misc");
                 if (storedmisc) {
                     storedmisc.count++;
@@ -91,7 +87,10 @@ export class Commands {
                         commands: [command]
                     });
                 }
-            } else {
+                //if (!command.category) {// this would be an overriding block
+                    command.category = "misc";
+                //}
+            } else {// if a directory structure can be established, set the command's category to it's containing folder
                 const storedcat = this.categories.find(c => c.name === cpos[cpos.length - 1]);
                 if (storedcat) {
                     storedcat.count++;
@@ -104,7 +103,14 @@ export class Commands {
                         commands: [command]
                     });
                 }
+                //if (!command.category) {
+                    command.category = cpos[cpos.length - 1];
+                //}
             }
+
+            // set a new item in the Collection
+            // with the key as the command name and the value as the exported module
+            this.commands.set(command.name, command);
 
             let noName = '';
             if (command.name == "" || command.name == null) {

@@ -1,2 +1,2 @@
-nodemon --exec npm run start:build
+nodemon --exec npm run build && npm run start
 pause

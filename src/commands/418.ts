@@ -5,7 +5,13 @@ const command: Command = {
     description: 'oh no!',
     category: 'fun',
     async execute(client, message) {
-        message.channel.send("Command outdated and is being used as a placeholder. The replacement command will be `sm http`.");
+        try {
+            message.channel.send("Command outdated and is being used as a placeholder. The replacement command will be `sm http`.");
+        } catch (error) {
+            xlg.error(error);
+            await client.specials?.sendError(message.channel);
+            return false;
+        }
     }
 }
 

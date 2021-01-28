@@ -292,13 +292,13 @@ export class DBManager {
 
     /**
      * Update a setting for config in the global settings database
-     * @param {string} selectortype column being used to select (name, category)
-     * @param {string} selectorvalue value of column for selection
-     * @param {string} value setting value
-     * @param {Discord.User} updatedby user
-     * @returns {object} result object with edit information, or string for promise rejection
+     * @param selectortype column being used to select (name, category)
+     * @param selectorvalue value of column for selection
+     * @param updateuser user
+     * @param value setting value
+     * @returns result object with edit information, or string for promise rejection
      */
-    async editGlobalSettings(selectortype = "", selectorvalue = "", updateuser: User, value = ""): Promise<InsertionResult | string> {
+    async editGlobalSettings(selectortype = "", selectorvalue = "", updateuser: User, value = ""): Promise<InsertionResult> {
         return new Promise((resolve, reject) => {
             if (!selectortype || !selectorvalue || !value || !updateuser || !updateuser.id || typeof selectorvalue !== "string" || typeof value !== "string") return reject("MISSING_VALUES");
             if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");
@@ -369,11 +369,16 @@ export class DBManager {
      * @param {string} name property name
      */
     async getGuildSetting(guild: Guild, name: string): Promise<GuildSettingsRow | false> {
-        if (!guild || !guild.available) return false;
-        const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND property = '${name}'`).catch(xlog.error);
-        if (rows.length > 0) {
-            return rows[0];
-        } else {
+        try {
+            if (!guild || !guild.available) return false;
+            const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND property = '${name}'`).catch(xlog.error);
+            if (rows.length > 0) {
+                return rows[0];
+            } else {
+                return false;
+            }
+        } catch (error) {
+            xlog.error(error);
             return false;
         }
     }

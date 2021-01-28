@@ -46,7 +46,7 @@ const command: Command = {
                 });
                 const streamerCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 30000, max: 1 });
                 if (!streamerCollected || !streamerCollected.first()) {
-                    client.specials.sendError(message.channel, "No valid name was given within the time limit. This setup wizard has been cancelled.\nYou will be notified if the name was incorrect at the end of the process.");
+                    client.specials?.sendError(message.channel, "No valid name was given within the time limit. This setup wizard has been cancelled.\nYou will be notified if the name was incorrect at the end of the process.");
                     return false;
                 } else {
                     targetUsername = streamerCollected.first()?.content || "";
@@ -75,7 +75,7 @@ const command: Command = {
             const channelCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 20000, max: 1 });
             const targetChannel = channelCollected.size ? stringToChannel(message.guild, channelCollected.first()?.content || "") : undefined;
             if (!channelCollected || !channelCollected.first() || !targetChannel || !targetChannel.id) {
-                client.specials.sendError(message.channel, "A valid channel was not given. This setup wizard has been cancelled.");
+                client.specials?.sendError(message.channel, "A valid channel was not given. This setup wizard has been cancelled.");
                 return false;
             }
 
@@ -89,7 +89,7 @@ const command: Command = {
             const msgCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 1800, { time: 40000, max: 1 });
             let notifmsg = "";
             if (!msgCollected || !msgCollected.first()) {
-                client.specials.sendError(message.channel, "A response message was not received within the time limit, the setup wizard has been cancelled.");
+                client.specials?.sendError(message.channel, "A response message was not received within the time limit, the setup wizard has been cancelled.");
                 return false;
             } else {
                 if (msgCollected.first()?.content.toLowerCase() !== "no") {
@@ -171,7 +171,7 @@ const command: Command = {
 
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }

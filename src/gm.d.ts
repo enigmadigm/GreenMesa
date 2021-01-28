@@ -1,6 +1,6 @@
-import { Client, Collection, DMChannel, Message, TextChannel } from "discord.js";
+import { Client, Collection, Message } from "discord.js";
 import { DBManager } from "./dbmanager";
-import Specials from "./utils/specials";
+import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
 
 export interface XClient extends Client {
@@ -49,7 +49,8 @@ export interface Category {
 }*/
 
 //export type SendableChannel = TextChannel & DMChannel;
-export interface SendableChannel extends TextChannel, DMChannel { }
+
+//export interface SendableChannel extends TextChannel, DMChannel { }
 
 export interface GlobalSettingRow {
     name: string;
@@ -92,11 +93,11 @@ export interface LevelRolesRow {
 }
 
 export interface BSRow {
-    updatedId?: number;
-    logDate?: string;
-    numUsers?: number;
-    numGuilds?: number;
-    numChannels?: number;
+    updateId: number;
+    logDate: Date;
+    numUsers: number;
+    numGuilds: number;
+    numChannels: number;
 }
 
 export interface XMessage extends Message {
@@ -115,11 +116,11 @@ export interface InsertionResult {
 }
 
 export interface GuildSettingsRow {
-    id?: number;
-    guildid?: string;
-    property?: string;
-    value?: string;
-    previousvalue?: string;
+    id: number;
+    guildid: string;
+    property: string;
+    value: string;
+    previousvalue: string;
 }
 
 export interface CmdTrackingRow {

@@ -1,9 +1,10 @@
-const fs = require("fs");
-const fetch = require("node-fetch");
-const { MWKEY } = require('../../auth.json');
-const { logDefined } = require("../dbmanager")
+import fs from "fs";
+import fetch from "node-fetch";
+import { Command } from "src/gm";
+import { MWKEY } from '../../auth.json';
+//import { logDefined } from "../dbmanager";
 
-module.exports = {
+const command: Command = {
     name: "define",
     description: {
         short: "get a true definition",
@@ -13,13 +14,13 @@ module.exports = {
     usage: "<some english word>",
     aliases: ["def"],
     category: "utility",
-    execute(client, message, args) {
+    async execute(client, message, args) {
         if (args.length > 0 && args.length < 11) {
-            if (message.channel.type === "text" && message.mentions.members.size && message.mentions.members.first().id !== message.guild.me.id) {
-                if (message.mentions.members.first().id == "142831008901890048") {
-                    return message.channel.send({
+            if (message.mentions.members?.size && message.mentions.members.first()?.id !== message.guild?.me?.id) {
+                if (message.mentions.members.first()?.id == "142831008901890048") {
+                    message.channel.send({
                         embed: {
-                            "title": "The definition of " + message.mentions.users.first().username,
+                            "title": "The definition of " + message.mentions.users.first()?.username,
                             "description": "One of the universe's worst ideas",
                             "color": 15277667,
                             "footer": {
@@ -27,11 +28,12 @@ module.exports = {
                             }
                         }
                     });
+                    return;
                 }
-                if (message.mentions.members.first().id == "343386990030356480") {
-                    return message.channel.send({
+                if (message.mentions.members.first()?.id == "343386990030356480") {
+                    message.channel.send({
                         embed: {
-                            "title": "The definition of " + message.mentions.users.first().username,
+                            "title": "The definition of " + message.mentions.users.first()?.username,
                             "description": "a total dumbass",
                             "color": 15277667,
                             "footer": {
@@ -39,11 +41,12 @@ module.exports = {
                             }
                         }
                     });
+                    return;
                 }
-                if (message.mentions.members.first().id == "211992874580049920") {
-                    return message.channel.send({
+                if (message.mentions.members.first()?.id == "211992874580049920") {
+                    message.channel.send({
                         embed: {
-                            "title": "The definition of " + message.mentions.users.first().username,
+                            "title": "The definition of " + message.mentions.users.first()?.username,
                             "description": "Idiot",
                             "color": 15277667,
                             "footer": {
@@ -51,8 +54,9 @@ module.exports = {
                             }
                         }
                     });
+                    return;
                 }
-                return message.channel.send({
+                message.channel.send({
                     embed: {
                         "title": "Well you see I can't define that mention",
                         "description": "I can't define mentions unless they are special!",
@@ -62,11 +66,12 @@ module.exports = {
                             }
                     }
                 });
+                return;
             }
-            if (args.join(" ") === client.user.id || (message.mentions.members.size && message.mentions.members.first().id === message.guild.me.id)) {
-                return message.channel.send({
+            if (args.join(" ") === client.user?.id || (message.mentions.members?.size && message.mentions.members.first()?.id === message.guild?.me?.id)) {
+                message.channel.send({
                     embed: {
-                        "title": `The definition of ${message.guild.me.displayName}`,
+                        "title": `The definition of ${message.guild?.me?.displayName}`,
                         "description": "that's this bot, stupid head",
                         "color": 15277667,
                         "footer": {
@@ -74,13 +79,14 @@ module.exports = {
                         }
                     }
                 });
+                return;
             }
-            let def = args.join(" ").toLowerCase();
-            let letters = /^[A-Za-z\s-]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
+            const def = args.join(" ").toLowerCase();
+            const letters = /^[A-Za-z\s-]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
             if (letters.test(def)) {
                 fetch(`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${def}?key=${MWKEY}`)
                     .then(res => res.json())
-                    .then(j => {
+                    .then(async j => {
                         if(!j[0]) {
                             message.channel.send({
                                 embed: {
@@ -94,7 +100,7 @@ module.exports = {
                             }).catch(console.error);
                         } else if (!j[0].shortdef) {
                             j.push("or " + j.pop() + "?");
-                            var altWords = j.join(", ");
+                            const altWords = j.join(", ");
                             const embed = {
                                 "title": "Your word could not be found",
                                 "description": "Did you mean: " + altWords,
@@ -107,11 +113,11 @@ module.exports = {
                         } else {
                             const largeDefs = [];
                             for (let i = 0; i < (j.length > 3 ? 3 : j.length); i++) {                                
-                                let r = j[i];
+                                const r = j[i];
 
                                 if (r.hwi.hw && r.shortdef.length >= 1) {
-                                    let defsArray = [];
-                                    for (var x = 0; x < r.shortdef.length; x++) {
+                                    const defsArray = [];
+                                    for (let x = 0; x < r.shortdef.length; x++) {
                                         defsArray[x] = "**[" + (x + 1) + "]** " + r.shortdef[x];
                                     }
 
@@ -146,15 +152,15 @@ module.exports = {
                                     * If the given path does not exist, require() will throw an Error with its
                                     * code property set to 'MODULE_NOT_FOUND'.
                                     */
-                                    const config = require("../auth.json");
+                                    const config = await import("../auth.json");
                                     if (config.wordsDefined && !config.wordsDefined.includes(def)) config.wordsDefined.push(def);
                                     if (!config.wordsDefined) config.wordsDefined = [def];
                                     fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
                                         if (err) return console.log(err);
                                     });
-                                    logDefined();
+                                    client.database?.logDefined();
                                     if (defsArray.join(", ").length < 1020) {
-                                        let sDef = {
+                                        const sDef = {
                                             name: `📖  ${r.hwi.hw.split('*').join("")} *${r.fl}*`,
                                             value: `(${i + 1} of ${j.length})\n${defsArray.join(", ")}`
                                         }
@@ -204,3 +210,5 @@ module.exports = {
         }
     }
 }
+
+export default command;

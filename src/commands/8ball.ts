@@ -24,7 +24,7 @@ const command: Command = {
             await message.channel.send(doMagic8BallVoodoo());
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
