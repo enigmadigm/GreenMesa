@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const fetch = require("node-fetch");
-const { getGlobalSetting } = require("../dbmanager");
-const getColors = require('get-image-colors');
+import xlg from "../xlogger";
+import fetch from "node-fetch";
+//import { getGlobalSetting } from "../dbmanager";
+import getColors from 'get-image-colors';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: 'movie',
     description: {
         short: 'get metadata about a movie',
@@ -16,8 +17,8 @@ module.exports = {
     async execute(client, message, args) {
         try {
             if (args.length > 0 && args.length < 11 && args.join("+").length < 200) {
-                let sterms = args.join("+").toLowerCase();
-                let letters = /^[A-Za-z0-9\s-+'"!@#$%^&*()=:;]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
+                const sterms = args.join("+").toLowerCase();
+                const letters = /^[A-Za-z0-9\s-+'"!@#$%^&*()=:;]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
                 if (letters.test(sterms)) {
                     fetch(`http://www.omdbapi.com/?t=${sterms}&apikey=4f5eed5a`)
                         .then(res => res.json())
@@ -35,89 +36,91 @@ module.exports = {
                                     }
                                 }).catch(console.error);
                             } else {
-                                var embed = {
-                                    title: `🍿 ${j.Title} (${j.Year})`,
-                                    description: `${j.Plot}`,
-                                    fields: [],
-                                    footer: {
-                                        text: `${j.imdbID}${j.Production ? ` | Studio: ${j.Production}` : ''}`
-                                    }
-                                }
+                                const fields = [];
                                 if (j.Rated) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "<:mpaa_sm:757460418573762580> Rated",
                                         value: `${j.Rated}`,
                                         inline: true
                                     });
                                 }
                                 if (j.BoxOffice) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "🎟️ Box Office",
                                         value: `${j.BoxOffice}`,
                                         inline: true
                                     });
                                 }
                                 if (j.imdbRating) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "IMDb",
                                         value: `<:imdb_sm:757460717740884098> ${j.imdbRating}/10${j.imdbVotes ? `\n👥 ${j.imdbVotes}` : ''}`,
                                         inline: true
                                     });
                                 }
                                 if (j.Actors) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "👨‍💼 Cast",
                                         value: j.Actors,
                                         inline: true
                                     });
                                 }
                                 if (j.Awards) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "🌐 Awards",
                                         value: j.Awards,
                                         inline: true
                                     });
                                 }
                                 if (j.Genre) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "📕 Genre",
                                         value: `${j.Genre}`,
                                         inline: true
                                     });
                                 }
                                 if (j.Director) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "🎥 Director",
                                         value: `${j.Director}`,
                                         inline: true
                                     });
                                 }
                                 if (j.Released) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "📅 Release Date",
                                         value: `${j.Released}`,
                                         inline: true
                                     });
                                 }
                                 if (j.Runtime) {
-                                    embed.fields.push({
+                                    fields.push({
                                         name: "🕦 Runtime",
                                         value: `${j.Runtime}`,
                                         inline: true
                                     });
                                 }
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const embed: any = {
+                                    title: `🍿 ${j.Title} (${j.Year})`,
+                                    description: `${j.Plot}`,
+                                    fields,
+                                    footer: {
+                                        text: `${j.imdbID}${j.Production ? ` | Studio: ${j.Production}` : ''}`
+                                    },
+                                }
                                 if (j.Poster && j.Poster.toLowerCase() !== "n/a") {
-                                    let cres = await getColors(j.Poster);
-                                    let pcol = cres[0] ? cres[0].num() : parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
+                                    const cres = await getColors(j.Poster);
+                                    const pcol = cres[0] ? cres[0].num() : await client.database?.getColor("info_embed_color");
                                     embed.image = {
                                         url: j.Poster
                                     }
                                     embed.color = pcol;
                                 } else {
-                                    embed.color = parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
+                                    embed.color = await client.database?.getColor("info_embed_color");
                                 }
 
-                                message.channel.send({ embed: embed }).catch(xlg.error);
+                                message.channel.send({ embed }).catch(xlg.error);
                             }
 
                         }).catch(xlg.error);
@@ -146,8 +149,10 @@ module.exports = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

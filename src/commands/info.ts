@@ -1,15 +1,19 @@
-const xlg = require("../xlogger");
-const apppkg = require('../../package.json');
-const { getGlobalSetting } = require("../dbmanager");
+import xlg from "../xlogger";
+import apppkg from '../../package.json';
+import { Command } from "src/gm";
+//import { getGlobalSetting } from "../dbmanager";
 
-module.exports = {
+const command: Command = {
     name: 'info',
-    description: 'Get info on the bot.',
+    description: {
+        short: "get information about the bot",
+        long: "Get various information about the bot and what it has to offer."
+    },
     async execute(client, message) {
         try {
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10) || 3447003,
+                    color: await client.database?.getColor("info_embed_color"),
                     title: "GreenMesa Info",
                     url: "https://enigmadigm.com/apps/greenmesa/help",
                     description: "[Use the dashboard](https://stratum.hauge.rocks/dash) to intuitively control the bot.\n\nthis is a bot, it does stuff, stuff listed in `help`\nthis bot will be punished if it lets down its masters",
@@ -56,11 +60,11 @@ module.exports = {
                         },
                         {
                             "name": "Resources",
-                            "value": `\`\`\`prolog\n${client.specials.memoryUsage()}\n\`\`\``
+                            "value": `\`\`\`prolog\n${client.specials?.memoryUsage()}\n\`\`\``
                         }
                     ],
                     footer: {
-                        icon_url: client.user.avatarURL,
+                        icon_url: client.user?.avatarURL() || undefined,
                         text: `Information / Información / معلومات | 👀 ${message.gprefix}uptime`
                     }
                 }
@@ -68,8 +72,10 @@ module.exports = {
 
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

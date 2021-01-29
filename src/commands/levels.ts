@@ -1,9 +1,10 @@
-import { getGlobalSetting, getGuildSetting, getXP, checkForLevelRoles } from "../dbmanager";
+//import { getGlobalSetting, getGuildSetting, getXP, checkForLevelRoles } from "../dbmanager";
 import xlg from "../xlogger";
 //const moment = require("moment");
 import { permLevels } from '../permissions';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "levels",
     description: {
         short: "see level roles for the current server",
@@ -16,36 +17,50 @@ module.exports = {
     cooldown: 5,
     category: 'fun',
     async execute(client, message) {
-        const levellingEnabled = await getGuildSetting(message.guild, 'xp_levels');
-        const warn_embed_color = parseInt((await getGlobalSetting("warn_embed_color") || ['7322774'])[0].value, 10);
-        if (!levellingEnabled || levellingEnabled[0].value === 'disabled') {
-            return message.channel.send({
+        try {
+            if (!message.guild || !message.member) return;
+            const warn_embed_color = await client.database?.getColor("warn_embed_color");
+            const levellingEnabled = await client.database?.getGuildSetting(message.guild, 'xp_levels');
+            if (!levellingEnabled || levellingEnabled.value === 'disabled') {
+                message.channel.send({
+                    embed: {
+                        color: warn_embed_color,
+                        description: `Levelling is disabled. Enable by sending \`settings levels enable\`.`
+                    }
+                });
+                return;
+            }
+            const levelRows = await client.database?.checkForLevelRoles(message.guild);
+            const targetRow = await client.database?.getXP(message.member);
+            if (!levelRows || !targetRow) {
+                client.specials?.sendError(message.channel);
+                return;
+            }
+            const targetLevel = targetRow ? targetRow.level : 0;
+            let alreadyAbove = false;
+            const joinedLevels = levelRows.map((lvl) => {
+                let curr = false;
+                if (!alreadyAbove && targetLevel >= lvl.level) {
+                    curr = true;
+                    alreadyAbove = true;
+                }
+                return `${curr ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild?.roles.cache.find(ro => ro.id === lvl.roleid) || 'no role found'}${curr ? ' < you' : ''}`
+            });
+
+            const info_embed_color = await client.database?.getColor("info_embed_color");
+            message.channel.send({
                 embed: {
-                    color: warn_embed_color,
-                    description: `Levelling is disabled. Enable by sending \`settings levels enable\`.`
+                    color: info_embed_color,
+                    title: 'Level Roles',
+                    description: `Each level and its role:\n${joinedLevels.join("\n")}`
                 }
             });
+        } catch (error) {
+            xlg.error(error);
+            await client.specials?.sendError(message.channel);
+            return false;
         }
-        const levelRows = await checkForLevelRoles(message.guild);
-        const targetRow = await getXP(message.member);
-        const targetLevel = targetRow[0] ? targetRow[0].level : 0;
-        let alreadyAbove = false;
-        const joinedLevels = levelRows.map((lvl) => {
-            let curr = false;
-            if (!alreadyAbove && targetLevel >= lvl.level) {
-                curr = true;
-                alreadyAbove = true;
-            }
-            return `${curr ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild.roles.cache.find(ro => ro.id = lvl.roleid) || 'no role found'}${curr ? ' < you' : ''}`
-        });
-        
-        const info_embed_color = parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10);
-        message.channel.send({
-            embed: {
-                color: info_embed_color,
-                title: 'Level Roles',
-                description: `Each level and its role:\n${joinedLevels.join("\n")}`
-            }
-        }).catch(xlg.error);
     }
 }
+
+export default command;

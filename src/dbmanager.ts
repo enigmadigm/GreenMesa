@@ -4,7 +4,7 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
-import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, TwitchHookRow, XClient } from "./gm";
+import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TwitchHookRow, XClient } from "./gm";
 
 const levelRoles = [{
         level: 70,
@@ -120,6 +120,10 @@ export class DBManager {
         }
     }
 
+    /**
+     * Get the stored value paired to a color name in the database
+     * @param name name of the color
+     */
     async getColor(name: string): Promise<number> {
         if (!name.endsWith("_embed_color")) return 0;
         // color cache lookup and management should go here
@@ -129,6 +133,10 @@ export class DBManager {
             if (name === "fail_embed_color") return 16711680;
             if (name === "warn_embed_color") return 16750899;
             if (name === "success_embed_color") return 4437377;
+            return 0;
+        }
+        if (!isNaN(parseInt(rows[0].value, 10))) {
+            return parseInt(rows[0].value, 10);
         }
         return 0;
     }
@@ -353,9 +361,9 @@ export class DBManager {
      * @param {string} guildid id of guild to look up
      * @param {string} memberid id of member in guild to look up
      */
-    async getTop10(guildid = "", memberid = ""): Promise<{rows: ExpRow[], personal: ExpRow} | false> {
+    async getTop10(guildid = "", memberid = ""): Promise<{rows: ExpRow[], personal: PersonalExpRow} | false> {
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 10`);
-        const personalrows = await <Promise<ExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
+        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
         if (!rows.length) return false;
         return {
             rows: rows || [],

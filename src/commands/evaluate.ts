@@ -1,14 +1,15 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: 'evaluate',
     aliases: ['eval'],
     description: 'eval',
     permLevel: permLevels.botMaster,
     async execute(client, message, args) {
         try {
-            let evalRet = await eval(`(async () => {${args.join(" ")}})()`);
+            const evalRet = await eval(`(async () => {${args.join(" ")}})()`);
             message.channel.send(`🟢 Executed:\n\`\`\`${evalRet ? evalRet : 'no return'}\`\`\``, {
                 split: true
             });
@@ -20,3 +21,5 @@ module.exports = {
         }
     }
 }
+
+export default command;

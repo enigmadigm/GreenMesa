@@ -1,10 +1,11 @@
-const { getGuildSetting } = require("../dbmanager");
-const { permLevels } = require('../permissions');
-const { stringToMember } = require('../utils/parsers');
-const Discord = require('discord.js');
-const xlg = require("../xlogger");
+//import { getGuildSetting } from "../dbmanager";
+import { permLevels } from '../permissions';
+import { stringToMember } from '../utils/parsers';
+import Discord from 'discord.js';
+import xlg from "../xlogger";
+import { Command } from 'src/gm';
 
-module.exports = {
+const command: Command = {
     name: 'kick',
     description: {
         short: 'kick a user',
@@ -17,16 +18,17 @@ module.exports = {
     category: 'moderation',
     async execute(client, message, args) {
         try {
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+            if (!message.guild) return;
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
             
             const target = await stringToMember(message.guild, args[0], false, false, false);
             // If we have a user mentioned
             if (target && target instanceof Discord.GuildMember) {
                 args.shift();
-                let reason = args.join(" ");
+                const reason = args.join(" ");
                 /**
                  * Kick the member
                  * Make sure you run this on a member, not a user!
@@ -60,8 +62,10 @@ module.exports = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

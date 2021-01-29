@@ -1,8 +1,14 @@
-const xlg = require("../xlogger");
-const { getGlobalSetting, getGuildSetting } = require("../dbmanager");
-const { permLevels } = require('../permissions');
+import xlg from "../xlogger";
+//import { getGlobalSetting, getGuildSetting } from "../dbmanager";
+import { permLevels } from '../permissions';
+import { Command } from "src/gm";
 
-module.exports = {
+interface MkRoleData {
+    name: string;
+    color?: number;
+}
+
+const command: Command = {
     name: "mkrole",
     description: {
         short: "create a role",
@@ -12,19 +18,21 @@ module.exports = {
     args: true,
     permLevel: permLevels.admin,
     category: "moderation",
+    guildOnly: true,
     async execute(client, message, args) {
         try {
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+            if (!message.guild) return;
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
 
-            let param = args.join(" ").split(",");
+            const param = args.join(" ").split(",");
             if (param[0] && param[0].length > 100) {// if the provided name is longer than the 100 character limit
-                await client.specials.sendError(message.channel, "Role name cannot exceed 100 characters");
+                await client.specials?.sendError(message.channel, "Role name cannot exceed 100 characters");
                 return;
             }
-            let roleData = { name: param[0] };
+            const roleData: MkRoleData = { name: param[0] };
             if (args[1] && parseInt(param[1], 16)) {
                 roleData.color = parseInt(param[1], 16);
             }
@@ -32,14 +40,16 @@ module.exports = {
 
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('success_embed_color'))[0].value),
+                    color: await client.database?.getColor("success_embed_color"),
                     description: `Role ${nrole} created successfully`
                 }
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel, "Failure while creating role");
+            await client.specials?.sendError(message.channel, "Failure while creating role");
             return false;
         }
     }
 }
+
+export default command;

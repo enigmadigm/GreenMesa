@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager");
-const httpdcodes = require("../../httpcodes.json");
-const { permLevels } = require('../permissions');
+import xlg from "../xlogger";
+//import { getGlobalSetting } from "../dbmanager";
+import httpdcodes from "../../httpcodes.json";
+import { permLevels } from '../permissions';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "http",
     aliases: ["https"],
     description: {
@@ -21,7 +22,7 @@ module.exports = {
             if (!args.length) {
                 message.channel.send({
                     embed: {
-                        color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
+                        color: await client.database?.getColor("fail_embed_color"),
                         title: "error 422",
                         description: "(lack of arguments)"
                     }
@@ -30,7 +31,7 @@ module.exports = {
             }
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
+                    color: await client.database?.getColor("fail_embed_color"),
                     title: "error 501",
                     description: "(command in development)"
                 }
@@ -38,15 +39,17 @@ module.exports = {
             const randcode = httpdcodes[Math.random() * httpdcodes.length].code
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('darkgreen_embed_color'))[0].value),
+                    color: await client.database?.getColor("darkgreen_embed_color"),
                     title: `${randcode}`,
                     description: "here's a random code"
                 }
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

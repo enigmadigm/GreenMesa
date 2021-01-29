@@ -1,7 +1,3 @@
-//const { prefix } = require('../auth.json');
-//const { getGlobalSetting } = require('../dbmanager');
-//const { getGlobalSetting } = require("../dbmanager");
-
 import { Command } from "src/gm";
 
 function titleCase(str: string) {
@@ -32,18 +28,21 @@ const command: Command = {
             const { categories } = client;
             if (!commands || !categories) return;
             const cats = categories.map(c => c.name).filter(n => n != "owner" && n != "nsfw");
-            const catnames = {
+            type tcatnames = {
+                [key: string]: string
+            }
+            const catnames: tcatnames = {
                 "moderation": "management"
             };
             categories.each((c) => {
-                if (Object.keys(catnames).includes(c)) {
-                    const c1 = categories.get(c);
+                if (Object.keys(catnames).includes(c.name)) {
+                    const c1 = categories.get(c.name);
                     if (c1) {
-                        c1.name = catnames[c];
+                        c1.name = catnames[c.name];
                     }
                 }
             });
-            
+
             for (let c = 0; c < cats.length; c++) {
                 const cat = cats[c];
                 const data = [];
@@ -51,18 +50,22 @@ const command: Command = {
                 // for some reason if you don't separate \` ${command.name} \` with a space it flips out
                 //                                         ^               ^
                 data.push(commands.filter(comd => !['botkill', 'botreset', 'creload', 'evaluate'].includes(comd.name) && ((comd.category && comd.category === cat) || (cat === 'misc' && !comd.category))).map(command => {
-                    let availableDesc = command.description || "*no description*";
-                    if (command.description && (command.description.short || command.description.long)) {
-                        availableDesc = command.description.short || command.description.long;
+                    let availableDesc = "";
+                    if (!command.description) {
+                        availableDesc = "*no description*";
+                    } else if (typeof command.description == "string") {
+                        availableDesc = command.description;
+                    } else {
+                        availableDesc = command.description.short || command.description.long
                     }
                     return `\` ${command.name} \` - ${availableDesc}`
                 }).join('\n'));
                 data.push('')
                 data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
-                let cmdcount = commands.filter(comd => !['botkill', 'botreset', 'creload', 'evaluate'].includes(comd.name) && ((comd.category && comd.category === cat) || (cat === 'misc' && !comd.category))).size;
+                const cmdcount = commands.filter(comd => !['botkill', 'botreset', 'creload', 'evaluate'].includes(comd.name) && ((comd.category && comd.category === cat) || (cat === 'misc' && !comd.category))).size;
                 await message.author.send({
                     embed: {
-                        title: `${categories.get(cat).emoji || ''} ${categories.get(cat).emoji ? ' ' : ''}${titleCase(categories.get(cat).name)}`,
+                        title: `${categories.get(cat)?.emoji || ""} ${categories.get(cat)?.emoji ? ' ' : ''}${titleCase(categories.get(cat)?.name || "")}`,
                         color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
@@ -71,7 +74,6 @@ const command: Command = {
                     }
                 });
             }
-
             
             if (message.channel.type === 'dm') return;
             message.channel.send(":e_mail: *you've* got mail!");

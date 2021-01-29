@@ -1,8 +1,12 @@
-const xlg = require("../xlogger");
+import { Command } from "src/gm";
+import xlg from "../xlogger";
 
-module.exports = {
+const command: Command = {
     name: 'intro',
-    description: 'provides a *crappy* introduction to the bot',
+    description: {
+        short: "provides a *crappy* introduction to the bot",
+        long: "Get an introduction to the bot. More information can be found elsewhere, such as the website, the repo, and command info can be found using the `help` command. This command provides some basic information."
+    },
     async execute(client, message) {
         try {
         message.channel.send({
@@ -28,17 +32,19 @@ module.exports = {
                         value: `Again, \`${message.gprefix}help\` will get you on the right path, and don't  get  caught  doing  anything  stupid. This shouldn't be that hard to figure out.`
                     }
                 ],
-                timestamp: new Date(),
+                timestamp: new Date().getTime(),
                 footer: {
-                    icon_url: client.user.avatarURL,
+                    icon_url: client.user?.avatarURL() || undefined,
                     text: `The Intro | See ${message.gprefix}info for app info`
                 }
             }
         });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

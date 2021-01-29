@@ -1,5 +1,6 @@
-const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager");
+import { Command } from "src/gm";
+import xlg from "../xlogger";
+//import { getGlobalSetting } from "../dbmanager";
 const emojiConversion = {
     "A": "🇦",
     "B": "🇧",
@@ -39,17 +40,17 @@ const emojiConversion = {
     "0": "0️⃣",
 }
 
-module.exports = {
+const command: Command = {
     name: "emojify",
     description: "convert text to emojies",
     usage: "<text>",
     args: true,
     async execute(client, message, args) {
         try {
-            let textArray = args.join(" ").split("");
-            let mappedText = [];
+            const textArray = args.join(" ").split("");
+            const mappedText = [];
             for (let i = 0; i < textArray.length; i++) {
-                const letter = textArray[i].toUpperCase();
+                const letter = <keyof typeof emojiConversion>textArray[i].toUpperCase();
                 if (emojiConversion[letter]) {
                     mappedText.push(`${emojiConversion[letter]}\u200b`);
                 } else {
@@ -59,18 +60,22 @@ module.exports = {
             if (mappedText.length < 1) {
                 message.channel.send({
                     embed: {
-                        color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
+                        color: await client.database?.getColor("fail_embed_color"),
                         description: "no emojified content"
                     }
                 });
                 return false;
             }
+
             message.channel.send(mappedText.join(""));
+            
             return true;
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

@@ -1,9 +1,10 @@
-const { getGlobalSetting } = require('../dbmanager')
-const xlg = require('../xlogger');
-const { stringToRole } = require("../utils/parsers");
-const { permLevels } = require('../permissions');
+//import { getGlobalSetting } from '../dbmanager';
+import xlg from '../xlogger';
+import { stringToRole } from "../utils/parsers";
+import { permLevels } from '../permissions';
+import { Command } from 'src/gm';
 
-module.exports = {
+const command: Command = {
     name: 'inrole',
     description: 'get the members that have a role',
     aliases: ['ir'],
@@ -11,10 +12,12 @@ module.exports = {
     category: 'utility',
     args: true,
     permLevel: permLevels.trustedMember,
+    guildOnly: true,
     async execute(client, message, args) {
         try {
+            if (!message.guild) return;
             message.channel.startTyping();
-            let target = stringToRole(await message.guild.fetch(), args.join(" "), true, true);
+            const target = stringToRole(await message.guild.fetch(), args.join(" "), true, true);
             if (!target) {
                 message.channel.send({
                     embed: {
@@ -62,8 +65,10 @@ module.exports = {
         } catch (error) {
             xlg.error(error);
             message.channel.stopTyping(true);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

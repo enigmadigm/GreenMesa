@@ -1,10 +1,10 @@
-const xlg = require("../xlogger");
-const { getGuildSetting } = require("../dbmanager");
-const { permLevels, getPermLevel } = require("../permissions");
-const { stringToMember } = require("../utils/parsers");
-const { Message } = require("discord.js");
+import xlg from "../xlogger";
+//import { getGuildSetting } from "../dbmanager";
+import { permLevels, getPermLevel } from "../permissions";
+import { stringToMember } from "../utils/parsers";
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: 'nickname',
     aliases: ['nick'],
     usage: '[target member],<new nick>',
@@ -14,7 +14,7 @@ module.exports = {
     args: true,
     async execute(client, message, args) {
         try {
-            if (!(message instanceof Message)) return;
+            if (!message.guild || !message.member) return;
             /*let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
                 return client.specials.sendModerationDisabled(message.channel);
@@ -33,11 +33,14 @@ module.exports = {
                     // now checking for moderation here because this means that someone elses name from the sender is being changed
                     const moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
                     if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                        return client.specials.sendModerationDisabled(message.channel);
+                        return client.specials?.sendModerationDisabled(message.channel);
                     }
                     // confirming that the author has the moderation privileges to use the command
                     const permLevel = await getPermLevel(message.member);
-                    if (permLevel < permLevels.mod) return message.channel.send("Insufficient permissions.").catch(xlg.error);
+                    if (permLevel < permLevels.mod) {
+                        message.channel.send("Insufficient permissions.").catch(xlg.error);
+                        return;
+                    }
                 }
             }
 
@@ -56,7 +59,7 @@ module.exports = {
                 return;
             }
 
-            if (args.join(" ") == target.nickname) {
+            if (args.join(" ") == target?.nickname) {
                 message.channel.send(`\`${args.join(" ")}\` is already the target's nickname`);
                 return;
             }
@@ -67,16 +70,18 @@ module.exports = {
             }
 
             try {
-                await target.setNickname(args.join(" "), 'adjustment thru nick command');
+                await target?.setNickname(args.join(" "), 'adjustment thru nick command');
                 await message.channel.send(`\\✅ Changed the nickname of \`${target.user.tag}\` to \`${target.nickname}\``)
             } catch (e) {
                 xlg.log(e.message);
-                await client.specials.sendError(message.channel, `◍ Command Error:\n${e.message}`)
+                await client.specials?.sendError(message.channel, `◍ Command Error:\n${e.message}`)
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

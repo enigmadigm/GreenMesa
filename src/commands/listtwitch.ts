@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getTwitchSubsGuild, getGlobalSetting } = require("../dbmanager");
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+import { Command } from "src/gm";
+//import { getTwitchSubsGuild, getGlobalSetting } from "../dbmanager";
 //const { twitchIDLookup } = require("../website/routes/twitch");
 
-module.exports = {
+const command: Command = {
     name: "listtwitch",
     aliases: ["lstwitch"],
     description: {
@@ -15,21 +16,22 @@ module.exports = {
     ownerOnly: false,
     async execute(client, message) {
         try {
-            const subs = await getTwitchSubsGuild(message.guild.id || "");
+            if (!message.guild) return;
+            const subs = await client.database?.getTwitchSubsGuild(message.guild.id);
             if (!subs) {
-                client.specials.sendError(message.channel, "No subscriptions found.");
+                client.specials?.sendError(message.channel, "No subscriptions found.");
                 return false;
             }
 
             const streamers = subs.map((s) => {
                 const name = s.streamerlogin || s.streamerid;
-                const chan = message.guild.channels.cache.get(s.channelid);
+                const chan = message.guild?.channels.cache.get(s.channelid);
                 if (name) {
                     return `• [${name}](https://twitch.tv/${name})${(chan && chan.id) ? ` ${chan}` : ''}`
                 }
             })
 
-            const iec = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
+            const iec = await client.database?.getColor("info_embed_color");
             message.channel.send({
                 embed: {
                     color: iec,
@@ -39,8 +41,10 @@ module.exports = {
             })
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

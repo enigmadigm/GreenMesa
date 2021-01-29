@@ -68,14 +68,18 @@ export interface SSRow {
 }
 
 export interface ExpRow {
-    id?: string;
-    userid?: string;
-    guildid?: string;
-    timeAdded?: timestamp;
-    timeUpdated?: timestamp;
-    xp?: number;
-    level?: number;
-    spideySaved?: string;
+    id: string;
+    userid: string;
+    guildid: string;
+    timeAdded: timestamp;
+    timeUpdated: timestamp;
+    xp: number;
+    level: number;
+    spideySaved: string;
+}
+
+export interface PersonalExpRow extends ExpRow {
+    rank: number;
 }
 
 /*export interface LevelRow {

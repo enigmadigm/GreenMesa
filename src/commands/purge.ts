@@ -1,8 +1,10 @@
-const { getGuildSetting } = require("../dbmanager");
-const { permLevels } = require('../permissions');
-const { stringToMember } = require('../utils/parsers');
+//import { getGuildSetting } from "../dbmanager";
+import { DMChannel } from 'discord.js';
+import { Command } from 'src/gm';
+import { permLevels } from '../permissions';
+import { stringToMember } from '../utils/parsers';
 
-module.exports = {
+const command: Command = {
     name: 'purge',
     description: {
         short: 'bulk delete messages in a channel',
@@ -15,48 +17,63 @@ module.exports = {
     category: 'moderation',
     permLevel: permLevels.mod,
     async execute(client, message, args) {
-        let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-        if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-            return client.specials.sendModerationDisabled(message.channel);
-        }
-
-        const deleteCount = parseInt(args[0], 10); // get the delete count, as an actual number.
-        args.shift();
-        const target = await stringToMember(message.guild, args.join(" "));
-
-        // Ooooh nice, combined conditions. <3
-        if (!deleteCount || deleteCount < 2)
-            return message.reply("provide a number (2-100) for the number of messages to delete");
-        
-        let opts = {
-            limit: (deleteCount < 100) ? deleteCount : 100,
-            before: message.id
-        }
-        if (target) {
-            opts = {
-                limit: 100,
-                before: (target.user.lastMessageChannelID === message.channel.id) ? target.user.lastMessageID : message.id
+        try {
+            if (!message.guild || message.channel instanceof DMChannel) return;
+    
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
-        }
-        
-        // So we get our messages, and delete them. Simple enough, right?
-        message.channel.messages.fetch( opts ).then(async messages => {
-            messages.set(message.id, message);
-            if (target) {
-                if (target.user.lastMessageChannelID === message.channel.id) messages.set(target.user.lastMessage.id, target.user.lastMessage);
-                messages = messages.filter(m => m.author.id === target.user.id || m.id === message.id).array().slice(0, deleteCount);
-            }
-            if (messages.length == 0) {
-                return message.channel.send(`Could not find any recent messages.`).then(message.delete());
+    
+            const deleteCount = parseInt(args[0], 10); // get the delete count, as an actual number.
+            args.shift();
+            const target = await stringToMember(message.guild, args.join(" "));
+    
+            // Ooooh nice, combined conditions. <3
+            if (!deleteCount || deleteCount < 2) {
+                client.specials?.sendError(message.channel, "Provide a number (2-100) for the number of messages to delete.");
+                return;
             }
             
+            let opts = {
+                limit: (deleteCount < 100) ? deleteCount : 100,
+                before: message.id
+            }
+            if (target) {
+                opts = {
+                    limit: 100,
+                    before: (target.user.lastMessage?.channel.id === message.channel.id) ? target.user.lastMessageID || "" : message.id
+                }
+            }
+            
+            // Get messages and delete them. Simple enough, right?
+            const messages = await message.channel.messages.fetch( opts )
+            messages.set(message.id, message);
+            let c = 0;
+            if (target) {
+                if (target.user.lastMessage?.channel.id === message.channel.id) {
+                    messages.set(target.user.lastMessage.id, target.user.lastMessage);
+                }
+                const mc = messages.filter(m => m.author.id === target.user.id || m.id === message.id).array().slice(0, deleteCount);
+                if (mc.length == 0) {
+                    message.channel.send(`Could not find any recent messages.`);
+                    message.delete();
+                    return;
+                }
+                c = mc.length;
+                message.channel.bulkDelete(mc);
+            } else {
+                c = messages.size;
+                message.channel.bulkDelete(messages);
+            }
 
-            message.channel.bulkDelete(messages)
-                .then(messages => message.channel.send(`Purged ${messages.size} messages`))
-                .catch(e => {
-                    console.log(e.stack);
-                    message.reply(`couldn't delete messages because of: ${e}`);
-                });
-        });
+            message.channel.send(`Purged ${c} messages`)
+        } catch (error) {
+            xlg.error(error);
+            await client.specials?.sendError(message.channel);
+            return false;
+        }
     }
 }
+
+export default command;

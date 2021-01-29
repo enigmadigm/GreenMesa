@@ -1,11 +1,11 @@
-const { Message } = require("discord.js");
-const { getGuildSetting } = require("../dbmanager");
-const { permLevels } = require('../permissions');
-const { stringToMember, durationToString } = require('../utils/parsers');
-const { stringToDuration } = require('../utils/time');
-const xlg = require("../xlogger");
+import { Command } from "src/gm";
+//import { getGuildSetting } from "../dbmanager";
+import { permLevels } from '../permissions';
+import { stringToMember, durationToString } from '../utils/parsers';
+import { stringToDuration } from '../utils/time';
+import xlg from "../xlogger";
 
-module.exports = {
+const command: Command = {
     name: 'mute',
     description: {
         short: 'fully mute a member',
@@ -18,15 +18,16 @@ module.exports = {
     category: 'moderation',
     async execute(client, message, args) {
         try {
-            if (!(message instanceof Message)) return;
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+            if (!message.guild || !message.member) return;
+
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
 
             const toMute = await stringToMember(message.guild, args[0], false, false, false);
             // Check perms, self, rank, etc
-            if (!message.guild.me.hasPermission("MANAGE_ROLES")) {// check if the bot has the permissions to mute  members
+            if (!message.guild.me?.hasPermission("MANAGE_ROLES")) {// check if the bot has the permissions to mute  members
                 message.channel.send("I do not have the permissions to do that");
                 return;
             }
@@ -38,7 +39,7 @@ module.exports = {
                 message.channel.send('You cannot mute yourself!');
                 return;
             }
-            if (toMute.id === client.id) {
+            if (toMute.id === client.user?.id) {
                 message.channel.send("Please don't mute me");
                 return;
             }
@@ -68,10 +69,12 @@ module.exports = {
 
                 // Prevent the user from sending messages or reacting to messages
                 message.guild.channels.cache.each(async (channel) => {
-                    await channel.updateOverwrite(mutedRole, {
-                        SEND_MESSAGES: false,
-                        ADD_REACTIONS: false
-                    });
+                    if (mutedRole) {
+                        await channel.updateOverwrite(mutedRole, {
+                            SEND_MESSAGES: false,
+                            ADD_REACTIONS: false
+                        });
+                    }
                 });
             }
             if (mutedRole.position < toMute.roles.highest.position) {
@@ -79,10 +82,15 @@ module.exports = {
             }
 
             // If the mentioned user already has the "mutedRole" then that can not be muted again
-            if (toMute.roles.cache.has(mutedRole.id)) return message.channel.send(`\`${toMute.user.tag}\` is already muted`);
+            if (toMute.roles.cache.has(mutedRole.id)) {
+                message.channel.send(`\`${toMute.user.tag}\` is already muted`);
+                return;
+            }
 
             await toMute.roles.add(mutedRole, `muted by ${message.author.tag}`).catch(e => console.log(e.stack));
-            if (toMute.voice.connection && !toMute.voice.mute) await toMute.voice.setMute(true).catch(console.error);
+            if (toMute.voice.connection && !toMute.voice.mute) {
+                await toMute.voice.setMute(true);
+            }
 
             let mendm = ""
             let time = 0;
@@ -99,15 +107,19 @@ module.exports = {
 
             if (time) {
                 setTimeout(async () => {
-                    if (!toMute.roles.cache.has(mutedRole.id)) return;
-                    // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
-                    await toMute.roles.remove(mutedRole, `unmuting automatically after ${dur}`);
-                    if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
+                    if (mutedRole) {
+                        if (!toMute.roles.cache.has(mutedRole.id)) return;
+                        // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
+                        await toMute.roles.remove(mutedRole, `unmuting automatically after ${dur}`);
+                        if (toMute.voice.connection && toMute.voice.mute) {
+                            toMute.voice.setMute(false);
+                        }
+                    }
                 }, time)
             }
         } catch (e) {
             xlg.error(e);
-            await client.specials.sendError(message.channel, `\\🆘 Error while muting`);
+            await client.specials?.sendError(message.channel, `\\🆘 Error while muting`);
             return false;
         }
 
@@ -132,3 +144,5 @@ module.exports = {
         */
     }
 }
+
+export default command;

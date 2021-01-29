@@ -1,18 +1,28 @@
-const Leeter = require('../utils/leeter');
-const xlg = require('../xlogger');
-var leeter = new Leeter(1, false);
+import { Command } from "src/gm";
 
-module.exports = {
+import xlg from '../xlogger';
+import Leeter from '../utils/leeter';
+const leeter = new Leeter(1, false);
+
+const command: Command = {
     name: 'leeter',
     args: true,
     aliases: ['leetspeaker', 'leetify', 'leetspeakify', 'leet'],
-    guildonly: true,
+    guildOnly: true,
     category: 'utility',
-    execute(client, message, args) {
-        message.channel.send({
-            embed: {
-                description: `\`${leeter.tol33t(args.join(" "))}\``
-            }
-        }).catch(xlg.error);
+    async execute(client, message, args) {
+        try {
+            message.channel.send({
+                embed: {
+                    description: `\`${leeter.tol33t(args.join(" "))}\``
+                }
+            });
+        } catch (error) {
+            xlg.error(error);
+            await client.specials?.sendError(message.channel);
+            return false;
+        }
     }
 }
+
+export default command;

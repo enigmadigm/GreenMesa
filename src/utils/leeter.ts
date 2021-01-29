@@ -1,11 +1,11 @@
 "use strict";
 
 export default class Leeter {
-	private textin!: string;
-	private transtype!: number;
-	private advmode!: boolean;
+	private textin: string;
+	private transtype: number;
+	private advmode: boolean;
 
-    contructor(tt?: number, advanced?: boolean): void {
+    constructor(tt: number, advanced: boolean) {
         this.textin = "";
         this.transtype = tt || 1;
         this.advmode = advanced || false;

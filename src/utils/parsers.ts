@@ -154,7 +154,7 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
  * @returns
  */
 
-export function stringToRole(guild: Guild, text: string, byName = true, bySimilar = true, everyone = false): Role | string | undefined {
+export function stringToRole(guild: Guild, text: string, byName = true, bySimilar = true, everyone = false): Role | '@everyone' | '@here' | undefined {
 
     if (everyone && (text == 'here' || text == '@here')) {
         return '@here';

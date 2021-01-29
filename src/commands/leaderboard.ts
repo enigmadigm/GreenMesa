@@ -1,10 +1,8 @@
-const xlg = require("../xlogger");
-const {
-    getTop10,
-    getGlobalSetting
-} = require('../dbmanager');
+import { Command } from "src/gm";
+import xlg from "../xlogger";
+//import { getTop10, getGlobalSetting } from '../dbmanager';
 
-module.exports = {
+const command: Command = {
     name: "leaderboard",
     aliases: ['lb'],
     description: 'get rankings for xp in your guild',
@@ -12,27 +10,37 @@ module.exports = {
     category: 'fun',
     async execute(client, message) {
         try {
-            let rowobj = await getTop10(message.guild.id, message.author.id);
-            if (!rowobj.rows.length) return message.channel.send('No users');
-            let xptype = (await getGlobalSetting('xp_type'))[0].value;
-            let joinedLb = rowobj.rows.map((row, i) => `${(row.userid == message.author.id) ? `[\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\` ⫸](https://stratum.hauge.rocks "Your Rank")` : `**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸` } ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
+            if (!message.guild) return;
+            const rowobj = await client.database?.getTop10(message.guild.id, message.author.id);
+            if (!rowobj || !rowobj.rows.length) {
+                message.channel.send('No users');
+                return;
+            }
+            const typeres = await client.database?.getGlobalSetting('xp_type');
+            let xptype = "";
+            if (typeres) {
+                xptype = typeres.value;
+            }
+            const joinedLb = rowobj.rows.map((row, i) => `${(row.userid == message.author.id) ? `[\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\` ⫸](https://stratum.hauge.rocks "Your Rank")` : `**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸` } ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('info_embed_color'))[0].value) || 6969,
+                    color: await client.database?.getColor("info_embed_color") || 6969,
                     author: {
                         name: 'Leaderboard',
-                        icon_url: message.guild.iconURL() || client.user.displayAvatarURL()
+                        icon_url: message.guild.iconURL() || client.user?.displayAvatarURL()
                     },
                     description: joinedLb.join("\n"),
                     footer: {
-                        text: (rowobj.personal.rank > 10) ? `${message.member.displayName}'s rank: ${rowobj.personal.rank || "none"}` : `top ten for this server`
+                        text: (rowobj.personal.rank > 10) ? `${message.member?.displayName}'s rank: ${rowobj.personal.rank || "none"}` : `top ten for this server`
                     }
                 }
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

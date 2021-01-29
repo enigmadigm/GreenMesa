@@ -1,7 +1,8 @@
-const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager");
+import { Command } from "src/gm";
+import xlg from "../xlogger";
+//import { getGlobalSetting } from "../dbmanager";
 
-module.exports = {
+const command: Command = {
     name: "definedwords",
     description: {
         short: "list the words defined in the past",
@@ -10,15 +11,15 @@ module.exports = {
     category: "utility",
     async execute(client, message) {
         try {
-            const config = require("../auth.json");
-            let totalDefined = await getGlobalSetting("definedcount");
+            const config = await import("../auth.json");
+            const totalDefined = await client.database?.getGlobalSetting("definedcount");
             message.channel.send({
                 embed: {
                     title: "`Define` Statistics",
                     fields: [
                         {
                             name: "Total Definitions Given",
-                            value: `${totalDefined[0] ? totalDefined[0].value : "0"}`
+                            value: `${totalDefined ? totalDefined.value : "0"}`
                         },
                         {
                             name: "Unique Words Defined",
@@ -32,3 +33,5 @@ module.exports = {
         }
     }
 }
+
+export default command;
