@@ -4,7 +4,7 @@ import moment from "moment";
 import { permLevels } from '../permissions';
 import { Command } from "src/gm";
 
-const command: Command = {
+export const command: Command = {
     name: 'config',
     description: {
         short: `edit config`,
@@ -135,4 +135,3 @@ const command: Command = {
     }
 }
 
-export default command;

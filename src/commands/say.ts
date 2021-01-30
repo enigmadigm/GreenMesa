@@ -2,7 +2,7 @@ import { Command } from "src/gm";
 import { permLevels } from "../permissions";
 import xlg from "../xlogger";
 
-const command: Command = {
+export const command: Command = {
     name: 'say',
     description: {
         short: "speak through the bot",
@@ -25,4 +25,3 @@ const command: Command = {
     }
 }
 
-export default command;

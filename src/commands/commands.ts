@@ -14,14 +14,13 @@ function titleCase(str: string) {
     return splitStr.join(' ');
 }
 
-const command: Command = {
+export const command: Command = {
     name: 'commands',
     description: {
         short: 'command list',
         long: "Get the nearly complete command list in categories."
     },
     cooldown: 60,
-    category: "misc",
     async execute(client, message) {
         try {
             const { commands } = client;
@@ -69,7 +68,7 @@ const command: Command = {
                         color: await client.database?.getColor("info_embed_color"),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
-                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
+                            text: `${cmdcount} command(s)`
                         }
                     }
                 });
@@ -85,4 +84,3 @@ const command: Command = {
     }
 }
 
-export default command;

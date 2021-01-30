@@ -4,7 +4,7 @@ import { Command } from "src/gm";
 //import { getTwitchSubsGuild, getGlobalSetting } from "../dbmanager";
 //const { twitchIDLookup } = require("../website/routes/twitch");
 
-const command: Command = {
+export const command: Command = {
     name: "listtwitch",
     aliases: ["lstwitch"],
     description: {
@@ -47,4 +47,3 @@ const command: Command = {
     }
 }
 
-export default command;

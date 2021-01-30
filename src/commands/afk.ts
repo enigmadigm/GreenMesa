@@ -1,7 +1,7 @@
-import xlg from "src/xlogger";
+import xlg from "../xlogger";
 import { Command } from "src/gm";
 
-const command: Command = {
+export const command: Command = {
     name: "afk",
     description: {
         short: "set an autoresponse afk message",
@@ -18,4 +18,3 @@ const command: Command = {
     }
 }
 
-export default command;

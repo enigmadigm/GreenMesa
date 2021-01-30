@@ -1,6 +1,6 @@
 import { Command } from "src/gm";
 
-const command: Command = {
+export const command: Command = {
     name: 'invite',
     description: 'invite link to bring the bot to your server',
     usage: "[id of a server you can invite on]",
@@ -30,4 +30,3 @@ const command: Command = {
     }
 }
 
-export default command;

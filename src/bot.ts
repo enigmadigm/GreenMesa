@@ -6,6 +6,8 @@
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('source-map-support').install();
 //require('./website/app');
 
 import xlg from "./xlogger";
@@ -51,17 +53,17 @@ client.specials = specials;
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
 
-// The Discord.js *client*
-const co = new Commands();
-client.commands = co.commands;
-client.categories = co.categories;
-
 // ▼▼▼▼▼ command cooldowns section
 const cooldowns: Discord.Collection<Command["name"], Discord.Collection<string, number>> = new Discord.Collection();
 const xpcooldowns: Discord.Collection<string, number> = new Discord.Collection();
 
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
+    const co = new Commands();
+    await co.load(co.rootCommandPath);
+    client.commands = co.commands;
+    client.categories = co.categories;
+
     client.database = await new DBManager().handleDisconnect();
     xlg.log(`Bot ${client.user?.tag}(${client.user?.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     const lo = client.channels.cache.get('661614128204480522');
@@ -126,12 +128,13 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
         // Twitch, I hope
         /*await xtwitch.startTwitchListening();
         await xtwitch.addTwitchWebhook();*/
-        new MesaWebsite(client);
     } catch (e) {
         xlg.error(e);
     }
     
-    //Bot.init(client, );
+    const website = new MesaWebsite(client);
+    Bot.init(client, website);
+    xlg.log("Bot initialized")
 });
 
 client.on("rateLimit", rateLimitInfo => {
@@ -227,7 +230,7 @@ client.on('emojiDelete', oemoji => {
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
         client.database?.logMsgReceive();
-    
+
         if (message.author.bot || message.system) return;
         if (!message.guild || !client.user || !client.commands || !client.categories) return;
     

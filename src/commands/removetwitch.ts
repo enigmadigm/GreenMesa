@@ -4,7 +4,7 @@ import { unsubscribeTwitchWebhook } from "../website/routes/twitch";
 import Discord, { CollectorFilter } from "discord.js";
 import { Command } from "src/gm";
 
-const command: Command = {
+export const command: Command = {
     name: "removetwitch",
     aliases: ["rmtwitch"],
     description: {
@@ -99,4 +99,3 @@ const command: Command = {
     }
 }
 
-export default command;

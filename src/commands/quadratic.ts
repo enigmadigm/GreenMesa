@@ -2,7 +2,7 @@ import { Command } from "src/gm";
 import xlg from "../xlogger";
 //import { getGlobalSetting } from "../dbmanager";
 
-const command: Command = {
+export const command: Command = {
     name: "quadratic",
     description: "find the 0s of a quadratic",
     usage: "<a> <b> <c>",
@@ -74,4 +74,3 @@ const command: Command = {
     }
 }
 
-export default command;

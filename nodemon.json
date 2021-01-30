@@ -1,6 +1,6 @@
 {
     "verbose": true,
-    "ignore": ["auth.json", "node_modules", "package.json", "package-lock.json", ".gitignore", ".eslintrc.json", "desktop.ini", "readme.md", "documentation", "dist", "src/commands"],
+    "ignore": ["auth.json", "node_modules", "package.json", "package-lock.json", ".gitignore", ".eslintrc.json", "desktop.ini", "readme.md", "documentation", "dist"],
     "delay": 2000,
-    "ext": "js,json"
+    "ext": "ts,js,json"
 }

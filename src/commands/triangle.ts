@@ -2,7 +2,7 @@ import { Command } from "src/gm";
 import xlg from "../xlogger";
 // import { getGlobalSetting } from "../dbmanager";
 
-const command: Command = {
+export const command: Command = {
     name: "triangle",
     description: "find the area of a triangle",
     usage: "<base> <height>",
@@ -30,4 +30,3 @@ const command: Command = {
     }
 }
 
-export default command;

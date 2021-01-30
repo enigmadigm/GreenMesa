@@ -1,6 +1,6 @@
 import passport from 'passport';
 import DiscordStrategy from 'passport-discord';
-import { Bot } from 'src/bot';
+import { Bot } from '../../bot';
 import { PartialGuildObject } from 'src/gm';
 
 passport.serializeUser((user, done) => {// "these take care of getting the session id ... checking the session id and verifying and getting the user that belongs to it and serializing it to the request"

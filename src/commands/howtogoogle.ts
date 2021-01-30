@@ -2,7 +2,7 @@ import { Command } from "src/gm";
 import xlg from "../xlogger";
 //import { getGlobalSetting } from "../dbmanager";
 
-const command: Command = {
+export const command: Command = {
     name: 'howtogoogle',
     description: 'get advanced google search help',
     aliases: ['advgoogle', 'advsearch', 'googlehelp'],
@@ -22,4 +22,3 @@ const command: Command = {
     }
 }
 
-export default command;

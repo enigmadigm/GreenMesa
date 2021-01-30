@@ -19,7 +19,7 @@ function validateTwitchURL(str: string) {
     return /^((http|https):\/\/|)(www\.|)twitch\.tv\/[a-zA-Z0-9_]{1,}$/.test(str);
 }
 
-const command: Command = {
+export const command: Command = {
     name: "addtwitch",
     aliases: ["atwitch"],
     description: {
@@ -177,4 +177,3 @@ const command: Command = {
     }
 }
 
-export default command;

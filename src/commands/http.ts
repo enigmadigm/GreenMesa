@@ -4,14 +4,13 @@ import httpdcodes from "../../httpcodes.json";
 import { permLevels } from '../permissions';
 import { Command } from "src/gm";
 
-const command: Command = {
+export const command: Command = {
     name: "http",
     aliases: ["https"],
     description: {
         short: "find an http error code",
         long: ""
     },
-    category: "misc",
     usage: "<code>",
     specialArgs: undefined,
     permLevel: permLevels.trustedMember,
@@ -52,4 +51,3 @@ const command: Command = {
     }
 }
 
-export default command;

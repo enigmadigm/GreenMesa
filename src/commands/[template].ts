@@ -16,7 +16,7 @@ import { Command, XClient, XMessage } from "src/gm";
     }
 }*/
 
-const command: Command = {
+export const command: Command = {
     name: "",
     aliases: [""],
     description: {
@@ -43,4 +43,4 @@ const command: Command = {
     }
 }
 
-export default command;
+

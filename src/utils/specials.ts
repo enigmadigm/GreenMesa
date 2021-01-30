@@ -3,7 +3,7 @@ import xlg from "../xlogger";
 import moment from 'moment';
 import { XClient } from '../gm';
 import { Channel, DMChannel, TextChannel } from 'discord.js';
-import { Bot } from "src/bot";
+import { Bot } from "../bot";
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
     try {

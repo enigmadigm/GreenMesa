@@ -2,7 +2,7 @@ import xlg from '../xlogger';
 // import { getGlobalSetting } from '../dbmanager';
 import { Command } from 'src/gm';
 
-const command: Command = {
+export const command: Command = {
     name: 'support',
     description: 'get invite to (new) support server',
     async execute(client, message) {
@@ -22,4 +22,3 @@ const command: Command = {
     }
 }
 
-export default command;

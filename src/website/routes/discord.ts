@@ -5,7 +5,7 @@ import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
 import { PartialGuildObject, XClient } from 'src/gm';
-import { Bot } from 'src/bot';
+import { Bot } from '../../bot';
 
 function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
     return userGuilds.filter(g => {

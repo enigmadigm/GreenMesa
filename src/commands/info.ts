@@ -3,7 +3,7 @@ import apppkg from '../../package.json';
 import { Command } from "src/gm";
 //import { getGlobalSetting } from "../dbmanager";
 
-const command: Command = {
+export const command: Command = {
     name: 'info',
     description: {
         short: "get information about the bot",
@@ -78,4 +78,3 @@ const command: Command = {
     }
 }
 
-export default command;

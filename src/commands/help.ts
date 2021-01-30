@@ -1,9 +1,6 @@
 import xlg from '../xlogger';
-//const { prefix } = require('../auth.json');
-//const { getGlobalSetting } = require('../dbmanager');
 import { permLevels } from '../permissions';
 import { Command } from 'src/gm';
-//import { getGlobalSetting } from "../dbmanager";
 
 // —
 
@@ -21,7 +18,7 @@ function titleCase(str: string) {
     return splitStr.join(' ');
 }
 
-const command: Command = {
+export const command: Command = {
     name: 'help',
     description: 'get a command list or command help',
     usage:"[command name]",
@@ -47,7 +44,7 @@ const command: Command = {
                 //const helpfields = [];
                 const helpfields = categories?.filter(ca => ca.name !== "owner").map(ca => {
                     return {
-                        name: `${titleCase(ca.name)}${` ${ca.emoji || ""} ` || ''}`,
+                        name: `${titleCase(ca.name)}${ca.emoji ? ` ${ca.emoji} ` : ''}`,
                         value: `\`\`\` ${message.gprefix}help ${ca.name.toLowerCase()} \`\`\``,
                         inline: true
                     }
@@ -59,7 +56,6 @@ const command: Command = {
 
                 data.push(`Send \`${message.gprefix}help [command name]\` to get help for a specific command!`);
                 const cmdcount = commands?.size; // commands.filter(co => co.category !== "owner").size;
-
                 await message.channel.send({
                     embed: {
                         title: `Help: Categories`,
@@ -165,4 +161,3 @@ const command: Command = {
     }
 }
 
-export default command;

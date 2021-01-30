@@ -37,7 +37,7 @@ import { XClient } from 'src/gm';
 
 import express, { Router } from 'express';
 import { IncomingMessage } from 'http';
-import { Bot } from 'src/bot';
+import { Bot } from '../../bot';
 import { Channel, TextChannel } from 'discord.js';
 
 let currToken: string;

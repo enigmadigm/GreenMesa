@@ -1,8 +1,6 @@
 import { XClient } from "src/gm";
 
 require('./strategies/discord');
-
-//const xlg = require("../xlogger");
 import express from "express";
 import passport from 'passport';
 import helmet from "helmet";
@@ -10,11 +8,13 @@ import path from "path";
 import routes from './routes';
 import session from "express-session";
 import mstore from 'express-mysql-session';
+//const xlg = require("../xlogger");
+
 const PORT = process.env.WEBSITE_PORT || 3002;
 //const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MySQLStore = mstore(<any>session);
-const STATIC = "./static";
+//const STATIC = "./static";
 
 export default class MesaWebsite {
 	public client: XClient;
@@ -44,13 +44,13 @@ export default class MesaWebsite {
             res.header("x-powered-by", "Sadness")
             next();
         });
-        this.app.use(express.static(path.join(__dirname, STATIC), {
+        this.app.use(express.static(path.join(__dirname, "../../src/website", "./static"), {
             index: false,
             extensions: ['html']
         }));// https://stackoverflow.com/a/40201169/10660033
         this.app.use('/api', routes(this.client));
         this.app.get("/", (req, res) => {
-            res.sendFile(path.join(__dirname, STATIC, "index.html"));
+            res.sendFile(path.join(__dirname, "../../src/website", "static/index.html"));
         });
         this.app.get("/invite", async (req, res) => {
             const url = await this.client.generateInvite(2147483639);
@@ -62,9 +62,9 @@ export default class MesaWebsite {
         })
 
         if (process.env.NODE_ENV === "production") {
-            this.app.use(express.static(path.join(__dirname, 'client/build')));
+            this.app.use(express.static(path.join(__dirname, "../../src/website", 'client/build')));
             this.app.get(/(dash\/?|menu\/?).*/, function (req, res) {
-                res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+                res.sendFile(path.join(__dirname, "../../src/website", 'client/build', 'static/index.html'));
             });
         }
 

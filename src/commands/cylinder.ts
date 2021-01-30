@@ -17,7 +17,7 @@ class Cylinder {
 	}
 }
 
-const command: Command = {
+export const command: Command = {
   name: "cylinder",
   description: "find the area/surface of a cylinder",
   usage: "<height> <diameter>",
@@ -44,4 +44,3 @@ const command: Command = {
   }
 }
 
-export default command;

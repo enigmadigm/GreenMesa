@@ -7,7 +7,7 @@ import config from '../../auth.json';
 import { getFriendlyUptime } from '../utils/time';
 import xlg from '../xlogger';
 
-const command: Command = {
+export const command: Command = {
     name: 'uptime',
     description: {
         short: 'see how long the bot has been alive',
@@ -61,4 +61,3 @@ const command: Command = {
     }
 }
 
-export default command;

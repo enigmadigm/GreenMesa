@@ -4,7 +4,7 @@
   "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
   "main": "dist/bot.js",
   "scripts": {
-    "start": "node dist/bot.js",
+    "start": "npx tsc && node dist/bot.js",
     "build": "npx tsc && startup.sh",
     "test": "echo \"Error: no test specified\" && exit 0",
     "snyk": "snyk test"
@@ -37,6 +37,7 @@
     "pm2": "^4.5.0",
     "puppeteer": "^5.5.0",
     "rpg-dice-roller": "^4.5.2",
+    "source-map-support": "^0.5.19",
     "ytdl-core": "^3.4.2"
   },
   "license": "ISC",

@@ -6,13 +6,15 @@ import { Category, Command } from "./gm";
 export class Commands {
 	public commands: Collection<string, Command>;
     public categories: Collection<string, Category>;
-    private rootCommandPath: string;
+    public rootCommandPath: string;
+    private commandNumber: number;
 
     constructor() {
         this.commands = new Collection();
         this.categories = new Collection();
         this.rootCommandPath = path.join(__dirname, './commands/');
-        this.load(this.rootCommandPath);
+        this.commandNumber = 1;
+        //this.load(this.rootCommandPath);
     }
 
     // ▼▲▼▲▼▲▼▲▼▲▼▲▼▲ for command handler, got this from https://discordjs.guide/command-handling/
@@ -46,11 +48,11 @@ export class Commands {
                     count: 1,
                     commands: []
                 }
-    
+
                 if (Object.prototype.hasOwnProperty.call(catsem, folder)) {
                     catdat.emoji = catsem[folder];
                 }
-    
+
                 catdat.name = folder;
                 this.categories.set(folder, catdat);
                 catNumber++;
@@ -65,16 +67,16 @@ export class Commands {
             return;
         }
 
-        let commNumber = 1;
         for (const cmdfile of cmds) {
-
-            const command: Command = await import(`${dir}${cmdfile}`);
+            const { command } = await import(`${dir}${cmdfile}`);
+            
             //const command = require(`./commands/${file}`);
 
             // ▲▲▲▲▲ for commands
             // ▼▼▼▼▼ for categories
             const cpos = dir.replace(this.rootCommandPath, "").split("/");
-            if (cpos.length < 1) {// if no directory structure for the command can be found, default to misc
+            cpos.pop();
+            if (cpos.length < 1 || !cpos[0]) {// if no directory structure for the command can be found, default to misc
                 const storedmisc = this.categories.find(c => c.name === "misc");
                 if (storedmisc) {
                     storedmisc.count++;
@@ -119,9 +121,9 @@ export class Commands {
             if (!command.execute) {
                 noName = ' \x1b[33mWARNING: \x1b[32mthis command has no function, it may not be configured properly\x1b[0m';
             }
-            console.log(`${commNumber} - %s$${command.name}%s has been loaded%s`, "\x1b[35m", "\x1b[0m", noName);
+            console.log(`$ ${this.commandNumber} - %s$${command.name}%s has been loaded%s`, "\x1b[35m", "\x1b[0m", noName);
 
-            commNumber++;
+            this.commandNumber++;
         }
     }
 }

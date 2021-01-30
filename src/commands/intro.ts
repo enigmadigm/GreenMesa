@@ -1,7 +1,7 @@
 import { Command } from "src/gm";
 import xlg from "../xlogger";
 
-const command: Command = {
+export const command: Command = {
     name: 'intro',
     description: {
         short: "provides a *crappy* introduction to the bot",
@@ -47,4 +47,3 @@ const command: Command = {
     }
 }
 
-export default command;
