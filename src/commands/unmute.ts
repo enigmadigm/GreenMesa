@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const { getGuildSetting } = require("../dbmanager");
-const { permLevels } = require('../permissions');
-const { stringToMember } = require('../utils/parsers');
+import xlg from "../xlogger";
+// import { getGuildSetting } from "../dbmanager";
+import { permLevels } from '../permissions';
+import { stringToMember } from '../utils/parsers';
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: 'unmute',
     description: {
         short: 'unmute a member',
@@ -16,14 +17,16 @@ module.exports = {
     category: 'moderation',
     async execute(client, message, args) {
         try {
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+            if (!message.guild || !message.member) return;
+
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
-            
+
             const toMute = await stringToMember(message.guild, args[0], false, false, false);
             // Check perms, self, rank, etc
-            if (!await message.guild.me.hasPermission("MANAGE_ROLES")) { // check if the bot has the permissions to mute  members
+            if (!message.guild.me?.hasPermission("MANAGE_ROLES")) { // check if the bot has the permissions to mute  members
                 message.channel.send("🟥 I do not have the permissions to do that");
                 return;
             }
@@ -45,10 +48,13 @@ module.exports = {
             }
 
             // Check if the user has the mutedRole ???? check if muted role exists
-            let mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
+            const mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
 
             // If the mentioned user or ID does not have the "mutedRole" return a message
-            if (!mutedRole || !toMute.roles.cache.has(mutedRole.id)) return message.channel.send('\\🟥 User not muted');
+            if (!mutedRole || !toMute.roles.cache.has(mutedRole.id)) {
+                message.channel.send('\\🟥 User not muted');
+                return;
+            }
 
             // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
             await toMute.roles.remove(mutedRole, `unmuted by ${message.author.tag}`);
@@ -57,8 +63,10 @@ module.exports = {
             message.channel.send(`\\✅ Unmuted ${toMute.user.tag}`).catch(console.error);
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel, "Failure while removing mute");
+            await client.specials?.sendError(message.channel, "Failure while removing mute");
             return false;
         }
     }
 }
+
+export default command;

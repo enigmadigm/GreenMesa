@@ -109,7 +109,7 @@ const command: Command = {
             const filter: CollectorFilter = (r, u) => r.emoji.name === '🟢' && (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
             const collected = await confMsg.awaitReactions(filter, { max: 1, time: 60000 });
             if (!collected || !collected.size) {
-                confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
+                confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
                 confMsg.embeds[0].title = null;
                 confMsg.embeds[0].description = "Aborted setup";
                 await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0])).catch(xlg.error);
@@ -125,7 +125,7 @@ const command: Command = {
             } else {
                 const hookRes = await addTwitchWebhook(targetUsername, false, message.guild.id, targetChannel, notifmsg);
                 if (!hookRes) {
-                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = "Error when creating subscription with Twitch";
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
@@ -133,7 +133,7 @@ const command: Command = {
                     await confMsg.reactions.removeAll();
                     
                 } else if (hookRes === "ID_NOT_FOUND") {
-                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = `Your streamer, \`${targetUsername}\`, could not be found`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
@@ -141,7 +141,7 @@ const command: Command = {
                     await confMsg.reactions.removeAll();
                     
                 } else if (hookRes === "ALREADY_EXISTS") {
-                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = `A subscription for \`${targetUsername}\` already exists`;
                     confMsg.embeds[0].footer = {
@@ -152,7 +152,7 @@ const command: Command = {
                     await confMsg.reactions.removeAll();
 
                 } else {
-                    confMsg.embeds[0].color = parseInt((await getGlobalSetting("success_embed_color"))[0].value, 10)
+                    confMsg.embeds[0].color = await client.database?.getColor("success_embed_color") || null;
                     confMsg.embeds[0].title = "Subscribed";
                     confMsg.embeds[0].description = `You server is now subscribed to notifications in ${targetChannel} for when **${targetUsername}** goes live.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));

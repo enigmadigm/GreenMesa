@@ -5,7 +5,7 @@
   "main": "dist/bot.js",
   "scripts": {
     "start": "node dist/bot.js",
-    "build": "npx tsc && cp -r ./src/website/client ./dist/website/client && cp -r ./src/website/static ./dist/website/static",
+    "build": "npx tsc && startup.sh",
     "test": "echo \"Error: no test specified\" && exit 0",
     "snyk": "snyk test"
   },
@@ -50,6 +50,7 @@
     "@types/express-mysql-session": "^2.1.2",
     "@types/express-session": "^1.17.3",
     "@types/get-image-colors": "^2.0.0",
+    "@types/jsdom": "^16.2.6",
     "@types/luxon": "^1.25.1",
     "@types/mysql": "^2.15.17",
     "@types/node-fetch": "^2.5.8",

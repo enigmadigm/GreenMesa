@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const fetch = require('node-fetch');
-const { getGlobalSetting } = require("../dbmanager");
-const jsdom = require('jsdom');
+import xlg from "../xlogger";
+import fetch from 'node-fetch';
+import jsdom from 'jsdom';
+import { Command } from "src/gm";
+// import { getGlobalSetting } from "../dbmanager";
 
-module.exports = {
+const command: Command = {
     name: 'wouldyourather',
     aliases: ['wyr'],
     description: {
@@ -15,27 +16,28 @@ module.exports = {
     async execute(client, message) {
         try {
             message.channel.startTyping();
-            await fetch('https://either.io')
-                .then(res => res.text())
-                .then(async body => {
-                    var dom = new jsdom.JSDOM(body);
-                    var ae = dom.window.document.querySelector('div.result.result-1 > .option-text');
-                    var be = dom.window.document.querySelector('div.result.result-2 > .option-text');
-                    var msg = await message.channel.send({
-                        embed: {
-                            color: parseInt((await getGlobalSetting("info_embed_color") || ['7322774'])[0].value, 10),
-                            description: `Would you rather:\n**🅰 | ${ae.textContent}**\nor\n**🅱 | ${be.textContent}**`
-                        }
-                    }).catch(xlg.error);
-                    await msg.react('🇦');
-                    msg.react('🇧');
-                });
+            const r = await fetch('https://either.io');
+            const body = await r.text();
+            const dom = new jsdom.JSDOM(body);
+            const ae = dom.window.document.querySelector('div.result.result-1 > .option-text');
+            const be = dom.window.document.querySelector('div.result.result-2 > .option-text');
+            const msg = await message.channel.send({
+                embed: {
+                    color: await client.database?.getColor("info_embed_color"),
+                    description: `Would you rather:\n**🅰 | ${ae.textContent}**\nor\n**🅱 | ${be.textContent}**`
+                }
+            });
+            await msg.react('🇦');
+            msg.react('🇧');
+
             message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel, `An error occurred while thinking of a WYR:\n\`${error.message}\``);
+            await client.specials?.sendError(message.channel, `An error occurred while thinking of a WYR:\n\`${error.message}\``);
             return false;
         }
 
     }
 }
+
+export default command;

@@ -3,13 +3,14 @@ import { stringToChannel, capitalizeFirstLetter } from './utils/parsers';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
 import xlg from "./xlogger";
+import { Bot } from './bot';
 
 async function getLogChannel(guild?: Guild | null): Promise<TextChannel | false> {
     if (!guild) return false;
-    const logValue = await getGuildSetting(guild, 'server_log');
-    const logChannel = logValue[0] && logValue[0].value ? stringToChannel(guild, logValue[0].value, false, false) : null;
+    const logValue = await Bot.client.database?.getGuildSetting(guild, 'server_log');
+    const logChannel = logValue && logValue.value ? stringToChannel(guild, logValue.value, false, false) : null;
     if (logValue && (!logChannel || !(logChannel instanceof TextChannel))) {
-        editGuildSetting(guild, 'server_log', null, true);
+        Bot.client.database?.editGuildSetting(guild, 'server_log', undefined, true);
         return false;
     }
     if (!logChannel || !(logChannel instanceof TextChannel)) {
@@ -38,7 +39,7 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
                         inline: false
                     }
                 ],
-                "color": joining ? parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10) : parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10),
+                "color": joining ? await Bot.client.database?.getColor("success_embed_color") : await Bot.client.database?.getColor("fail_embed_color"),
                 "timestamp": joining ? member.joinedAt?.getTime() || new Date().getTime() : new Date().getTime(),
                 "footer": {
                     "text": `ID: ${member.id}`
@@ -66,7 +67,7 @@ export async function logMessageDelete(message: Message): Promise<void> {
 
         logChannel.send({
             embed: {
-                "color": parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000,
+                "color": await Bot.client.database?.getColor("fail_embed_color") || 0xff0000,
                 "author": {
                     "name": "Message Deleted",
                     "icon_url": message.author.displayAvatarURL()
@@ -111,7 +112,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
         const logMessage = await logChannel.send(attachment);
         logMessage.edit({
             embed: {
-                "color": parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10) || 0xff0000,
+                "color": await Bot.client.database?.getColor("warn_embed_color") || 0xff0000,
                 "author": {
                     "name": `${first?.channel.name}`,
                     "icon_url": first?.guild?.iconURL() || ""
@@ -197,7 +198,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
                         iconURL: role.guild.iconURL() || ""
                     },
                     description: `${deletion ? `@${role.name} (${role.hexColor})` : `${role}\nName: ${role.name}\nColor: ${role.hexColor}`}${deletion ? "\n created " + moment(role.createdAt).utc().fromNow() : ''}`,
-                    color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
+                    color: deletion ? await Bot.client.database?.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database?.getColor("success_embed_color"),
                     timestamp: deletion ? role.createdAt : new Date(),
                     footer: {
                         text: "Role ID: " + role.id
@@ -226,7 +227,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
                     iconURL: channel.guild.iconURL() || ""
                 },
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
-                color: deletion ? parseInt((await getGlobalSetting('fail_embed_color'))[0].value, 10) || 0xff0000 : parseInt((await getGlobalSetting('success_embed_color'))[0].value, 10),
+                color: deletion ? await Bot.client.database?.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database?.getColor("success_embed_color"),
                 timestamp: deletion ? channel.createdAt : new Date(),
                 footer: {
                     text: "Channel ID: " + channel.id
@@ -247,7 +248,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
         if (oc.name !== nc.name) {//change of channel name
             await logChannel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10),
+                    color: await Bot.client.database?.getColor("warn_embed_color"),
                     timestamp: new Date(),
                     author: {
                         name: `Channel Name Updated`,
@@ -311,7 +312,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                 const subject = oldPerm.type == 'role' || newPerm.type == 'role' ? nc.guild.roles.cache.get(newPerm.id || oldPerm.id) : await nc.guild.members.fetch(newPerm.id || oldPerm.id);
 
                 const embed = {
-                    color: parseInt((await getGlobalSetting('warn_embed_color'))[0].value, 10),
+                    color: await Bot.client.database?.getColor("warn_embed_color"),
                     timestamp: new Date(),
                     author: {
                         name: `Channel Permissions Changed`,
@@ -375,7 +376,7 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
                     iconURL: logChannel.guild.iconURL() || ""
                 },
                 description: `${deletion ? "created " + moment(emoji.createdAt).utc().fromNow() : `${creator ? `Created by: ${emoji.author?.tag}` : ""}`}`,
-                color: parseInt((await getGlobalSetting('info_embed_color'))[0].value, 10),
+                color: await Bot.client.database?.getColor("info_embed_color"),
                 image: {
                     url: emoji.url,
                 },

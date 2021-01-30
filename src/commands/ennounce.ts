@@ -1,6 +1,7 @@
-//import { getGuildSetting, getGlobalSetting } from "../dbmanager";
+import xlg from 'src/xlogger';
 import { Command } from 'src/gm';
 import { permLevels } from '../permissions';
+//import { getGuildSetting, getGlobalSetting } from "../dbmanager";
 /*const Validator = require('jsonschema').Validator;
 var v = new Validator();
 var schema = {

@@ -1,9 +1,9 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGuildSetting } = require("../dbmanager");
-const Discord = require('discord.js');
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+//import { getGuildSetting } from "../dbmanager";
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "unban",
     aliases: ["ub"],
     description: {
@@ -18,18 +18,18 @@ module.exports = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!(message instanceof Discord.Message)) return;
+            if (!message.guild) return;
 
-            let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
             }
 
             if (args.join(" ") === "all") {
                 const b = await message.guild.fetchBans();
                 const bc = b.size;
                 if (!bc) {
-                    await client.specials.sendError(message.channel, `No bans found`);
+                    await client.specials?.sendError(message.channel, `No bans found`);
                     return;
                 }
                 const ba = b.array();
@@ -42,7 +42,7 @@ module.exports = {
             }
 
             if (!/^[0-9]{18}$/.test(args[0])) {
-                await client.specials.sendError(message.channel, "A valid user ID (Snowflake) is required");
+                await client.specials?.sendError(message.channel, "A valid user ID (Snowflake) is required");
                 return;
             }
             let ub;
@@ -50,7 +50,7 @@ module.exports = {
                 ub = await message.guild.fetchBan(args[0]);
             } catch (e) {
                 if (e.message === "Unknown Ban") {
-                    await client.specials.sendError(message.channel, "There is no banned user matching that ID");
+                    await client.specials?.sendError(message.channel, "There is no banned user matching that ID");
                     return;
                 } else {
                     throw new Error("Error fetching ban");
@@ -68,8 +68,10 @@ module.exports = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

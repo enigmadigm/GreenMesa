@@ -1,4 +1,5 @@
 import { Command } from "src/gm";
+import xlg from "src/xlogger";
 
 const command: Command = {
     name: '418',

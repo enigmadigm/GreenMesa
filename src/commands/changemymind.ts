@@ -34,7 +34,7 @@ const command: Command = {
                     if (j.status == 200 && j.success && j.message && validURL(j.message)) {
                         message.channel.send({
                             embed: {
-                                color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                                color: await client.database?.getColor("info_embed_color"),
                                 image: {
                                     url: j.message
                                 },

@@ -66,7 +66,7 @@ const command: Command = {
                 await message.author.send({
                     embed: {
                         title: `${categories.get(cat)?.emoji || ""} ${categories.get(cat)?.emoji ? ' ' : ''}${titleCase(categories.get(cat)?.name || "")}`,
-                        color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                        color: await client.database?.getColor("info_embed_color"),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
                             text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`

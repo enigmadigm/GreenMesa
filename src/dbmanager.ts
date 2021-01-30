@@ -102,7 +102,7 @@ export class DBManager {
 
             return this;
         } catch (error) {
-            xlg.error(`DB Error: ${error.message}\nError: ${error.stack}`);
+            xlog.error(`DB Error: ${error.message}\nError: ${error.stack}`);
             return this;
         }
     }
@@ -210,8 +210,8 @@ export class DBManager {
      */
     async updateLevelRole(member: GuildMember, level: number): Promise<boolean> {
         if (!member || !member.guild || !member.guild.id || !level) return false;
-        let levelsEnabled = await getGuildSetting(member.guild, 'xp_levels');
-        levelsEnabled = levelsEnabled[0] ? levelsEnabled[0].value : false;
+        let levelsEnabled: false | GuildSettingsRow | string = await this.getGuildSetting(member.guild, 'xp_levels');
+        levelsEnabled = levelsEnabled ? levelsEnabled.value : false;
         if (levelsEnabled === "enabled") {
             member.guild.roles = await member.guild.roles.fetch();
             const levelRows = await this.checkForLevelRoles(member.guild);
@@ -376,10 +376,11 @@ export class DBManager {
      * @param {object} guild guild object
      * @param {string} name property name
      */
-    async getGuildSetting(guild: Guild, name: string): Promise<GuildSettingsRow | false> {
+    async getGuildSetting(guild: string | Guild, name: string): Promise<GuildSettingsRow | false> {
         try {
-            if (!guild || !guild.available) return false;
-            const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${guild.id}' AND property = '${name}'`).catch(xlog.error);
+            if (!guild) return false;
+            const gid = guild instanceof Guild ? guild.id : guild;
+            const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${gid}' AND property = '${name}'`).catch(xlog.error);
             if (rows.length > 0) {
                 return rows[0];
             } else {

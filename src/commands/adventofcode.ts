@@ -99,7 +99,7 @@ const command: Command = {
                     return false;
                 } else {
                     year = yearCollected.first()?.content || "";
-                    await editGuildSetting(message.guild, "aoc_year", year);
+                    await client.database?.editGuildSetting(message.guild, "aoc_year", year);
                 }
 
                 await message.channel.send({
@@ -116,7 +116,7 @@ const command: Command = {
                 } else {
                     if (numCollected.first()?.content.toLowerCase() !== "no") {
                         lb = numCollected.first()?.content || "";
-                        await editGuildSetting(message.guild, "aoc_leaderboard", lb);
+                        await client.database?.editGuildSetting(message.guild, "aoc_leaderboard", lb);
                     }
                 }
                 refetching = true;
@@ -143,13 +143,13 @@ const command: Command = {
                     }
                     if (res.status >= 500 && res.status < 600) {
                         client.specials?.sendError(message.channel, "Received a bad response from [AOC](https://adventofcode.com). It is likely that the session cookie is invalid.\nResend the command to set it again.");
-                        await editGuildSetting(message.guild, "aoc_session", "", true);
+                        await client.database?.editGuildSetting(message.guild, "aoc_session", "", true);
                         return false;
                     }
                     if (res.status === 404) {
                         client.specials?.sendError(message.channel, `[Your leaderboard](${url}) could not be found.\nResend the command to set it again.`);
-                        await editGuildSetting(message.guild, "aoc_leaderboard", "", true);
-                        await editGuildSetting(message.guild, "aoc_year", "", true);
+                        await client.database?.editGuildSetting(message.guild, "aoc_leaderboard", "", true);
+                        await client.database?.editGuildSetting(message.guild, "aoc_year", "", true);
                         return false;
                     }
                     const j = await res.json();

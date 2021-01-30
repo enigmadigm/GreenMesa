@@ -1,9 +1,10 @@
-const moment = require('moment');
-const { getGlobalSetting } = require("../dbmanager");
+import moment from 'moment';
+import { Command } from 'src/gm';
+//import { getGlobalSetting } from "../dbmanager";
 //const { getDayDiff } = require('../utils/time');
-const xlg = require("../xlogger");
+import xlg from "../xlogger";
 
-module.exports = {
+const command: Command = {
     name: 'serverinfo',
     description: 'get info on the current server',
     aliases: ['server'],
@@ -12,35 +13,33 @@ module.exports = {
     category: "utility",
     async execute(client, message) {
         try {
-            let createdAt = moment(message.guild.createdAt).utc();
+            if (!message.guild) return;
+            const createdAt = moment(message.guild.createdAt).utc();
             const mems = await message.guild.members.fetch();
-            var memberCount = mems.size;
-            var botCount = mems.filter(member => member.user.bot).size;
-            var channels = [
+            const memberCount = mems.size;
+            const botCount = mems.filter(member => member.user.bot).size;
+            const channels = [
                 `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}`,
                 `Text: ${message.guild.channels.cache.filter(x => x.type == 'text').size}`,
                 `Voice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`
             ]
             if (message.guild.channels.cache.filter(x => x.type == 'news').size) channels.push(`News: ${message.guild.channels.cache.filter(x => x.type == 'news').size}`);
             if (message.guild.channels.cache.filter(x => x.type == 'store').size) channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
-            if (message.guild.channels.cache.filter(x => x.type == 'unknown').size) channels.push(`Unknown: ${message.guild.channels.cache.filter(x => x.type == 'unknown').size}`);
+            //if (message.guild.channels.cache.filter(x => x.type == 'unknown').size) channels.push(`Unknown: ${message.guild.channels.cache.filter(x => x.type == 'unknown').size}`);// no type
             message.channel.send({
                 embed: {
-                    "color": parseInt((await getGlobalSetting('info_embed_color'))[0].value),
-                    "footer": {
-                        "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
-                    },
+                    "color": await client.database?.getColor("info_embed_color"),
                     "thumbnail": {
-                        "url": message.guild.iconURL()
+                        "url": message.guild.iconURL() || ""
                     },
                     "author": {
                         "name": message.guild.name,
-                        "icon_url": message.guild.iconURL()
+                        "icon_url": message.guild.iconURL() || ""
                     },
                     "fields": [
                         {
                             "name": "Owner",
-                            "value": message.guild.owner.toString(),
+                            "value": message.guild.owner?.toString(),
                             "inline": true
                         },
                         {
@@ -73,13 +72,18 @@ module.exports = {
                             "value": `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
                             "inline": true
                         }
-                    ]
+                    ],
+                    "footer": {
+                        "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
+                    },
                 }
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

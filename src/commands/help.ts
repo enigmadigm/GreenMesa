@@ -138,7 +138,7 @@ const command: Command = {
                 await message.channel.send({
                     embed: {
                         title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
-                        color: parseInt((await getGlobalSetting("darkred_embed_color"))[0].value, 10),
+                        color: await client.database?.getColor("darkred_embed_color"),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
                             text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`

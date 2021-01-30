@@ -1,6 +1,7 @@
-const xlg = require("../xlogger");
+import { Command } from "src/gm";
+import xlg from "../xlogger";
 
-module.exports = {
+const command: Command = {
     name: 'why',
     description: 'ask: why',
     category: 'fun',
@@ -8,7 +9,7 @@ module.exports = {
         try {
             message.channel.send({
                 embed: {
-                    color: 3447003,
+                    color: await client.database?.getColor("info_embed_color") || 3447003,
                     fields: [{
                         name: "Why?",
                         value: "because"
@@ -20,8 +21,10 @@ module.exports = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

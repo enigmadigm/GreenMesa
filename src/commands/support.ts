@@ -1,12 +1,13 @@
-const xlg = require('../xlogger');
-const { getGlobalSetting } = require('../dbmanager')
+import xlg from '../xlogger';
+// import { getGlobalSetting } from '../dbmanager';
+import { Command } from 'src/gm';
 
-module.exports = {
+const command: Command = {
     name: 'support',
     description: 'get invite to (new) support server',
     async execute(client, message) {
         try {
-            let info_embed_color = parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10);
+            const info_embed_color = await client.database?.getColor("info_embed_color");
             message.channel.send({
                 embed: {
                     color: info_embed_color,
@@ -15,8 +16,10 @@ module.exports = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

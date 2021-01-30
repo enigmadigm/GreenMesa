@@ -34,7 +34,7 @@ const command: Command = {
                 time: 60000
             });
             if (!collected || !collected.size || collected.first()?.emoji.name === "🚫") {
-                confMsg.embeds[0].color = parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10);
+                confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
                 confMsg.embeds[0].title = null;
                 confMsg.embeds[0].description = "Aborted deletion process.";
                 await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0])).catch(xlg.error);

@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+import { Z } from "../utils/zalgo";
+import { Command } from "src/gm";
 //const { getGlobalSetting } = require("../dbmanager");
-const Z = require("../utils/zalgo");
 
-module.exports = {
+const command: Command = {
     name: "zalgo",
     aliases: ["za"],
     description: {
@@ -22,8 +23,10 @@ module.exports = {
             message.channel.send(zt);
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

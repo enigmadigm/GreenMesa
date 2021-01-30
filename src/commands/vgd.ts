@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting } = require("../dbmanager");
-const fetch = require("node-fetch");
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+// import { getGlobalSetting } from "../dbmanager";
+import fetch from "node-fetch";
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "vgd",
     //aliases: [""],
     description: {
@@ -19,28 +20,28 @@ module.exports = {
     async execute(client, message, args) {
         try {
             if (args.length > 1) {
-                await client.specials.sendError(message.channel, "A valid URL should not contain whitespace");
+                await client.specials?.sendError(message.channel, "A valid URL should not contain whitespace");
                 return;
             }
             const url = args[0].slice(0, 1024);
             const r = await fetch(`https://v.gd/create.php?format=json&url=${args[0]}`);
             if (r.status !== 200) {
-                await client.specials.sendError(message.channel, "Received a non-ok response code from v.gd", true);
+                await client.specials?.sendError(message.channel, "Received a non-ok response code from v.gd", true);
                 return;
             }
             const j = await r.json();
             if (!j || j.errorcode || !j.shorturl) {
                 if (j.errorcode === 1 && j.errormessage) {
-                    await client.specials.sendError(message.channel, `Could not shorten URL:\n${j.errormessage}`, true);
+                    await client.specials?.sendError(message.channel, `Could not shorten URL:\n${j.errormessage}`, true);
                     return;
                 } else {
-                    await client.specials.sendError(message.channel, `Could not shorten URL`, true);
+                    await client.specials?.sendError(message.channel, `Could not shorten URL`, true);
                     return;
                 }
             }
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                    color: await client.database?.getColor("info_embed_color"),
                     title: "🔗 Link Shortener",
                     fields: [
                         {
@@ -59,8 +60,10 @@ module.exports = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

@@ -29,7 +29,7 @@ const command: Command = {
                                     embed: {
                                         "title": "Error!",
                                         "description": `${j.Error}`,
-                                        "color": parseInt((await getGlobalSetting("fail_embed_color") || ['16711680'])[0].value, 10),
+                                        "color": await client.database?.getColor("fail_embed_color"),
                                         "footer": {
                                             "text": "Movies"
                                         }

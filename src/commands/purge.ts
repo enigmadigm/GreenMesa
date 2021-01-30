@@ -1,8 +1,9 @@
-//import { getGuildSetting } from "../dbmanager";
+import xlg from 'src/xlogger';
 import { DMChannel } from 'discord.js';
 import { Command } from 'src/gm';
 import { permLevels } from '../permissions';
 import { stringToMember } from '../utils/parsers';
+//import { getGuildSetting } from "../dbmanager";
 
 const command: Command = {
     name: 'purge',

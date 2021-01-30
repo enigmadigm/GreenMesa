@@ -1,21 +1,24 @@
-const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager");
+import xlg from "../xlogger";
+//import { getGlobalSetting } from "../dbmanager";
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "status",
     description: "returns ok",
     async execute(client, message) {
         try {
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                    color: await client.database?.getColor("info_embed_color"),
                     description: "ok"
                 }
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

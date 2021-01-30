@@ -19,22 +19,12 @@ const command: Command = {
             message.channel.startTyping();
             const target = stringToRole(await message.guild.fetch(), args.join(" "), true, true);
             if (!target) {
-                message.channel.send({
-                    embed: {
-                        color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
-                        description: "that role could not be found"
-                    }
-                });
+                client.specials?.sendError(message.channel, "That role could not be found.")
                 message.channel.stopTyping();
                 return;
             }
             if (target === "@everyone" || target === "@here") {
-                message.channel.send({
-                    embed: {
-                        color: parseInt((await getGlobalSetting('fail_embed_color'))[0].value),
-                        description: "no @everyone or @here!"
-                    }
-                });
+                client.specials?.sendError(message.channel, "No @everyone or @here!")
                 return;
             }
             let list = [];
@@ -55,7 +45,7 @@ const command: Command = {
 
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('info_embed_color'))[0].value),
+                    color: await client.database?.getColor("info_embed_color"),
                     title: `List of users with role \`${target.name}\``,
                     description: `${list.join("\n")}`
                 }

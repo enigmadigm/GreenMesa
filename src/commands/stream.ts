@@ -1,8 +1,9 @@
-const xlg = require('../xlogger');
-const { getGlobalSetting } = require("../dbmanager");
-const ytdl = require('ytdl-core');
+import xlg from '../xlogger';
+//import { getGlobalSetting } from "../dbmanager";
+import ytdl from 'ytdl-core';
+import { Command } from 'src/gm';
 
-module.exports = {
+const command: Command = {
     name: 'stream',
     aliases: ['play'],
     description: {
@@ -14,89 +15,79 @@ module.exports = {
     category: 'fun',
     usage: '<YouTube URL available in the United States>',
     async execute(client, message, args) {
-        //let darkred_embed_color = parseInt((await getGlobalSetting('darkred_embed_color'))[0].value);
-        let fec_gs = await getGlobalSetting("fail_embed_color");
-        let fail_embed_color = parseInt(fec_gs[0].value);
-        let iec_gs = await getGlobalSetting("info_embed_color");
-        let info_embed_color = parseInt(iec_gs[0].value);
-
-        if (!args.length) return message.channel.send({
-            embed: {
-                color: fail_embed_color,
-                description: 'You must specify something to play.'
+        try {
+            if (!message.member) return;
+            //let darkred_embed_color = parseInt((await getGlobalSetting('darkred_embed_color'))[0].value);
+            // const fail_embed_color = await client.database?.getColor("fail_embed_color");
+            const info_embed_color = await client.database?.getColor("info_embed_color");
+    
+            if (!args.length) {
+                client.specials?.sendError(message.channel, 'You must specify something to play.');
+                return;
             }
-        });
+    
+            const voiceChannel = message.member.voice.channel;
+            if (!voiceChannel) {
+                client.specials?.sendError(message.channel, "You must join a voice channel first.");
+                return;
+            }
+            if (!ytdl.validateURL(args.join(" "))) {
+                client.specials?.sendError(message.channel, "That is not a valid YouTube video url.");
+                return;
+            }
+            if (!voiceChannel.joinable) {
+                client.specials?.sendError(message.channel, "I am unable to join that voice channel.");
+                return;
+            }
+            if (!voiceChannel.speakable) {
+                client.specials?.sendError(message.channel, "I am unable to speak in that voice channel.");
+                return;
+            }
+            if (voiceChannel.full) {
+                client.specials?.sendError(message.channel, "I am unable to join that voice channel because it is full.");
+                return;
+            }
 
-        const voiceChannel = message.member.voice.channel;
-        if (!voiceChannel) {
-            return message.channel.send({
-                embed: {
-                    color: fail_embed_color,
-                    description: 'You must join a voice channel first.'
-                }
-            }).catch(xlg.error);
+            try {
+                await voiceChannel.join().then(connection => {
+                    const stream = ytdl(args.join(" ") || 'https://www.youtube.com/watch?v=9AMYVgtmkoM', {
+                        filter: 'audioonly'
+                    });
+                    const dispatcher = connection.play(stream);
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let info: any;
+                    stream.on('info', (videoInfo) => {
+                        info = videoInfo;
+                    });
+
+                    connection.on('disconnect', () => stream.destroy());
+
+                    dispatcher.on('start', () => {
+                        message.channel.send({
+                            embed: {
+                                color: info_embed_color,
+                                title: 'Playing',
+                                description: `Started playing **${info && info.videoDetails && info.videoDetails.title ? info.videoDetails.title : ''}** in ${voiceChannel}`,
+                                footer: {
+                                    text: 'Voice'
+                                }
+                            }
+                        });
+                    });
+
+                    dispatcher.on('finish', () => voiceChannel.leave());
+                })
+            } catch (error) {
+                xlg.error(error);
+                client.specials?.sendError(message.channel, "Could not join or play channel!");
+            }
+        } catch (error) {
+            xlg.error(error);
+            await client.specials?.sendError(message.channel);
+            return false;
         }
-        if (!ytdl.validateURL(args.join(" "))) return message.channel.send({
-            embed: {
-                color: fail_embed_color,
-                description: 'That is not a valid YouTube video url.'
-            }
-        }).catch(xlg.error);
-        if (!voiceChannel.joinable) return message.channel.send({
-            embed: {
-                color: fail_embed_color,
-                description: 'I am unable to join that voice channel.'
-            }
-        }).catch(xlg.error);
-        if (!voiceChannel.speakable) return message.channel.send({
-            embed: {
-                color: fail_embed_color,
-                description: 'I am unable to speak in that voice channel.'
-            }
-        }).catch(xlg.error);
-        if (voiceChannel.full) return message.channel.send({
-            embed: {
-                color: fail_embed_color,
-                description: 'I am unable to join that voice channel because it is full.'
-            }
-        }).catch(xlg.error);
-
-
-        voiceChannel.join().then(connection => {
-            const stream = ytdl(args.join(" ") || 'https://www.youtube.com/watch?v=9AMYVgtmkoM', {
-                filter: 'audioonly'
-            });
-            const dispatcher = connection.play(stream);
-
-            let info;
-            stream.on('info', (videoInfo) => {
-                info = videoInfo;
-            });
-            
-            connection.on('disconnect', () => stream.destroy());
-            
-            dispatcher.on('start', () => {
-                message.channel.send({
-                    embed: {
-                        color: info_embed_color,
-                        title: 'Playing',
-                        description: `Started playing **${info && info.videoDetails && info.videoDetails.title ? info.videoDetails.title : ''}** in ${voiceChannel}`,
-                        footer: {
-                            text: 'Voice'
-                        }
-                    }
-                }).catch(xlg.error);
-            });
-
-            dispatcher.on('finish', () => voiceChannel.leave());
-        }).catch(e => {
-            xlg.log(e);
-            message.channel.send({
-                embed: {
-                    color: fail_embed_color,
-                    description: 'Could not join channel!'
-                }
-            })
-        });
     }
 }
+
+export default command;

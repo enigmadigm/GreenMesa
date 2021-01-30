@@ -1,9 +1,13 @@
-const { permLevels } = require("../permissions");
-const xlg = require("../xlogger");
+import { Command } from "src/gm";
+import { permLevels } from "../permissions";
+import xlg from "../xlogger";
 
-module.exports = {
+const command: Command = {
     name: 'say',
-    description: 'Make the bot say something. Must be moderator.',
+    description: {
+        short: "speak through the bot",
+        long: "Make the bot say something. Must be moderator."
+    },
     args: true,
     usage: "<bot message>",
     guildOnly: true,
@@ -15,8 +19,10 @@ module.exports = {
             message.channel.send(args.join(" "));
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

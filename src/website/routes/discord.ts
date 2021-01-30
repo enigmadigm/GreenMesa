@@ -70,7 +70,7 @@ export default function routerBuild (client: XClient): express.Router {
             return res.status(401).send({ msg: "Not authorized to manage guild" })
         }
         try {
-            await setPrefix(id, prefix);
+            await client.database?.setPrefix(id, prefix);
             res.send({
                 guild: {
                     id,
@@ -97,16 +97,18 @@ export default function routerBuild (client: XClient): express.Router {
         }
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
-        let prefix = await Bot.client.database?.getPrefix(id);
+        const r = await Bot.client.database?.getPrefix(id);
+        let prefix = r ? r : false;
         if (!prefix) {
-            prefix = (await getGlobalSetting('global_prefix'))[0].value;
+            const r = await client.database?.getGlobalSetting('global_prefix');
+            prefix = r ? r.value : "sm";
         }
         if (!prefix) {
             return res.status(500).send({ msg: "Unable to retrieve prefix" });
         }
-        const modAllRes = await getGuildSetting(id, 'all_moderation');
+        const modAllRes = await client.database?.getGuildSetting(id, 'all_moderation');
         let modAll = false;
-        if (modAllRes && modAllRes[0] && modAllRes[0].value === "enabled") {
+        if (modAllRes && modAllRes && modAllRes.value === "enabled") {
             modAll = true;
         }
         try {

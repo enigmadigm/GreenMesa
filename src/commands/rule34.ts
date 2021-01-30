@@ -1,12 +1,14 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting } = require("../dbmanager");
-const { default: fetch } = require("node-fetch");
-const config = require("../../auth.json");
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+//import { getGlobalSetting } from "../dbmanager";
+import { default as fetch } from "node-fetch";
+import config from "../../auth.json";
+import { Command } from "src/gm";
+import { DMChannel } from "discord.js";
 
 // https://github.com/Elementalmp4/GeraldCore/blob/master/commands/rule34.js
 
-module.exports = {
+const command: Command = {
     name: "rule34",
     aliases: ["r34"],
     description: {
@@ -21,13 +23,14 @@ module.exports = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
+            if (message.channel instanceof DMChannel) return;
             // Checking to make sure the channel has nsfw enabled
             if (!message.channel.nsfw) {
-                client.specials.sendError(message.channel, "channel not nsfw");
+                client.specials?.sendError(message.channel, "channel not nsfw");
                 return;
             }
 
-            var url = `https://gelbooru.com/index.php?page=dapi&s=post&q=index&pid=${Math.floor(Math.random() * 100)}&json=1&api_key=${config.GELBOORU.key}&user_id=${config.GELBOORU.user}`;
+            const url = `https://gelbooru.com/index.php?page=dapi&s=post&q=index&pid=${Math.floor(Math.random() * 100)}&json=1&api_key=${config.GELBOORU.key}&user_id=${config.GELBOORU.user}`;
             let j;
             if (args.length) {
                 const res = await fetch(url);
@@ -37,18 +40,18 @@ module.exports = {
                 j = await res.json();
             }
             if (!j || !j.length) {
-                client.specials.sendError(message.channel, "Could not retrieve r34");
+                client.specials?.sendError(message.channel, "Could not retrieve r34");
                 return;
             }
 
             const post = j[Math.floor(Math.random() * j.length)];
             if (!post.file_url) {
-                client.specials.sendError(message.channel, "No image");
+                client.specials?.sendError(message.channel, "No image");
                 return;
             }
 
-            let embed = {
-                color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+            const embed = {
+                color: await client.database?.getColor("info_embed_color"),
                 title: 'have some r34',
                 url: post.source,
                 image: {
@@ -56,12 +59,14 @@ module.exports = {
                 }
             };
 
-            message.channel.send({ embed: embed }).catch(xlg.error);
+            message.channel.send({ embed: embed });
 
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

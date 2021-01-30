@@ -1,5 +1,6 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+import { Command } from "src/gm";
 //const { getGlobalSetting } = require("../dbmanager");
 const superConversion = {
     "a": "ᵃ",
@@ -42,7 +43,7 @@ const superConversion = {
     ".": "\u22C5",
 }
 
-module.exports = {
+const command: Command = {
     name: "superscript",
     aliases: ["super"],
     description: {
@@ -58,20 +59,24 @@ module.exports = {
         try {
             const text = args.join(" ").split("");
             for (let i = 0; i < text.length; i++) {
-                const l = text[i];
+                const l = <keyof typeof superConversion>text[i];
                 if (superConversion[l]) {
                     text[i] = `${superConversion[l]}`;
                 }
             }
+            
             if (text.length < 1) {
-                client.specials.sendError(message.channel, "the conversion resulted in no text to display");
+                client.specials?.sendError(message.channel, "the conversion resulted in no text to display");
                 return;
             }
+
             message.channel.send(text.join(""));
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

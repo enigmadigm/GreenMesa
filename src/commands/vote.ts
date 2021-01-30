@@ -1,7 +1,8 @@
-const xlg = require("../xlogger");
-const { getGlobalSetting } = require("../dbmanager");
+import { Command } from "src/gm";
+import xlg from "../xlogger";
+//import { getGlobalSetting } from "../dbmanager";
 
-module.exports = {
+const command: Command = {
     name: 'vote',
     description: 'Call a quick vote on the message the command was in',
     usage: "[the content of the vote]",
@@ -12,13 +13,13 @@ module.exports = {
             if (!args.length) {
                 await message.react('✅')
                     .catch(console.error);
-                return message.react('❌')
+                message.react('❌')
                     .catch(console.error);
+                return;
             }
             message.delete().catch();
-            let iec_gs = await getGlobalSetting("info_embed_color");
-            let info_embed_color = parseInt(iec_gs[0].value);
-            let voteEmbed = await message.channel.send({
+            const info_embed_color = await client.database?.getColor("info_embed_color");
+            const voteEmbed = await message.channel.send({
                 embed: {
                     color: info_embed_color,
                     title: "Vote",
@@ -27,7 +28,7 @@ module.exports = {
                         text: `by ${message.author.tag}`
                     }
                 }
-            }).catch(xlg.error);
+            });
             await voteEmbed.react('✅')
                 .catch(console.error);
             voteEmbed.react('❌')
@@ -35,8 +36,10 @@ module.exports = {
 
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;

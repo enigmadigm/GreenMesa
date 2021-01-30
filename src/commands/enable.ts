@@ -34,7 +34,7 @@ const command: Command = {
             if (command.name === "enable" || command.name === "disable") {
                 await message.channel.send({
                     embed: {
-                        color: parseInt((await getGlobalSetting("fail_embed_color"))[0].value, 10),
+                        color: await client.database?.getColor("fail_embed_color"),
                         description: `Cannot toggle \` enable \` or \` disable \``,
                         footer: {
                             text: `command toggle`

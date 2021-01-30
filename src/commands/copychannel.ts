@@ -54,7 +54,7 @@ const command: Command = {
             
             await message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting('info_embed_color'))[0].value),
+                    color: await client.database?.getColor("info_embed_color"),
                     description: `Channel copied`
                 }
             });

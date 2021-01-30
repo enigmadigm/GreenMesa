@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { Command } from 'src/gm';
+import xlg from 'src/xlogger';
 
 const command: Command = {
     name: 'chucknorris',

@@ -86,13 +86,15 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
 export function timedMessagesHandler(client: XClient): void {
     setInterval(async () => {
         if (moment().utcOffset(-5).format('M/D HH:mm') == "9/26 21:30") {
-            const primchan = await client.channels.fetch((await getGlobalSetting('primchan'))[0].value);
+            const pcr = await client.database?.getGlobalSetting('primchan');
+            const primchan = pcr ? await client.channels.fetch(pcr.value) : false;
             if (primchan instanceof TextChannel) {
                 primchan.send('happy birthday');
             }
         }
         if (moment().utcOffset(-6).format('M/D HH:mm') == "1/1 00:00") {
-            const primchan = await client.channels.fetch((await getGlobalSetting('primchan'))[0].value);
+            const pcr = await client.database?.getGlobalSetting('primchan');
+            const primchan = pcr ? await client.channels.fetch(pcr.value) : false;
             if (primchan instanceof TextChannel) {
                 primchan.send("Welcome to the New Year (CST) @everyone");
             }

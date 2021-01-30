@@ -1,9 +1,10 @@
-const xlg = require("../xlogger");
-const { permLevels } = require('../permissions');
-const { getGlobalSetting } = require("../dbmanager");
-const fetch = require("node-fetch");
+import xlg from "../xlogger";
+import { permLevels } from '../permissions';
+// import { getGlobalSetting } from "../dbmanager";
+import fetch from "node-fetch";
+import { Command } from "src/gm";
 
-module.exports = {
+const command: Command = {
     name: "tinyurl",
     //aliases: [""],
     description: {
@@ -20,19 +21,19 @@ module.exports = {
     async execute(client, message, args) {
         try {
             if (args.length > 1) {
-                await client.specials.sendError(message.channel, "A valid URL should not contain whitespace");
+                await client.specials?.sendError(message.channel, "A valid URL should not contain whitespace");
                 return;
             }
             const url = args[0].slice(0, 1024);
             const r = await fetch(`http://tinyurl.com/api-create.php?url=${url}`);
             if (r.status !== 200) {
-                await client.specials.sendError(message.channel, "URL not shortened", true);
+                await client.specials?.sendError(message.channel, "URL not shortened", true);
                 return;
             }
             const j = await r.text();
             message.channel.send({
                 embed: {
-                    color: parseInt((await getGlobalSetting("info_embed_color"))[0].value, 10),
+                    color: await client.database?.getColor("info_embed_color"),
                     title: "🔗 Link Shortener",
                     fields: [
                         {
@@ -51,8 +52,10 @@ module.exports = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials.sendError(message.channel);
+            await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
+
+export default command;
