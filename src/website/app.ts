@@ -68,6 +68,11 @@ export default class MesaWebsite {
             });
         }
 
+        this.app.set('view engine', 'pug');
+        this.app.get("/c", (req, res) => {
+            res.render("c", { title: "Command Checklist", list: client.commands?.sort((a, b) => a.name.localeCompare(b.name)).map(x => `${x.name}`)})
+        })
+
         // Since this is the last non-error-handling
         // middleware use()d, we assume 404, as nothing else
         // responded.
