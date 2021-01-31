@@ -1,6 +1,6 @@
 import xlg from "../xlogger";
 import { permLevels } from '../permissions';
-import { Command, XClient, XMessage } from "src/gm";
+import { Command } from "src/gm";
 //const { getGlobalSetting } = require("../dbmanager");
 
 /*export class Template implements Command {
