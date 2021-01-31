@@ -167,6 +167,9 @@ export const command: Command = {
                 } catch (error) {
                     xlg.error(error);
                     client.specials?.sendError(message.channel, "Could not retrieve leaderboard information. Wrong details may have been entered.");
+                    await client.database?.editGuildSetting(message.guild, "aoc_session", "", true);
+                    await client.database?.editGuildSetting(message.guild, "aoc_leaderboard", "", true);
+                    await client.database?.editGuildSetting(message.guild, "aoc_year", "", true);
                     return false;
                 }
             }
