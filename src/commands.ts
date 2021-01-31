@@ -86,7 +86,8 @@ export class Commands {
                         name: "misc",
                         id: catNumber,
                         count: 1,
-                        commands: [command]
+                        commands: [command],
+                        emoji: "🎃"
                     });
                 }
                 //if (!command.category) {// this would be an overriding block
