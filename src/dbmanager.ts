@@ -552,7 +552,6 @@ export class DBManager {
      * Update a setting for config in the global settings database
      */
     async logDefined(): Promise<void> {
-        xlog.log("DEFINED")
         try {
             const result = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = 'definedcount'`);
             if (!result || result.length === 0) {
