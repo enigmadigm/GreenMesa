@@ -42,7 +42,7 @@ export const command: Command = {
             }
             list[0] = `***[${list.length - 1}/${target.members.size}]** =>*`;
 
-            message.channel.send({
+            await message.channel.send({
                 embed: {
                     color: await client.database?.getColor("info_embed_color"),
                     title: `List of users with role \`${target.name}\``,

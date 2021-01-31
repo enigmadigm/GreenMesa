@@ -13,7 +13,7 @@ export const command: Command = {
         try {
             message.channel.send({
                 embed: {
-                    description: `\`${leeter.tol33t(args.join(" "))}\``
+                    description: `\`${leeter.tol33t(args.join(" ")).replace(/\\/g, "\\\\")}\``
                 }
             });
         } catch (error) {
@@ -23,4 +23,3 @@ export const command: Command = {
         }
     }
 }
-

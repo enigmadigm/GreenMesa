@@ -1,4 +1,5 @@
 import { Command } from "src/gm";
+import { permLevels } from "../../permissions";
 import xlg from "../../xlogger";
 
 export const command: Command = {
@@ -7,7 +8,7 @@ export const command: Command = {
     aliases:['cmdreload', 'cre'],
     usage:"<cmd to reload>",
     args: true,
-    ownerOnly: true,
+    permLevel: permLevels.botMaster,
     cooldown: 1,
     async execute(client, message, args) {
         try {

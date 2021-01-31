@@ -38,7 +38,7 @@ export const command: Command = {
         short: "toggles a role on a member",
         long: "Toggles a role on a member or all members."
     },
-    usage: "<@member|@role> <@role to toggle>",
+    usage: "<@member|@role target> <@role to toggle>",
     args: true,
     permLevel: permLevels.admin,
     guildOnly: true,

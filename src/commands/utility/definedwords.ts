@@ -10,7 +10,7 @@ export const command: Command = {
     },
     async execute(client, message) {
         try {
-            const config = await import("../auth.json");
+            const config = await import("../../../auth.json");
             const totalDefined = await client.database?.getGlobalSetting("definedcount");
             message.channel.send({
                 embed: {

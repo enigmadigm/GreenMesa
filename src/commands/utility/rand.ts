@@ -18,7 +18,7 @@ export const command: Command = {
     usage: "[maximum >= 0]",
     aliases: ['random', 'randomnumber', 'rn', 'rng'],
     async execute(client, message, args) {
-        if (args.length && !(await client.specials?.argsNumRequire(message.channel, args, 3))) return false;
+        if (args.length && !(await client.specials?.argsNumRequire(message.channel, args, 1))) return false;
         const provNum = parseInt(args[0], 10) || 10;
         message.channel.send(getRandom(provNum)).catch(console.error);
     }

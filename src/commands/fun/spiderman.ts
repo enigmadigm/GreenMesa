@@ -21,7 +21,7 @@ export const command: Command = {
                 message.channel.send({
                     embed: {
                         color: await client.database?.getColor("darkred_embed_color"),
-                        description: '<:spidey_face:754750502083887165>: [everybody gets one](https://digmsl.link/3nn2WFX)'
+                        description: '<:spidey_face:754750502083887165> says: [everybody gets one](https://digmsl.link/3nn2WFX)'
                     }
                 });
                 return true;

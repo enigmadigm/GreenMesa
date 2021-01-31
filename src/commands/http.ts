@@ -35,7 +35,7 @@ export const command: Command = {
                     description: "(command in development)"
                 }
             });
-            const randcode = httpdcodes[Math.random() * httpdcodes.length].code
+            const randcode = httpdcodes[Math.floor(Math.random() * httpdcodes.length)].code
             message.channel.send({
                 embed: {
                     color: await client.database?.getColor("darkgreen_embed_color"),
