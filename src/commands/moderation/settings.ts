@@ -16,13 +16,6 @@ export const command: Command = {
     args: false,
     permLevel: permLevels.admin,
     guildOnly: true,
-    /**
-     * 
-     * @param {discord.Client} client
-     * @param {object}         message
-     * @param {array}          args
-     * @param {object}         conn
-     */
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
@@ -97,7 +90,7 @@ export const command: Command = {
                             message.channel.send({
                                 embed: {
                                     color: info_embed_color,
-                                    description: `Server moderation in ${message.guild.name} is currently **${moderationStatus}**. Adjust this setting with \`enable\` or \`disable\``
+                                    description: `Server moderation in ${message.guild.name} is currently **${moderationStatus}**.\nAdjust this setting with \`enable\` or \`disable\``
                                 }
                             })
                             break;
@@ -110,7 +103,7 @@ export const command: Command = {
                         embed: {
                             description: 'This subcommand is currently in development.'
                         }
-                    }).catch(xlg.error);
+                    });
                     break;
                 }
                 case 'rolerewards':
@@ -134,7 +127,7 @@ export const command: Command = {
                                     }
                                 ]
                             }
-                        }).catch(xlg.error);
+                        });
                         return false;
                     }
                     switch (args[argIndex]) {
@@ -272,7 +265,8 @@ export const command: Command = {
                         message.channel.send({
                             embed: {
                                 description: `The server-log is a useful moderation feature that is always being added to. When enabled, many events that occur within the server will be logged in the specified channel.\nSome supported events include: member joins/leaves, message deletion (+ purging), channels, roles, and more.\n**note:** \`purge\` command logs an option to view the deleted messages when server-log enabled`,
-                                fields: [{
+                                fields: [
+                                    {
                                         name: 'Setting',
                                         value: `The server log is currently ${(slogChannel) ? `**enabled** in ${slogChannel}` : '**disabled**'}.${(!slogChannel) ? ' Enable by appending the desired channel\'s ID to the command.' : ' Disable by appending `disable` to the command.'}`
                                     },
@@ -282,7 +276,7 @@ export const command: Command = {
                                     }
                                 ]
                             }
-                        }).catch(xlg.error);
+                        });
                         return false;
                     }
                     switch (args[argIndex]) {
@@ -388,4 +382,3 @@ export const command: Command = {
         }
     }
 }
-

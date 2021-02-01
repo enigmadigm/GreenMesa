@@ -119,10 +119,11 @@ export const command: Command = {
             }
             const triviaMessage = await message.channel.send({
                 embed: {
-                    "title": triviaQuestion,
-                    "description": triviaChoices.join('\n'),
-                    "footer": {
-                        "text": 'Trivia | ' + triviaCategory + ' | Round ' + game.round
+                    color: 0x36393F,
+                    title: triviaQuestion,
+                    description: triviaChoices.join('\n'),
+                    footer: {
+                        text: 'Trivia | ' + triviaCategory + ' | Round ' + game.round
                     }
                 }
             });
