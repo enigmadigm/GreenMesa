@@ -21,7 +21,7 @@ export const command: Command = {
                     await message.channel.send('...goodbye');
                     client.destroy();
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    pm2.stop('bot', (O_o: any) => {O_o});
+                    pm2.stop('stratum', (O_o: any) => {O_o});
                 });
             } else {
                 await message.channel.send('...goodbye');
