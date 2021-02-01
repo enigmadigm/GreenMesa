@@ -64,7 +64,7 @@ export default class MesaWebsite {
         if (process.env.NODE_ENV === "production") {
             this.app.use(express.static(path.join(__dirname, "../../src/website", 'client/build')));
             this.app.get(/(dash\/?|menu\/?).*/, function (req, res) {
-                res.sendFile(path.join(__dirname, "../../src/website", 'client/build', 'static/index.html'));
+                res.sendFile(path.join(__dirname, "../../src/website", 'client/build', 'index.html'));
             });
         }
 
