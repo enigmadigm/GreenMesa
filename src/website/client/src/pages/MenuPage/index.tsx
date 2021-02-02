@@ -1,21 +1,22 @@
 import React from 'react';
-//import { RouteComponentProps } from 'react-router-dom';
-import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
 import { DashHeader, GuildMenuWrapper } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import LoadingBar from 'react-top-loading-bar';
+import { IUser } from '../DashboardPage';
+//import { RouteComponentProps } from 'react-router-dom';
+//import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 
-interface IUser {
+/*interface IUser {
     guilds: RESTAPIPartialCurrentUserGuild[];
     avatar: string;
     tag: string;
     id: string
-}
+}*/
 
 export function MenuPage(/*props: RouteComponentProps*/) {
-    
-    const [, setUser] = React.useState<IUser | null>(null);
+
+    const [user, setUser] = React.useState<IUser>({});
     const [loading, setLoading] = React.useState(true);
     const [guilds, setGuilds] = React.useState<IUser["guilds"]>([]);
     const [progress, setProgress] = React.useState(0)
@@ -50,10 +51,10 @@ export function MenuPage(/*props: RouteComponentProps*/) {
             />
             {!loading ?
             <div style={{ display: "flex" }}>
-                <DashHeader />
-                <div style={{ margin: "auto", marginTop: 100 }}>
+                <DashHeader user={user} />
+                <div className="guilds-menu-center">
                     <div>
-                        <GuildMenuWrapper guilds={guilds} />
+                        <GuildMenuWrapper guilds={guilds ? guilds : []} />
                     </div>
                 </div>
             </div> :

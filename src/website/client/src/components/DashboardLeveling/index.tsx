@@ -17,7 +17,7 @@ export function DashboardLeveling({ match }: RouteComponentProps<MatchParams>) {
                         <div className="x-card-header">Levels</div>
                         <div className="x-card-body">
                             <h4 className="cardsubtitle">Leveling Controls</h4>
-                            <p style={{ marginBottom: "1rem" }}>Once developed, this area will provide controls and config for the levelling features of Stratum.</p>
+                            <p style={{ marginBottom: "1rem" }}>Once developed, this area will provide controls and config for the leveling features of Stratum.</p>
                         </div>
                     </div>
                 </div>

@@ -83,7 +83,7 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
 
     return !loading ? (
         <div className="app">
-            <DashHeader guildsButton={true} guildName={meta.name} icon={meta.icon || ""} />
+            <DashHeader user={user} guildsButton={true} guildName={meta.name} icon={meta.icon || ""} />
             <Router>
                 <div className="controls-body">
                     <div className="x-sidebar">

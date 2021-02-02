@@ -118,7 +118,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
 
-    await client.specials?.timedMessagesHandler(client);
+    client.specials?.timedMessagesHandler(client);
 
     try {
         //Generates invite link to put in console.
@@ -131,7 +131,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     } catch (e) {
         xlg.error(e);
     }
-    
+
     const website = new MesaWebsite(client);
     Bot.init(client, website);
     xlg.log("Bot initialized")
@@ -274,16 +274,16 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 return;
             }
         }
-    
+
         // Also good practice to ignore any message that does not start with our prefix,
         // which is set in the configuration file.
         if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;
         // ▼▼▼▼▼ deprecated with the guild only command handler filter
         //if (message.channel.type === "dm") return;
-    
+
         const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
         const commandName = args.shift()?.toLowerCase() || "";
-    
+
         let permLevel = permLevels.member;
         const bmr = await client.database?.getGlobalSetting("botmasters").catch(xlg.error);
         let botmasters: string[];
@@ -300,7 +300,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         const command = client.commands.get(commandName || "")
             || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
-    
+
         if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
     
         if (command.guildOnly && dm) {// command is configured to only execute outside of dms
