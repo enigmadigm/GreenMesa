@@ -45,20 +45,25 @@ export function DashHeader(props: IProps) {
             </Box>
             {props.user ? (
                 <div className="userbox">
-                    {(props.user.avatar && props.user.id) ? (
-                        <div className="userbox-av">
-                            <img src={`https://cdn.discordapp.com/avatars/${props.user.id}/${props.user.avatar}.png?size=64`} alt="Avatar" />
-                        </div>
-                    ) : ""}
-                    {props.user.tag ? (
-                        <div className="userbox-uid">
-                            {props.user.tag.split("#").map((x, i) => (
-                                <>
-                                    {i === 0 ? <span className="userbox-uname">{x}</span> : <span className="userbox-disc">#{x}</span>}
-                                </>
-                            ))}
-                        </div>
-                    ) : ""}
+                    <div className="userbox-logout">
+                        <a href={`${host}/logout`}>Logout</a>
+                    </div>
+                    <div className="userbox-ui">
+                        {(props.user.avatar && props.user.id) ? (
+                            <div className="userbox-av">
+                                <img src={`https://cdn.discordapp.com/avatars/${props.user.id}/${props.user.avatar}.png?size=64`} alt="Avatar" />
+                            </div>
+                        ) : ""}
+                        {props.user.tag ? (
+                            <div className="userbox-uid">
+                                {props.user.tag.split("#").map((x, i) => (
+                                    <>
+                                        {i === 0 ? <span className="userbox-uname">{x}</span> : <span className="userbox-disc">#{x}</span>}
+                                    </>
+                                ))}
+                            </div>
+                        ) : ""}
+                    </div>
                 </div>
             ) : ""}
         </header>

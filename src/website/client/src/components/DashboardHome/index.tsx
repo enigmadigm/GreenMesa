@@ -26,8 +26,30 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
             return;
         }
         console.log(moderation)
-        setStatus({ module: "moderation", msg: "Saved.", success: true });
-    }, [moderation])
+        const hdrs = new Headers();
+        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
+        const fd = new URLSearchParams();
+        fd.append("moderation", `${moderation}`);
+        const obj = {
+            method: 'PUT',
+            headers: hdrs,
+            body: fd
+        };
+        try {
+            fetch(`/api/discord/guilds/${props.meta.id}/moderation`, obj)
+                .then(x => x.json())
+                .then((d: { guild: { id: string, moderation: string } }) => {
+                    if (d.guild && d.guild.moderation === `${moderation}`) {
+                        setStatus({ module: "moderation", msg: "Saved.", success: true });
+                    } else {
+                        setStatus({ module: "moderation", msg: "Failed to save.", success: false });
+                    }
+                })
+        } catch (error) {
+            console.error(error);
+            setStatus({ module: "moderation", msg: "Failed to save.", success: false });
+        }
+    }, [moderation, props.meta.id]);
 
     const prefixSchema = yup.object().shape({
         prefix: yup.string().required()
