@@ -1,11 +1,13 @@
 import React from 'react';
 import { Box, Image } from '@chakra-ui/react';
 import { host } from '../../index';
+import { IUser } from '../../pages/DashboardPage';
 
 interface IProps {
     guildsButton?: boolean;
     guildName?: string;
     icon?: string;
+    user?: IUser;
 }
 
 export function DashHeader(props: IProps) {
@@ -17,30 +19,53 @@ export function DashHeader(props: IProps) {
             <Box className="rnav">
                 <div className="rnav-img">
                     {props.icon ? (
-                        <Box>
+                        <>
                             <Image src={props.icon} alt="" objectFit="contain"></Image>
                             <br/>
-                        </Box>
+                        </>
                     ) : ""}
                 </div>
                 <ul className="rnav-nav">
-                    {props.guildName ? <li>
+                    {props.guildName ? <li key="guild">
                         <div className="rnav-guild">
                             {props.guildName}
                         </div>
                     </li> : ""}
-                    {props.guildName ? <li className="rnav-guild-divider"></li> : ""}
-                    <li>
+                    {props.guildName ? <li key="gdivider" className="rnav-guild-divider"></li> : ""}
+                    <li key="guildmenu">
                         {props.guildsButton ? <a href={`/menu`}>Guilds</a> : ""}
                     </li>
-                    <li>
+                    <li key="invite">
                         <a href={`https://stratum.hauge.rocks/invite`}>Invite</a>
                     </li>
-                    <li>
+                    <li key="logout" className="rnav-logout">
                         <a href={`${host}/logout`}>Logout</a>
                     </li>
                 </ul>
             </Box>
+            {props.user ? (
+                <div className="userbox">
+                    <div className="userbox-logout">
+                        <a href={`${host}/logout`}>Logout</a>
+                    </div>
+                    <div className="userbox-ui">
+                        {(props.user.avatar && props.user.id) ? (
+                            <div className="userbox-av">
+                                <img src={`https://cdn.discordapp.com/avatars/${props.user.id}/${props.user.avatar}.png?size=64`} alt="Avatar" />
+                            </div>
+                        ) : ""}
+                        {props.user.tag ? (
+                            <div className="userbox-uid">
+                                {props.user.tag.split("#").map((x, i) => (
+                                    <>
+                                        {i === 0 ? <span className="userbox-uname">{x}</span> : <span className="userbox-disc">#{x}</span>}
+                                    </>
+                                ))}
+                            </div>
+                        ) : ""}
+                    </div>
+                </div>
+            ) : ""}
         </header>
     )
 }

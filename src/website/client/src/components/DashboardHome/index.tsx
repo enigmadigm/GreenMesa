@@ -1,27 +1,55 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import { /*Input, Button, Container*/ Switch, FormControl, FormLabel } from '@chakra-ui/react';
 import { Formik, ErrorMessage } from "formik";
 import { GMeta, IUser } from '../../pages/DashboardPage';
 import * as yup from 'yup';
-//import { RouteComponentProps } from 'react-router-dom';
 
 interface HomeProps {
     //match: RouteComponentProps<MatchParams>;
     user: IUser;
     meta: GMeta;
-    
+    //setMeta: React.Dispatch<React.SetStateAction<GMeta>>;
 }
 
-/*interface MatchParams {
-    id: string;
+/*function ModSwitch(event: React.ChangeEvent<HTMLInputElement>) {
+    console.log(event)
 }*/
 
-function ModSwitch(event: ChangeEvent<HTMLInputElement>) {
-    console.log(event)
-}
-
 export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
-    //const [prefix, setPrefix] = React.useState("sm");
+    const [moderation, setModeration] = React.useState(props.meta.moderation || false);
+    const firstMod = React.useRef(true);
+    const [status, setStatus] = React.useState<{ module: string, msg: string, success: boolean }>({module: "", msg: "", success: true});
+
+    React.useEffect(() => {
+        if (firstMod.current) {
+            firstMod.current = false;
+            return;
+        }
+        console.log(moderation)
+        const hdrs = new Headers();
+        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
+        const fd = new URLSearchParams();
+        fd.append("moderation", `${moderation}`);
+        const obj = {
+            method: 'PUT',
+            headers: hdrs,
+            body: fd
+        };
+        try {
+            fetch(`/api/discord/guilds/${props.meta.id}/moderation`, obj)
+                .then(x => x.json())
+                .then((d: { guild: { id: string, moderation: string } }) => {
+                    if (d.guild && d.guild.moderation === `${moderation}`) {
+                        setStatus({ module: "moderation", msg: "Saved.", success: true });
+                    } else {
+                        setStatus({ module: "moderation", msg: "Failed to save.", success: false });
+                    }
+                })
+        } catch (error) {
+            console.error(error);
+            setStatus({ module: "moderation", msg: "Failed to save.", success: false });
+        }
+    }, [moderation, props.meta.id]);
 
     const prefixSchema = yup.object().shape({
         prefix: yup.string().required()
@@ -54,8 +82,17 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                 <FormLabel htmlFor="enable-moderation-all" mb="0">
                                     Enable moderation?
                                 </FormLabel>
-                                <Switch id="enable-moderation-all" onChange={ModSwitch} defaultChecked={props.meta.moderation} />
+                                <Switch id="enable-moderation-all" onChange={(e) => setModeration(e.target.checked)} defaultChecked={props.meta.moderation} />
                             </FormControl>
+                            {status && status.module === "moderation" && (
+                                <>
+                                    <br />
+                                    <br />
+                                    <div className={`field-alert ${status.success ? "field-success" : "field-error"}`}>
+                                        {status.msg}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

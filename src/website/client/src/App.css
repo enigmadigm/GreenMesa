@@ -33,9 +33,72 @@ body, html {
   z-index: 1100;
 }
 
-.h-title {
-  /*color: #001f3f;*/
+.userbox {
+  position: fixed;
+  top: 55px;
+  right: 0;
+  border-top: 1px solid #23282c;
 }
+
+.userbox:hover .userbox-logout {
+  height: 50px;
+}
+
+.userbox .userbox-logout {
+  position: relative;
+  height: 0;
+  line-height: 50px;
+  text-align: center;
+  font-size: 1.4em;
+  font-weight: 700;
+  overflow: hidden;
+  border-left: 1px solid #23282c;
+  background-color: rgb(128, 35, 35);
+  transition: height 0.5s;
+  transition-delay: 0.05s;
+}
+
+.userbox .userbox-ui {
+  display: flex;
+  align-items: center;
+  border-radius: 0 0 0 30px;
+  background-color: #3a4149;
+  padding: 10px;
+  border-left: 1px solid #23282c;
+  border-bottom: 1px solid #23282c;
+  cursor: context-menu;
+}
+
+.userbox .userbox-logout a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.userbox-av img {
+  border-radius: 50em;
+  height: 35px;
+  margin: 0;
+  margin-left: 3px;
+  margin-right: 10px;
+}
+
+.userbox-uname {
+  color: #fff;
+  font-weight: 600;
+  margin-right: 3px;
+  text-decoration: dashed;
+}
+
+.userbox-disc {
+  font-style: italic;
+  font-size: 0.9em;
+  color: rgb(67, 217, 255);
+}
+
+/*.h-title {
+  color: #001f3f;
+}*/
 
 .rnav {
   display: flex;
@@ -49,13 +112,18 @@ body, html {
 .rnav-nav {
   list-style: none;
   display: flex;
-  transform: translateY(20%);
+  align-items: center;
+  /*transform: translateY(20%);*/
 }
 
 .rnav-nav li {
   position: relative;
   padding-left: .5rem;
   padding-right: .5rem;
+}
+
+.rnav-logout a {
+  color: rgb(255, 116, 116);
 }
 
 .rnav-link {
@@ -75,17 +143,18 @@ body, html {
   padding-left: 20px;
   margin-right: 8px;
   border-right: solid 2px #daa520;
-  height: 30px;
+  height: 22px;
 }
 
 .rnav-img {
-  height: 50px;
-  width: 50px;
+  height: 45px;
+  width: 45px;
   /*transform: translateY(-7%);*/
 }
 
-.rnav-imag img {
-  position: fixed;
+.rnav-img img {
+  /*position: fixed;*/
+  border-radius: 50em;
 }
 
 .controls-body {
@@ -241,6 +310,14 @@ body, html {
   background-color: rgba(200,0,0,0.4);
 }
 
+.guilds-menu-center {
+  border: solid 2px #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  margin: auto;
+  margin-top: 100px;
+}
+
 @media screen and (max-width: 800px) {
   .app .x-sidebar {
     width: 50px;
@@ -264,10 +341,27 @@ body, html {
     padding-left: 0;
     padding-bottom: 20px;
   }
+  .guilds-menu-center {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .guilds-menu-center {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 @media screen and (max-width: 700px) {
   .h-title {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .userbox {
     display: none;
   }
 }

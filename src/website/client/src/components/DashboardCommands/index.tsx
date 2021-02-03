@@ -1,23 +1,21 @@
 import React from 'react';
-//import { /*Input, Button, Container*/ } from '@chakra-ui/react';
-//import { Formik } from "formik";
 import { RouteComponentProps } from 'react-router-dom';
 
 interface MatchParams {
     id: string;
 }
 
-export function DashboardLeveling({ match }: RouteComponentProps<MatchParams>) {
+export function DashboardCommands({ match }: RouteComponentProps<MatchParams>) {
     return (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
             <div className="control-row">
                 <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
                     <div className="x-card">
-                        <div className="x-card-header">Levels</div>
+                        <div className="x-card-header">Commands</div>
                         <div className="x-card-body">
-                            <h4 className="cardsubtitle">Leveling Controls</h4>
-                            <p style={{ marginBottom: "1rem" }}>Once developed, this area will provide controls and config for the leveling features of Stratum.</p>
+                            <h4 className="cardsubtitle">Command Config</h4>
+                            <p style={{ marginBottom: "1rem" }}>Enable or disable the commands for Stratum.</p>
                         </div>
                     </div>
                 </div>

@@ -2,11 +2,11 @@ import React, { Dispatch, SetStateAction } from 'react';
 //import { RouteComponentProps } from 'react-router-dom';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
-import { DashboardHome, DashboardLeveling, DashHeader } from '../../components';
+import { DashboardCommands, DashboardHome, DashboardLeveling, DashHeader } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
-import { faHomeLgAlt, faLevelUpAlt } from '@fortawesome/pro-solid-svg-icons';
+import { faHomeLgAlt, faLayerPlus, faLevelUpAlt } from '@fortawesome/pro-solid-svg-icons';
 
 export interface IUser {
     guilds?: RESTAPIPartialCurrentUserGuild[];
@@ -83,7 +83,7 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
 
     return !loading ? (
         <div className="app">
-            <DashHeader guildsButton={true} guildName={meta.name} icon={meta.icon || ""} />
+            <DashHeader user={user} guildsButton={true} guildName={meta.name} icon={meta.icon || ""} />
             <Router>
                 <div className="controls-body">
                     <div className="x-sidebar">
@@ -95,6 +95,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                 <li>
                                     <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
                                 </li>
+                                <li>
+                                    <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
+                                </li>
                             </ul>
                         </nav>
                     </div>
@@ -104,6 +107,7 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                 <DashboardHome user={user} meta={meta} />
                             </Route>
                             <Route exact path="/dash/:id/leveling" component={ DashboardLeveling } />
+                            <Route exact path="/dash/:id/commands" component={ DashboardCommands } />
                         </Switch>
                     </div>
                 </div>

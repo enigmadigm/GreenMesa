@@ -53,36 +53,6 @@ export default function routerBuild (client: XClient): express.Router {
         });
     });
 
-    router.put("/guilds/:id/prefix", async (req, res) => {
-        const { prefix } = req.body;
-        if (!prefix || typeof prefix !== "string") {
-            return res.status(400).send({ msg: "Bad prefix" });
-        }
-        const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.status(400).send({ msg: "Bad id" });
-        }
-        if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" })
-        }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
-        if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" })
-        }
-        try {
-            await client.database?.setPrefix(id, prefix);
-            res.send({
-                guild: {
-                    id,
-                    prefix
-                }
-            })
-        } catch (e) {
-            xlg.error(e);
-            res.sendStatus(500);
-        }
-    });
-
     router.get("/guilds/:id/config", async (req, res) => {
         const { id } = req.params;
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
@@ -119,6 +89,72 @@ export default function routerBuild (client: XClient): express.Router {
                 icon: g.iconURL(),
                 members: g.memberCount,
                 moderation: modAll
+            });
+        } catch (e) {
+            xlg.error(e);
+            res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/prefix", async (req, res) => {
+        const { prefix } = req.body;
+        if (!prefix || typeof prefix !== "string") {
+            return res.status(400).send({ msg: "Bad prefix" });
+        }
+        const { id } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            return res.status(400).send({ msg: "Bad id" });
+        }
+        if (!req.user) {
+            return res.status(401).send({ msg: "Not logged in" })
+        }
+        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.status(401).send({ msg: "Not authorized to manage guild" })
+        }
+        try {
+            await client.database?.setPrefix(id, prefix);
+            res.send({
+                guild: {
+                    id,
+                    prefix
+                }
+            })
+        } catch (e) {
+            xlg.error(e);
+            res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/moderation", async (req, res) => {
+        const { moderation } = req.body;
+        if (!moderation || typeof moderation !== "string" || (moderation !== "true" && moderation !== "false")) {
+            return res.status(400).send({ msg: "Invalid moderation" });
+        }
+        const { id } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            return res.status(400).send({ msg: "Bad id" });
+        }
+        if (!req.user) {
+            return res.status(401).send({ msg: "Not logged in" });
+        }
+        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.status(401).send({ msg: "Not authorized to manage guild" });
+        }
+        try {
+            const g = await client.guilds.fetch(id);
+            if (moderation === "true") {
+                await client.database?.editGuildSetting(g, "all_moderation", "enabled");
+            } else {
+                await client.database?.editGuildSetting(g, "all_moderation", undefined, true);
+            }
+            res.send({
+                guild: {
+                    id,
+                    moderation
+                },
+                user: req.user,
             });
         } catch (e) {
             xlg.error(e);
