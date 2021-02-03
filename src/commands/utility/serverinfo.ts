@@ -53,17 +53,17 @@ export const command: Command = {
                         },
                         {
                             "name": `Channels (${message.guild.channels.cache.size - message.guild.channels.cache.filter(x => x.type == 'category').size})`,
-                            "value": channels.join("\n") || 'none',
+                            "value": `${channels.join("\n") || 'none'}`,
                             "inline": true
                         },
                         {
                             "name": "Roles <:atsign_1:757386730960584815>",
-                            "value": `${message.guild.roles.cache.size}`,
+                            "value": `Count: ${message.guild.roles.cache.size}`,
                             "inline": true
                         },
                         {
                             "name": "Emojis 😏",
-                            "value": `${message.guild.emojis.cache.size}\n<:giflabel1:757354173086957608> ${message.guild.emojis.cache.filter(e => e.animated).size}`,
+                            "value": `Total: ${message.guild.emojis.cache.size}\n<:giflabel1:757354173086957608>: ${message.guild.emojis.cache.filter(e => e.animated).size}`,
                             "inline": true
                         },
                         {
