@@ -80,7 +80,10 @@ body, html {
   height: 35px;
   margin: 0;
   margin-left: 3px;
-  margin-right: 10px;
+}
+
+.userbox-uid {
+  margin-left: 10px;
 }
 
 .userbox-uname {
