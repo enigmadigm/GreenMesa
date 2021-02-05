@@ -24,7 +24,7 @@ export interface GMeta {
     moderation?: boolean;
 }
 
-interface MatchParams {
+export interface MatchParams {
     id: string;
     page: string;
 }
@@ -36,6 +36,22 @@ interface CNIProps {
     active: boolean;
     oc: Dispatch<SetStateAction<string>>;
     ico: FontAwesomeIconProps;
+}
+
+export interface StatusInfo {
+    msg: string;
+    success: boolean;
+    module?: string;
+}
+
+export interface HomeProps extends StatusProps {
+    user: IUser;
+    meta: GMeta;
+}
+
+export interface StatusProps {
+    status: StatusInfo;
+    setStatus: React.Dispatch<React.SetStateAction<StatusInfo>>;
 }
 
 function CustomNavItem(props: CNIProps) {
@@ -56,7 +72,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
     const [loading, setLoading] = React.useState(true);
     const [page, setPage] = React.useState(match.params.page);
     //const [active, setActive] = React.useState("home");
-    const [meta, setMeta] = React.useState <GMeta>({});
+    const [meta, setMeta] = React.useState<GMeta>({});
+    const [status, setStatus] = React.useState<StatusInfo>({ module: "", msg: "", success: true });
+    const [statusShow, setStatusShow] = React.useState<"field-alert-in" | "field-alert-out" | "">("");
 
     React.useEffect(() => {
         fetch("/api/auth")
@@ -78,6 +96,24 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                 setLoading(false);
             })
     }, [guildID])
+
+    React.useEffect(() => {
+        if (!status.msg) {
+            setStatusShow("field-alert-out");
+        } else {
+            setStatusShow("field-alert-in");
+            startStatusTimer();
+        }
+    }, [status])
+
+    const startStatusTimer = () => {
+        setTimeout(() => {
+            setStatus({
+                msg: "",
+                success: true
+            })
+        }, 6000)
+    }
 
     // <Link className="lanav-link" to="home">Home</Link>
 
@@ -104,12 +140,19 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                     <div className="x-main">
                         <Switch>
                             <Route exact path="/dash/:id/home">
-                                <DashboardHome user={user} meta={meta} />
+                                <DashboardHome user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
-                            <Route exact path="/dash/:id/leveling" component={ DashboardLeveling } />
-                            <Route exact path="/dash/:id/commands" component={ DashboardCommands } />
+                            <Route exact path="/dash/:id/leveling" >
+                                <DashboardLeveling user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
+                            <Route exact path="/dash/:id/commands" >
+                                <DashboardCommands user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
                         </Switch>
                     </div>
+                </div>
+                <div className={`field-alert ${statusShow} ${status.success ? "field-success" : "field-error"}`}>
+                    {status.msg}
                 </div>
             </Router>
         </div>

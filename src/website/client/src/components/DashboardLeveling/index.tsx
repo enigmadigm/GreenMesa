@@ -1,13 +1,9 @@
 import React from 'react';
+import { HomeProps } from '../../pages/DashboardPage';
 //import { /*Input, Button, Container*/ } from '@chakra-ui/react';
 //import { Formik } from "formik";
-import { RouteComponentProps } from 'react-router-dom';
 
-interface MatchParams {
-    id: string;
-}
-
-export function DashboardLeveling({ match }: RouteComponentProps<MatchParams>) {
+export function DashboardLeveling(props: HomeProps) {
     return (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />

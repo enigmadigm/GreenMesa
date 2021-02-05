@@ -1,11 +1,7 @@
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import { HomeProps } from '../../pages/DashboardPage';
 
-interface MatchParams {
-    id: string;
-}
-
-export function DashboardCommands({ match }: RouteComponentProps<MatchParams>) {
+export function DashboardCommands(props: HomeProps) {
     return (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
