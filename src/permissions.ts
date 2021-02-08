@@ -12,15 +12,26 @@ export const permLevels = {
     botMaster: 5,
 }
 
-export async function getPermLevel(member: GuildMember | User): Promise<number> {
+export async function getPermLevel(member: GuildMember | User, relative = false): Promise<number> {// The relative option determines if the perm level returned will be actual or relative
     if (member == null || !(member instanceof GuildMember)) {
+        if (member instanceof User && !relative) {
+            const botmasters = await Bot.client.database?.getGlobalSetting("botmasters");
+            if (botmasters) {
+                const bms = botmasters.value.split(',');
+                if (bms.includes(member.id)) {
+                    return permLevels.botMaster;
+                }
+            }
+        }
         return permLevels.member;
     }
-    const botmasters = await Bot.client.database?.getGlobalSetting("botmasters");
-    if (botmasters) {
-        const bms = botmasters.value.split(',');
-        if (bms.includes(member.user.id)) {
-            return permLevels.botMaster;
+    if (!relative) {
+        const botmasters = await Bot.client.database?.getGlobalSetting("botmasters");
+        if (botmasters) {
+            const bms = botmasters.value.split(',');
+            if (bms.includes(member.user.id)) {
+                return permLevels.botMaster;
+            }
         }
     }
     if (!member.guild) {

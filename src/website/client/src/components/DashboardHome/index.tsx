@@ -8,10 +8,30 @@ import * as yup from 'yup';
     console.log(event)
 }*/
 
+interface APIHome {
+    guild?: {
+        id: string;
+        name: string;
+    };
+    home?: {
+        permNotif: boolean;
+    };
+}
+
 export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
+    const [home, setHome] = React.useState<APIHome>({home: {permNotif: false}})
     const [moderation, setModeration] = React.useState(props.meta.moderation || false);
     const firstMod = React.useRef(true);
     const { setStatus } = props;
+
+    React.useEffect(() => {
+        fetch(`/api/discord/guilds/${props.meta.id}/home`)
+            .then(x => x.json())
+            .then(d => {
+                //console.log(d)
+                setHome(d);
+            })
+    }, [props.meta.id])
 
     React.useEffect(() => {
         if (firstMod.current) {
@@ -47,6 +67,37 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
         prefix: yup.string().required()
     });
 
+    const handleAccessMessageClicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(e);
+        let am = false;
+        if (e.target.checked) {
+            am = true;
+        }
+        const hdrs = new Headers();
+        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
+        const fd = new URLSearchParams();
+        fd.append("permnotif", `${am}`);
+        const obj = {
+            method: 'PUT',
+            headers: hdrs,
+            body: fd
+        };
+        try {
+            fetch(`/api/discord/guilds/${props.meta.id}/permnotif`, obj)
+                .then(x => x.json())
+                .then((d: { guild: { id: string, permNotif: string } }) => {
+                    if (d.guild && d.guild.permNotif === `${am}`) {
+                        setStatus({ msg: "Saved.", success: true });
+                    } else {
+                        setStatus({ msg: "Failed to save.", success: false });
+                    }
+                })
+        } catch (error) {
+            console.error(error);
+            setStatus({ msg: "Failed to save.", success: false });
+        }
+    }
+
     return (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
@@ -75,6 +126,15 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                     Enable moderation?
                                 </FormLabel>
                                 <Switch id="enable-moderation-all" onChange={(e) => setModeration(e.target.checked)} defaultChecked={props.meta.moderation} />
+                            </FormControl>
+                            <hr style={{ marginTop: 10, marginBottom: 15 }} />
+                            <h4 className="cardsubtitle">No Perms Access Message</h4>
+                            <p style={{ marginBottom: "1rem" }}>Toggle the option to notify users that they don't have the required permissions when they use an elevated command.</p>
+                            <FormControl display="flex" alignItems="center">
+                                <FormLabel htmlFor="enable-permnotif" mb="0">
+                                        Enable access message?
+                                </FormLabel>
+                                <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={home.home?.permNotif} />
                             </FormControl>
                             {/*status && status.module === "moderation" && (
                                 <>

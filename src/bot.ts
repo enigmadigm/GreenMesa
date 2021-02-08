@@ -313,6 +313,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
         if (command.permLevel && permLevel < command.permLevel) {// insufficient bot permissions
             // TODO: add admin option to make it notify users that they don't have permissions
+            const accessMessage = await client.database?.getGuildSetting(message.guild, "access_message");
+            if (accessMessage && accessMessage.value === "enabled") {
+                message.channel.send("You lack the permissions required to use this command.")
+            }
             return;
         }
 

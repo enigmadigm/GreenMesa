@@ -35,8 +35,9 @@ export const command: Command = {
 **Send one of the following sub-commands for further details:**
 - \`levelroles\` set the roles rewarded for levels
 - \`serverlog\` configure how the bot logs server activity for you
-- \`moderation\` enable or disable all moderation features
+- \`moderation\` enable or disable (default) all moderation features
 - \`modrole\` set the role that gives mod powers
+- \`accessmsg\` enable or disable (default) the 'lacking perms' message
 \\🔒 \`caselogging\` log moderation events in an organized system
 \\🔒 \`adminrole\` set the role that gives admin powers
 \\🔒 \`commandchannel\` set a channel to restrict all command usage to
@@ -368,6 +369,53 @@ export const command: Command = {
                 }
                 case 'commandchannel': {
                     await client.specials?.sendError(message.channel, 'This subcommand is currently in development.');
+                    break;
+                }
+                case 'pm':
+                case 'accessmsg': {
+                    argIndex++;
+                    const accessMessage = await client.database?.getGuildSetting(message.guild, 'access_message');
+                    switch (args[argIndex]) {
+                        case 'enable': {
+                            if (accessMessage && accessMessage.value === 'enabled') {
+                                message.channel.send('Perms message is already **enabled**.');
+                                return;
+                            }
+                            const editResult = await client.database?.editGuildSetting(message.guild, 'access_message', 'enabled');
+                            if (editResult && editResult.affectedRows == 1) {
+                                message.channel.send('Perms message **enabled**!');
+                            } else {
+                                message.channel.send('Failed to enable perms message.');
+                            }
+                            break;
+                        }
+                        case 'disable': {
+                            if (!accessMessage || accessMessage.value === 'disabled') {
+                                message.channel.send('Perms message is already **disabled**.');
+                                return;
+                            }
+                            const editResult = await client.database?.editGuildSetting(message.guild, 'access_message', 'disabled', true);
+                            if (editResult && editResult.affectedRows == 1) {
+                                message.channel.send('Perms message **disabled**!');
+                            } else {
+                                message.channel.send('Failed to disable perms message.');
+                            }
+                            break;
+                        }
+                        default: {
+                            let messageStatus = 'disabled';
+                            if (accessMessage && accessMessage.value === 'enabled') {
+                                messageStatus = 'enabled';
+                            }
+                            message.channel.send({
+                                embed: {
+                                    color: info_embed_color,
+                                    description: `The perms access message in ${message.guild.name} is currently **${messageStatus}**.\nAdjust this setting with \`enable\` or \`disable\``
+                                }
+                            });
+                            break;
+                        }
+                    }
                     break;
                 }
                 default: {
