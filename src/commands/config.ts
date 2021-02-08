@@ -1,4 +1,3 @@
-//import { getGlobalSetting, editGlobalSettings } from "../dbmanager";
 import xlg from "../xlogger";
 import moment from "moment";
 import { permLevels } from '../permissions';
@@ -16,13 +15,6 @@ export const command: Command = {
     guildOnly: false,
     cooldown: 3,
     permLevel: permLevels.botMaster,
-    /**
-     * 
-     * @param {discord.Client} client
-     * @param {object}         message
-     * @param {array}          args
-     * @param {object}         conn
-     */
     async execute(client, message, args) {
         try {
             const fail_embed_color = await client.database?.getColor("fail_embed_color");
