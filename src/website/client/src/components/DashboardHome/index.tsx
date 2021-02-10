@@ -8,30 +8,26 @@ import * as yup from 'yup';
     console.log(event)
 }*/
 
-interface APIHome {
-    guild?: {
-        id: string;
-        name: string;
-    };
-    home?: {
-        permNotif: boolean;
-    };
-}
-
 export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
-    const [home, setHome] = React.useState<APIHome>({home: {permNotif: false}})
+    const [permNotif, setPermNotif] = React.useState<boolean>(false)
     const [moderation, setModeration] = React.useState(props.meta.moderation || false);
     const firstMod = React.useRef(true);
     const { setStatus } = props;
+    const [loaded, setLoaded] = React.useState(false);
 
     React.useEffect(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/home`)
             .then(x => x.json())
             .then(d => {
                 //console.log(d)
-                setHome(d);
+                setPermNotif(d.home.permNotif);
+                setLoaded(true);
             })
-    }, [props.meta.id])
+            .catch(e => {
+                setStatus(e.message);
+                setLoaded(true);
+            })
+    }, [props, setStatus])
 
     React.useEffect(() => {
         if (firstMod.current) {
@@ -130,12 +126,14 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                             <hr style={{ marginTop: 10, marginBottom: 15 }} />
                             <h4 className="cardsubtitle">No Perms Access Message</h4>
                             <p style={{ marginBottom: "1rem" }}>Toggle the option to notify users that they don't have the required permissions when they use an elevated command.</p>
-                            <FormControl display="flex" alignItems="center">
-                                <FormLabel htmlFor="enable-permnotif" mb="0">
-                                        Enable access message?
-                                </FormLabel>
-                                <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={home.home?.permNotif} />
-                            </FormControl>
+                            {loaded && (
+                                <FormControl display="flex" alignItems="center">
+                                    <FormLabel htmlFor="enable-permnotif" mb="0">
+                                            Enable access message?
+                                    </FormLabel>
+                                    <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={permNotif} />
+                                </FormControl>
+                            )}
                             {/*status && status.module === "moderation" && (
                                 <>
                                     <br />

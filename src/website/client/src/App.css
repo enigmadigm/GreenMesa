@@ -28,6 +28,8 @@ body, html {
   align-items: center;
   height: 55px;
   background-color: #3a4149;
+  /* border-bottom: 1px solid #23282c; */
+  /* background-color: #3c304b; */
   color: #e4e7ea;
   width: 100%;
   z-index: 1100;
