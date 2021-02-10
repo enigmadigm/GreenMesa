@@ -45,11 +45,6 @@ export function DashHeader(props: DashProps) {
             </Box>
             {props.user ? (
                 <div className="userbox">
-                    {props.user.guilds && (
-                        <div className="userbox-under">
-                            USER
-                        </div>
-                    )}
                     <div className="userbox-ui">
                         {(props.user.avatar && props.user.id) ? (
                             <div className="userbox-av">
