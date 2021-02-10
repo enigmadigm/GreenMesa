@@ -3,14 +3,14 @@ import { Box, Image } from '@chakra-ui/react';
 import { host } from '../../index';
 import { IUser } from '../../pages/DashboardPage';
 
-interface IProps {
+interface DashProps {
     guildsButton?: boolean;
     guildName?: string;
     icon?: string;
     user?: IUser;
 }
 
-export function DashHeader(props: IProps) {
+export function DashHeader(props: DashProps) {
     return (
         <header className="top-header">
             <Box className="h-title" style={{ fontSize: "1.5rem", paddingLeft: 10, paddingBottom: 4 }}>

@@ -28,6 +28,8 @@ body, html {
   align-items: center;
   height: 55px;
   background-color: #3a4149;
+  /* border-bottom: 1px solid #23282c; */
+  /* background-color: #3c304b; */
   color: #e4e7ea;
   width: 100%;
   z-index: 1100;
@@ -80,7 +82,10 @@ body, html {
   height: 35px;
   margin: 0;
   margin-left: 3px;
-  margin-right: 10px;
+}
+
+.userbox-uid {
+  margin-left: 10px;
 }
 
 .userbox-uname {
@@ -296,8 +301,12 @@ body, html {
 }
 
 .field-alert {
-  position: relative;
+  position: fixed;
+  width: 200px;
+  bottom: 0;
+  left: 0;
   padding: 5px;
+  opacity: 0;
 }
 
 .field-success {
@@ -310,6 +319,16 @@ body, html {
   background-color: rgba(200,0,0,0.4);
 }
 
+.field-alert-in {
+  opacity: 1;
+  transition: opacity 200ms;
+}
+
+.field-alert-out {
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
 .guilds-menu-center {
   border: solid 2px #ccc;
   border-radius: 5px;
@@ -319,7 +338,7 @@ body, html {
 }
 
 @media screen and (max-width: 800px) {
-  .app .x-sidebar {
+  .app .x-sidebar, .field-alert {
     width: 50px;
   }
   .x-main {

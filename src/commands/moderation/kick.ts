@@ -33,10 +33,9 @@ export const command: Command = {
                  * Make sure you run this on a member, not a user!
                  * There are big differences between a user and a member
                  */
-                target.kick(reason).then(() => {
-                    // We let the message author know we were able to kick the person
+                try {
+                    await target.kick(reason)
                     message.channel.send(`<a:spinning_light00:680291499904073739>✅ Kicked ${target.user.tag}`);
-                    //let logChannel = client.channels.get(config.logChannel.id) || member.guild.channels.find(ch => ch.name === config.logChannel.name);
                     /*logChannel.send({
                         embed: {
                             "title": `User Kicked`,
@@ -47,15 +46,14 @@ export const command: Command = {
                             }
                         }
                     });*/
-                }).catch(err => {
+                } catch (err) {
                     // An error happened
+                    // Log the error
+                    xlg.error(err);
                     // This is generally due to the bot not being able to kick the member,
                     // either due to missing permissions or role hierarchy
                     message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Could not kick ${target.user.tag}`);
-                    // Log the error
-                    xlg.error(err);
-                });
-                // Otherwise, if no user was mentioned
+                }
             } else {
                 message.channel.send(`🟥 Invalid member to kick`);
             }

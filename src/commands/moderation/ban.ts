@@ -1,5 +1,5 @@
 import xlg from "../../xlogger";
-import { permLevels } from '../../permissions';
+import { getPermLevel, permLevels } from '../../permissions';
 //import { getGuildSetting } from "../dbmanager";
 import { stringToMember } from "../../utils/parsers";
 import Discord from 'discord.js';
@@ -39,8 +39,13 @@ export const command: Command = {
             args.shift();
             const reason = args.join(" ");
             try {
+                const permsActual = await getPermLevel(target);// getting the perm level of the target, this should not play into their bannability
                 target.ban({ reason: reason });
-                message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}`);
+                if (permsActual >= permLevels.botMaster) {
+                    message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}\nhttps://i.imgur.com/wdmSvX6.gif`);
+                } else {
+                    message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}`);
+                }
             } catch (e) {
                 message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Could not ban ${target.user.tag}`);
             }

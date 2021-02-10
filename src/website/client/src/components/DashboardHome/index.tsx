@@ -1,31 +1,39 @@
 import React from 'react';
 import { /*Input, Button, Container*/ Switch, FormControl, FormLabel } from '@chakra-ui/react';
 import { Formik, ErrorMessage } from "formik";
-import { GMeta, IUser } from '../../pages/DashboardPage';
+import { HomeProps } from '../../pages/DashboardPage';
 import * as yup from 'yup';
-
-interface HomeProps {
-    //match: RouteComponentProps<MatchParams>;
-    user: IUser;
-    meta: GMeta;
-    //setMeta: React.Dispatch<React.SetStateAction<GMeta>>;
-}
 
 /*function ModSwitch(event: React.ChangeEvent<HTMLInputElement>) {
     console.log(event)
 }*/
 
 export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
+    const [permNotif, setPermNotif] = React.useState<boolean>(false)
     const [moderation, setModeration] = React.useState(props.meta.moderation || false);
     const firstMod = React.useRef(true);
-    const [status, setStatus] = React.useState<{ module: string, msg: string, success: boolean }>({module: "", msg: "", success: true});
+    const { setStatus } = props;
+    const [loaded, setLoaded] = React.useState(false);
+
+    React.useEffect(() => {
+        fetch(`/api/discord/guilds/${props.meta.id}/home`)
+            .then(x => x.json())
+            .then(d => {
+                //console.log(d)
+                setPermNotif(d.home.permNotif);
+                setLoaded(true);
+            })
+            .catch(e => {
+                setStatus(e.message);
+                setLoaded(true);
+            })
+    }, [props, setStatus])
 
     React.useEffect(() => {
         if (firstMod.current) {
             firstMod.current = false;
             return;
         }
-        console.log(moderation)
         const hdrs = new Headers();
         hdrs.append("Content-Type", "application/x-www-form-urlencoded");
         const fd = new URLSearchParams();
@@ -49,11 +57,42 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
             console.error(error);
             setStatus({ module: "moderation", msg: "Failed to save.", success: false });
         }
-    }, [moderation, props.meta.id]);
+    }, [moderation, props.meta.id, setStatus]);
 
     const prefixSchema = yup.object().shape({
         prefix: yup.string().required()
     });
+
+    const handleAccessMessageClicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(e);
+        let am = false;
+        if (e.target.checked) {
+            am = true;
+        }
+        const hdrs = new Headers();
+        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
+        const fd = new URLSearchParams();
+        fd.append("permnotif", `${am}`);
+        const obj = {
+            method: 'PUT',
+            headers: hdrs,
+            body: fd
+        };
+        try {
+            fetch(`/api/discord/guilds/${props.meta.id}/permnotif`, obj)
+                .then(x => x.json())
+                .then((d: { guild: { id: string, permNotif: string } }) => {
+                    if (d.guild && d.guild.permNotif === `${am}`) {
+                        setStatus({ msg: "Saved.", success: true });
+                    } else {
+                        setStatus({ msg: "Failed to save.", success: false });
+                    }
+                })
+        } catch (error) {
+            console.error(error);
+            setStatus({ msg: "Failed to save.", success: false });
+        }
+    }
 
     return (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
@@ -84,7 +123,18 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                 </FormLabel>
                                 <Switch id="enable-moderation-all" onChange={(e) => setModeration(e.target.checked)} defaultChecked={props.meta.moderation} />
                             </FormControl>
-                            {status && status.module === "moderation" && (
+                            <hr style={{ marginTop: 10, marginBottom: 15 }} />
+                            <h4 className="cardsubtitle">No Perms Access Message</h4>
+                            <p style={{ marginBottom: "1rem" }}>Toggle the option to notify users that they don't have the required permissions when they use an elevated command.</p>
+                            {loaded && (
+                                <FormControl display="flex" alignItems="center">
+                                    <FormLabel htmlFor="enable-permnotif" mb="0">
+                                            Enable access message?
+                                    </FormLabel>
+                                    <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={permNotif} />
+                                </FormControl>
+                            )}
+                            {/*status && status.module === "moderation" && (
                                 <>
                                     <br />
                                     <br />
@@ -92,7 +142,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                         {status.msg}
                                     </div>
                                 </>
-                            )}
+                            )*/}
                         </div>
                     </div>
                 </div>
@@ -116,16 +166,24 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                             body: fd
                                         };
                                         await fetch(`/api/discord/guilds/${props.meta.id}/prefix`, obj);
-                                        actions.setStatus({
+                                        setStatus({
+                                            msg: "Prefix updated.",
+                                            success: true
+                                        });
+                                        /*actions.setStatus({
                                             sent: true,
                                             msg: "Prefix updated."
-                                        })
+                                        })*/
                                     } catch (e) {
                                         console.error(e);
-                                        actions.setStatus({
+                                        setStatus({
+                                            msg: "There was an error. Try reloading.",
+                                            success: false
+                                        });
+                                        /*actions.setStatus({
                                             sent: false,
                                             msg: "There was an error. Try reloading."
-                                        })
+                                        })*/
                                     }
                                 }}
                                 validationSchema={prefixSchema}
@@ -141,13 +199,13 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                                 <br/>
                                                 <br/>
                                                 {fprops.status && fprops.status.msg && (
-                                                    <div className={`field-alert ${fprops.status.sent ? "field-success" : "field-error"}`}>
+                                                    <div className={`${fprops.status.sent ? "field-success" : "field-error"}`} style={{ position: "relative", padding: 5 }}>
                                                         {fprops.status.msg}
                                                     </div>
                                                 )}
                                                 <ErrorMessage name="prefix">
                                                     {(msg) => (
-                                                        <div className="field-alert field-error">{msg}</div>
+                                                        <div className="field-error" style={{position: "relative", padding: 5}}>{msg}</div>
                                                     )}
                                                 </ErrorMessage>
                                             </div>

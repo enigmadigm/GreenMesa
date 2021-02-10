@@ -78,7 +78,7 @@ export default function routerBuild (client: XClient): express.Router {
         }
         const modAllRes = await client.database?.getGuildSetting(id, 'all_moderation');
         let modAll = false;
-        if (modAllRes && modAllRes && modAllRes.value === "enabled") {
+        if (modAllRes && modAllRes.value === "enabled") {
             modAll = true;
         }
         try {
@@ -89,6 +89,42 @@ export default function routerBuild (client: XClient): express.Router {
                 icon: g.iconURL(),
                 members: g.memberCount,
                 moderation: modAll
+            });
+        } catch (e) {
+            xlg.error(e);
+            res.sendStatus(500);
+        }
+    });
+
+    router.get("/guilds/:id/home", async (req, res) => {
+        const { id } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            return res.sendStatus(400);
+        }
+        if (!req.user) {
+            return res.status(401).send({ msg: "Not logged in" })
+        }
+        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.status(401).send({ msg: "Not authorized to manage guild" })
+        }
+        const g = await client.guilds.fetch(id);
+        if (!g) return res.sendStatus(404);
+
+        const amRes = await client.database?.getGuildSetting(id, 'access_message');
+        let am = false;
+        if (amRes && amRes.value === "enabled") {
+            am = true;
+        }
+        try {
+            res.send({
+                guild: {
+                    id,
+                    name: g.name,
+                },
+                home: {
+                    permNotif: am
+                }
             });
         } catch (e) {
             xlg.error(e);
@@ -153,6 +189,42 @@ export default function routerBuild (client: XClient): express.Router {
                 guild: {
                     id,
                     moderation
+                },
+                user: req.user,
+            });
+        } catch (e) {
+            xlg.error(e);
+            res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/permnotif", async (req, res) => {
+        const { permnotif } = req.body;
+        if (!permnotif || typeof permnotif !== "string" || (permnotif !== "true" && permnotif !== "false")) {
+            return res.status(400).send({ msg: "Invalid permnotif" });
+        }
+        const { id } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            return res.status(400).send({ msg: "Bad id" });
+        }
+        if (!req.user) {
+            return res.status(401).send({ msg: "Not logged in" });
+        }
+        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.status(401).send({ msg: "Not authorized to manage guild" });
+        }
+        try {
+            const g = await client.guilds.fetch(id);
+            if (permnotif === "true") {
+                await client.database?.editGuildSetting(g, "access_message", "enabled");
+            } else {
+                await client.database?.editGuildSetting(g, "access_message", undefined, true);
+            }
+            res.send({
+                guild: {
+                    id,
+                    permNotif: permnotif
                 },
                 user: req.user,
             });
