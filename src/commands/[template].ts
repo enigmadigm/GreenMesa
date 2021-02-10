@@ -9,7 +9,6 @@ export const command: Command = {
         short: "",
         long: ""
     },
-    category: "misc",
     usage: "",
     args: false,
     specialArgs: undefined,
