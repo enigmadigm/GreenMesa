@@ -7,7 +7,7 @@ export const command: Command = {
     name: "unban",
     aliases: ["ub"],
     description: {
-        short: "unban members",
+        short: "unban users",
         long: "Use to unban a banned member or all banned members. This will remove their ban."
     },
     usage: "<user id | all>",
