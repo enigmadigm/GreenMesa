@@ -45,9 +45,6 @@ export function DashHeader(props: DashProps) {
             </Box>
             {props.user ? (
                 <div className="userbox">
-                    <div className="userbox-logout">
-                        <a href={`${host}/logout`}>Logout</a>
-                    </div>
                     <div className="userbox-ui">
                         {(props.user.avatar && props.user.id) ? (
                             <div className="userbox-av">

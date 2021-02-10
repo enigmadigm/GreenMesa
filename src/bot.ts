@@ -323,6 +323,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
         const commandEnabledGuild = await client.database?.getGuildSetting(message.guild, `${command.name}_toggle`);
         if ((commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable')) {
+            if (command.name === "h") return;
             message.channel.send({
                 embed: {
                     title: `Command Disabled`,
@@ -334,7 +335,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             });
             return;
         }
-    
+
         if (command.args && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
             const fec_gs = await client.database?.getColor("fail_embed_color");
 
