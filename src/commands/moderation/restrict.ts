@@ -14,14 +14,10 @@ export const command: Command = {
     permLevel: permLevels.admin,
     guildOnly: true,
     ownerOnly: true,
+    moderation: true,
     async execute(client, message) {
         try {
             if (!message.guild) return;
-
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
             
             client.specials?.sendError(message.channel, "Command currently in development");
         } catch (error) {

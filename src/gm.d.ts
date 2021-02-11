@@ -26,6 +26,7 @@ export interface Command {
     specialArgs?: number;
     cooldown?: number;
     permLevel?: number;
+    moderation?: boolean;
     guildOnly?: boolean;
     ownerOnly?: boolean;
     execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean>;

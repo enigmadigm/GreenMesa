@@ -339,6 +339,13 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             return;
         }
 
+        if (command.moderation && message.guild) {
+            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
+                return client.specials?.sendModerationDisabled(message.channel);
+            }
+        }
+
         if (command.args && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
             const fec_gs = await client.database?.getColor("fail_embed_color");
 

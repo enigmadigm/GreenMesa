@@ -42,14 +42,10 @@ export const command: Command = {
     cooldown: 1,
     permLevel: permLevels.admin,
     guildOnly: true,
+    moderation: true,
     async execute(client, message, args) {
         try {
             if (!message.guild || !message.member) return;
-
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
 
             const g = await message.guild.fetch();
             if (!g.me) {

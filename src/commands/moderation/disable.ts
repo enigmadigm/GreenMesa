@@ -17,10 +17,6 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            /*let moderationEnabled = await getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
-            }*/
         
             const commandName = args[0].toLowerCase();
             const command = client.commands?.get(commandName) || client.commands?.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
