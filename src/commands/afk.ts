@@ -7,9 +7,23 @@ export const command: Command = {
         short: "set an autoresponse afk message",
         long: "Use this command to set a message that this bot will send whenever it sees that you are pinged in a message. This is meant to tell people that you are AFK (Away From Keyboard) and possibly when you might be back."
     },
-    async execute(client, message) {
+    usage: "<text | off>",
+    args: true,
+    async execute(client, message, args) {
         try {
-            message.channel.send("This command is still in development");
+            const a = args.join(" ");
+            if (a === "off") {
+                await client.database?.updateUserData(message.author.id, "~~off~~");
+                message.channel.send("You have disabled your afk response. The bot will send this message when someone mentions you.");
+                return;
+            }
+            if (a.length > 1900) {
+                const overLength = a.length - 1900;
+                await client.specials?.sendError(message.channel, `Your message is ${overLength} characters too long.`);
+                return;
+            }
+            await client.database?.updateUserData(message.author.id, a);
+            message.channel.send("Your afk message has been set. The bot will send this message when someone mentions you.");
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
