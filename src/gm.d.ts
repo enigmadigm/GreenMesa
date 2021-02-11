@@ -2,6 +2,7 @@ import { Client, Collection, Message } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
+import { MessageServices } from "./services";
 
 export interface XClient extends Client {
     commands?: Collection<string, Command>;
@@ -9,6 +10,7 @@ export interface XClient extends Client {
     gprefix?: string;
     specials?: typeof Specials;
     database?: DBManager;
+    services?: MessageServices;
 }
 
 export interface Command {
@@ -153,4 +155,32 @@ export interface DashUserObject {
     tag: string;
     avatar: string;
     guilds: PartialGuildObject[];
+}
+
+export interface MessageService {
+    name?: string;
+    disabled?: true;
+    execute(client: XClient, message: XMessage): Promise<void>;
+}
+
+export interface UnparsedTimedAction {
+    actionid: string;
+    exectime: string;
+    actiontype: string;
+    actiondata: string;
+}
+
+export interface TimedAction {
+    id: string;
+    time: Date;
+    type: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: Record<string, any>;
+}
+
+export interface UnmuteActionData {
+    guildid: string;
+    userid: string;
+    roleid: string;
+    duration: string;
 }

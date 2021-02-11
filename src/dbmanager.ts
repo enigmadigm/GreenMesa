@@ -4,7 +4,7 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
-import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TwitchHookRow, XClient } from "./gm";
+import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, XClient } from "./gm";
 
 const levelRoles = [{
         level: 70,
@@ -98,6 +98,8 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL , `exectime` timestamp NULL DEFAULT current_timestamp() , `actiontype` TINYTEXT NOT NULL , `actiondata` TEXT NOT NULL , PRIMARY KEY (`actionid`)) ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` VARCHAR(18) NOT NULL , `afk` TEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;");
             //async function dbInit() {}
 
             return this;
@@ -586,10 +588,10 @@ export class DBManager {
 
     /**
      * Create a subscription entry for Twitch webhooks in the database
-     * @param {string} streamerid twitch id of streamer
-     * @param {string} guildid id of guild for subscription
-     * @param {*} expiredate a parseable date to be used to sort by timestamps for renewal
-     * @param {string} message (optional) the message that will be sent with the discord notification
+     * @param streamerid twitch id of streamer
+     * @param guildid id of guild for subscription
+     * @param expiredate a parseable date to be used to sort by timestamps for renewal
+     * @param message (optional) the message that will be sent with the discord notification
      */
     async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string): Promise<boolean> {
         try {
@@ -711,5 +713,55 @@ export class DBManager {
             xlog.error(error);
             return false;
         }
+    }
+
+    /**
+     * Set an action to be executed automatically at a given time
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>): Promise<boolean> {
+        try {
+            const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
+            const actionData = JSON.stringify(data).replace(/'/g, "\\'");
+
+            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES ('${id}', '${mtime}', '${actionType}', '${actionData}')`);
+
+            if (!r || !r.affectedRows) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Get all actions up to the number of give seconds ahead of the current time.
+     * @param lookahead number representing the number of seconds to look ahead in the db
+     */
+    async getActions(lookahead: number): Promise<TimedAction[] | false> {
+        if (lookahead < 0 || lookahead > 3600) return false;
+        const et = moment().add(lookahead, "seconds").format('YYYY-MM-DD HH:mm:ss');
+        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= '${et}'`);
+        if (!r || !r.length) {
+            return [];
+        }
+        const parsed: TimedAction[] = [];
+        for (const a of r) {
+            const b: TimedAction = {
+                id: a.actionid,
+                time: moment(a.exectime).toDate(),
+                type: a.actiontype,
+                data: JSON.parse(a.actiondata)
+            }
+            parsed.push(b);
+        }
+        return parsed;
+    }
+
+    async deleteAction(id: string): Promise<InsertionResult> {
+        const result =  await <Promise<InsertionResult>>this.query(`DELETE FROM timedactions WHERE actionid = '${id}'`);
+        return result;
     }
 }
