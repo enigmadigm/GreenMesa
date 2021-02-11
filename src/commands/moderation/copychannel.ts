@@ -12,6 +12,7 @@ export const command: Command = {
         long: "Send this command with the channel to copy as an argument and almost every part of that channel, including the name and position, will be copied to a new channel."
     },
     usage: "<#channel>",
+    cooldown: 1,
     args: true,
     permLevel: permLevels.admin,
     moderation: true,
