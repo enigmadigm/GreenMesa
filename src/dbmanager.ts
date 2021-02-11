@@ -718,7 +718,8 @@ export class DBManager {
     /**
      * Set an action to be executed automatically at a given time
      */
-    async setAction(id: string, time: Date, actionType: string, data: Record<string, unknown>): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>): Promise<boolean> {
         try {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).replace(/'/g, "\\'");
