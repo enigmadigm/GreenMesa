@@ -176,8 +176,10 @@ client.on('guildMemberAdd', async member => {
 
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
     if (!member.partial) {
-    const clearRes = await client.database?.clearXP(member) || 0;
-    if (!clearRes) xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
+        /*const clearRes = await client.database?.clearXP(member) || 0;
+        if (!clearRes) {
+            xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
+        }*/
         logMember(member, false);
     }
 });
