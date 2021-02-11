@@ -4,7 +4,7 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
-import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, XClient } from "./gm";
+import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 
 const levelRoles = [{
         level: 70,
@@ -98,8 +98,8 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL , `exectime` timestamp NULL DEFAULT current_timestamp() , `actiontype` TINYTEXT NOT NULL , `actiondata` TEXT NOT NULL , PRIMARY KEY (`actionid`)) ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` VARCHAR(18) NOT NULL , `afk` TEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
 
             return this;
@@ -763,5 +763,35 @@ export class DBManager {
     async deleteAction(id: string): Promise<InsertionResult> {
         const result =  await <Promise<InsertionResult>>this.query(`DELETE FROM timedactions WHERE actionid = '${id}'`);
         return result;
+    }
+
+    async getUserData(userid: string): Promise<UserDataRow | false> {
+        try {
+            const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = '${userid}'`).catch(xlog.error);
+            if (rows && rows.length > 0) {
+                return rows[0];
+            } else {
+                return false;
+            }
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    async updateUserData(userid: string, afk: string): Promise<InsertionResult | false> {
+        try {
+            if (!userid || !afk) return false;
+            afk = afk.replace(/'/g, "\\'");
+            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO userdata (userid, afk) VALUES ('${userid}', '${afk}') ON DUPLICATE KEY UPDATE afk = '${afk}'`);
+            console.log(result);
+            if (!result || !result.affectedRows) {
+                return false;
+            }
+            return result;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
     }
 }
