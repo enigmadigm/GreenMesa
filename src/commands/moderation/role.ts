@@ -42,15 +42,11 @@ export const command: Command = {
     args: true,
     permLevel: permLevels.admin,
     guildOnly: true,
+    moderation: true,
     async execute(client, message, args) {
         try {
             if (!message || !message.guild) return;
             const g = await message.guild.fetch();
-
-            const moderationEnabled = await client.database?.getGuildSetting(g, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let target: any = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true, false);

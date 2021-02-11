@@ -18,13 +18,10 @@ export const command: Command = {
     usage: '[\\common color | decimal < 16777215] <message | json> [--no-footer --json]',
     guildOnly: true,
     permLevel: permLevels.mod,
+    moderation: true,
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
     
             let sclength = 0;
             let seacolor;

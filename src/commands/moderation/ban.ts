@@ -17,14 +17,10 @@ export const command: Command = {
     specialArgs: undefined,
     permLevel: permLevels.mod,
     guildOnly: true,
+    moderation: true,
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
 
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target || !(target instanceof Discord.GuildMember)) {

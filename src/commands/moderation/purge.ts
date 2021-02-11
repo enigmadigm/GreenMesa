@@ -16,14 +16,10 @@ export const command: Command = {
     args: true,
     guildOnly: true,
     permLevel: permLevels.mod,
+    moderation: true,
     async execute(client, message, args) {
         try {
             if (!message.guild || message.channel instanceof DMChannel) return;
-    
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
     
             const deleteCount = parseInt(args[0], 10); // get the delete count, as an actual number.
             args.shift();

@@ -14,14 +14,10 @@ export const command: Command = {
     args: true,
     guildOnly: true,
     permLevel: permLevels.mod,
+    moderation: true,
     async execute(client, message, args) {
         try {
             if (!message.guild || !message.member) return;
-
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
 
             const toMute = await stringToMember(message.guild, args[0], false, false, false);
             // Check perms, self, rank, etc

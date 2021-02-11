@@ -39,7 +39,6 @@ export const command: Command = {
 - \`modrole\` set the role that gives mod powers
 - \`accessmsg\` enable or disable (default) the 'lacking perms' message
 \\🔒 \`caselogging\` log moderation events in an organized system
-\\🔒 \`adminrole\` set the role that gives admin powers
 \\🔒 \`commandchannel\` set a channel to restrict all command usage to
 
 \\🔒 = in dev`,

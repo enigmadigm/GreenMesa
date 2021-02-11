@@ -15,14 +15,10 @@ export const command: Command = {
     specialArgs: 1,
     permLevel: permLevels.mod,
     guildOnly: true,
+    moderation: true,
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
-            if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
-            }
 
             if (args.join(" ") === "all") {
                 const b = await message.guild.fetchBans();
