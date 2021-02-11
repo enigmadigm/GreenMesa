@@ -36,14 +36,18 @@ import { Commands } from './commands';
 import { Command, XClient, XMessage } from "./gm";
 import { DBManager } from "./dbmanager";
 import * as specials from './utils/specials';
+import { MessageServices } from "./services";
+import { TimedActionsSubsystem } from "./tactions";
 
 export class Bot {
     static client: XClient;
     static website: MesaWebsite;
+    static tas: TimedActionsSubsystem;
 
-    static init(client: XClient, website: MesaWebsite): void {
+    static init(client: XClient, website: MesaWebsite, tas: TimedActionsSubsystem): void {
         this.client = client;
         this.website = website;
+        this.tas = tas;
     }
 }
 
@@ -55,7 +59,6 @@ client.specials = specials;
 
 // ▼▼▼▼▼ command cooldowns section
 const cooldowns: Discord.Collection<Command["name"], Discord.Collection<string, number>> = new Discord.Collection();
-const xpcooldowns: Discord.Collection<string, number> = new Discord.Collection();
 
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
     // Stats updates in logs and database
@@ -63,6 +66,11 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     await co.load(co.rootCommandPath);
     client.commands = co.commands;
     client.categories = co.categories;
+
+    client.services = new MessageServices();
+    await client.services.load();
+
+    const tas = new TimedActionsSubsystem();
 
     client.database = await new DBManager().handleDisconnect();
     xlg.log(`Bot ${client.user?.tag}(${client.user?.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
@@ -133,7 +141,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     }
 
     const website = new MesaWebsite(client);
-    Bot.init(client, website);
+    Bot.init(client, website, tas);
     xlg.log("Bot initialized")
 });
 
@@ -229,27 +237,22 @@ client.on('emojiDelete', oemoji => {
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
-        client.database?.logMsgReceive();
+        client.database?.logMsgReceive();// log reception of message event
+
+        client.services?.runAll(client, message);// run all passive command services
 
         if (message.author.bot || message.system) return;
-        if (!message.guild || !client.user || !client.commands || !client.categories) return;
+        if (!client.user || !client.commands || !client.categories) return;
     
         let dm = false; // checks if it's from a dm
         if (!message.guild)
             dm = true;
     
         const now = Date.now();
-        if (!dm) {
-            if (!xpcooldowns.has(message.author.id)) {
-                client.database?.updateXP(message);
-                xpcooldowns.set(message.author.id, now);
-                setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
-            }
-        }
         
         let special_prefix;
         if (!dm) {
-            const gpr = await client.database?.getPrefix(message.guild.id);
+            const gpr = await client.database?.getPrefix(message.guild?.id);
             if (gpr) {
                 special_prefix = gpr;
             } else {
@@ -267,7 +270,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 const iec_gs = await client.database?.getColor("info_embed_color");
                 message.channel.send({
                     embed: {
-                        "description": `${message.guild.me?.nickname || client.user?.username}'s prefix for **${message.guild.name}** is **${message.gprefix}**`,
+                        "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
                         "color": iec_gs
                     }
                 })
@@ -313,7 +316,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
         if (command.permLevel && permLevel < command.permLevel) {// insufficient bot permissions
             // TODO: add admin option to make it notify users that they don't have permissions
-            const accessMessage = await client.database?.getGuildSetting(message.guild, "access_message");
+            const accessMessage = await client.database?.getGuildSetting(message.guild || "", "access_message");
             if (accessMessage && accessMessage.value === "enabled") {
                 message.channel.send("You lack the permissions required to use this command.")
             }
@@ -321,7 +324,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
-        const commandEnabledGuild = await client.database?.getGuildSetting(message.guild, `${command.name}_toggle`);
+        const commandEnabledGuild = await client.database?.getGuildSetting(message.guild || "", `${command.name}_toggle`);
         if ((commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable')) {
             if (command.name === "h") return;
             message.channel.send({

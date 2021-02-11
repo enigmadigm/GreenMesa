@@ -1,4 +1,5 @@
-import { Command } from "src/gm";
+import moment from "moment";
+import { Command, UnmuteActionData } from "src/gm";
 //import { getGuildSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
 import { stringToMember, durationToString } from '../../utils/parsers';
@@ -9,7 +10,7 @@ export const command: Command = {
     name: 'mute',
     description: {
         short: 'fully mute a member',
-        long: 'Prevents a non-admin user from chatting or speaking in voice.'
+        long: 'Prevents a non-admin user from chatting or speaking in voice. It will search for a role called mute to assign. Soon the role will be configurable.'
     },
     usage: "<user @ | user id> [time (9d9h9m9s)]",
     args: true,
@@ -105,7 +106,7 @@ export const command: Command = {
             message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${toMute.user.tag}\`${mendm}`);
 
             if (time) {
-                setTimeout(async () => {
+                /*setTimeout(async () => {
                     if (mutedRole) {
                         if (!toMute.roles.cache.has(mutedRole.id)) return;
                         // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
@@ -114,7 +115,15 @@ export const command: Command = {
                             toMute.voice.setMute(false);
                         }
                     }
-                }, time)
+                }, time)*/
+                const t = moment().add(time, "ms").toDate();
+                const data: UnmuteActionData = {
+                    guildid: message.guild.id,
+                    userid: toMute.id,
+                    roleid: mutedRole.id,
+                    duration: dur
+                }
+                await client.database?.setAction(message.id, t, "unmute", data);
             }
         } catch (e) {
             xlg.error(e);
