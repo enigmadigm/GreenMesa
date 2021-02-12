@@ -57,17 +57,21 @@ export const command: Command = {
                     const overwrites = channel.permissionOverwrites.array();
                     
                     for (const o of overwrites) {
-                        const p = channel.permissionsFor(o.id);
-                        if (o.type !== "role") continue;
-                        const r2 = g.roles.cache.get(o.id);
-                        if (r2 && g.me && r2.position > g.me.roles.highest.position) {
-                            continue;
-                        }
-                        
-                        if (p?.serialize().SEND_MESSAGES) {
-                            await o.update({
-                                'SEND_MESSAGES': false
-                            });
+                        try {
+                            const p = channel.permissionsFor(o.id);
+                            if (o.type !== "role") continue;
+                            const r2 = g.roles.cache.get(o.id);
+                            if (r2 && g.me && r2.position > g.me.roles.highest.position) {
+                                continue;
+                            }
+                            
+                            if (p?.serialize().SEND_MESSAGES) {
+                                await o.update({
+                                    'SEND_MESSAGES': false
+                                });
+                            }
+                        } catch (e) {
+                            //
                         }
                     }
                     channel.send("This channel has been locked");
