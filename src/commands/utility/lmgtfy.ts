@@ -17,6 +17,7 @@ export const command: Command = {
             let iie = "";
             let plainText = false;
             let sc;
+            const sterms = encodeURIComponent(args.join("+"));
             if (args.join(' ').startsWith('-e -t') || args.join(' ').startsWith('-t -e')) {
                 sengine = "lmgtfy.com/";
                 iie = "&iie=1";
@@ -44,11 +45,10 @@ export const command: Command = {
                 await page.setExtraHTTPHeaders({// https://stackoverflow.com/a/47292022/10660033
                     'Accept-Language': 'en'
                 });
-                await page.goto(`https://google.com/search?q=${args.join("+")}${(!(message.channel instanceof DMChannel) && message.channel.nsfw) ? "" : "&safe=active"}&hl=en`);
+                await page.goto(`https://google.com/search?q=${sterms}${(!(message.channel instanceof DMChannel) && message.channel.nsfw) ? "" : "&safe=active"}&hl=en`);
                 sc = await page.screenshot();
                 await browser.close();
             }
-            const sterms = args.join("+");
             if (plainText == true) {
                 message.channel.send(`https://${sengine}?q=${sterms}${iie}`);
             } else {
