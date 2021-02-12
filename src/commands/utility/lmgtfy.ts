@@ -17,7 +17,7 @@ export const command: Command = {
             let iie = "";
             let plainText = false;
             let sc;
-            const sterms = encodeURIComponent(args.join("+"));
+            const sterms = encodeURIComponent(args.join(" "));
             if (args.join(' ').startsWith('-e -t') || args.join(' ').startsWith('-t -e')) {
                 sengine = "lmgtfy.com/";
                 iie = "&iie=1";
