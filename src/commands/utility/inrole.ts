@@ -16,7 +16,8 @@ export const command: Command = {
         try {
             if (!message.guild) return;
             message.channel.startTyping();
-            const target = stringToRole(await message.guild.fetch(), args.join(" "), true, true);
+            const g = await message.guild.fetch();
+            const target = stringToRole(g, args.join(" "), true, true);
             if (!target) {
                 client.specials?.sendError(message.channel, "That role could not be found.")
                 message.channel.stopTyping();
