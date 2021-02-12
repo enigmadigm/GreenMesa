@@ -14,6 +14,7 @@ export const command: Command = {
     specialArgs: undefined,
     cooldown: 1,
     permLevel: permLevels.trustedMember,
+    moderation: undefined,
     guildOnly: true,
     ownerOnly: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

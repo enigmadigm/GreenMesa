@@ -185,3 +185,8 @@ export interface UnmuteActionData {
     roleid: string;
     duration: string;
 }
+
+export interface UserDataRow {
+    userid: string;
+    afk: string;
+}
