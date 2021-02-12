@@ -4,7 +4,7 @@ import { Command } from "src/gm";
 export const command: Command = {
     name: 'ping',
     description: 'the classic ping><pong',
-    cooldown: 5,
+    cooldown: 1,
     async execute(client, message) {
         try {
             // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
