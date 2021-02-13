@@ -6,8 +6,10 @@ export const service: MessageService = {
     async execute(client, message) {
         try {
             if (!message.guild) return;
-            const modResult = await Bot.client.database?.getGuildSetting(message.guild, "automod_antigif");
-            if (!modResult || modResult.value !== "enabled") return;
+            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antigif", message.channel.id);
+            if (!modResult) return;
+            //const modResult = await Bot.client.database?.getGuildSetting(message.guild, "automod_antigif");
+            //if (!modResult || modResult.value !== "enabled") return;
 
             if (message.attachments.size) {
                 let hasGif = false;
