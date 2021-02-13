@@ -4,7 +4,8 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
-import { BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { Bot } from "./bot";
 
 const levelRoles = [{
         level: 70,
@@ -724,7 +725,7 @@ export class DBManager {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).replace(/'/g, "\\'");
 
-            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES ('${id}', '${mtime}', '${actionType}', '${actionData}')`);
+            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES ('${id.replace(/'/g, "\\'")}', '${mtime.replace(/'/g, "\\'")}', '${actionType.replace(/'/g, "\\'")}', '${actionData}')`);
 
             if (!r || !r.affectedRows) {
                 return false;
@@ -743,7 +744,7 @@ export class DBManager {
     async getActions(lookahead: number): Promise<TimedAction[] | false> {
         if (lookahead < 0 || lookahead > 3600) return false;
         const et = moment().add(lookahead, "seconds").format('YYYY-MM-DD HH:mm:ss');
-        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= '${et}'`);
+        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= '${et.replace(/'/g, "\\'")}'`);
         if (!r || !r.length) {
             return [];
         }
@@ -761,13 +762,13 @@ export class DBManager {
     }
 
     async deleteAction(id: string): Promise<InsertionResult> {
-        const result =  await <Promise<InsertionResult>>this.query(`DELETE FROM timedactions WHERE actionid = '${id}'`);
+        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM timedactions WHERE actionid = '${id.replace(/'/g, "\\'")}'`);
         return result;
     }
 
     async getUserData(userid: string): Promise<UserDataRow | false> {
         try {
-            const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = '${userid}'`).catch(xlog.error);
+            const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = '${userid.replace(/'/g, "\\'")}'`).catch(xlog.error);
             if (rows && rows.length > 0) {
                 return rows[0];
             } else {
@@ -783,7 +784,7 @@ export class DBManager {
         try {
             if (!userid || !afk) return false;
             afk = afk.replace(/'/g, "\\'");
-            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO userdata (userid, afk) VALUES ('${userid}', '${afk}') ON DUPLICATE KEY UPDATE afk = '${afk}'`);
+            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO userdata (userid, afk) VALUES ('${userid.replace(/'/g, "\\'")}', '${afk}') ON DUPLICATE KEY UPDATE afk = '${afk}'`);
             console.log(result);
             if (!result || !result.affectedRows) {
                 return false;
@@ -797,10 +798,63 @@ export class DBManager {
 
     async getGuildSettingsByPrefix(guildid: string, prefix: string): Promise<GuildSettingsRow[] | false> {
         if (!guildid || !prefix) return false;
-        const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM \`guildsettings\` WHERE \`guildid\` = '${guildid}' AND \`property\` LIKE '${prefix.replace(/'/g, "\\'")}%'`);
+        const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM \`guildsettings\` WHERE \`guildid\` = '${guildid.replace(/'/g, "\\'")}' AND \`property\` LIKE '${prefix.replace(/'/g, "\\'")}%'`);
         if (!result || !result.length) {
             return [];
         }
         return result;
+    }
+
+    async getAutoModule(guildid: string, mod: string, row?: GuildSettingsRow): Promise<AutomoduleData> {
+        const defaults: AutomoduleData = {
+            name: mod,
+            enableAll: false,
+            channels: [],
+            applyRoles: [],
+            roleEffect: 'ignore',
+        }
+        const safeParseAM = (r: GuildSettingsRow) => {
+            try {
+                return JSON.parse(r.value);
+            } catch (error) {
+                return defaults;
+            }
+        }
+        if (!guildid || !mod) return defaults;
+        if (row) {
+            return safeParseAM(row);
+        }
+        const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE property = 'automod_${mod.replace(/'/g, "\\'")}'`);
+        if (result && result.length) {
+            return safeParseAM(result[0]);
+        }
+        return defaults;
+    }
+
+    async getAllAutoModules(guildid: string): Promise<AutomoduleData[]> {
+        if (!guildid) return [];
+        const services = Bot.client.services?.automods || [];
+        const modConf = await this.getGuildSettingsByPrefix(guildid, "automod_") || [];
+        const guildMods: AutomoduleData[] = [];
+        for await (const serv of services) {
+            const am = await this.getAutoModule(guildid, serv, modConf.find(x => x.property === `automod_${serv}`));
+            guildMods.push(am);
+        }
+        return guildMods;
+    }
+
+    async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean): Promise<boolean> {
+        if (!guildid || !mod) return false;
+        const m = await this.getAutoModule(guildid, mod);
+        if (channelid && m.channels.includes(channelid)) {
+            return true;
+        }
+        if (m.enableAll) {
+            return true;
+        }
+        if (anywhere && (m.channels.length)) {
+            return true;
+        }
+        return false;
     }
 }

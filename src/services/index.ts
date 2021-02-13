@@ -37,4 +37,26 @@ export class MessageServices {
             console.log(error);
         }
     }
+
+    async runAllAutomod(client: XClient, message: XMessage): Promise<void> {
+        try {
+            this.services.forEach(async (service: MessageService) => {
+                if (service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
+                    await service.execute(client, message);
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async getInfo(client: XClient, guildid: string, mod: string): Promise<string> {
+        const s = this.services.find(x => x.name === mod);
+        if (s && s.getInformation) {
+            const info = await s.getInformation(client, guildid);
+            return info;
+        } else {
+            return "";
+        }
+    }
 }

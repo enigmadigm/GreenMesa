@@ -197,6 +197,7 @@ client.on('messageDeleteBulk', messageCollection => {
 client.on('messageUpdate', (omessage, nmessage) => {
     if (!omessage.partial && !nmessage.partial) {
         logMessageUpdate(omessage, nmessage);
+        client.services?.runAllAutomod(client, nmessage);
     }
 });
 

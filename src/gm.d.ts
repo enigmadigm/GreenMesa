@@ -161,6 +161,7 @@ export interface DashUserObject {
 export interface MessageService {
     name?: string;
     disabled?: true;
+    getInformation?(client: XClient, guildid: string): Promise<string>;
     execute(client: XClient, message: XMessage): Promise<void>;
 }
 
@@ -189,4 +190,12 @@ export interface UnmuteActionData {
 export interface UserDataRow {
     userid: string;
     afk: string;
+}
+
+export interface AutomoduleData {
+    name: string;
+    enableAll: boolean;
+    channels: string[];
+    applyRoles: string[];
+    roleEffect: 'ignore' | 'watch';
 }

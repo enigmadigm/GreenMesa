@@ -6,8 +6,8 @@ export const service: MessageService = {
     async execute(client, message) {
         try {
             if (!message.guild) return;
-            const modResult = await Bot.client.database?.getGuildSetting(message.guild, "automod_antiembed");
-            if (!modResult || modResult.value !== "enabled") return;
+            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antiembed", message.channel.id);
+            if (!modResult) return;
 
             if (message.embeds.length) {
                 message.suppressEmbeds();
