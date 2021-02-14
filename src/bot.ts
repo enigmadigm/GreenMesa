@@ -29,7 +29,7 @@ import Discord, { GuildChannel, TextChannel } from "discord.js"; // Load discord
 import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
-import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState } from './serverlogger';
+import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname } from './serverlogger';
 import * as ar from "./utils/arhandler";
 import MesaWebsite from "./website/app";
 import { Commands } from './commands';
@@ -182,6 +182,13 @@ client.on("guildMemberRemove", async member => { //Emitted whenever a member lea
         }*/
         logMember(member, false);
     }
+});
+
+client.on("guildMemberUpdate", async (om, nm) => {
+    if (!om.partial && !nm.partial) {
+        logNickname(om, nm);
+    }
+    client.services?.run(client, "automod_nicenicks", nm)
 });
 
 client.on('messageDelete', message => {

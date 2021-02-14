@@ -1,10 +1,12 @@
+import { Message } from "discord.js";
 import { Bot } from "../bot";
 import { MessageService } from "../gm";
 import { stringToMember } from "../utils/parsers";
 import xlg from "../xlogger";
 
 export const service: MessageService = {
-    async execute(client, message) {
+    text: true,
+    async execute(client, message: Message) {
         try {
             if (!message.guild) return;
             if (message.mentions) {

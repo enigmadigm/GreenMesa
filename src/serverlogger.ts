@@ -375,15 +375,15 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
                     name: `Emoji ${deletion ? 'Removed' : 'Added'}`,
                     iconURL: logChannel.guild.iconURL() || ""
                 },
-                description: `${deletion ? "created " + moment(emoji.createdAt).utc().fromNow() : `${creator ? `Created by: ${emoji.author?.tag}` : ""}`}`,
                 color: await Bot.client.database?.getColor("info_embed_color"),
                 image: {
                     url: emoji.url,
                 },
-                timestamp: deletion ? emoji.createdAt : new Date(),
+                description: `${deletion ? "created " + moment(emoji.createdAt).utc().fromNow() : `${creator ? `Created by: ${emoji.author?.tag}` : ""}`}`,
                 footer: {
                     text: `Usage: :${emoji.name}:`
                 },
+                timestamp: deletion ? emoji.createdAt : new Date(),
             }
         });
     } catch (err) {
@@ -391,3 +391,49 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
     }
 }
 
+
+/**
+ * Checks for nickname change in a guildmember update event
+ */
+export async function logNickname(oldMember: GuildMember, newMember: GuildMember): Promise<void> {
+    try {
+        if (oldMember.nickname === newMember.nickname) return;
+
+        // This section for the nickname history feature
+        const ud = await Bot.client.database?.getGuildUserData(newMember.guild.id, newMember.user.id);
+        await Bot.client.database?.updateGuildUserData(newMember.guild.id, newMember.user.id, undefined, undefined, undefined, undefined, ud && ud.nicknames ? `${ud.nicknames},${newMember.nickname}` : `${newMember.nickname}`);
+
+        const logChannel = await getLogChannel(newMember.guild);
+        if (!logChannel) return;
+    
+        await logChannel.send({
+            embed: {
+                author: {
+                    name: `Nickname Changed`,
+                    iconURL: logChannel.guild.iconURL() || ""
+                },
+                color: await Bot.client.database?.getColor("info_embed_color"),
+                description: `Nickname of ${newMember} changed`,
+                fields: [
+                    {
+                        name: "Before",
+                        value: `${oldMember.nickname || '*none*'}`,
+                        inline: true
+                    },
+                    {
+                        name: "After",
+                        value: `${newMember.nickname || '*none*'}`,
+                        inline: true
+                    }
+                ],
+                footer: {
+                    text: `ID: ${newMember.id}`
+                },
+                timestamp: new Date(),
+            }
+        });
+        
+    } catch (error) {
+        xlg.error(error);
+    }
+}
