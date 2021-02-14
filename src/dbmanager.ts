@@ -799,6 +799,7 @@ export class DBManager {
     async getGuildSettingsByPrefix(guildid: string, prefix: string): Promise<GuildSettingsRow[] | false> {
         if (!guildid || !prefix) return false;
         const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM \`guildsettings\` WHERE \`guildid\` = '${guildid.replace(/'/g, "\\'")}' AND \`property\` LIKE '${prefix.replace(/'/g, "\\'")}%'`);
+        console.log(result);
         if (!result || !result.length) {
             return [];
         }
@@ -827,9 +828,11 @@ export class DBManager {
         if (row) {
             return safeParseAM(row);
         }
-        const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE property = 'automod_${mod.replace(/'/g, "\\'")}'`);
-        if (result && result.length) {
-            return safeParseAM(result[0]);
+        // I have no idea why I didn't just do getGuildSetting in the first place, my stupid fucking error caused it to get any existing automod setting in the db causing it to activate automod for all servers.
+        //const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE property = 'automod_${mod.replace(/'/g, "\\'")}'`);
+        const result = await this.getGuildSetting(guildid, `automod_${mod.replace(/'/g, "\\'")}`);
+        if (result) {
+            return safeParseAM(result);
         }
         return defaults;
     }
