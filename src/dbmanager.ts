@@ -808,11 +808,14 @@ export class DBManager {
     async getAutoModule(guildid: string, mod: string, row?: GuildSettingsRow): Promise<AutomoduleData> {
         const defaults: AutomoduleData = {
             name: mod,
+            text: false,
             enableAll: false,
             channels: [],
+            channelEffect: 'enable',
             applyRoles: [],
             roleEffect: 'ignore',
         }
+        defaults.text = Bot.client.services?.isText(`automod_${mod}`) || false;
         const safeParseAM = (r: GuildSettingsRow) => {
             try {
                 return JSON.parse(r.value);
@@ -846,13 +849,25 @@ export class DBManager {
     async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean): Promise<boolean> {
         if (!guildid || !mod) return false;
         const m = await this.getAutoModule(guildid, mod);
-        if (channelid && m.channels.includes(channelid)) {
-            return true;
-        }
+
         if (m.enableAll) {
             return true;
         }
-        if (anywhere && (m.channels.length)) {
+
+        if (channelid && m.channels?.includes(channelid)) {
+            if (m.channelEffect === "enable") {
+                return true;
+            }
+            if (m.channelEffect === "disable") {
+                return false;
+            }
+        }
+
+        if (m.channelEffect === "disable") {
+            return true;
+        }
+
+        if (anywhere && (m.channels?.length)) {
             return true;
         }
         return false;
