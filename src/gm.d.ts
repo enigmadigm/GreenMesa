@@ -161,8 +161,10 @@ export interface DashUserObject {
 export interface MessageService {
     name?: string;
     disabled?: true;
+    text?: true;
     getInformation?(client: XClient, guildid: string): Promise<string>;
-    execute(client: XClient, message: XMessage): Promise<void>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    execute(client: XClient, data: any): Promise<void>;
 }
 
 export interface UnparsedTimedAction {
@@ -194,8 +196,10 @@ export interface UserDataRow {
 
 export interface AutomoduleData {
     name: string;
+    text: boolean;
     enableAll: boolean;
-    channels: string[];
+    channels?: string[];
+    channelEffect?: 'enable' | 'disable';
     applyRoles: string[];
     roleEffect: 'ignore' | 'watch';
 }

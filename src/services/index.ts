@@ -26,10 +26,22 @@ export class MessageServices {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+    async run(client: XClient, mod: string, data: any): Promise<void> {
+        try {
+            const serv = this.services.find((s) => s.name === mod);
+            if (serv && !serv.disabled) {
+                await serv.execute(client, data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     async runAll(client: XClient, message: XMessage): Promise<void> {
         try {
             this.services.forEach(async (service: MessageService) => {
-                if (!service.disabled && !(service.name?.startsWith("automod_") && message.author.id === client.user?.id)) {
+                if (service.text && !service.disabled && !(service.name?.startsWith("automod_") && message.author.id === client.user?.id)) {
                     await service.execute(client, message);
                 }
             });
@@ -41,7 +53,7 @@ export class MessageServices {
     async runAllAutomod(client: XClient, message: XMessage): Promise<void> {
         try {
             this.services.forEach(async (service: MessageService) => {
-                if (service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
+                if (service.text && service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
                     await service.execute(client, message);
                 }
             });
@@ -57,6 +69,15 @@ export class MessageServices {
             return info;
         } else {
             return "";
+        }
+    }
+
+    isText(mod: string): boolean {
+        const s = this.services.find(x => x.name === mod);
+        if (s && s.text) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

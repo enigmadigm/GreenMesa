@@ -1,9 +1,11 @@
+import { MessageAttachment } from "discord.js";
 import { Bot } from "../bot";
-import { MessageService } from "../gm";
+import { MessageService, XMessage } from "../gm";
 import xlg from "../xlogger";
 
 export const service: MessageService = {
-    async execute(client, message) {
+    text: true,
+    async execute(client, message: XMessage) {
         try {
             if (!message.guild) return;
             const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antigif", message.channel.id);
@@ -13,7 +15,7 @@ export const service: MessageService = {
 
             if (message.attachments.size) {
                 let hasGif = false;
-                message.attachments.forEach(a => {
+                message.attachments.forEach((a: MessageAttachment) => {
                     if (a.name?.endsWith(".gif")) {
                         hasGif = true;
                     }
