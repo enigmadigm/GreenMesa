@@ -191,7 +191,9 @@ export interface UnmuteActionData {
 
 export interface UserDataRow {
     userid: string;
-    afk: string;
+    afk: string | null;
+    offenses: number;
+    nicknames: string | null;
 }
 
 export interface AutomoduleData {
@@ -202,4 +204,17 @@ export interface AutomoduleData {
     channelEffect?: 'enable' | 'disable';
     applyRoles: string[];
     roleEffect: 'ignore' | 'watch';
+}
+
+export interface GuildUserDataRow {
+    id: string;
+    userid: string;
+    guildid: string;
+    createdat: string;
+    updatedat: string;
+    offenses: number;
+    warnings: number;
+    bans: number;
+    bio: string;
+    nicknames: string;
 }

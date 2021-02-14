@@ -1,10 +1,10 @@
-import mysql from "mysql";
+import mysql, { escape } from "mysql";
 import { db_config } from "../auth.json";
 import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 import { Bot } from "./bot";
 
 const levelRoles = [{
@@ -100,7 +100,8 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) NOT NULL DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")
             //async function dbInit() {}
 
             return this;
@@ -109,6 +110,10 @@ export class DBManager {
             return this;
         }
     }
+
+    /*escapeString(str: string) {
+        return str.replace(/'/g, "\\'");
+    }*/
 
     /**
      * query and retrieve values from the globalsettings table
@@ -768,7 +773,7 @@ export class DBManager {
 
     async getUserData(userid: string): Promise<UserDataRow | false> {
         try {
-            const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = '${userid.replace(/'/g, "\\'")}'`).catch(xlog.error);
+            const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = '${userid.replace(/'/g, "\\'")}'`);
             if (rows && rows.length > 0) {
                 return rows[0];
             } else {
@@ -780,12 +785,16 @@ export class DBManager {
         }
     }
 
-    async updateUserData(userid: string, afk: string): Promise<InsertionResult | false> {
+    /**
+     * Update a user's data. This is global data (opposed to guild data).
+     */
+    async updateUserData(userid: string, afk?: string | null, offenses?: number, nickname?: string): Promise<InsertionResult | false> {
         try {
-            if (!userid || !afk) return false;
-            afk = afk.replace(/'/g, "\\'");
-            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO userdata (userid, afk) VALUES ('${userid.replace(/'/g, "\\'")}', '${afk}') ON DUPLICATE KEY UPDATE afk = '${afk}'`);
-            console.log(result);
+            if (!userid) return false;
+            userid = escape(userid);
+            if (afk === "~~off~~") afk = null;
+            const sql = `INSERT INTO userdata (userid, afk, offenses, nicknames) VALUES (${userid}, ${escape(afk)}, ${escape(offenses || 0)}, ${escape(nickname || "")}) ON DUPLICATE KEY UPDATE afk = COALESCE(${escape(afk)}, afk), offenses = COALESCE(${escape(offenses)}, offenses), nicknames = COALESCE(${escape(nickname)}, nicknames)`;
+            const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
                 return false;
             }
@@ -799,7 +808,6 @@ export class DBManager {
     async getGuildSettingsByPrefix(guildid: string, prefix: string): Promise<GuildSettingsRow[] | false> {
         if (!guildid || !prefix) return false;
         const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM \`guildsettings\` WHERE \`guildid\` = '${guildid.replace(/'/g, "\\'")}' AND \`property\` LIKE '${prefix.replace(/'/g, "\\'")}%'`);
-        console.log(result);
         if (!result || !result.length) {
             return [];
         }
@@ -874,5 +882,37 @@ export class DBManager {
             return true;
         }
         return false;
+    }
+
+    async getGuildUserData(guildid: string, userid: string): Promise<GuildUserDataRow | false> {
+        try {
+            const rows = await <Promise<GuildUserDataRow[]>>this.query(`SELECT * FROM guilduserdata WHERE id = ${escape(guildid + userid)}`);
+            if (rows && rows.length > 0) {
+                return rows[0];
+            } else {
+                return false;
+            }
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Update a user's data. This is global data (opposed to guild data).
+     */
+    async updateGuildUserData(guildid: string, userid: string, offenses?: number, warnings?: number, bans?: number, bio?: string, nicknames?: string): Promise<InsertionResult | false> {
+        try {
+            if (!guildid || !userid) return false;
+            const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(bio || "")}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames)`;
+            const result = await <Promise<InsertionResult>>this.query(sql);
+            if (!result || !result.affectedRows) {
+                return false;
+            }
+            return result;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
     }
 }

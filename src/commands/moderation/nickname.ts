@@ -18,9 +18,6 @@ export const command: Command = {
             if (!moderationEnabled[0] || moderationEnabled[0].value === 'disabled') {
                 return client.specials.sendModerationDisabled(message.channel);
             }*/
-
-            // Because usernames might contain spaces, arguments in this command should be separated by commas
-            args = args.join(" ").split(/,(.+)/);
             
             let target = await stringToMember(message.guild, args[0], true, false, false);
             if (!target || !target.id) {
@@ -64,7 +61,7 @@ export const command: Command = {
             }
 
             if (args.join(" ").length < 1) {
-                message.channel.send("The new nickname had no length; please remember that the target should be separated from the desired nickname by a **comma**")
+                message.channel.send("The new nickname had no length")
                 return;
             }
 
