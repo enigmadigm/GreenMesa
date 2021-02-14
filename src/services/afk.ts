@@ -4,6 +4,7 @@ import { stringToMember } from "../utils/parsers";
 import xlg from "../xlogger";
 
 export const service: MessageService = {
+    text: true,
     async execute(client, message) {
         try {
             if (!message.guild) return;
