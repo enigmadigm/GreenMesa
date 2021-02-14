@@ -14,7 +14,7 @@ export const service: MessageService = {
             if (!modResult) return;
             
             const name = member.nickname || member.user.tag;
-            const hits = /[^a-zA-Z\d\s:\\/+\-_^@[\]<>()$&*!]/g.exec(name);
+            const hits = /[^\x20-\x7E\n]/g.exec(name);
             if (hits && hits.index < 5) {
                 await member.setNickname("change name (stratum automod)", `automod:nicenicks saw a nondesirable nickname`);
 
