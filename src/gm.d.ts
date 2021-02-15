@@ -218,3 +218,8 @@ export interface GuildUserDataRow {
     bio: string;
     nicknames: string;
 }
+
+export interface AutomoduleEndpointData {
+    id: string;
+    automodule: AutomoduleData;
+}

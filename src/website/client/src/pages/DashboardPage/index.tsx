@@ -2,11 +2,12 @@ import React, { Dispatch, SetStateAction } from 'react';
 //import { RouteComponentProps } from 'react-router-dom';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
-import { DashboardCommands, DashboardHome, DashboardLeveling, DashHeader } from '../../components';
+import { DashboardAutomod, DashboardCommands, DashboardHome, DashboardLeveling, DashHeader } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 import { faHomeLgAlt, faLayerPlus, faLevelUpAlt } from '@fortawesome/pro-solid-svg-icons';
+import { faBadgeSheriff } from '@fortawesome/pro-duotone-svg-icons';
 
 export interface IUser {
     guilds?: RESTAPIPartialCurrentUserGuild[];
@@ -79,6 +80,10 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
     React.useEffect(() => {
         fetch("/api/auth")
             .then(x => x.json())
+            .catch((e) => {
+                //props.history.push("/api/auth/discord");
+                window.location.href = `${host}/api/auth/discord?redirect=${encodeURIComponent(window.location.href)}`;
+            })
             .then(d => {
                 //console.log(d)
                 setUser(d);
@@ -91,9 +96,8 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                 setLoading(false);
             })
             .catch((e) => {
-                //props.history.push("/api/auth/discord");
-                window.location.href = `${host}/api/auth/discord`;
-                setLoading(false);
+                window.location.href = `/dash/unauthorized`;
+                setLoading(true);
             })
     }, [guildID])
 
@@ -101,7 +105,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
         if (!status.msg) {
             setStatusShow("field-alert-out");
         } else {
-            setStatusShow("field-alert-in");
+            if (!status.module) {
+                setStatusShow("field-alert-in");
+            }
             startStatusTimer();
         }
     }, [status])
@@ -128,6 +134,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                 <li className="lanav-item">
                                     <CustomNavItem to="home" text="Home" active={ page === "home" } oc={setPage} ico={{ icon: faHomeLgAlt }} />
                                 </li>
+                                <li className="lanav-item">
+                                    <CustomNavItem to="automod" text="Automod" active={page === "automod"} oc={setPage} ico={{ icon: faBadgeSheriff }} />
+                                </li>
                                 <li>
                                     <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
                                 </li>
@@ -141,6 +150,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                         <Switch>
                             <Route exact path="/dash/:id/home">
                                 <DashboardHome user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
+                            <Route exact path="/dash/:id/automod">
+                                <DashboardAutomod user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
                             <Route exact path="/dash/:id/leveling" >
                                 <DashboardLeveling user={user} meta={meta} status={status} setStatus={setStatus} />

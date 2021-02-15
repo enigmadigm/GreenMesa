@@ -1,5 +1,5 @@
 import React from 'react';
-import { /*Input, Button, Container*/ Switch, FormControl, FormLabel } from '@chakra-ui/react';
+import { /*Input, Button, Container*/ Switch, FormControl, FormLabel, Center, Spinner } from '@chakra-ui/react';
 import { Formik, ErrorMessage } from "formik";
 import { HomeProps } from '../../pages/DashboardPage';
 import * as yup from 'yup';
@@ -94,11 +94,11 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
         }
     }
 
-    return (
+    return loaded ? (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
             <div className="control-row">
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
+                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
                     <div className="x-card">
                         <div className="x-card-header">About This Dashboard</div>
                         <div className="x-card-body">
@@ -111,7 +111,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                         </div>
                     </div>
                 </div>
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
+                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
                     <div className="x-card">
                         <div className="x-card-header">Moderation</div>
                         <div className="x-card-body">
@@ -126,14 +126,12 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                             <hr style={{ marginTop: 10, marginBottom: 15 }} />
                             <h4 className="cardsubtitle">No Perms Access Message</h4>
                             <p style={{ marginBottom: "1rem" }}>Toggle the option to notify users that they don't have the required permissions when they use an elevated command.</p>
-                            {loaded && (
-                                <FormControl display="flex" alignItems="center">
-                                    <FormLabel htmlFor="enable-permnotif" mb="0">
-                                            Enable access message?
-                                    </FormLabel>
-                                    <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={permNotif} />
-                                </FormControl>
-                            )}
+                            <FormControl display="flex" alignItems="center">
+                                <FormLabel htmlFor="enable-permnotif" mb="0">
+                                        Enable access message?
+                                </FormLabel>
+                                <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={permNotif} />
+                            </FormControl>
                             {/*status && status.module === "moderation" && (
                                 <>
                                     <br />
@@ -146,9 +144,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="control-row">
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
+                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
                     <div className="x-card">
                         <div className="x-card-header">Prefix</div>
                         <div className="x-card-body">
@@ -218,5 +214,9 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                 </div>
             </div>
         </div>
+    ) : (
+        <Center className="lspinner">
+            <Spinner color="red.500" size="xl" css="margin:auto" />
+        </Center>
     )
 }

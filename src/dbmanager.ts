@@ -402,18 +402,16 @@ export class DBManager {
 
     /**
      * Edits or deletes a setting for an individual Discord Guild.
-     * @param {Discord.Guild} guild guild object to edit the settings for
-     * @param {string} name property name of the setting
-     * @param {string} value value to set for the property
-     * @param {boolean} deleting whether to delete the setting
+     * @param guild guild object to edit the settings for
+     * @param name property name of the setting
+     * @param value value to set for the property
+     * @param deleting whether to delete the setting
      */
     async editGuildSetting(guild: Guild, name = "", value = "", deleting = false): Promise<InsertionResult> {
         return new Promise((resolve, reject) => {
             if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
-            name = name.replace(/'/g, "\\'");
-            value = value.replace(/'/g, "\\'");
             if (deleting) {
-                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result: InsertionResult) => {
+                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = ${escape(guild.id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
                     if (err) throw err;
                     if (result.affectedRows > 0) {
                         return resolve(result);
@@ -423,12 +421,12 @@ export class DBManager {
                 });
             }
             if (!value) return reject("MISSING_VALUES");
-            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}' WHERE guildid = '${guild.id}' AND property = '${name}'`, (err, result: InsertionResult) => {
+            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`=${escape(value)} WHERE guildid = ${escape(guild.id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
                 if (err) throw err;
                 if (result.affectedRows > 0) {
                     return resolve(result);
                 } else {
-                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES ('${guild.id}', '${name}', '${value}')`, (err, result: InsertionResult) => {
+                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES (${escape(guild.id)}, ${escape(name)}, ${escape(value)})`, (err, result: InsertionResult) => {
                         if (err) throw err;
                         resolve(result);
                     });
@@ -819,15 +817,22 @@ export class DBManager {
             name: mod,
             text: false,
             enableAll: false,
-            channels: [],
-            channelEffect: 'enable',
             applyRoles: [],
             roleEffect: 'ignore',
         }
         defaults.text = Bot.client.services?.isText(`automod_${mod}`) || false;
+        if (defaults.text) {
+            defaults.channels = [];
+            defaults.channelEffect = 'enable';
+        }
         const safeParseAM = (r: GuildSettingsRow) => {
             try {
-                return JSON.parse(r.value);
+                const parsed = JSON.parse(r.value);
+                if (typeof parsed.name !== "string" || typeof parsed.text !== "boolean" || typeof parsed.enableAll !== "boolean" || typeof parsed.applyRoles !== "object" || typeof parsed.roleEffect !== "string" || (defaults.text && (typeof parsed.channels !== "object" || typeof parsed.channelEffect !== "string"))) {
+                    return defaults;
+                } else {
+                    return parsed;
+                }
             } catch (error) {
                 return defaults;
             }
@@ -838,7 +843,7 @@ export class DBManager {
         }
         // I have no idea why I didn't just do getGuildSetting in the first place, my stupid fucking error caused it to get any existing automod setting in the db causing it to activate automod for all servers.
         //const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE property = 'automod_${mod.replace(/'/g, "\\'")}'`);
-        const result = await this.getGuildSetting(guildid, `automod_${mod.replace(/'/g, "\\'")}`);
+        const result = await this.getGuildSetting(guildid, `automod_${mod}`);
         if (result) {
             return safeParseAM(result);
         }
@@ -904,7 +909,7 @@ export class DBManager {
     async updateGuildUserData(guildid: string, userid: string, offenses?: number, warnings?: number, bans?: number, bio?: string, nicknames?: string): Promise<InsertionResult | false> {
         try {
             if (!guildid || !userid) return false;
-            const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(bio || "")}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames)`;
+            const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(nicknames || "")}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames)`;
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
                 return false;
