@@ -51,7 +51,7 @@ export class Bot {
     }
 }
 
-const client: XClient = new Discord.Client();
+const client: XClient = new Discord.Client({ partials: ["MESSAGE"] });
 client.specials = specials;
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
