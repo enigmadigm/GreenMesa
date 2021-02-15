@@ -37,7 +37,7 @@ export function MenuPage(/*props: RouteComponentProps*/) {
             })
             .catch((e) => {
                 //props.history.push("/api/auth/discord");
-                window.location.href = `${host}/api/auth/discord`;
+                window.location.href = `${host}/api/auth/discord?redirect=${encodeURIComponent(window.location.href)}`;
                 setLoading(false);
             })
     }, [])

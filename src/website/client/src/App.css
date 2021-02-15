@@ -9,6 +9,10 @@ body, html {
   background-color: #2f353a !important;
 }
 
+#root {
+  height: 100%;
+}
+
 .lspinner {
   position: absolute;
   left: 50%;
@@ -246,8 +250,39 @@ body, html {
   background-clip: border-box;
   border: 1px solid #23282c;
   border-radius: .25rem;
-  max-width: 100ch;
+  max-width: 83ch;
   margin-bottom: 24px;
+}
+
+.cardtag {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 0 5px;
+  height: 27px;
+  border-radius: 7px;
+  color: rgb(0, 22, 112);
+  font-weight: 600;
+}
+
+/*.cardtag::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 0;
+  border-left: 4px solid black;
+  width: 4px;
+  height: 100%;
+}*/
+
+.cardtag-g {
+  background-color: lightseagreen;
+}
+.cardtag-y {
+  background-color: goldenrod;
+}
+.cardtag-r {
+  background-color: rgb(206, 107, 95);
 }
 
 .x-card-header {

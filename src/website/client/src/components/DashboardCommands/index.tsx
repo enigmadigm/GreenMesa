@@ -6,7 +6,7 @@ export function DashboardCommands(props: HomeProps) {
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
             <div className="control-row">
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", width: "100%", paddingRight: 15, paddingLeft: 15 }}>
+                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
                     <div className="x-card">
                         <div className="x-card-header">Commands</div>
                         <div className="x-card-body">

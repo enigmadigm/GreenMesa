@@ -1,7 +1,7 @@
 import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { PartialGuildObject, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, PartialGuildObject, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
@@ -59,11 +59,11 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(400);
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" })
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" })
+            return res.sendStatus(401);
         }
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
@@ -102,11 +102,11 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(400);
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" })
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" })
+            return res.sendStatus(401);
         }
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
@@ -138,11 +138,11 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(400);
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" })
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" })
+            return res.sendStatus(401);
         }
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
@@ -170,8 +170,8 @@ export default function routerBuild (client: XClient): express.Router {
                 data.nsfw = c.nsfw;
                 data.topic = c.topic || "";
             }
-            return 
-        })
+            return data;
+        }).sort((a, b) => a.position - b.position);
 
         try {
             res.send({
@@ -185,24 +185,23 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
-    router.get("/guilds/:id/automod", async (req, res) => {
+    router.get("/guilds/:id/allautomods", async (req, res) => {
         const { id } = req.params;
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
             return res.sendStatus(400);
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" })
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" })
+            return res.sendStatus(401);
         }
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
 
-        const allMods = client.services?.automods;
-        const modConf = await client.database?.getGuildSettingsByPrefix(id, "automod_");
-        if (!modConf || !allMods) {
+        const mods = await client.database?.getAllAutoModules(id);
+        if (!mods) {
             res.sendStatus(500);
             return;
         }
@@ -212,31 +211,6 @@ export default function routerBuild (client: XClient): express.Router {
             enabled: boolean;
             channels: string[];
         }*/
-        const mods = modConf.map((r) => {
-            const name = r.property.split("_")[1];
-            if (r.value === "all") {
-                return {
-                    name,
-                    enabled: true,
-                    channels: []
-                }
-            }
-            const channels = r.value.split(",");
-            return {
-                name,
-                enabled: !!channels.length,
-                channels
-            }
-        }).filter(x => allMods.includes(x.name));
-        for (const m of allMods) {
-            if (!mods.find(x => x.name === m)) {
-                mods.push({
-                    name: m,
-                    enabled: false,
-                    channels: []
-                });
-            }
-        }
 
         try {
             res.send({
@@ -249,21 +223,64 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
-    router.put("/guilds/:id/prefix", async (req, res) => {
-        const { prefix } = req.body;
-        if (!prefix || typeof prefix !== "string") {
-            return res.status(400).send({ msg: "Bad prefix" });
+    router.get("/guilds/:id/automod/:name", async (req, res) => {
+        const { id, name } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id) || typeof name !== "string") {
+            return res.sendStatus(400);
         }
-        const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.status(400).send({ msg: "Bad id" });
+        const allMods = client.services?.automods || [];
+        if (!(allMods.includes(name))) {
+            return res.status(400).send("Module does not exist");
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" })
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" })
+            return res.sendStatus(401);
+        }
+        const g = await client.guilds.fetch(id);
+        if (!g) return res.sendStatus(404);
+
+        const mod = await client.database?.getAutoModule(id, name);
+        if (!mod) {
+            res.sendStatus(500);
+            return;
+        }
+
+        /*interface ModData {
+            name: string;
+            enabled: boolean;
+            channels: string[];
+        }*/
+
+        try {
+            const toSend: AutomoduleEndpointData = {
+                id,
+                automodule: mod
+            }
+            res.send(toSend);
+        } catch (e) {
+            xlg.error(e);
+            res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/prefix", async (req, res) => {
+        const { prefix } = req.body;
+        if (!prefix || typeof prefix !== "string") {
+            return res.status(400).send("Bad prefix");
+        }
+        const { id } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            return res.status(400).send("Bad id");
+        }
+        if (!req.user) {
+            return res.sendStatus(401);
+        }
+        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.sendStatus(401);
         }
         try {
             await client.database?.setPrefix(id, prefix);
@@ -282,18 +299,18 @@ export default function routerBuild (client: XClient): express.Router {
     router.put("/guilds/:id/moderation", async (req, res) => {
         const { moderation } = req.body;
         if (!moderation || typeof moderation !== "string" || (moderation !== "true" && moderation !== "false")) {
-            return res.status(400).send({ msg: "Invalid moderation" });
+            return res.status(400).send("Invalid moderation");
         }
         const { id } = req.params;
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.status(400).send({ msg: "Bad id" });
+            return res.status(400).send("Bad id");
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" });
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" });
+            return res.sendStatus(401);
         }
         try {
             const g = await client.guilds.fetch(id);
@@ -318,18 +335,18 @@ export default function routerBuild (client: XClient): express.Router {
     router.put("/guilds/:id/permnotif", async (req, res) => {
         const { permnotif } = req.body;
         if (!permnotif || typeof permnotif !== "string" || (permnotif !== "true" && permnotif !== "false")) {
-            return res.status(400).send({ msg: "Invalid permnotif" });
+            return res.status(400).send("Invalid permnotif");
         }
         const { id } = req.params;
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.status(400).send({ msg: "Bad id" });
+            return res.status(400).send("Bad id");
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" });
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" });
+            return res.sendStatus(401);
         }
         try {
             const g = await client.guilds.fetch(id);
@@ -352,35 +369,43 @@ export default function routerBuild (client: XClient): express.Router {
     });
 
     router.put("/guilds/:id/automod", async (req, res) => {
-        const { module, state } = req.body;
+        const { module, data } = req.body;
         const allMods = client.services?.automods || [];
-        if (!module || !state || typeof module !== "string" || !(allMods.includes(module)) || typeof state !== "string") {
+        if (!module || !data || typeof module !== "string" || !(allMods.includes(module)) || typeof data !== "string") {
             return res.sendStatus(400);
         }
         const { id } = req.params;
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.status(400).send({ msg: "Bad id" });
+            return res.status(400).send("Bad id");
         }
         if (!req.user) {
-            return res.status(401).send({ msg: "Not logged in" });
+            return res.sendStatus(401);
         }
         const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
         if (!mg.find(x => x.id && x.id === id)) {
-            return res.status(401).send({ msg: "Not authorized to manage guild" });
+            return res.sendStatus(401);
         }
 
-        if (!/^(?:(?:,?[0-9]{18})+|all|disable)$/g.test(state)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const conformsToAutomodule = (o: any): o is AutomoduleData => {
+            return typeof o.name === "string" && typeof o.text === "boolean" && typeof o.enableAll === "boolean";
+        }
+
+        let parsedData: AutomoduleData;
+        try {
+            parsedData = JSON.parse(data);
+            if (!conformsToAutomodule(parsedData)) {
+                return res.sendStatus(400);
+            }
+        } catch (error) {
             return res.sendStatus(400);
         }
-        //const val = state.split(",").length ? state.split(",") : state;
+
         try {
             const g = await client.guilds.fetch(id);
-            if (state === "disable") {
-                const result = await client.database?.editGuildSetting(g, `automod_${module}`, undefined, true);
-                console.log(result);
-            } else {
-                const result = await client.database?.editGuildSetting(g, `automod_${module}`, state);
-                console.log(result);
+            const result = await client.database?.editGuildSetting(g, `automod_${module}`, JSON.stringify(parsedData));
+            if (!result || !result.affectedRows) {
+                return res.sendStatus(500);
             }
             res.send({
                 guild: {
