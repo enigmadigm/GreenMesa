@@ -46,15 +46,15 @@ export const command: Command = {
                     }
                     if (!mod.text) {
                         if (channel) {
-                            client.specials?.sendError(message.channel, "This module cannot be toggled in a channel. This module does not handle messages. Do not specify a channel.");
+                            client.specials?.sendError(message.channel, "This module cannot be toggled in a channel. This module does not handle messages. Do not specify a channel. **To configure additional settings for this module, go to the [web dashboard](https://stratum.hauge.rocks).**");
                             break;
                         }
-                        if (mod.channelEffect) {
+                        /*if (mod.channelEffect) {
                             delete mod.channelEffect;
                         }
                         if (mod.channels) {
                             delete mod.channels;
-                        }
+                        }*/
                         if (option) {
                             if (mod.enableAll) {
                                 client.specials?.sendError(message.channel, "Module already enabled.");
