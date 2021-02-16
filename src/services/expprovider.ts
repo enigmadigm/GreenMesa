@@ -4,6 +4,7 @@ import Discord from 'discord.js';
 const xpcooldowns: Discord.Collection<string, number> = new Discord.Collection();
 
 export const service: MessageService = {
+    text: true,
     async execute(client, message: XMessage) {
         if (message.author.bot || message.system) return;
         if (!message.guild || !client.user || !client.commands || !client.categories) return;
