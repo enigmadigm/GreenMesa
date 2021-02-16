@@ -862,29 +862,31 @@ export class DBManager {
         return guildMods;
     }
 
-    async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean): Promise<boolean> {
+    async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean, roleid?: string): Promise<false | AutomoduleData> {
         if (!guildid || !mod) return false;
         const m = await this.getAutoModule(guildid, mod);
 
-        if (m.enableAll) {
-            return true;
-        }
-
-        if (channelid && m.channels?.includes(channelid)) {
-            if (m.channelEffect === "enable") {
-                return true;
+        if (m.enableAll || m.channels?.length || m.channelEffect === "disable") {
+            if (m.enableAll) {
+                return m;
             }
+
+            if (channelid && m.channels?.includes(channelid)) {
+                if (m.channelEffect === "enable") {
+                    return m;
+                }
+                if (m.channelEffect === "disable") {
+                    return false;
+                }
+            }
+
             if (m.channelEffect === "disable") {
-                return false;
+                return m;
             }
-        }
 
-        if (m.channelEffect === "disable") {
-            return true;
-        }
-
-        if (anywhere && (m.channels?.length)) {
-            return true;
+            if (anywhere && (m.channels?.length)) {
+                return m;
+            }
         }
         return false;
     }
