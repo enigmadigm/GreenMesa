@@ -22,7 +22,14 @@ export const service: MessageService = {
                     if (target && target.id !== message.author.id) {
                         const afk = await Bot.client.database?.getUserData(target.id);
                         if (afk && afk.afk && afk.afk !== "~~off~~") {
-                            message.channel.send(`**${target.user.tag} is currently afk:**\n${afk.afk}`);
+                            let b = `**${target.user.tag} is currently afk:**\n${afk.afk}`;
+                            if (b.length > 2000) {
+                                while (b.length > 1992) {
+                                    b = b.slice(0, -1);
+                                }
+                                b += "..."
+                            }
+                            message.channel.send(b);
                         }
                     }
                 }
