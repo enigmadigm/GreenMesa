@@ -790,8 +790,11 @@ export class DBManager {
         try {
             if (!userid) return false;
             userid = escape(userid);
-            if (afk === "~~off~~") afk = null;
-            const sql = `INSERT INTO userdata (userid, afk, offenses, nicknames) VALUES (${userid}, ${escape(afk)}, ${escape(offenses || 0)}, ${escape(nickname || "")}) ON DUPLICATE KEY UPDATE afk = COALESCE(${escape(afk)}, afk), offenses = COALESCE(${escape(offenses)}, offenses), nicknames = COALESCE(${escape(nickname)}, nicknames)`;
+            let afk2 = afk;
+            if (afk === "~~off~~") {
+                afk2 = null;
+            }
+            const sql = `INSERT INTO userdata (userid, afk, offenses, nicknames) VALUES (${userid}, ${escape(afk2)}, ${escape(offenses || 0)}, ${escape(nickname || "")}) ON DUPLICATE KEY UPDATE afk = ${afk === "~~off~~" ? `${escape(afk2)}` : `COALESCE(${escape(afk2)}, afk)`}, offenses = COALESCE(${escape(offenses)}, offenses), nicknames = COALESCE(${escape(nickname)}, nicknames)`;
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
                 return false;
