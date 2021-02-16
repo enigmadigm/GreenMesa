@@ -206,6 +206,7 @@ export interface AutomoduleData {
     roleEffect: 'ignore' | 'watch';
     strict?: boolean;
     onlyOnMessage?: boolean;
+    ignoreBots?: boolean;
 }
 
 export interface GuildUserDataRow {

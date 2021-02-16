@@ -94,6 +94,13 @@ body, html {
 }
 
 .userbox-uname {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
+  position: relative;
+  max-width: 110px;
   color: #fff;
   font-weight: 600;
   margin-right: 3px;
