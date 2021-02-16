@@ -685,7 +685,14 @@ export class DBManager {
             }
             username = username.replace(/'/g, "\\'");
             avatar = avatar.replace(/'/g, "\\'");
-            const guildString = JSON.stringify(guilds).replace(/'/g, "\\'");
+            const guildString = JSON.stringify(guilds).replace(/\\n/g, "\\n")
+                .replace(/\\'/g, "\\'")
+                .replace(/\\"/g, '\\"')
+                .replace(/\\&/g, "\\&")
+                .replace(/\\r/g, "\\r")
+                .replace(/\\t/g, "\\t")
+                .replace(/\\b/g, "\\b")
+                .replace(/\\f/g, "\\f");
             const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES ('${id}', '${username}#${discriminator}' , '${avatar}', '${guildString}') ON DUPLICATE KEY UPDATE tag = '${username}#${discriminator}', avatar = '${avatar}', guilds = '${guildString}'`);
             if (!result || !result.affectedRows) {
                 return false;
@@ -870,6 +877,13 @@ export class DBManager {
         const m = await this.getAutoModule(guildid, mod);
 
         if (m.enableAll || m.channels?.length || m.channelEffect === "disable") {
+            if (roleid && m.applyRoles.includes(roleid) && m.roleEffect === "ignore") {
+                return false;
+            }
+            if (roleid && m.roleEffect === "watch" && m.applyRoles.length && !m.applyRoles.includes(roleid)) {
+                return false;
+            }
+
             if (m.enableAll) {
                 return m;
             }
