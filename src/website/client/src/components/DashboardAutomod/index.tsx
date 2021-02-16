@@ -3,6 +3,7 @@ import './Automod.css';
 import { Center, Spinner } from '@chakra-ui/react';
 //import { Formik, ErrorMessage } from "formik";
 import { HomeProps } from '../../pages/DashboardPage';
+import { AutomoduleCard } from './AutomoduleCard';
 import { AntiEmbed } from './AntiEmbed';
 import { AntiGif } from './AntiGif';
 import { AntiLink } from './AntiLink';
@@ -94,16 +95,39 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                     </div>
                 </div>
                 <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
-                    <AntiEmbed {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave} />
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
+                        displayName="Anti Embed"
+                        name="antiembed"
+                        description="This module will suppress all embeds that appear in a channel. This includes embeds from bots and links. Soon there will be an option to toggle for bots or roles."
+                        isTextModule
+                        CustomOptions={AntiEmbed}
+                    />
                 </div>
                 <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
-                    <AntiGif {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave} />
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
+                        displayName="Anti Gif"
+                        name="antigif"
+                        description="This module will delete all messages that have GIFs (the most common animated image format) attached to them."
+                        isTextModule
+                        CustomOptions={AntiGif}
+                    />
                 </div>
                 <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
-                    <AntiLink {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave} />
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
+                        displayName="Anti Link"
+                        name="antilink"
+                        description="This module will delete all messages containing links detected in their text. This does not apply to embeds (the special message blocks sent by bots or webhooks)."
+                        isTextModule
+                        CustomOptions={AntiLink}
+                    />
                 </div>
                 <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
-                    <NiceNicks {...props} handleModuleSave={handleModuleSave} />
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
+                        displayName="Nice Nicknames"
+                        name="nicenicks"
+                        description="This module will watch the nicknames of new users or any changes in existing users to make sure at least the first five letters exist on the printable ASCII table. If a user has an unfriendly username, it will automatically be changed to a placeholder and they will receive a message from the bot."
+                        CustomOptions={NiceNicks}
+                    />
                 </div>
             </div>
         </div>

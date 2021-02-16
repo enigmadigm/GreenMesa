@@ -204,6 +204,8 @@ export interface AutomoduleData {
     channelEffect?: 'enable' | 'disable';
     applyRoles: string[];
     roleEffect: 'ignore' | 'watch';
+    strict?: boolean;
+    onlyOnMessage?: boolean;
 }
 
 export interface GuildUserDataRow {

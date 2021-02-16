@@ -32,7 +32,7 @@ body, html {
   align-items: center;
   height: 55px;
   background-color: #3a4149;
-  /* border-bottom: 1px solid #23282c; */
+  border-bottom: 1px solid #23282c;
   /* background-color: #3c304b; */
   color: #e4e7ea;
   width: 100%;
@@ -43,7 +43,7 @@ body, html {
   position: fixed;
   top: 55px;
   right: 0;
-  border-top: 1px solid #23282c;
+  /*border-top: 1px solid #23282c;*/
 }
 
 .userbox:hover .userbox-under {
@@ -181,7 +181,7 @@ body, html {
   width: 200px;
   background: #3a4149;
   border-right: 1px solid #23282c;
-  border-top: 1px solid #23282c;
+  /*border-top: 1px solid #23282c;*/
 }
 
 .x-sidebar nav {
@@ -261,7 +261,7 @@ body, html {
   padding: 0 5px;
   height: 27px;
   border-radius: 7px;
-  color: rgb(0, 22, 112);
+  color: black;
   font-weight: 600;
 }
 
@@ -400,6 +400,10 @@ body, html {
     padding-left: 5px;
     padding-right: 5px;
   }
+}
+
+hr {
+  border-color: initial;
 }
 
 @media screen and (max-width: 650px) {
