@@ -1,7 +1,7 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Channel, Guild, GuildChannel, GuildMember, MessageEmbed, Role, User } from "discord.js";
+import { Guild, GuildChannel, GuildMember, MessageEmbed, Role, User } from "discord.js";
 import { XClient } from "src/gm";
 
 /**
@@ -12,7 +12,7 @@ import { XClient } from "src/gm";
  * @param {string} s2 second string
  * @returns
  */
-function stringSimilarity(s1: string, s2: string) {
+export function stringSimilarity(s1: string, s2: string): number {
     let longer = s1;
     let shorter = s2;
     if (s1.length < s2.length) {
