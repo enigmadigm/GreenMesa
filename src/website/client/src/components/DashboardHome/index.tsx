@@ -98,7 +98,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
             <div className="control-row">
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
                     <div className="x-card">
                         <div className="x-card-header">About This Dashboard</div>
                         <div className="x-card-body">
@@ -111,7 +111,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                         </div>
                     </div>
                 </div>
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
                     <div className="x-card">
                         <div className="x-card-header">Moderation</div>
                         <div className="x-card-body">
@@ -144,7 +144,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                         </div>
                     </div>
                 </div>
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
                     <div className="x-card">
                         <div className="x-card-header">Prefix</div>
                         <div className="x-card-body">

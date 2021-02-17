@@ -11,6 +11,7 @@ interface CustomModuleCardProps extends HomeProps {
     name: string;
     isTextModule?: boolean;
     description?: string;
+    headerTag?: string;
     channels: ChannelData[];
     handleModuleSave: (mod: string, data: string, setModuleLoading?: React.Dispatch<React.SetStateAction<boolean>> | undefined) => void;
     CustomOptions?(props: AMCustomOptionsProps): JSX.Element;
@@ -102,7 +103,12 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
             <div className={`cardtag ${unsaved ? "cardtag-y" : (mod.enableAll || mod.channels?.length || mod.channelEffect === "disable" ? "cardtag-g" : "cardtag-r")}`}>
                 {unsaved ? "Unsaved" : (mod.enableAll || mod.channels?.length || mod.channelEffect === "disable" ? "Enabled" : "Disabled")}
             </div>
-            <div className="x-card-header">{ props.displayName }</div>
+            <div className="x-card-header">
+                { props.displayName }
+                {props.headerTag ? (
+                    <span style={{ padding: "2px 5px", borderRadius: "4px", backgroundColor: " #001f3f ", marginLeft: 10 }} title="This tag is here to provide specific warnings about this module">{props.headerTag}</span>
+                ) : <></>}
+            </div>
             <div className="x-card-body">
                 <h5 className="cardsubtitle" style={{fontSize: "1.2em"}}>Module Configuration</h5>
                 <p style={{ marginBottom: "1rem" }}>{ props.description }</p>

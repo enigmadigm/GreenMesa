@@ -244,6 +244,13 @@ body, html {
   margin-left: -15px;
 }
 
+.x-card-parent {
+  position: relative;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-bottom: 24px;
+}
+
 .x-card {
   position: relative;
   display: -webkit-box;
@@ -258,7 +265,8 @@ body, html {
   border: 1px solid #23282c;
   border-radius: .25rem;
   max-width: 83ch;
-  margin-bottom: 24px;
+  /*margin-bottom: 24px;*/
+  height: 100%;
 }
 
 .cardtag {

@@ -1,5 +1,5 @@
 import xlg from "../xlogger";
-import { MessageService } from "../gm";
+import { MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
 import { Message } from "discord.js";
 import moment from "moment";
@@ -38,10 +38,10 @@ function getCache(guildid: string, channelid: string): SpamCacheData {
 
 export const service: MessageService = {
     text: true,
-    async execute(client, message) {
+    async execute(client, message: XMessage) {
         try {
-            if (!message.guild || !(message instanceof Message)) return;
-            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antispam", message.channel.id);
+            if (!message.guild || !message.member) return;
+            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antispam", message.channel.id, undefined, message.member);
             if (!modResult) return;
 
             const cache = getCache(message.guild.id, message.channel.id);
