@@ -7,8 +7,8 @@ export const service: MessageService = {
     text: true,
     async execute(client, message: XMessage) {
         try {
-            if (!message.guild) return;
-            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antigif", message.channel.id);
+            if (!message.guild || !message.member) return;
+            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antigif", message.channel.id, undefined, message.member);
             if (!modResult) return;
             //const modResult = await Bot.client.database?.getGuildSetting(message.guild, "automod_antigif");
             //if (!modResult || modResult.value !== "enabled") return;

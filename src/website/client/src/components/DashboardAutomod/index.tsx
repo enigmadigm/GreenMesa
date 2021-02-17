@@ -83,7 +83,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
             <div className="control-row">
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
                     <div className="x-card">
                         <div className="x-card-header">What Is Automod</div>
                         <div className="x-card-body">
@@ -94,7 +94,16 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                         </div>
                     </div>
                 </div>
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
+                        displayName="Spam Prevention"
+                        headerTag="ALPHA"
+                        name="antispam"
+                        description="ALPHA: Prevent spam anywhere in your server. The base feature of this module measures the message rate in your channel and at an excessive rate will begin silencing new messages. Feedback for this command is being accepted in the support server for the bot: https://dsc.gg/ro."
+                        isTextModule
+                    />
+                </div>
+                <div className="x-card-parent">
                     <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
                         displayName="Anti Embed"
                         name="antiembed"
@@ -103,7 +112,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                         CustomOptions={AntiEmbed}
                     />
                 </div>
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
                     <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
                         displayName="Anti Gif"
                         name="antigif"
@@ -112,7 +121,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                         CustomOptions={AntiGif}
                     />
                 </div>
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
                     <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
                         displayName="Anti Link"
                         name="antilink"
@@ -121,7 +130,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                         CustomOptions={AntiLink}
                     />
                 </div>
-                <div style={{ /*flex: "0 0 50%",*/ position: "relative", paddingRight: 15, paddingLeft: 15 }}>
+                <div className="x-card-parent">
                     <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
                         displayName="Nice Nicknames"
                         name="nicenicks"

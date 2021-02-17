@@ -207,6 +207,7 @@ export interface AutomoduleData {
     strict?: boolean;
     onlyOnMessage?: boolean;
     ignoreBots?: boolean;
+    sendDM?: boolean;
 }
 
 export interface GuildUserDataRow {

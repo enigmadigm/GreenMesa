@@ -18,10 +18,12 @@ export const service: MessageService = {
             if (hits && hits.index < 5) {
                 await member.setNickname("change name (stratum automod)", `automod:nicenicks saw a nondesirable nickname`);
 
-                await member.user.send(`Hello ${member.user}!
+                if (modResult.sendDM) {
+                    await member.user.send(`Hello ${member.user}!
 **Regarding server:** ${member.guild.name}
 My \`nicenicks\` automodule noticed that your nickname isn't very nice to type out. The admins of ${member.guild.name} have requested that I change all user's undesirable nicknames to a placeholder until they change it to something nicer; please do so!`);
-                // THIS DM MESSAGE SHOULD BE CONFIGURABLE, IT SHOULD AT LEAST BE SOMETHING THAT CAN BE TOGGLED BY ADMINS ON THE DASHBOARD
+                    // THIS DM MESSAGE SHOULD BE CONFIGURABLE, IT SHOULD AT LEAST BE SOMETHING THAT CAN BE TOGGLED BY ADMINS ON THE DASHBOARD
+                }
             }
         } catch (error) {
             xlg.error(error);

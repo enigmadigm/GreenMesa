@@ -883,16 +883,22 @@ export class DBManager {
         return guildMods;
     }
 
-    async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean, roleid?: string): Promise<false | AutomoduleData> {
+    async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean, member?: GuildMember): Promise<false | AutomoduleData> {
         if (!guildid || !mod) return false;
         const m = await this.getAutoModule(guildid, mod);
 
         if (m.enableAll || m.channels?.length || m.channelEffect === "disable") {
-            if (roleid && m.applyRoles.includes(roleid) && m.roleEffect === "ignore") {
-                return false;
-            }
-            if (roleid && m.roleEffect === "watch" && m.applyRoles.length && !m.applyRoles.includes(roleid)) {
-                return false;
+            if (member) {
+                const roles = member.roles.cache.map(r => r.id);
+                const incl = m.applyRoles.some((r) => {
+                    return roles.includes(r);
+                });
+                if (m.roleEffect === "ignore" && incl) {
+                    return false;
+                }
+                if (m.roleEffect === "watch" && m.applyRoles.length && !incl) {
+                    return false;
+                }
             }
 
             if (m.enableAll) {
