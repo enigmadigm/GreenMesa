@@ -49,6 +49,17 @@ const levelRoles = [{
     }
 ];
 
+function escapeSpecialChars(str: string) {
+    return str.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+}
+
 // https://www.tutorialkart.com/nodejs/nodejs-mysql-result-object/#Example-Nodejs-MySQL-INSERT-INTO-Result-Object
 
 export class DBManager {
@@ -693,7 +704,7 @@ export class DBManager {
                 .replace(/\\t/g, "\\t")
                 .replace(/\\b/g, "\\b")
                 .replace(/\\f/g, "\\f");
-            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES ('${id}', '${username}#${discriminator}' , '${avatar}', '${guildString}') ON DUPLICATE KEY UPDATE tag = '${username}#${discriminator}', avatar = '${avatar}', guilds = '${guildString}'`);
+            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES (${escape(id)}, ${escape(`${username}#${discriminator}`)} , ${escape(avatar)}, ${escape(guildString)}) ON DUPLICATE KEY UPDATE tag = ${escape(`${ username }#${ discriminator }`)}, avatar = ${escape(avatar)}, guilds = ${escape(guildString)}`);
             if (!result || !result.affectedRows) {
                 return false;
             }
@@ -735,7 +746,7 @@ export class DBManager {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).replace(/'/g, "\\'");
 
-            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES ('${id.replace(/'/g, "\\'")}', '${mtime.replace(/'/g, "\\'")}', '${actionType.replace(/'/g, "\\'")}', '${actionData}')`);
+            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES ('${id.replace(/'/g, "\\'")}', '${mtime.replace(/'/g, "\\'")}', ${escape(actionType)}, ${escape(actionData)})`);
 
             if (!r || !r.affectedRows) {
                 return false;
