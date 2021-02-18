@@ -10,7 +10,7 @@ export const command: Command = {
         short: "configure automod modes",
         long: "Configures automod settings. Use in place of the web dashboard to manage automod."
     },
-    usage: "[{module}] | [<enable|disable> {module}]",
+    usage: "[{module}] | [<enable|disable> {module}] reset]",
     args: false,
     cooldown: 1,
     permLevel: permLevels.admin,
