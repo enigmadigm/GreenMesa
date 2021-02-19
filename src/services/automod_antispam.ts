@@ -100,7 +100,7 @@ export const service: MessageService = {
     text: true,
     async execute(client, message: XMessage) {
         try {
-            if (!message.guild || !message.member || !(message.channel instanceof TextChannel)) return;
+            if (!message.guild || !message.member || !(message.channel instanceof TextChannel) || message.author.bot || message.webhookID) return;
             const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antispam", message.channel.id, undefined, message.member);
             if (!modResult) return;
 

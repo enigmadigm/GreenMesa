@@ -14,7 +14,6 @@ import { NiceNicks } from './NiceNicks';
     console.log(event)
 }*/
 
-
 export interface ChannelData {
     id: string;
     name: string;
