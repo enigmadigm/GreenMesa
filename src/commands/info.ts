@@ -59,6 +59,11 @@ export const command: Command = {
                             "inline": true
                         },
                         {
+                            "name": "Shard",
+                            "value": `Current: ${message.guild?.shardID || client.shard?.ids[0]}\nTotal: ${client.shard?.count}`,
+                            "inline": true
+                        },
+                        {
                             "name": "Resources",
                             "value": `\`\`\`prolog\n${client.specials?.memoryUsage()}\n\`\`\``
                         }
