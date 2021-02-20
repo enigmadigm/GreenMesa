@@ -49,7 +49,7 @@ const levelRoles = [{
     }
 ];
 
-function escapeSpecialChars(str: string) {
+/*function escapeSpecialChars(str: string) {
     return str.replace(/\\n/g, "\\n")
         .replace(/\\'/g, "\\'")
         .replace(/\\"/g, '\\"')
@@ -58,7 +58,7 @@ function escapeSpecialChars(str: string) {
         .replace(/\\t/g, "\\t")
         .replace(/\\b/g, "\\b")
         .replace(/\\f/g, "\\f");
-}
+}*/
 
 // https://www.tutorialkart.com/nodejs/nodejs-mysql-result-object/#Example-Nodejs-MySQL-INSERT-INTO-Result-Object
 

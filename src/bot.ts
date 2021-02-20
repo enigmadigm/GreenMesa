@@ -172,6 +172,7 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
 client.on('guildMemberAdd', async member => {
     logMember(member, true);
     ar.potatoRoler(member);
+    client.services?.run(client, "automod_nicenicks", member);
 });
 
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
