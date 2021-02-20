@@ -8,6 +8,7 @@ import path from "path";
 import routes from './routes';
 import session from "express-session";
 import mstore from 'express-mysql-session';
+import xlg from "../xlogger";
 //const xlg = require("../xlogger");
 
 const PORT = process.env.WEBSITE_PORT || 3002;
@@ -103,7 +104,9 @@ export default class MesaWebsite {
             // default to plain-text. send()
             res.type('txt').send('Not found');
         });
-        this.app.listen(PORT, () => console.log(`Running on port ${PORT}`));
+        this.app.listen(PORT, () => {
+            xlg.log(`Website running on port ${PORT}${client.shard ? ` in shard ${client.shard.ids[0]}` : ""}`);
+        });
     }
 
 }

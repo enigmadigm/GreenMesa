@@ -102,11 +102,11 @@ export async function stringToUser(client: XClient, text: string): Promise<User 
  * - similar username
  *
  * @export
- * @param {Guild} guild guild where the member is in
- * @param {string} text string to parse
- * @param {boolean} [byUsername=true] if it should also search by username (default true)
- * @param {boolean} [byNickname=true] if it should also search by nickname (default true)
- * @param {boolean} [bySimilar=true] if it should also search by similar username (default true)
+ * @param guild guild where the member is in
+ * @param text string to parse
+ * @param byUsername if it should also search by username (default true)
+ * @param byNickname if it should also search by nickname (default true)
+ * @param bySimilar if it should also search by similar username (default true)
  * @returns
  */
 export async function stringToMember(guild: Guild, text: string, byUsername = true, byNickname = true, bySimilar = true): Promise<GuildMember | undefined> {
