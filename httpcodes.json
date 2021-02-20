@@ -1,63 +1,63 @@
 [
     {
         "code": "100",
-        "description": ""
+        "description": "continue"
     },
     {
         "code": "101",
-        "description": ""
+        "description": "switching protocol"
     },
     {
         "code": "102",
-        "description": ""
+        "description": "processing (received but busy)"
     },
     {
         "code": "103",
-        "description": ""
+        "description": "early hints"
     },
     {
         "code": "200",
-        "description": "we're good"
+        "description": "we're good (success)"
     },
     {
         "code": "201",
-        "description": ""
+        "description": "created (request received and new resource created)"
     },
     {
         "code": "202",
-        "description": ""
+        "description": "accepted"
     },
     {
         "code": "203",
-        "description": ""
+        "description": "non-authoritative information"
     },
     {
         "code": "204",
-        "description": ""
+        "description": "no content"
     },
     {
         "code": "205",
-        "description": ""
+        "description": "reset content"
     },
     {
         "code": "206",
-        "description": ""
+        "description": "partial content"
     },
     {
         "code": "207",
-        "description": ""
+        "description": "multi-status"
     },
     {
         "code": "208",
-        "description": ""
+        "description": "already reported"
     },
     {
         "code": "226",
-        "description": ""
+        "description": "[IM Used](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/226)"
     },
     {
         "code": "300",
-        "description": ""
+        "description": "multiple choice"
     },
     {
         "code": "301",
@@ -69,43 +69,43 @@
     },
     {
         "code": "303",
-        "description": ""
+        "description": "see other"
     },
     {
         "code": "304",
-        "description": ""
+        "description": "not modified"
     },
     {
         "code": "305",
-        "description": ""
+        "description": "use proxy"
     },
     {
         "code": "306",
-        "description": ""
+        "description": "unused"
     },
     {
         "code": "307",
-        "description": ""
+        "description": "temporary redirect"
     },
     {
         "code": "308",
-        "description": ""
+        "description": "permanent redirect"
     },
     {
         "code": "400",
-        "description": ""
+        "description": "bad request"
     },
     {
         "code": "401",
-        "description": ""
+        "description": "unauthorized"
     },
     {
         "code": "402",
-        "description": ""
+        "description": "payment required"
     },
     {
         "code": "403",
-        "description": ""
+        "description": "forbidden"
     },
     {
         "code": "404",
@@ -113,55 +113,55 @@
     },
     {
         "code": "405",
-        "description": ""
+        "description": "method not allowed"
     },
     {
         "code": "406",
-        "description": ""
+        "description": "not acceptable"
     },
     {
         "code": "407",
-        "description": ""
+        "description": "proxy authentication required"
     },
     {
         "code": "408",
-        "description": ""
+        "description": "request timeout"
     },
     {
         "code": "409",
-        "description": ""
+        "description": "conflict"
     },
     {
         "code": "410",
-        "description": ""
+        "description": "410 (permanently deleted content)"
     },
     {
         "code": "411",
-        "description": ""
+        "description": "length required"
     },
     {
         "code": "412",
-        "description": ""
+        "description": "precondition failed"
     },
     {
         "code": "413",
-        "description": ""
+        "description": "payload too large"
     },
     {
         "code": "414",
-        "description": ""
+        "description": "URI too long"
     },
     {
         "code": "415",
-        "description": ""
+        "description": "unsupported media type"
     },
     {
         "code": "416",
-        "description": ""
+        "description": "range not satisfiable"
     },
     {
         "code": "417",
-        "description": ""
+        "description": "expectation failed"
     },
     {
         "code": "418",
@@ -169,43 +169,43 @@
     },
     {
         "code": "421",
-        "description": ""
+        "description": "misdirection request"
     },
     {
         "code": "422",
-        "description": ""
+        "description": "unprocessable entity"
     },
     {
         "code": "423",
-        "description": ""
+        "description": "locked"
     },
     {
         "code": "424",
-        "description": ""
+        "description": "failed dependency"
     },
     {
         "code": "425",
-        "description": ""
+        "description": "too early"
     },
     {
         "code": "426",
-        "description": ""
+        "description": "upgrade required"
     },
     {
         "code": "428",
-        "description": ""
+        "description": "precondition required"
     },
     {
         "code": "429",
-        "description": ""
+        "description": "too many requests"
     },
     {
         "code": "431",
-        "description": ""
+        "description": "request header fields too large"
     },
     {
         "code": "451",
-        "description": ""
+        "description": "unavailable for legal reasons"
     },
     {
         "code": "500",
@@ -213,42 +213,42 @@
     },
     {
         "code": "501",
-        "description": ""
+        "description": "not implemented"
     },
     {
         "code": "502",
-        "description": ""
+        "description": "bad gateway"
     },
     {
         "code": "503",
-        "description": ""
+        "description": "service unavailable"
     },
     {
         "code": "504",
-        "description": ""
+        "description": "gateway timeout"
     },
     {
         "code": "505",
-        "description": ""
+        "description": "HTTP version not supported"
     },
     {
         "code": "506",
-        "description": ""
+        "description": "variant also negotiates"
     },
     {
         "code": "507",
-        "description": ""
+        "description": "insufficient storage"
     },
     {
         "code": "508",
-        "description": ""
+        "description": "loop detected"
     },
     {
         "code": "510",
-        "description": ""
+        "description": "not extended"
     },
     {
         "code": "511",
-        "description": ""
+        "description": "network authentication required"
     }
 ]
