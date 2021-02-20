@@ -41,12 +41,10 @@ import { TimedActionsSubsystem } from "./tactions";
 
 export class Bot {
     static client: XClient;
-    static website: MesaWebsite;
     static tas: TimedActionsSubsystem;
 
-    static init(client: XClient, website: MesaWebsite, tas: TimedActionsSubsystem): void {
+    static init(client: XClient, tas: TimedActionsSubsystem): void {
         this.client = client;
-        this.website = website;
         this.tas = tas;
     }
 }
@@ -140,8 +138,10 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
         xlg.error(e);
     }
 
-    const website = new MesaWebsite(client);
-    Bot.init(client, website, tas);
+    if (client.shard?.ids.includes(0)) {
+        new MesaWebsite(client);
+    }
+    Bot.init(client, tas);
     xlg.log("Bot initialized")
 });
 
