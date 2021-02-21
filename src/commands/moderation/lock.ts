@@ -6,6 +6,7 @@ import { TextChannel } from "discord.js";
 
 export const command: Command = {
     name: "lock",
+    aliases: ["unlock"],
     description: {
         short: "stop users from sending messages in a channel",
         long: "Stop normal users from sending message in a channel. This works by disabling the Send Messages privilege for @everyone. This will not work if @everyone already has Send Messages disabled. Send command `lockprep` to try to fix this issue before sending this command."
