@@ -1,9 +1,11 @@
 import React from 'react';
 import { host } from '../../index';
-import { DashHeader, GuildMenuWrapper } from '../../components';
+import { DashHeader, GuildMenuItem } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import LoadingBar from 'react-top-loading-bar';
 import { IUser } from '../DashboardPage';
+import './GuildMenu.css';
+import { GuildItemSpecial, GuildsEndpointData } from '../../../../../gm';
 //import { RouteComponentProps } from 'react-router-dom';
 //import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 
@@ -18,7 +20,7 @@ export function MenuPage(/*props: RouteComponentProps*/) {
 
     const [user, setUser] = React.useState<IUser>({});
     const [loading, setLoading] = React.useState(true);
-    const [guilds, setGuilds] = React.useState<IUser["guilds"]>([]);
+    const [guilds, setGuilds] = React.useState<GuildItemSpecial[]>([]);
     const [progress, setProgress] = React.useState(0)
 
     React.useEffect(() => {
@@ -30,7 +32,7 @@ export function MenuPage(/*props: RouteComponentProps*/) {
                 return fetch("/api/discord/guilds");
             })
             .then(x => x.json())
-            .then(d => {
+            .then((d: GuildsEndpointData) => {
                 setGuilds(d.guilds);
                 setLoading(false);
                 setProgress(100);
@@ -53,9 +55,9 @@ export function MenuPage(/*props: RouteComponentProps*/) {
             <div style={{ display: "flex" }}>
                 <DashHeader user={user} />
                 <div className="guilds-menu-center">
-                    <div>
-                        <GuildMenuWrapper guilds={guilds ? guilds : []} />
-                    </div>
+                    {guilds.map((guild) => (
+                        <GuildMenuItem guild={guild} key={guild.id} />
+                    ))}
                 </div>
             </div> :
             <Center className="lspinner">

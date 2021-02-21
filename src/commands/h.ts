@@ -18,7 +18,7 @@ export const command: Command = {
 
             const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
             const commandEnabledGuild = await client.database?.getGuildSetting(message.guild || "", `${command.name}_toggle`);
-            if ((!commandEnabledGlobal || commandEnabledGlobal.value == 'false') || (!commandEnabledGuild || commandEnabledGuild.value === 'disable')) {
+            if ((commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (!commandEnabledGuild || commandEnabledGuild.value === 'disable')) {
                 return;
             }
 

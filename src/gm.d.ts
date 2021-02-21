@@ -208,6 +208,7 @@ export interface AutomoduleData {
     onlyOnMessage?: boolean;
     ignoreBots?: boolean;
     sendDM?: boolean;
+    notNested?: boolean;
 }
 
 export interface GuildUserDataRow {
@@ -226,4 +227,17 @@ export interface GuildUserDataRow {
 export interface AutomoduleEndpointData {
     id: string;
     automodule: AutomoduleData;
+}
+
+export interface GuildItemSpecial {
+    bot: boolean;
+    icon: string;
+    id: string;
+    name: string;
+    owner: boolean;
+    permissions: number;
+}
+
+export interface GuildsEndpointData {
+    guilds: GuildItemSpecial[];
 }
