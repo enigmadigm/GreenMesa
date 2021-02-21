@@ -14,7 +14,9 @@ export function Embark() {
     React.useEffect(() => {
         setTimeout(() => {
             window.onunload = () => {
-                window.opener.location.pathname = `/dash/${id}`;
+                if (id) {
+                    window.opener.location.pathname = `/dash/${id}`;
+                }
             }
             window.close();
         }, 2000)
