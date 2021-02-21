@@ -53,10 +53,23 @@ export default class MesaWebsite {
         this.app.get("/", (req, res) => {
             res.sendFile(path.join(__dirname, "../../src/website", "static/index.html"));
         });
+        this.app.get("/invite/:id", async (req, res) => {
+            const { id } = req.params;
+            const url = await this.client.generateInvite(2147483639);
+            res.redirect(301, `${url}&guild_id=${id}&response_type=code&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000/embark' : `https://stratum.hauge.rocks/embark`)}`);
+        });
         this.app.get("/invite", async (req, res) => {
             const url = await this.client.generateInvite(2147483639);
             res.redirect(301, url);
         });
+        /*this.app.get("/embark", (req, res) => {
+            const id = req.query.guild_id;
+            if (id) {
+                res.redirect(`/dash/${id}`);
+            } else {
+                res.send(`Hello! It seems Discord sent you back here either because you cancelled the request or something wasn't right.`);
+            }
+        })*/
         this.app.get("/logout", (req, res) => {
             req.logout();
             res.redirect("/");
@@ -64,7 +77,7 @@ export default class MesaWebsite {
 
         if (process.env.NODE_ENV === "production") {
             this.app.use(express.static(path.join(__dirname, "../../src/website", 'client/build')));
-            this.app.get(/(dash\/?|menu\/?).*/, function (req, res) {
+            this.app.get(/(dash\/?|menu\/?|embark\/?).*/, function (req, res) {
                 res.sendFile(path.join(__dirname, "../../src/website", 'client/build', 'index.html'));
             });
         }

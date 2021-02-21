@@ -1,7 +1,7 @@
 import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, PartialGuildObject, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, GuildItemSpecial, GuildsEndpointData, PartialGuildObject, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
@@ -19,6 +19,17 @@ function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: G
     });
 }
 
+function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
+    const validGuilds = userGuilds.filter((guild) => (guild.permissions & 0x20) === 0x20);
+    const included: PartialGuildObject[] = [];
+    const excluded = validGuilds.filter((guild) => {
+        const findGuild = botGuilds.find((g) => g.id === guild.id);
+        if (!findGuild) return guild;
+        included.push(guild);
+    });
+    return { excluded, included };
+}
+
 export default function routerBuild (client: XClient): express.Router {
     const router = express.Router();
 
@@ -32,11 +43,35 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(500);
         }
 
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
-        res.send({
-            guilds: mg,
-            user: req.user
-        });
+        const { excluded, included } = getApplicableGuilds(req.user.guilds, client.guilds.cache.array());
+        const guilds: GuildItemSpecial[] = [
+            ...excluded.map((e) => {
+                const g: GuildItemSpecial = {
+                    bot: false,
+                    icon: e.icon,
+                    id: e.id,
+                    name: e.name,
+                    owner: e.owner,
+                    permissions: e.permissions
+                };
+                return g;
+            }),
+            ...included.map((e) => {
+                const g: GuildItemSpecial = {
+                    bot: true,
+                    icon: e.icon,
+                    id: e.id,
+                    name: e.name,
+                    owner: e.owner,
+                    permissions: e.permissions
+                };
+                return g;
+            })
+        ].sort((a) => a.bot ? -1 : 1);
+        const r: GuildsEndpointData = {
+            guilds
+        }
+        res.send(r);
     });
 
     router.get('/guildsall', (req, res) => {

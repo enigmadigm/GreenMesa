@@ -380,14 +380,6 @@ body, html {
   transition: opacity 200ms;
 }
 
-.guilds-menu-center {
-  border: solid 2px #ccc;
-  border-radius: 5px;
-  padding: 20px;
-  margin: auto;
-  margin-top: 100px;
-}
-
 @media screen and (max-width: 800px) {
   .app .x-sidebar, .field-alert {
     width: 50px;

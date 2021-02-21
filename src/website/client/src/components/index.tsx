@@ -1,4 +1,4 @@
-export { GuildMenuWrapper } from './GuildMenuWrapper';
+export { GuildMenuItem } from './GuildMenuItem';
 export { DashHeader } from './DashHeader';
 export { DashboardHome } from './DashboardHome';
 export { DashboardLeveling } from './DashboardLeveling';

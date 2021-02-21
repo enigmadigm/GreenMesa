@@ -1,0 +1,42 @@
+.guilds-menu-center {
+    border: 2px solid #23282c;
+    border-radius: 10px;
+    margin: auto;
+    margin-top: 150px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.gmi {
+    background-color: rgb(2, 67, 128);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #23282c;
+}
+
+.gmi-unclaimed {
+    background-color: rgb(63, 0, 71);
+}
+
+.gmi:last-child {
+    border-bottom: none;
+}
+
+.gmopts {
+    margin-left: 20px;
+}
+
+.gmi button {
+    background: rgba(2, 88, 128, 0.4);
+}
+
+.gmi .gmb-nobot {
+    background: rgba(114, 0, 88, 0.2);
+}
+
+.gmi button:hover {
+    background: rgba(2, 88, 128, 1);
+}
