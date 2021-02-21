@@ -2,7 +2,7 @@
     border: 2px solid #23282c;
     border-radius: 10px;
     margin: auto;
-    margin-top: 150px;
+    margin-top: 120px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -10,19 +10,28 @@
 
 .gmi {
     background-color: rgb(2, 67, 128);
-    padding: 15px 25px;
+    padding: 10px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid #23282c;
 }
 
-.gmi-unclaimed {
+.gmi.gmi-unclaimed {
     background-color: rgb(63, 0, 71);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .gmi:last-child {
     border-bottom: none;
+}
+
+.gminfo {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .gmopts {
@@ -38,5 +47,53 @@
 }
 
 .gmi button:hover {
-    background: rgba(2, 88, 128, 1);
+    background: rgba(2, 88, 128, 0.7);
+}
+
+.gmicon {
+    height: 40px;
+    width: 40px;
+    margin-right: 20px;
+    position: relative;
+}
+
+.gmicon img {
+    border-radius: 50em;
+}
+
+.gmplacer {
+    border-radius: 50em;
+    border: 2px #024380 solid;
+    width: 100%;
+    height: 100%;
+    font-size: .8em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0.8em;
+}
+
+.gmplacer > div {
+    
+}
+
+.gm-tag {
+    padding: 2px 5px;
+    border-radius: 4px;
+    background-color: #001f3f;
+    margin-left: 5px;
+    font-size: 0.7em;
+    cursor: default;
+}
+
+@media screen and (max-width: 650px) {
+    .gmicon {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .guilds-menu-center {
+        margin-top: 70px;
+    }
 }

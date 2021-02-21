@@ -1,6 +1,6 @@
 import React from 'react';
 import { GuildItemSpecial } from '../../../../../gm';
-import { Button } from '@chakra-ui/react';
+import { Button, Image } from '@chakra-ui/react';
 import { host } from '../../index';
 
 interface GuildMenuItemProps {
@@ -17,15 +17,28 @@ export function GuildMenuItem(props: GuildMenuItemProps) {
     return (
         <div className={`gmi${!guild.bot ? " gmi-unclaimed" : ""}`}>
             <div className="gminfo">
-                {guild.name} {guild.owner ? (
-                    <span style={{ padding: "2px 5px", borderRadius: "4px", backgroundColor: " #001f3f ", marginLeft: 5, fontSize: "0.7em" }} title="You own this server">OWNER</span>
-                ) : <></>}
+                <div className="gmicon">
+                    {guild.icon ? (
+                        <Image src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}?size=64`} alt="Icon" objectFit="contain"></Image>
+                    ) : (
+                        <div className="gmplacer">
+                            <div>
+                                {guild.name ? guild.name[0] : ""}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div>
+                    {guild.name} {guild.owner ? (
+                        <span className="gm-tag" title="You own this server">OWNER</span>
+                    ) : <></>}
+                </div>
             </div>
             <div className="gmopts">
                 {guild.bot ? (
-                    <Button onClick={() => { window.location.pathname = `/dash/${guild.id}` }}>View Dashboard</Button>
+                    <Button onClick={() => { window.location.pathname = `/dash/${guild.id}` }}>View Dash</Button>
                 ) : (
-                    <Button className="gmb-nobot" onClick={openInvitePanel}>Embark</Button>
+                    <Button className="gmb-nobot" onClick={openInvitePanel}>Add</Button>
                 )}
             </div>
         </div>

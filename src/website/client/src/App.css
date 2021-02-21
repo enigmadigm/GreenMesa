@@ -403,21 +403,10 @@ body, html {
     padding-left: 0;
     padding-bottom: 20px;
   }
-  .guilds-menu-center {
-    padding-left: 5px;
-    padding-right: 5px;
-  }
 }
 
 hr {
   border-color: initial;
-}
-
-@media screen and (max-width: 650px) {
-  .guilds-menu-center {
-    padding-left: 0;
-    padding-right: 0;
-  }
 }
 
 @media screen and (max-width: 700px) {
