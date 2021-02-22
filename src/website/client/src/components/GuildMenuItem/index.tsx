@@ -23,7 +23,7 @@ export function GuildMenuItem(props: GuildMenuItemProps) {
                     ) : (
                         <div className="gmplacer">
                             <div>
-                                {guild.name ? guild.name[0] : ""}
+                                {guild.name ? guild.name.split(" ").map(x => x[0]) : ""}
                             </div>
                         </div>
                     )}
