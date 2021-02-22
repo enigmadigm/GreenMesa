@@ -120,7 +120,6 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
                 })
             }
         }
-
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
 
