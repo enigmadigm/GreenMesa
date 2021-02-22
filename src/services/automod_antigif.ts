@@ -12,17 +12,22 @@ export const service: MessageService = {
             if (!modResult) return;
             //const modResult = await Bot.client.database?.getGuildSetting(message.guild, "automod_antigif");
             //if (!modResult || modResult.value !== "enabled") return;
+            let hasGif = false;
 
             if (message.attachments.size) {
-                let hasGif = false;
                 message.attachments.forEach((a: MessageAttachment) => {
                     if (a.name?.endsWith(".gif")) {
                         hasGif = true;
                     }
                 });
-                if (hasGif) {
-                    message.delete();
+            } else if (message.embeds.length) {
+                if (message.embeds[0].type === "gifv") {
+                    hasGif = true;
                 }
+            }
+
+            if (hasGif) {
+                message.delete();
             }
         } catch (error) {
             xlg.error(error);
