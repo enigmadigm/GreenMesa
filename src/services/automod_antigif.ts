@@ -21,8 +21,11 @@ export const service: MessageService = {
                     }
                 });
             } else if (message.embeds.length) {
-                if (message.embeds[0].type === "gifv") {
-                    hasGif = true;
+                for (const embed of message.embeds) {
+                    if (embed.type === "gifv") {
+                        hasGif = true;
+                        break;
+                    }
                 }
             }
 
