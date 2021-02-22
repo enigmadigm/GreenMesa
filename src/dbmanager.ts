@@ -299,10 +299,21 @@ export class DBManager {
      */
     async updateBotStats(client: XClient): Promise<void> {
         try {
-            const users = client.users.cache.size;
-            const guilds = client.guilds.cache.size;
-            const channels = client.channels.cache.size;
+            const reductionFunc = (a: number, b: number) => a + b;
+            const users = (await client.shard?.fetchClientValues("users.cache.size"))?.reduce(reductionFunc, 0);
+            const guilds = (await client.shard?.fetchClientValues("guilds.cache.size"))?.reduce(reductionFunc, 0);
+            const channels = (await client.shard?.fetchClientValues("channels.cache.size"))?.reduce(reductionFunc, 0);
             this.query(`INSERT INTO botstats (numUsers, numGuilds, numChannels) VALUES (${users}, ${guilds}, ${channels})`);
+            const scConf = await client.database?.getGlobalSetting("sc_conf");
+            const sg = await client.guilds.fetch(scConf ? scConf.value.split(",")[0] : "745670883074637904");
+            if (sg) {
+                const c = sg.channels.cache.get(scConf ? scConf.value.split(",")[1] : "813404897403732008");
+                if (c) {
+                    await c.edit({
+                        name: `Conquest: ${guilds} servers`
+                    });
+                }
+            }
         } catch (error) {
             xlog.error(error);
         }
