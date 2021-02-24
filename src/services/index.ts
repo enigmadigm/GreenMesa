@@ -1,6 +1,7 @@
 import { Collection } from "discord.js";
 import { MessageService, XClient, XMessage } from "../gm";
 import fs from "fs";
+import { Bot } from "../bot";
 
 export class MessageServices {
     private services: Collection<string, MessageService>;
@@ -29,6 +30,7 @@ export class MessageServices {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
     async run(client: XClient, mod: string, data: any): Promise<void> {
         try {
+            if (!Bot.client) return;
             const serv = this.services.find((s) => s.name === mod);
             if (serv && !serv.disabled) {
                 await serv.execute(client, data);
@@ -40,6 +42,7 @@ export class MessageServices {
 
     async runAll(client: XClient, message: XMessage): Promise<void> {
         try {
+            if (!Bot.client) return;
             this.services.forEach(async (service: MessageService) => {
                 if (service.text && !service.disabled && !(service.name?.startsWith("automod_") && message.author.id === client.user?.id)) {
                     await service.execute(client, message);
@@ -52,6 +55,7 @@ export class MessageServices {
 
     async runAllAutomod(client: XClient, message: XMessage): Promise<void> {
         try {
+            if (!Bot.client) return;
             this.services.forEach(async (service: MessageService) => {
                 if (service.text && service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
                     await service.execute(client, message);
