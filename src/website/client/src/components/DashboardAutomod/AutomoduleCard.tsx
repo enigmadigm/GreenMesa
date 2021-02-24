@@ -1,10 +1,12 @@
 import React from 'react';
 import { HomeProps } from '../../pages/DashboardPage';
-import { Center, FormControl, FormLabel, Spinner, Switch } from '@chakra-ui/react';
-import { ChannelData } from '.';
-import { AutomoduleData, AutomoduleEndpointData } from '../../../../../gm';
+import { Center, Collapse, FormControl, FormLabel, Spinner, Switch, useDisclosure } from '@chakra-ui/react';
+import { AutomoduleData, AutomoduleEndpointData, ChannelData, RoleData } from '../../../../../gm';
 import Select, { GroupTypeBase, OptionsType, OptionTypeBase, Styles } from "react-select"
 import isEqual from 'lodash.isequal';
+import chroma from 'chroma-js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBadgeSheriff, faChevronDown, faChevronRight } from '@fortawesome/pro-duotone-svg-icons';
 
 interface CustomModuleCardProps extends HomeProps {
     displayName: string;
@@ -13,6 +15,7 @@ interface CustomModuleCardProps extends HomeProps {
     description?: string;
     headerTag?: string;
     channels: ChannelData[];
+    roles: RoleData[];
     handleModuleSave: (mod: string, data: string, setModuleLoading?: React.Dispatch<React.SetStateAction<boolean>> | undefined) => void;
     CustomOptions?(props: AMCustomOptionsProps): JSX.Element;
 }
@@ -25,7 +28,7 @@ export interface AMCustomOptionsProps extends CustomModuleCardProps {
     unsaved: boolean;
 }
 
-const channelSelectStyles: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
+export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
     control: (styles, state) => ({ ...styles, backgroundColor: '#3A4149', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "hsl(0, 0%, 80%)" }),
     menu: (styles) => ({ ...styles, backgroundColor: '#3A4149' }),
     multiValue: (styles) => ({ ...styles, backgroundColor: '#001e52', borderColor: '#424242' }),
@@ -36,12 +39,47 @@ const channelSelectStyles: Partial<Styles<OptionTypeBase, true, GroupTypeBase<Op
     indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor })
 };
 
+const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
+    control: (styles, state) => ({ ...styles, backgroundColor: '#3A4149', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "hsl(0, 0%, 80%)" }),
+    menu: (styles) => ({ ...styles, backgroundColor: '#3A4149', zIndex: 10000 }),
+    multiValue: (styles) => ({ ...styles, backgroundColor: '#001e52', borderColor: '#424242' }),
+    multiValueLabel: (styles) => ({ ...styles, color: '#9c9c9c' }),
+    multiValueRemove: (styles) => ({ ...styles, color: '#8a70ff' }),
+    option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+        const color = chroma(data.color);
+        return {
+            ...styles,
+            backgroundColor:
+                isDisabled ? color.darken() :
+                isSelected ? data.color :
+                isFocused ? color.alpha(0.2).css() : "initial",
+            color:
+                isDisabled ? "#cccccc" :
+                isSelected ? chroma.contrast(color, '#3A4149') > 2 ? 'white' : 'black' :
+                data.color,
+            cursor: isDisabled ? 'not-allowed' : 'default',
+            ':active': {
+                ...styles[':active'],
+                backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
+            },
+        }
+    },
+    dropdownIndicator: (styles, state) => ({ ...styles, color: state.isDisabled ? "#343B41" : styles.color }),
+    indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor })
+};
+
+function CollapseIndicator(props: {collapsed: boolean}) {
+    return props.collapsed ? <FontAwesomeIcon icon={faChevronDown} style={{ width: 16 }} /> : <FontAwesomeIcon icon={faChevronRight} style={{ width: 16 }} />;
+}
+
 export function AutomoduleCard(props: CustomModuleCardProps) {
     const { setStatus, handleModuleSave, CustomOptions } = props;
     const [loaded, setLoaded] = React.useState(false);
     const [unsaved, setUnsaved] = React.useState(false);
     const [mod, setMod] = React.useState<AutomoduleData>({ name: props.name, text: false, enableAll: false, applyRoles: [], roleEffect: 'ignore' });
     const [original, setOriginal] = React.useState<AutomoduleData>({ name: props.name, text: false, enableAll: false, applyRoles: [], roleEffect: 'ignore' });
+    const { isOpen: channelCollapse, onToggle: channelCollapseToggle } = useDisclosure();
+    const { isOpen: roleCollapse, onToggle: roleCollapseToggle } = useDisclosure();
 
     React.useEffect(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/automod/${props.name}`)
@@ -81,10 +119,23 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
         setMod(m);
     }
 
-    const handelChannelEffectToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChannelEffectToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         const state = e.target.checked;
         const m = Object.assign({}, mod);
         m.channelEffect = state ? "disable" : "enable";
+        setMod(m);
+    }
+
+    const handleRolesValueChange = (v: OptionsType<OptionTypeBase>) => {
+        const m = Object.assign({}, mod);
+        m.applyRoles = v.map(v1 => v1.value);
+        setMod(m);
+    }
+
+    const handleRoleEffectToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const state = e.target.checked;
+        const m = Object.assign({}, mod);
+        m.roleEffect = state ? "watch" : "ignore";
         setMod(m);
     }
 
@@ -104,6 +155,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                 {unsaved ? "Unsaved" : (mod.enableAll || mod.channels?.length || mod.channelEffect === "disable" ? "Enabled" : "Disabled")}
             </div>
             <div className="x-card-header">
+                <FontAwesomeIcon icon={faBadgeSheriff} style={{ marginRight: 5 }} />
                 { props.displayName }
                 {props.headerTag ? (
                     <span style={{ padding: "2px 5px", borderRadius: "4px", backgroundColor: " #001f3f ", marginLeft: 10 }} title="This tag is here to provide specific warnings about this module">{props.headerTag}</span>
@@ -112,51 +164,95 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
             <div className="x-card-body">
                 <h5 className="cardsubtitle" style={{fontSize: "1.2em"}}>Module Configuration</h5>
                 <p style={{ marginBottom: "1rem" }}>{ props.description }</p>
-                <hr style={{ marginTop: 10, marginBottom: 15 }} />
-                <FormControl display="flex" alignItems="center">
-                    <FormLabel htmlFor={`enable-${props.name}`} mb="0">
+                <hr style={{ marginTop: 10, marginBottom: 10 }} />
+                <FormControl display="flex" alignItems="center" mb="8px" mt="12px">
+                    <FormLabel htmlFor={`enable-${props.name}`} mb="0" pb="5px">
                         {props.isTextModule ? "Enable everywhere? (overrides channel selection)" : "Enable?"}
                     </FormLabel>
                     <Switch id={`enable-${props.name}`} onChange={(e) => handleEnableAllToggle(e)} defaultChecked={mod.enableAll} checked={mod.enableAll} style={{ marginRight: 10 }} />
-                    <span style={{ fontWeight: 700 }}>{props.isTextModule ? (mod.enableAll ? "overriding" : "not overriding") : (mod.enableAll ? "enabled" : "disabled")}</span>
+                    <span style={{ fontWeight: 700, paddingBottom: 5 }}>{props.isTextModule ? (mod.enableAll ? "overriding" : "not overriding") : (mod.enableAll ? "enabled" : "disabled")}</span>
                 </FormControl>
                 {props.isTextModule ? (
                     <>
-                        <hr style={{ marginTop: 10, marginBottom: 15 }} />
-                        <p>Select the channels that you would like to apply the current channel effect rule to. The current rule will either cause the automodule to be disabled or enabled in each channel.</p>
-                        <br />
-                        <Select
-                            placeholder="Select channels . . ."
-                            isMulti
-                            options={props.channels.map(c => {
-                                return { value: c.id, label: `#${c.name}` };
-                            })}
-                            isDisabled={mod.enableAll}
-                            menuPlacement="auto"
-                            value={mod.channels?.map(c => {
-                                const cr = props.channels.find(x => x.id === c);
-                                if (cr) {
-                                    return { value: cr.id, label: `#${cr.name}` };
-                                } else {
-                                    return {};
-                                }
-                            })}
-                            onChange={handleChannelsValueChange}
-                            styles={channelSelectStyles}
-                        />
-                        <br />
-                        <p style={{fontWeight: 700}}>Choose Channel Effect:</p>
-                        <FormControl display="flex" alignItems="center" isDisabled={mod.enableAll}>
-                            <FormLabel htmlFor="ae-toggle-channeleffect" mb="0">
-                                Enables In
-                            </FormLabel>
-                            <Switch id="ae-toggle-channeleffect" onChange={(e) => handelChannelEffectToggle(e)} defaultChecked={mod.channelEffect !== "enable"} isDisabled={mod.enableAll} />
-                            <FormLabel htmlFor="ae-toggle-channeleffect" ml="12px" mb="0" mr="0">
-                                Disables In
-                            </FormLabel>
-                        </FormControl>
+                        <hr style={{ marginTop: 10, marginBottom: 10 }} />
+                        <h4 className="cardsubtitle" onClick={channelCollapseToggle} style={{ cursor: "pointer" }}>
+                            <span style={{ marginRight: 8 }}><CollapseIndicator collapsed={channelCollapse} /></span>
+                            Channel Exclusion
+                        </h4>
+                        <Collapse in={channelCollapse} style={{overflow: "visible"}}>
+                            <p>Select the channels that you would like to apply the current channel effect rule to. The current rule will either cause the automodule to be disabled or enabled in each channel.</p>
+                            <br />
+                            <Select
+                                placeholder="Select channels . . ."
+                                isMulti
+                                options={props.channels.map(c => {
+                                    return { value: c.id, label: `#${c.name}` };
+                                })}
+                                isDisabled={mod.enableAll}
+                                menuPlacement="auto"
+                                value={mod.channels?.map(c => {
+                                    const cr = props.channels.find(x => x.id === c);
+                                    if (cr) {
+                                        return { value: cr.id, label: `#${cr.name}` };
+                                    } else {
+                                        return {};
+                                    }
+                                })}
+                                onChange={handleChannelsValueChange}
+                                styles={selectStylesMK1}
+                            />
+                            <br />
+                            <p style={{fontWeight: 700}}>Choose Channel Effect:</p>
+                            <FormControl display="flex" alignItems="center" isDisabled={mod.enableAll}>
+                                <FormLabel htmlFor="ae-toggle-channeleffect" mb="0">
+                                    Enables In
+                                </FormLabel>
+                                <Switch id="ae-toggle-channeleffect" onChange={(e) => handleChannelEffectToggle(e)} defaultChecked={mod.channelEffect !== "enable"} isDisabled={mod.enableAll} />
+                                <FormLabel htmlFor="ae-toggle-channeleffect" ml="12px" mb="0" mr="0">
+                                    Disables In
+                                </FormLabel>
+                            </FormControl>
+                        </Collapse>
                     </>
                 ) : <></>}
+                <hr style={{ marginTop: 10, marginBottom: 10 }} />
+                <h4 className="cardsubtitle" onClick={roleCollapseToggle} style={{ cursor: "pointer" }}>
+                    <span style={{ marginRight: 8 }}><CollapseIndicator collapsed={roleCollapse} /></span>
+                    Role Exclusion
+                </h4>
+                <Collapse in={roleCollapse} style={{ overflow: "visible" }}>
+                    <p><i>Similar to channel exclusion.</i> Select the roles that you would like this module to ignore/have no effect on.</p>
+                    <br />
+                    <Select
+                        placeholder="Select roles . . ."
+                        isMulti
+                        options={props.roles.map(c => {
+                            return { value: c.id, label: `@${c.name}`, color: c.hexColor };
+                        })}
+                        menuPlacement="auto"
+                        value={mod.applyRoles.map(c => {
+                            const cr = props.roles.find(x => x.id === c);
+                            if (cr) {
+                                return { value: cr.id, label: `${cr.name}`, color: cr.hexColor };
+                            } else {
+                                return {};
+                            }
+                        })}
+                        onChange={handleRolesValueChange}
+                        styles={selectStylesMK2}
+                    />
+                    <br />
+                    <p style={{ fontWeight: 700 }}>Choose Role Effect:</p>
+                    <FormControl display="flex" alignItems="center">
+                        <FormLabel htmlFor="ae-toggle-roleeffect" mb="0">
+                            Ignore
+                        </FormLabel>
+                        <Switch id="ae-toggle-roleeffect" onChange={(e) => handleRoleEffectToggle(e)} defaultChecked={mod.roleEffect !== "ignore"} />
+                        <FormLabel htmlFor="ae-toggle-roleeffect" ml="12px" mb="0" mr="0">
+                            Watch
+                        </FormLabel>
+                    </FormControl>
+                </Collapse>
                 {CustomOptions ? (
                     <>
                         <CustomOptions {...props} {...{mod, setMod, loaded, setLoaded, unsaved}} />

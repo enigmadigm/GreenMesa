@@ -209,6 +209,7 @@ export interface AutomoduleData {
     ignoreBots?: boolean;
     sendDM?: boolean;
     notNested?: boolean;
+    customList?: string;
 }
 
 export interface GuildUserDataRow {
@@ -240,4 +241,33 @@ export interface GuildItemSpecial {
 
 export interface GuildsEndpointData {
     guilds: GuildItemSpecial[];
+}
+
+export interface ChannelData {
+    id: string;
+    name: string;
+    type: string;
+    position: number;
+    parentID: string;
+    nsfw?: boolean;
+    topic?: string;
+}
+
+export interface ChannelEndpointData {
+    id: string;
+    total: number;
+    channels: ChannelData[];
+}
+
+export interface RoleData {
+    id: string;
+    name: string;
+    hexColor: string;
+    position: number;
+}
+
+export interface RoleEndpointData {
+    id: string;
+    total: number;
+    roles: RoleData[];
 }
