@@ -10,7 +10,7 @@ export const command: Command = {
     async execute(client, message, args) {
         const fail_embed_color = await client.database?.getColor("fail_embed_color");
         const success_embed_color = await client.database?.getColor("success_embed_color");
-        if (['online', 'idle', 'dnd'].includes(args.join(" "))) {
+        if (['online', 'idle', 'dnd', 'invisible'].includes(args.join(" "))) {
             const result = await client.database?.getGlobalSetting('game_status');
             if (result && result.value === args.join(" ")) {
                 message.channel.send({
@@ -30,7 +30,7 @@ export const command: Command = {
                     }
                 });
             }
-        } else if (['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING'].includes(args.join(" "))) {
+        } else if (['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING', 'COMPETING'].includes(args.join(" "))) {
             const result = await client.database?.getGlobalSetting('game_prefix')
             if (result && result.value === args.join(" ")) {
                 message.channel.send({
