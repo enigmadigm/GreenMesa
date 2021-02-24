@@ -137,6 +137,14 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                         CustomOptions={NiceNicks}
                     />
                 </div>
+                <div className="x-card-parent">
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} handleModuleSave={handleModuleSave}
+                        displayName="Christian Mode"
+                        name="profanity"
+                        description="Christian mode for your server. Enabling this module will censore all popular obscene language and many variations of that totally vulgar content."
+                        CustomOptions={NiceNicks}
+                    />
+                </div>
             </div>
         </div>
     ) : (

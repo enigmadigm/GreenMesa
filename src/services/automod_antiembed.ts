@@ -5,6 +5,9 @@ import xlg from "../xlogger";
 
 export const service: MessageService = {
     text: true,
+    async getInformation() {
+        return "Stop those annoying popups from links people send. The default mode for this module will censore all messages that contain any form of an embed. Embeds are the styled boxes that you can't send.";
+    },
     async execute(client, message) {
         try {
             if (!message.guild || !(message instanceof Message)) return;

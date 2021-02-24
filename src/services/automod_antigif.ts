@@ -5,6 +5,9 @@ import xlg from "../xlogger";
 
 export const service: MessageService = {
     text: true,
+    async getInformation() {
+        return "Get rid of those moving pictures. It's time to go back to the good days when all we had were those still pictures. By enabling this module, you won't have to deal with those annoying kids who send epilepsy inducing images.";
+    },
     async execute(client, message: XMessage) {
         try {
             if (!message.guild || !message.member) return;

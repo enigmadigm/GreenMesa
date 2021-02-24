@@ -98,6 +98,9 @@ setTimeout(() => {
 
 export const service: MessageService = {
     text: true,
+    async getInformation() {
+        return "Stop excessive spam. Enable this module to prevent incursions of spammers on your server. This module currently acts on a per channel basis only and watches for spam over time. To avoid false positives, it waits to be sure spam is occurring. If it flags spam, it will delete messages from the start of when it believes a user starts to spam. This module may take up to ten (10) seconds to detect spam.";
+    },
     async execute(client, message: XMessage) {
         try {
             if (!message.guild || !message.member || !(message.channel instanceof TextChannel) || message.author.bot || message.webhookID) return;
