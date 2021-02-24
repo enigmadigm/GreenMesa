@@ -317,7 +317,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
     
         if (command.guildOnly && dm) {// command is configured to only execute outside of dms
-            message.channel.send('I can\'t execute that command inside DMs!');
+            message.channel.send(`That is not a DM executable command.`);
             return;
         }
         if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only, THIS IS AN OUTDATED PROPERTY BUT IS STILL USED
@@ -334,19 +334,36 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
-        const commandEnabledGuild = await client.database?.getGuildSetting(message.guild || "", `${command.name}_toggle`);
-        if ((commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable')) {
+        const commandEnabledGuild = message.guild ? await client.database?.getGuildSetting(message.guild, `${command.name}_toggle`) : false;
+        const commandDisabled = (commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable');
+        if (commandDisabled) {
             if (command.name === "h") return;
             message.channel.send({
                 embed: {
                     title: `Command Disabled`,
-                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? "**globally**" : "**on this server**"}.`,
+                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? "**globally**" : "**in this server**"}.`,
                     footer: {
-                        text: `${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? 'sorry, please be patient' : 'admins may re-enable it'}`
+                        text: `${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
                     }
                 }
             });
             return;
+        } else if (command.category) {
+            const groupGlobal = await client.database?.getGlobalSetting(`${command.category}_enabled`);
+            const groupGuild = message.guild ? await client.database?.getGuildSetting(message.guild, `${command.category}_toggle`) : false;
+            const groupDisabled = (groupGlobal && groupGlobal.value == 'false') || (groupGuild && groupGuild.value === 'disable');
+            if (groupDisabled) {
+                message.channel.send({
+                    embed: {
+                        title: `Category Disabled`,
+                        description: `Command group \`${command.category}\` has been disabled ${(groupGlobal && groupGlobal.value == 'false') ? "**globally**" : "**in this server**"}.`,
+                        footer: {
+                            text: `${(groupGlobal && groupGlobal.value == 'false') ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
+                        }
+                    }
+                });
+                return;
+            }
         }
 
         if (command.moderation && message.guild) {
