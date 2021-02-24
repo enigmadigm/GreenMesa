@@ -1,7 +1,7 @@
 import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, GuildItemSpecial, GuildsEndpointData, PartialGuildObject, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, GuildItemSpecial, GuildsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
@@ -214,6 +214,44 @@ export default function routerBuild (client: XClient): express.Router {
                 total: channels.length,
                 channels
             });
+        } catch (e) {
+            xlg.error(e);
+            res.sendStatus(500);
+        }
+    });
+
+    router.get("/guilds/:id/roles", async (req, res) => {
+        const { id } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            return res.sendStatus(400);
+        }
+        if (!req.user) {
+            return res.sendStatus(401);
+        }
+        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.sendStatus(401);
+        }
+        const g = await client.guilds.fetch(id);
+        if (!g) return res.sendStatus(404);
+
+        const roles = g.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map((c) => {
+            const data: RoleData = {
+                id: c.id,
+                name: c.name,
+                position: c.position,
+                hexColor: c.hexColor
+            }
+            return data;
+        }).sort((a, b) => b.position - a.position);
+
+        try {
+            const toSend: RoleEndpointData = {
+                id,
+                total: roles.length,
+                roles
+            };
+            res.send(toSend);
         } catch (e) {
             xlg.error(e);
             res.sendStatus(500);

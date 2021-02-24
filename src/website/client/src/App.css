@@ -335,10 +335,14 @@ body, html {
 .cardsubtitle {
   color: #fefefe;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 18px;
   margin-bottom: .5rem;
   line-height: 1.2;
   margin-top: 0;
+}
+
+.x-card hr {
+  border-top: 1px solid rgba(36, 36, 36, 0.5);
 }
 
 .c-button {
