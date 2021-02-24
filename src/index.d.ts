@@ -15,3 +15,4 @@ declare global {
 }*/
 
 declare module 'plotly';
+declare module 'corpora';
