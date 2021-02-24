@@ -36,7 +36,7 @@ export function AntiLink(props: AMCustomOptionsProps) {
                     Nested links
                 </FormLabel>
                 <Switch id={`amalnest`} onChange={handleNestedToggle} defaultChecked={mod.notNested} checked={mod.notNested} style={{ marginRight: 10 }} />
-                <span style={{ fontWeight: 700, paddingBottom: 5 }}>{mod.notNested ? "on" : "off"}</span>
+                <span style={{ fontWeight: 700, paddingBottom: 5 }}>{mod.notNested ? "off" : "on"}</span>
             </FormControl>
             <p style={{ marginBottom: "1rem" }}>The module will check for nested links by default. Nested means within text (e.g. innocenttextgoogle.cominnocenttext). Check this option to disable the nested links checking.</p>
         </div>
