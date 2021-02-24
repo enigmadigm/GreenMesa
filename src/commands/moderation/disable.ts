@@ -17,38 +17,39 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-        
-            const commandName = args[0].toLowerCase();
-            const command = client.commands?.get(commandName) || client.commands?.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
-            
-            if (!command) {
-                await message.channel.send(`No command with name or alias \`${commandName}\``);
+
+            const searchName = args[0].toLowerCase();
+            const catMatch = client.categories?.get(searchName);
+            const found = client.commands?.get(searchName) || client.commands?.find(cmd => !!(cmd.aliases && cmd.aliases.includes(searchName))) || catMatch;
+
+            if (!found) {
+                await message.channel.send(`No command or group with name or alias \`${searchName}\``);
                 return;
             }
 
-            if (command.name === "enable" || command.name === "disable") {
+            if (found.name === "enable" || found.name === "disable") {
                 await message.channel.send({
                     embed: {
                         color: await client.database?.getColor("fail_embed_color"),
-                        description: `Cannot toggle \` enable \` or \` disable \``,
+                        description: `Debossing \` enable \` or \` disable \` is prohibited`,
                         footer: {
-                            text: `command toggle`
+                            text: `module debosser`
                         }
                     }
                 });
                 return;
             }
-            
-            const result = await client.database?.getGuildSetting(message.guild, `${command.name}_toggle`);
+
+            const result = await client.database?.getGuildSetting(message.guild, `${found.name}_toggle`);
             if (!result || (result.value && result.value === "enable")) {
-                const result = await client.database?.editGuildSetting(message.guild, `${command.name}_toggle`, "disable");
+                const result = await client.database?.editGuildSetting(message.guild, `${found.name}_toggle`, "disable");
                 if (!result || result.affectedRows < 1) {
                     await message.channel.send({
                         embed: {
                             color: await client.database?.getColor("fail_embed_color"),
-                            description: `Failed to disable command`,
+                            description: `Failed to disable ${catMatch ? "group" : "command"}`,
                             footer: {
-                                text: `command toggle`
+                                text: `module debosser`
                             }
                         }
                     });
@@ -57,9 +58,9 @@ export const command: Command = {
                 await message.channel.send({
                     embed: {
                         color: await client.database?.getColor("success_embed_color"),
-                        description: `Command \` ${command.name} \` toggled to **disabled**`,
+                        description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` toggled to **disabled**`,
                         footer: {
-                            text: `command toggle`
+                            text: `module debosser`
                         }
                     }
                 });
@@ -69,9 +70,9 @@ export const command: Command = {
                 await message.channel.send({
                     embed: {
                         color: await client.database?.getColor("warn_embed_color"),
-                        description: `Command \` ${command.name} \` already disabled`,
+                        description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` already disabled`,
                         footer: {
-                            text: `command toggle`
+                            text: `module debosser`
                         }
                     }
                 });

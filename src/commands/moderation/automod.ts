@@ -187,6 +187,11 @@ export const command: Command = {
                 default: {
                     const mod = allMods.find(x => x.name === args[argIndex]);
                     if (args[argIndex] && mod) {
+                        argIndex++;
+                        if (args[argIndex] && args[argIndex] === "enable" || args[argIndex] === "disable") {
+                            client.specials?.sendError(message.channel, `To enable a module, you must send \`${message.gprefix} am enable ${mod.name || "{module}"}\`.`)
+                            break;
+                        }
                         const enabled = await client.database?.getAutoModuleEnabled(message.guild.id, mod.name, undefined, true) || false;
                         /*if (!enabled) {
                             client.specials?.sendError(message.channel, "Module not enabled anywhere");
@@ -221,6 +226,9 @@ ${!enabled ? "Disabled" : "Enabled"}
                                 }
                             });
                         }
+                        break;
+                    } else if (args[argIndex]) {
+                        client.specials?.sendError(message.channel, `\`${args[argIndex]}\` is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`)
                         break;
                     }
 
