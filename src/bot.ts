@@ -59,6 +59,7 @@ client.specials = specials;
 const cooldowns: Discord.Collection<Command["name"], Discord.Collection<string, number>> = new Discord.Collection();
 
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
+    client.database = await new DBManager().handleDisconnect();
     // Stats updates in logs and database
     const co = new Commands();
     await co.load(co.rootCommandPath);
@@ -70,7 +71,6 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
 
     const tas = new TimedActionsSubsystem();
 
-    client.database = await new DBManager().handleDisconnect();
     xlg.log(`Bot ${client.user?.tag}(${client.user?.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     const lo = client.channels.cache.get('661614128204480522');
     if (lo instanceof TextChannel) {
