@@ -64,11 +64,13 @@ const levelRoles = [{
 
 export class DBManager {
     public db!: mysql.Connection;
-    private query!: (arg1: string | mysql.QueryOptions) => Promise < unknown > ;
+    private query!: (arg1: string | mysql.QueryOptions) => Promise < unknown >;
+    public connected: boolean;
 
     constructor() {
         this.db;
         this.query;
+        this.connected = false;
     }
 
     async handleDisconnect(): Promise < this > {
@@ -80,6 +82,7 @@ export class DBManager {
                     setTimeout(this.handleDisconnect, 2000);
                     return;
                 }
+                this.connected = true;
                 xlog.log("Connected to database");
             });
             conn.on('error', (err) => {
