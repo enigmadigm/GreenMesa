@@ -10,7 +10,7 @@ export const service: MessageService = {
     async execute(client, member: GuildMember) {
         try {
             if (!member.guild) return;
-            const modResult = await Bot.client.database?.getAutoModuleEnabled(member.guild.id, "nicenicks");
+            const modResult = await Bot.client.database?.getAutoModuleEnabled(member.guild.id, "nicenicks", undefined, undefined, member);
             if (!modResult) return;
             
             const name = member.nickname || member.user.tag;
