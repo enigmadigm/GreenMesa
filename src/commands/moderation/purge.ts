@@ -63,7 +63,9 @@ export const command: Command = {
                 message.channel.bulkDelete(messages);
             }
 
-            message.channel.send(`Purged ${c} messages`)
+            if (args.join(" ").endsWith("-m")) {
+                message.channel.send(`Purged ${c} messages`);// People don't seem to like that it says a message at the end.
+            }
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
