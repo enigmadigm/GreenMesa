@@ -17,7 +17,7 @@ export function NiceNicks(props: AMCustomOptionsProps) {
             <hr style={{ marginTop: 15, marginBottom: 15 }} />
             <FormControl display="flex" alignItems="center">
                 <FormLabel htmlFor={`amnndm`} mb="0">
-                    Send DM?
+                    Send DM
                 </FormLabel>
                 <Switch id={`amnndm`} onChange={handleDMToggle} defaultChecked={mod.sendDM} checked={mod.sendDM} style={{ marginRight: 10 }} />
                 <span style={{ fontWeight: 700, paddingBottom: 5 }}>{mod.sendDM ? "on" : "off"}</span>
