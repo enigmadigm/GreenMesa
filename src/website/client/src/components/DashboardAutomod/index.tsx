@@ -131,7 +131,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                 </div>
                 <div className="x-card-parent">
                     <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles} handleModuleSave={handleModuleSave}
-                        displayName="Christian Mode / Banned Words"
+                        displayName="Christian Mode / Banned Phrases"
                         name="profanity"
                         description="Christian mode for your server. Enabling this module will censore all popular obscene language and many variations of that totally vulgar content."
                         isTextModule

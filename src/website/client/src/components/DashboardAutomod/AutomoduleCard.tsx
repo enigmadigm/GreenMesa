@@ -2,7 +2,7 @@ import React from 'react';
 import { HomeProps } from '../../pages/DashboardPage';
 import { Center, Collapse, FormControl, FormLabel, Spinner, Switch, useDisclosure } from '@chakra-ui/react';
 import { AutomoduleData, AutomoduleEndpointData, ChannelData, RoleData } from '../../../../../gm';
-import Select, { GroupTypeBase, OptionsType, OptionTypeBase, Styles } from "react-select"
+import Select, { GroupTypeBase, OptionsType, OptionTypeBase, Styles } from "react-select";
 import isEqual from 'lodash.isequal';
 import chroma from 'chroma-js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -36,7 +36,8 @@ export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase
     multiValueRemove: (styles) => ({ ...styles, color: '#8a70ff' }),
     option: (styles, state) => ({ ...styles, ":hover": { backgroundColor: '#57626C' }, backgroundColor: state.isFocused ? "initial" : "initial" }),
     dropdownIndicator: (styles, state) => ({ ...styles, color: state.isDisabled ? "#343B41" : styles.color }),
-    indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor })
+    indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor }),
+    input: (styles) => ({ ...styles, color: "#8a70ff" }),
 };
 
 const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
@@ -65,7 +66,8 @@ const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<Option
         }
     },
     dropdownIndicator: (styles, state) => ({ ...styles, color: state.isDisabled ? "#343B41" : styles.color }),
-    indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor })
+    indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor }),
+    input: (styles) => ({ ...styles, color: "#8a70ff" }),
 };
 
 function CollapseIndicator(props: {collapsed: boolean}) {

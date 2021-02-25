@@ -79,13 +79,11 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
 
     React.useEffect(() => {
         fetch("/api/auth")
-            .then(x => x.json())
-            .catch((e) => {
-                //props.history.push("/api/auth/discord");
-                window.location.href = `${host}/api/auth/discord?redirect=${encodeURIComponent(window.location.href)}`;
+            .then(x => {
+                return x.json()
+                    .catch((e) => {throw Error("login")})
             })
             .then(d => {
-                //console.log(d)
                 setUser(d);
                 return fetch(`/api/discord/guilds/${guildID}/config`);
             })
@@ -96,7 +94,12 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                 setLoading(false);
             })
             .catch((e) => {
-                window.location.href = `/dash/unauthorized`;
+                // window.location.href = `${host}/api/auth/discord?redirect=${encodeURIComponent(window.location.href)}`;
+                if (e.message === "login") {
+                    window.location.href = `${host}/api/auth/discord?redirect=${encodeURIComponent(window.location.href)}`;
+                } else {
+                    window.location.href = `/dash/unauthorized`;
+                }
                 setLoading(true);
             })
     }, [guildID])

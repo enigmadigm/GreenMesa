@@ -209,7 +209,8 @@ export interface AutomoduleData {
     ignoreBots?: boolean;
     sendDM?: boolean;
     notNested?: boolean;
-    customList?: string;
+    customList?: string[];
+    option1?: boolean;
 }
 
 export interface GuildUserDataRow {
