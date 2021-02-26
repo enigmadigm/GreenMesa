@@ -80,7 +80,7 @@ random
                             client.specials?.sendError(message.channel, `No image could be found.`);
                             break;
                         }*/
-                        await message.channel.send(`${j.title || j.safe_title}${j.transcript ? `\n${j.transcript}` : ""}`, attach);
+                        await message.channel.send(`**${j.title || j.safe_title}**${j.alt ? `\n${j.alt}` : ""}`, attach);
                     } catch (error) {
                         client.specials?.sendError(message.channel, "Comic could not be retrieved. Try again later.", true);
                     }
@@ -119,7 +119,7 @@ random
                             client.specials?.sendError(message.channel, `No image could be found.`);
                             break;
                         }*/
-                        await message.channel.send(`${c.title || c.safe_title}${c.transcript ? `\n${c.transcript}` : ""}`, attach);
+                        await message.channel.send(`**${c.title || c.safe_title}**${c.alt ? `\n${c.alt}` : ""}`, attach);
                     } catch (error) {
                         client.specials?.sendError(message.channel, "Comic could not be retrieved. Try again later.", true);
                     }
@@ -152,7 +152,7 @@ random
                             client.specials?.sendError(message.channel, `No image could be found.`);
                             break;
                         }*/
-                        await message.channel.send(`${c.title || c.safe_title}${c.transcript ? `\n${c.transcript}` : ""}`, attach);
+                        await message.channel.send(`**${c.title || c.safe_title}**${c.alt ? `\n${c.alt}` : ""}`, attach);
                     } catch (error) {
                         client.specials?.sendError(message.channel, "Comic could not be retrieved. Try again later.", true);
                     }
