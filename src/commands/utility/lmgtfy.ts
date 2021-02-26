@@ -55,7 +55,7 @@ export const command: Command = {
                 if (sc) {
                     const embed = {
                         "description": `[Let Me Get That For You](https://${sengine}?q=${sterms}${iie})`,
-                        "color": 15277667,
+                        "color": 0x2F3136,
                         "image": {
                             "url": 'attachment://screenshot.png'
                         }
