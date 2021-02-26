@@ -1,7 +1,7 @@
 import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, GuildItemSpecial, GuildsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
@@ -34,6 +34,8 @@ export default function routerBuild (client: XClient): express.Router {
     const router = express.Router();
 
     router.use(express.json());
+
+    // GETters
 
     router.get('/guilds', (req, res) => {
         if (!req.user) {
@@ -74,14 +76,15 @@ export default function routerBuild (client: XClient): express.Router {
         res.send(r);
     });
 
-    router.get('/guildsall', (req, res) => {
+    router.get('/guildsall', async (req, res) => {
         if (!req.user) {
             return res.sendStatus(401);
         }
         if (!(client instanceof Client) || !Array.isArray(req.user.guilds) || !req.user.guilds.length) {
             return res.sendStatus(500);
         }
-        const mg = getMutualGuilds(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuilds(req.user.guilds, allGuilds ? allGuilds.array() : []);
         res.send({
             guilds: mg,
             user: req.user
@@ -96,7 +99,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -139,7 +143,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -175,7 +180,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -228,7 +234,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -266,7 +273,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -308,11 +316,12 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
-        const g = await client.guilds.fetch(id);
+        const g = mg.find(x => x.id === id);
         if (!g) return res.sendStatus(404);
 
         const mod = await client.database?.getAutoModule(id, name);
@@ -320,12 +329,6 @@ export default function routerBuild (client: XClient): express.Router {
             res.sendStatus(500);
             return;
         }
-
-        /*interface ModData {
-            name: string;
-            enabled: boolean;
-            channels: string[];
-        }*/
 
         try {
             const toSend: AutomoduleEndpointData = {
@@ -339,6 +342,44 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
+    router.get("/guilds/:id/levels", async (req, res) => {
+        const { id } = req.params;
+        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            return res.sendStatus(400);
+        }
+        if (!req.user) {
+            return res.sendStatus(401);
+        }
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.sendStatus(401);
+        }
+        const g = mg.find(x => x.id === id);
+        if (!g) return res.sendStatus(404);
+
+        const levellingEnabled = await client.database?.getGuildSetting(g.id, 'xp_levels');
+        let enabled = true;
+        if (!levellingEnabled || levellingEnabled.value === 'disabled') {
+            enabled = false;
+        }
+        const levelRows = await client.database?.getLevelRoles(g.id) || [];
+
+        try {
+            const toSend: LevelsEndpointData = {
+                id,
+                enabled,
+                levels: levelRows
+            }
+            res.send(toSend);
+        } catch (e) {
+            xlg.error(e);
+            res.sendStatus(500);
+        }
+    });
+
+    // PUTters
+
     router.put("/guilds/:id/prefix", async (req, res) => {
         const { prefix } = req.body;
         if (!prefix || typeof prefix !== "string") {
@@ -351,7 +392,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -381,7 +423,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -417,7 +460,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }
@@ -454,7 +498,8 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const mg = getMutualGuildsWithPerms(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
         }

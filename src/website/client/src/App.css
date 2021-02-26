@@ -355,6 +355,14 @@ body, html {
   background-color: #000000;
 }
 
+code {
+  background-color: #23292e;
+  color: rgb(63, 98, 204);
+  padding: 3px 4px;
+  font-size: 0.8em !important;
+  border-radius: 5px;
+}
+
 .field-alert {
   position: fixed;
   width: 200px;
