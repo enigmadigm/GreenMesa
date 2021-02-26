@@ -1,7 +1,6 @@
 import React from 'react';
 import './Automod.css';
 import { Center, Spinner } from '@chakra-ui/react';
-//import { Formik, ErrorMessage } from "formik";
 import { HomeProps } from '../../pages/DashboardPage';
 import { AutomoduleCard } from './AutomoduleCard';
 import { AntiEmbed } from './AntiEmbed';
@@ -10,11 +9,6 @@ import { AntiLink } from './AntiLink';
 import { NiceNicks } from './NiceNicks';
 import { Profanity } from './Profanity';
 import { ChannelData, ChannelEndpointData, RoleData, RoleEndpointData } from '../../../../../gm';
-//import { AutomoduleEndpointData } from '../../../../../gm';
-
-/*function ModSwitch(event: React.ChangeEvent<HTMLInputElement>) {
-    console.log(event)
-}*/
 
 export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
     const { setStatus } = props;
