@@ -7,6 +7,13 @@ interface GuildMenuItemProps {
     guild: GuildItemSpecial;
 }
 
+function nameAcronym(name: string) {
+    return name
+        .replace(/'s /g, ' ')
+        .replace(/\w+/g, e => e[0])
+        .replace(/\s/g, '');
+}
+
 export function GuildMenuItem(props: GuildMenuItemProps) {
     const { guild } = props;
 
@@ -23,7 +30,7 @@ export function GuildMenuItem(props: GuildMenuItemProps) {
                     ) : (
                         <div className="gmplacer">
                             <div>
-                                {guild.name ? guild.name.split(" ").map(x => x[0]) : ""}
+                                {nameAcronym(guild.name) /* this could have been replaced by the name_acronym prop*/}
                             </div>
                         </div>
                     )}

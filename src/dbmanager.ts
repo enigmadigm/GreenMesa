@@ -115,7 +115,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")
+            this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `roles` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
 
             return this;
@@ -264,6 +264,10 @@ export class DBManager {
         }
     }
 
+    /**
+     * This will check to see if level roles in a given guild exist. If they do not, it will create them. If they do, it will check to see if the roles still exist in the guild and delete the entries if they do not.
+     * @param guild guild to check in
+     */
     async checkForLevelRoles(guild: Guild): Promise<LevelRolesRow[] | void> {
         try {
             if (!guild) return;
@@ -294,6 +298,15 @@ export class DBManager {
         } catch (error) {
             xlog.error(error);
         }
+    }
+
+    async getLevelRoles(guildid: string): Promise<LevelRolesRow[] | false> {
+        if (!guildid) return false;
+        const rows = await <Promise<LevelRolesRow[]>>this.query(`SELECT * FROM levelroles WHERE guildid = ${guildid} ORDER BY level DESC`);
+        if (rows && rows.length) {
+            return rows;
+        }
+        return false;
     }
 
     /**
@@ -391,8 +404,8 @@ export class DBManager {
 
     /**
      * Gets the top 10 members by xp of a guild plus the ranking of the provided member.
-     * @param {string} guildid id of guild to look up
-     * @param {string} memberid id of member in guild to look up
+     * @param guildid id of guild to look up
+     * @param memberid id of member in guild to look up
      */
     async getTop10(guildid = "", memberid = ""): Promise<{rows: ExpRow[], personal: PersonalExpRow} | false> {
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 10`);
@@ -406,8 +419,8 @@ export class DBManager {
 
     /**
      * Gets the value of a discord guild setting, if it exists.
-     * @param {object} guild guild object
-     * @param {string} name property name
+     * @param guild guild object
+     * @param name property name
      */
     async getGuildSetting(guild: string | Guild, name: string): Promise<GuildSettingsRow | false> {
         try {
@@ -462,7 +475,7 @@ export class DBManager {
 
     /**
      * Deletes the xp entry for a member of a guild.
-     * @param {object} member guild member to delete the xp for
+     * @param member guild member to delete the xp for
      */
     async clearXP(member: GuildMember | PartialGuildMember): Promise<number> {
         if (!member || !member.id || !member.guild || !member.guild.id) return 0;
@@ -472,7 +485,7 @@ export class DBManager {
 
     /**
      * Deletes all xp entries for a guild.
-     * @param {object} guild guild to delete the xp from
+     * @param guild guild to delete the xp from
      */
     async massClearXP(guild: Guild): Promise<number> {
         if (!guild) return 0;
@@ -482,10 +495,10 @@ export class DBManager {
 
     /**
      * Configure the role reward roles for a given guild.
-     * @param {number} level the current level for the role to be set to
-     * @param {Discord.Guild} guild the guild for the role to be set to
-     * @param {Discord.Role} role the role to be added or configured
-     * @param {boolean} deleting whether or not the given role should be deleted from the database, if true the level param will be ignored
+     * @param level the current level for the role to be set to
+     * @param guild the guild for the role to be set to
+     * @param role the role to be added or configured
+     * @param deleting whether or not the given role should be deleted from the database, if true the level param will be ignored
      */
     async setLevelRole(level: number | null, guild: Guild, role: Role, deleting = false): Promise<LevelRolesRow[] | number | false> {
         if (!guild || !guild.id) return false;
@@ -518,7 +531,7 @@ export class DBManager {
 
     /**
      * Deletes all of the level roles for a given guild
-     * @param {Discord.Guild} guild the guild to delete the roles of
+     * @param guild the guild to delete the roles of
      */
     async deleteAllLevelRoles(guild: Guild): Promise<InsertionResult | false> {
         if (!(guild instanceof Discord.Guild)) return false;
@@ -529,7 +542,7 @@ export class DBManager {
 
     /**
      * Log command usage (after execution)
-     * @param {string} name name of command being logged
+     * @param name name of command being logged
      */
     async logCmdUsage(name: string): Promise<void> {
         try {
@@ -553,7 +566,7 @@ export class DBManager {
 
     /**
      * Get total number of commands sent from db
-     * @returns {number} result object with edit information, or string for promise rejection
+     * @returns result object with edit information, or string for promise rejection
      */
     async getTotalCmdUsage(): Promise<CmdTrackingRow[] | undefined> {
         try {
@@ -597,7 +610,7 @@ export class DBManager {
 
     /**
      * Set that spidey saved a member
-     * @param {Discord.GuildMember} member object of the member who was saved
+     * @param member object of the member who was saved
      */
     async setSpideySaved(target: GuildMember): Promise<boolean> {
         try {
@@ -699,6 +712,9 @@ export class DBManager {
         }
     }
 
+    /**
+     * Checks for a user of the dashboard and updates its values.
+     */
     async updateDashUser(id: string, username: string, discriminator: string, avatar: string, guilds: PartialGuildObject[]): Promise<false | InsertionResult> {
         try {
             if (!id || !username || !discriminator || !guilds) return false;
@@ -729,6 +745,9 @@ export class DBManager {
         }
     }
 
+    /**
+     * Get a user for the dashboard, if one exists in the database. It finds by user id.
+     */
     async getDashUser(id: string): Promise<false | DashUserObject> {
         try {
             if (!id) return false;
@@ -796,11 +815,17 @@ export class DBManager {
         return parsed;
     }
 
+    /**
+     * Delete an existing action in the timedactions queue.
+     */
     async deleteAction(id: string): Promise<InsertionResult> {
         const result = await <Promise<InsertionResult>>this.query(`DELETE FROM timedactions WHERE actionid = '${id.replace(/'/g, "\\'")}'`);
         return result;
     }
 
+    /**
+     * Get discord global user data, stored in the database.
+     */
     async getUserData(userid: string): Promise<UserDataRow | false> {
         try {
             const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = '${userid.replace(/'/g, "\\'")}'`);
@@ -838,6 +863,9 @@ export class DBManager {
         }
     }
 
+    /**
+     * Get all guild settings in an array where the property/name begins with a given prefix.
+     */
     async getGuildSettingsByPrefix(guildid: string, prefix: string): Promise<GuildSettingsRow[] | false> {
         if (!guildid || !prefix) return false;
         const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM \`guildsettings\` WHERE \`guildid\` = '${guildid.replace(/'/g, "\\'")}' AND \`property\` LIKE '${prefix.replace(/'/g, "\\'")}%'`);
@@ -847,6 +875,9 @@ export class DBManager {
         return result;
     }
 
+    /**
+     * Get an automodule for a guild, or create one from the default values.
+     */
     async getAutoModule(guildid: string, mod: string, row?: GuildSettingsRow): Promise<AutomoduleData> {
         const defaults: AutomoduleData = {
             name: mod,
@@ -885,6 +916,9 @@ export class DBManager {
         return defaults;
     }
 
+    /**
+     * Get every automodule for a guild.
+     */
     async getAllAutoModules(guildid: string): Promise<AutomoduleData[]> {
         if (!guildid) return [];
         const services = Bot.client.services?.automods || [];
@@ -897,6 +931,9 @@ export class DBManager {
         return guildMods;
     }
 
+    /**
+     * Check if an automodule is enabled given different check values.
+     */
     async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean, member?: GuildMember): Promise<false | AutomoduleData> {
         if (!guildid || !mod) return false;
         const m = await this.getAutoModule(guildid, mod);

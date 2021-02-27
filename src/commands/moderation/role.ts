@@ -58,14 +58,14 @@ export const command: Command = {
                 } else if (args[0] === "alloff") {
                     target = "alloff";
                 } else {
-                    client.specials?.sendError(message.channel, "Member/role target not specified/valid.");
+                    client.specials?.sendError(message.channel, "Member/role target not specified/valid.\n`<target> <role>`");
                     return false;
                 }
             }
             args.shift();
             const targetRole = stringToRole(g, args.join(" "), true, true, false);
             if (!targetRole || !(targetRole instanceof Role)) {
-                client.specials?.sendError(message.channel, "Role-to-toggle not specified/valid.");
+                client.specials?.sendError(message.channel, "Role-to-toggle not specified/valid.\n`<target> <role>`");
                 return false;
             }
 

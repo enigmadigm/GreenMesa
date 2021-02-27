@@ -3,6 +3,7 @@ import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
 import { MessageServices } from "./services";
+import { AutoRoler } from "./utils/arhandler";
 
 export interface XClient extends Client {
     commands?: Collection<string, Command>;
@@ -11,6 +12,7 @@ export interface XClient extends Client {
     specials?: typeof Specials;
     database?: DBManager;
     services?: MessageServices;
+    ar?: AutoRoler;
 }
 
 export interface Command {
@@ -197,20 +199,20 @@ export interface UserDataRow {
 }
 
 export interface AutomoduleData {
-    name: string;
-    text: boolean;
-    enableAll: boolean;
-    channels?: string[];
-    channelEffect?: 'enable' | 'disable';
-    applyRoles: string[];
-    roleEffect: 'ignore' | 'watch';
-    strict?: boolean;
-    onlyOnMessage?: boolean;
-    ignoreBots?: boolean;
-    sendDM?: boolean;
-    notNested?: boolean;
-    customList?: string[];
-    option1?: boolean;
+    name: string;// name of module
+    text: boolean;// module extra
+    enableAll: boolean;// enable module or override channels
+    channels?: string[];// channel ids to apply effect to
+    channelEffect?: 'enable' | 'disable';// effect to use channels for
+    applyRoles: string[];// role ids to apply effect to
+    roleEffect: 'ignore' | 'watch';// effect to use roles for
+    strict?: boolean;// enable module strict mode if it has one
+    onlyOnMessage?: boolean;// if avail, only activate module on messages
+    ignoreBots?: boolean;// ignore bot users if avail
+    sendDM?: boolean;// send a warning dm as an option
+    notNested?: boolean;// extra
+    customList?: string[];// extra
+    option1?: boolean;// extra extra
 }
 
 export interface GuildUserDataRow {
@@ -224,10 +226,10 @@ export interface GuildUserDataRow {
     bans: number;
     bio: string;
     nicknames: string;
+    roles: string;
 }
 
-export interface AutomoduleEndpointData {
-    id: string;
+export interface AutomoduleEndpointData extends GuildsEndpointBase {
     automodule: AutomoduleData;
 }
 
@@ -254,8 +256,7 @@ export interface ChannelData {
     topic?: string;
 }
 
-export interface ChannelEndpointData {
-    id: string;
+export interface ChannelEndpointData extends GuildsEndpointBase {
     total: number;
     channels: ChannelData[];
 }
@@ -267,8 +268,7 @@ export interface RoleData {
     position: number;
 }
 
-export interface RoleEndpointData {
-    id: string;
+export interface RoleEndpointData extends GuildsEndpointBase {
     total: number;
     roles: RoleData[];
 }
@@ -285,4 +285,20 @@ export interface XKCDEndpointResponse {
     img: string;
     title: string;
     day: string;
+}
+
+export interface AutoroleData {
+    name: string;
+    enabled: boolean;
+    roles: string[];
+    ignore?: string[];
+}
+
+export interface LevelsEndpointData  extends GuildsEndpointBase {
+    enabled: boolean;
+    levels: LevelRolesRow[];
+}
+
+export interface GuildsEndpointBase {
+    id: string;
 }

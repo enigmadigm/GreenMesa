@@ -34,7 +34,7 @@ export const command: Command = {
     args: false,
     specialArgs: undefined,
     cooldown: 1,
-    permLevel: permLevels.trustedMember,
+    permLevel: permLevels.member,
     moderation: undefined,
     guildOnly: true,
     ownerOnly: false,
@@ -158,9 +158,36 @@ random
                     }
                     break;
                 }
-                default:
+                default: {
+                    ai++;
+                    const o = args[ai];
+                    if (o && /^[0-9]+$/.test(o)) {
+                        if (!checkFilePerms(message.channel)) break;
+                        const pi = parseInt(o, 10);
+                        try {
+                            const c = await getComic(pi);
+                            if (c === 404) {
+                                client.specials?.sendError(message.channel, "Comic does not exist. Yet.", true);
+                                break;
+                            }
+                            if (typeof c === "number") {
+                                client.specials?.sendError(message.channel, "xkcd gave an unexpected response.", true);
+                                break;
+                            }
+
+                            const attach = new MessageAttachment(`${c.img}`);
+                            /*if (!attach.height) {
+                                client.specials?.sendError(message.channel, `No image could be found.`);
+                                break;
+                            }*/
+                            await message.channel.send(`**${c.title || c.safe_title}**${c.alt ? `\n${c.alt}` : ""}`, attach);
+                        } catch (error) {
+                            client.specials?.sendError(message.channel, "Comic could not be retrieved. Try again later.", true);
+                        }
+                    }
                     client.specials?.sendError(message.channel, "No valid option was sent", true);
                     break;
+                }
             }
         } catch (error) {
             xlg.error(error);

@@ -2,11 +2,7 @@ import xlg from "../../xlogger";
 //import { getGlobalSetting, getGuildSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
-
-interface MkRoleData {
-    name: string;
-    color?: number;
-}
+import { RoleData } from "discord.js";
 
 export const command: Command = {
     name: "mkrole",
@@ -28,8 +24,8 @@ export const command: Command = {
                 await client.specials?.sendError(message.channel, "Role name cannot exceed 100 characters");
                 return;
             }
-            const roleData: MkRoleData = { name: param[0] };
-            if (args[1] && parseInt(param[1], 16)) {
+            const roleData: RoleData = { name: param[0] };
+            if (param[1] && parseInt(param[1], 16)) {
                 roleData.color = parseInt(param[1], 16);
             }
             const nrole = await message.guild.roles.create({ data: roleData, reason: "with mkrole command" });

@@ -2,7 +2,7 @@
 import xlg from "../xlogger";
 import moment from 'moment';
 import { XClient } from '../gm';
-import { Channel, DMChannel, TextChannel } from 'discord.js';
+import { Channel, Collection, DMChannel, Guild, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
@@ -137,6 +137,22 @@ export function delayedLoop(callback: (arg0: number) => void, start = 0, end = 1
     }
 
     iteration();
+}
+
+type GuildCollection = Collection<string, Guild>;
+export async function getAllGuilds(client: XClient): Promise<GuildCollection | false> {
+    const reductionFunc = (a: GuildCollection, b: Guild[]) => {
+        const bc: GuildCollection = new Collection()
+        for (const bg of b) {
+            bc.set(bg.id, bg);
+        }
+        return a.concat(bc);
+    };
+    const guilds: GuildCollection = (await client.shard?.fetchClientValues("guilds.cache"))?.reduce(reductionFunc, <GuildCollection>(new Collection()));
+    if (!guilds) {
+        return false;
+    }
+    return guilds;
 }
 
 /*exports.sendModerationDisabled = sendModerationDisabled;
