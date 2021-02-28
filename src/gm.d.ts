@@ -191,6 +191,12 @@ export interface UnmuteActionData {
     duration: string;
 }
 
+export interface UnbanActionData {
+    guildid: string;
+    userid: string;
+    duration: string;
+}
+
 export interface UserDataRow {
     userid: string;
     afk: string | null;
@@ -292,6 +298,7 @@ export interface AutoroleData {
     enabled: boolean;
     roles: string[];
     ignore?: string[];
+    botRoles?: string[];
 }
 
 export interface LevelsEndpointData  extends GuildsEndpointBase {
