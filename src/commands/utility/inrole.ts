@@ -3,6 +3,9 @@ import xlg from '../../xlogger';
 import { stringToRole } from "../../utils/parsers";
 import { permLevels } from '../../permissions';
 import { Command } from 'src/gm';
+import { MessageEmbedOptions } from 'discord.js';
+import { PaginationExecutor } from '../../utils/pagination';
+const maxlen = 15;
 
 export const command: Command = {
     name: 'inrole',
@@ -34,22 +37,46 @@ export const command: Command = {
                 })
                 return tag.join("");
             });
+
+            // overflow handling
             list = userList.slice();
             list.unshift(`***[${userList.length}/${target.members.size}]** =>*`);
-            if (list.join("\n").length > 1024) {
+            /*if (list.join("\n").length > 1024) {
                 while (list.join("\n").length > 1018) {
                     list.pop();
                 }
+            }*/
+            
+            const overflowArray: string[][] = [];
+            if (list.length > maxlen || list.join("\n").length > 1024) {
+                const f = list.shift();
+                while (list.length) {
+                    const overLines: string[] = [];
+                    overLines.unshift(f || "");
+                    while (list.length && overLines.length <= maxlen && overLines.join("\n").length <= 1024) {
+                        
+                        overLines.push(list[0]);
+                        list.shift();
+                    }
+                    overLines[0] = `***[${overLines.length - 1}/${target.members.size}]** =>*`;
+                    overflowArray.push(overLines);
+                }
+            } else {
+                list[0] = `***[${list.length - 1}/${target.members.size}]** =>*`;
+                overflowArray.push(list);
             }
-            list[0] = `***[${list.length - 1}/${target.members.size}]** =>*`;
 
-            await message.channel.send({
-                embed: {
+            const pages: MessageEmbedOptions[] = [];
+            for (const page of overflowArray) {
+                const e: MessageEmbedOptions = {
                     color: await client.database?.getColor("info_embed_color"),
                     title: `List of users with role \`${target.name}\``,
-                    description: `${list.join("\n")}`
+                    description: `${page.join("\n")}`
                 }
-            });
+                pages.push(e);
+            }
+
+            PaginationExecutor.createEmbed(message, pages);
 
             message.channel.stopTyping();
         } catch (error) {
