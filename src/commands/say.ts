@@ -13,6 +13,7 @@ export const command: Command = {
     guildOnly: true,
     permLevel: permLevels.mod,
     category: 'utility',
+    cooldown: 1,
     async execute(client, message, args) {
         try {
             message.delete();

@@ -7,7 +7,7 @@ import xlg from "../../xlogger";
 export const command: Command = {
     name: 'serverinfo',
     description: 'get info on the current server',
-    aliases: ['server'],
+    aliases: ['server', 'si'],
     guildOnly: true,
     cooldown: 8,
     async execute(client, message) {

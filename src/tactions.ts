@@ -1,6 +1,6 @@
 import moment from "moment";
 import { Bot } from "./bot";
-import { TimedAction, UnmuteActionData } from "./gm";
+import { TimedAction, UnbanActionData, UnmuteActionData } from "./gm";
 import xlg from "./xlogger";
 
 export class TimedActionsSubsystem {
@@ -45,6 +45,7 @@ export class TimedActionsSubsystem {
                 this.execute(a);
             }
         }
+        this.running = false;
     }
 
     private async execute(action: TimedAction) {
@@ -66,6 +67,20 @@ export class TimedActionsSubsystem {
                     await m.roles.remove(d.roleid, `unmuting automatically after ${d.duration}`);
                     if (m.voice.connection && m.voice.mute) {
                         m.voice.setMute(false);
+                    }
+                    break;
+                }
+                case "unban": {
+                    const d = <UnbanActionData>action.data;
+                    if (!d.guildid || !d.userid) return;
+
+                    try {
+                        const g = await Bot.client.guilds.fetch(d.guildid);
+                        if (!g) break;
+    
+                        await g.members.unban(d.userid, `unbanning automatically after ${d.duration}`);
+                    } catch (error) {
+                        //
                     }
                     break;
                 }

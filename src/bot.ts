@@ -38,6 +38,8 @@ import { DBManager } from "./dbmanager";
 import * as specials from './utils/specials';
 import { MessageServices } from "./services";
 import { TimedActionsSubsystem } from "./tactions";
+import { AutoRoler } from './utils/arhandler';
+import { PaginationExecutor } from "./utils/pagination";
 
 export class Bot {
     static client: XClient;
@@ -70,6 +72,9 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     await client.services.load();
 
     const tas = new TimedActionsSubsystem();
+
+    const ar = new AutoRoler(client);
+    client.ar = ar;
 
     xlg.log(`Bot ${client.user?.tag}(${client.user?.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     const lo = client.channels.cache.get('661614128204480522');
@@ -243,6 +248,13 @@ client.on('emojiDelete', oemoji => {
     if (!oemoji.guild) return;
     logEmojiState(oemoji, true);
 });
+
+client.on("messageReactionAdd", async (reaction, user) => {
+    if (user.partial) {
+        user = await user.fetch();
+    }
+    PaginationExecutor.paginate(reaction, user);
+})
 
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.

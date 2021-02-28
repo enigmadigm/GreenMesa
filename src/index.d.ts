@@ -16,3 +16,15 @@ declare global {
 
 declare module 'plotly';
 declare module 'corpora';
+
+declare namespace NodeJS {
+    interface ProcessEnv {
+        WEBSITE_PORT?: string;
+        DASHBOARD_CLIENT_ID?: string;
+        DASHBOARD_CLIENT_SECRET?: string;
+        DASHBOARD_CALLBACK_URL?: string;
+        DASHBOARD_STATIC_LOC?: string;
+        DASHBOARD_COOKIE_SECRET?: string;
+        NODE_ENV?: string;
+    }
+}
