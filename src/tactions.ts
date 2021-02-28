@@ -1,6 +1,6 @@
 import moment from "moment";
 import { Bot } from "./bot";
-import { TimedAction, UnmuteActionData } from "./gm";
+import { TimedAction, UnbanActionData, UnmuteActionData } from "./gm";
 import xlg from "./xlogger";
 
 export class TimedActionsSubsystem {
@@ -67,6 +67,19 @@ export class TimedActionsSubsystem {
                     if (m.voice.connection && m.voice.mute) {
                         m.voice.setMute(false);
                     }
+                    break;
+                }
+                case "unban": {
+                    const d = <UnbanActionData>action.data;
+                    if (!d.guildid || !d.userid) return;
+
+                    const g = await Bot.client.guilds.fetch(d.guildid);
+                    if (!g) break;
+                    const m = g.members.cache.get(d.userid);
+                    if (!m) break;
+
+                    // Remove the mentioned users role and make notation in audit log
+                    await m.guild.members.unban(d.userid, `unmuting automatically after ${d.duration}`);
                     break;
                 }
                 default:
