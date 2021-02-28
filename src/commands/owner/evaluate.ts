@@ -10,7 +10,7 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             const evalRet = await eval(`(async () => {${args.join(" ")}})()`);
-            message.channel.send(`🟢 Executed:\n\`\`\`${evalRet ? evalRet : 'no return'}\`\`\``, {
+            message.channel.send(`🟢 Executed:\n\`\`\`${typeof evalRet !== "undefined" ? evalRet : 'no return'}\`\`\``, {
                 split: true
             });
             xlg.log("Executed `eval`: success");
@@ -21,4 +21,3 @@ export const command: Command = {
         }
     }
 }
-
