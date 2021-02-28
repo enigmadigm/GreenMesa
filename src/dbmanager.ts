@@ -779,7 +779,7 @@ export class DBManager {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).replace(/'/g, "\\'");
 
-            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES ('${id.replace(/'/g, "\\'")}', '${mtime.replace(/'/g, "\\'")}', ${escape(actionType)}, ${escape(actionData)})`);
+            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)})`);
 
             if (!r || !r.affectedRows) {
                 return false;
@@ -798,7 +798,7 @@ export class DBManager {
     async getActions(lookahead: number): Promise<TimedAction[] | false> {
         if (lookahead < 0 || lookahead > 3600) return false;
         const et = moment().add(lookahead, "seconds").format('YYYY-MM-DD HH:mm:ss');
-        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= '${et.replace(/'/g, "\\'")}'`);
+        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= ${escape(et)}`);
         if (!r || !r.length) {
             return [];
         }
@@ -819,7 +819,7 @@ export class DBManager {
      * Delete an existing action in the timedactions queue.
      */
     async deleteAction(id: string): Promise<InsertionResult> {
-        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM timedactions WHERE actionid = '${id.replace(/'/g, "\\'")}'`);
+        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM timedactions WHERE actionid = ${escape(id)}`);
         return result;
     }
 
@@ -828,7 +828,7 @@ export class DBManager {
      */
     async getUserData(userid: string): Promise<UserDataRow | false> {
         try {
-            const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = '${userid.replace(/'/g, "\\'")}'`);
+            const rows = await <Promise<UserDataRow[]>>this.query(`SELECT * FROM userdata WHERE userid = ${escape(userid)}`);
             if (rows && rows.length > 0) {
                 return rows[0];
             } else {

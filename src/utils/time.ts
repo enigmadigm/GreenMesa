@@ -114,14 +114,16 @@ export function getDurationDiff(timestamp0: number, timestamp1: number, duration
  */
 export function stringToDuration(text: string): number {
     let ms = 0;
-    const seconds = /(\d+)s/.exec(text);
+    const seconds = /(\d+)(s|sec|seconds)/.exec(text);
     if (seconds) ms += Number(seconds[1]) * timeUnits.second;
-    const minutes = /(\d+)m/.exec(text);
+    const minutes = /(\d+)(m|min|minutes)/.exec(text);
     if (minutes) ms += Number(minutes[1]) * timeUnits.minute;
-    const hours = /(\d+)h/.exec(text);
+    const hours = /(\d+)(h|hrs|hours)/.exec(text);
     if (hours) ms += Number(hours[1]) * timeUnits.hour;
-    const days = /(\d+)d/.exec(text);
+    const days = /(\d+)(d|days)/.exec(text);
     if (days) ms += Number(days[1]) * timeUnits.day;
+    const years = /(\d+)(y|years)/.exec(text);
+    if (years) ms += Number(years[1]) * timeUnits.day * 365;
 
     return ms;
 }

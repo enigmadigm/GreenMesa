@@ -45,6 +45,7 @@ export class TimedActionsSubsystem {
                 this.execute(a);
             }
         }
+        this.running = false;
     }
 
     private async execute(action: TimedAction) {
@@ -73,13 +74,14 @@ export class TimedActionsSubsystem {
                     const d = <UnbanActionData>action.data;
                     if (!d.guildid || !d.userid) return;
 
-                    const g = await Bot.client.guilds.fetch(d.guildid);
-                    if (!g) break;
-                    const m = g.members.cache.get(d.userid);
-                    if (!m) break;
-
-                    // Remove the mentioned users role and make notation in audit log
-                    await m.guild.members.unban(d.userid, `unmuting automatically after ${d.duration}`);
+                    try {
+                        const g = await Bot.client.guilds.fetch(d.guildid);
+                        if (!g) break;
+    
+                        await g.members.unban(d.userid, `unbanning automatically after ${d.duration}`);
+                    } catch (error) {
+                        //
+                    }
                     break;
                 }
                 default:
