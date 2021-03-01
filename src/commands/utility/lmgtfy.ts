@@ -106,7 +106,7 @@ export const command: Command = {
                 await browser.close();
             }
             if (plainText == true) {
-                message.channel.send(`https://${sengine}?q=${sterms}${iie}`);
+                await message.channel.send(`https://${sengine}?q=${sterms}${iie}`);
             } else {
                 if (sc) {
                     const embed: MessageEmbedOptions = {
@@ -124,10 +124,10 @@ export const command: Command = {
                     message.channel.stopTyping();
                     return;
                 }
-                message.channel.send({
+                await message.channel.send({
                     embed: {
                         description: `[Let Me Google That For You](https://${sengine}?q=${sterms}${iie})`,
-                        color: 15277667
+                        color: 0xF4B400
                     }
                 });
             }
