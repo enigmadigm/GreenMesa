@@ -1,6 +1,7 @@
 import xlg from '../xlogger';
 import { permLevels } from '../permissions';
 import { Command } from 'src/gm';
+import { MessageEmbedOptions } from 'discord.js';
 
 // —
 
@@ -76,7 +77,7 @@ export const command: Command = {
 
             if (command) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const embed: any = {
+                const embed: MessageEmbedOptions = {
                     title: `${message.gprefix}${command.name}`,
                     fields: [],
                     color: 25600,
@@ -87,23 +88,30 @@ export const command: Command = {
 
                 if (command.description) {
                     if (typeof command.description !== "string") {
-                        embed.fields.push({ name: "Description", value: `${command.description.long || command.description.short}` });
+                        embed.fields?.push({ name: "Description", value: `${command.description.long || command.description.short}` });
                     } else {
-                        embed.fields.push({ name: "Description", value: `${command.description}` });
+                        embed.fields?.push({ name: "Description", value: `${command.description}` });
                     }
                 }
                 if (command.aliases) {
-                    embed.fields.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
+                    embed.fields?.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
                 }
                 if (command.usage) {
-                    embed.fields.push({ name: "Usage", value: `\`\`\`${message.gprefix}${command.name} ${command.usage}\`\`\`` });
+                    embed.fields?.push({ name: "Usage", value: `\`\`\`${message.gprefix}${command.name} ${command.usage}\`\`\`` });
                 }
-                embed.fields.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)` });
+                if (command.examples && command.examples.length) {
+                    embed.fields?.push({
+                        name: `Example${command.examples.length > 1 ? "s" : ""}`,
+                        value: `${command.examples.map(example => `\n\`${example}\``)}`
+                    });
+                }
+                embed.fields?.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)`, inline: true });
                 if (command.permLevel) {
                     const permKeys = Object.keys(permLevels);
-                    embed.fields.push({
+                    embed.fields?.push({
                         name: "Permissions",
-                        value: permKeys[command.permLevel]
+                        value: permKeys[command.permLevel],
+                        inline: true
                     })
                 }
         

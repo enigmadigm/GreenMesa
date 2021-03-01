@@ -28,3 +28,8 @@ declare namespace NodeJS {
         NODE_ENV?: string;
     }
 }
+
+interface String {
+    escapeSpecialChars(): string;
+    escapeDiscord(): string;
+}
