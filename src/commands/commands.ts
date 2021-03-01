@@ -27,7 +27,7 @@ export const command: Command = {
             const { categories } = client;
             if (!commands || !categories) return;
             const cats = categories.map(c => c.name).filter(n => n != "owner" && n != "nsfw");
-            type tcatnames = {
+            /*type tcatnames = {
                 [key: string]: string
             }
             const catnames: tcatnames = {
@@ -40,7 +40,7 @@ export const command: Command = {
                         c1.name = catnames[c.name];
                     }
                 }
-            });
+            });*/
 
             for (let c = 0; c < cats.length; c++) {
                 const cat = cats[c];
