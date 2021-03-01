@@ -9,6 +9,7 @@ interface PagerEntry {
     pages: MessageEmbed[];
     currentPageNumber: number;
     currentPage: MessageEmbed;
+    controllers?: string[];
 }
 
 // export class PagerEntry {
@@ -29,7 +30,7 @@ export class PaginationExecutor {
     public static emojiLeft = "◀";
     public static emojiRight = "▶";
 
-    public static async createEmbed(message: Message, embeds: MessageEmbedOptions[] | MessageEmbed[]): Promise<boolean> {
+    public static async createEmbed(message: Message, embeds: MessageEmbedOptions[] | MessageEmbed[], controllers?: string[]): Promise<boolean> {
         try {
             if (!embeds.length) return false;
 
@@ -56,7 +57,8 @@ export class PaginationExecutor {
                     id: current.id,
                     pages: pages,
                     currentPageNumber: 0,
-                    currentPage: pages[0]
+                    currentPage: pages[0],
+                    controllers: controllers ? controllers : undefined
                 });
             }
             return true;
@@ -72,6 +74,7 @@ export class PaginationExecutor {
             if (reaction.emoji.name !== this.emojiLeft && reaction.emoji.name !== this.emojiRight) return;
             const pager = this.pagers.find(x => x.id === reaction.message.id);
             if (!pager) return;
+            if (pager.controllers && !pager.controllers.includes(user.id)) return;
             const direction = reaction.emoji.name === this.emojiLeft ? -1 : 1;
             pager.currentPageNumber = (pager.currentPageNumber + direction) > -1 ? (pager.currentPageNumber + direction) % pager.pages.length : pager.pages.length - 1;
             const p = new MessageEmbed(pager.pages[pager.currentPageNumber]);
