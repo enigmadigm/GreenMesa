@@ -16,7 +16,7 @@ export const command: Command = {
                 message.channel.send({
                     embed: {
                         color: fail_embed_color || 0,
-                        description: `client status is already **${args.join(" ")}**`
+                        description: `Client Status is already **${args.join(" ")}**`
                     }
                 });
                 return;
@@ -26,7 +26,7 @@ export const command: Command = {
                 message.channel.send({
                     embed: {
                         color: success_embed_color,
-                        description: `**client status changed to:**\n${args.join(" ")}`
+                        description: `**Client Status changed to:**\n${args.join(" ")}`
                     }
                 });
             }
@@ -36,7 +36,7 @@ export const command: Command = {
                 message.channel.send({
                     embed: {
                         color: fail_embed_color || 0,
-                        description: `**type is already:**\n${result.value}`
+                        description: `**Type is already:**\n${result.value}`
                     }
                 });
                 return;
@@ -46,7 +46,7 @@ export const command: Command = {
                 message.channel.send({
                     embed: {
                         color: success_embed_color,
-                        description: `**type changed to:**\n${args.join(" ")}`
+                        description: `**Type changed to:**\n${args.join(" ")}`
                     }
                 });
             }
@@ -56,7 +56,7 @@ export const command: Command = {
                 message.channel.send({
                     embed: {
                         color: fail_embed_color || 0,
-                        description: `**presence text is already:**\n${args.join(" ")}`
+                        description: `**Presence text is already:**\n${args.join(" ")}`
                     }
                 });
                 return;
@@ -66,7 +66,7 @@ export const command: Command = {
                 message.channel.send({
                     embed: {
                         color: success_embed_color,
-                        description: `**text changed to:**\n${args.join(" ")}`
+                        description: `**Text changed to:**\n${args.join(" ")}`
                     }
                 });
             }
