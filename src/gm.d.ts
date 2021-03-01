@@ -24,6 +24,7 @@ export interface Command {
     }
     category?: string;
     usage?: string;
+    examples?: string[];
     args?: boolean;
     specialArgs?: number;
     cooldown?: number;
@@ -212,6 +213,8 @@ export interface AutomoduleData {
     channelEffect?: 'enable' | 'disable';// effect to use channels for
     applyRoles: string[];// role ids to apply effect to
     roleEffect: 'ignore' | 'watch';// effect to use roles for
+    punishments?: string[];//'delete' | 'warn' | 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban' | 'channelMessage' | 'courtesyMessage';
+    actions?: string[];
     strict?: boolean;// enable module strict mode if it has one
     onlyOnMessage?: boolean;// if avail, only activate module on messages
     ignoreBots?: boolean;// ignore bot users if avail
