@@ -62,7 +62,10 @@ async function goMarionette(dest: string): Promise<{page: puppeteer.Page, browse
 
 export const command: Command = {
     name: 'lmgtfy',
-    description: 'teach an idiot how to google, or just get a search link',
+    description: {
+        short: "teach the uninformed how to google",
+        long: "Teach the uninformed how to google, or just get a search link."
+    },
     aliases:['search', 'google', 'iie'],
     usage:"[explainer: -e] [plain text link: -t] <search terms>",
     args: true,
@@ -107,7 +110,7 @@ export const command: Command = {
             } else {
                 if (sc) {
                     const embed: MessageEmbedOptions = {
-                        description: `[Let Me Get That For You](https://${sengine}?q=${sterms}${iie})`,
+                        description: `[Let Me Google That For You](https://${sengine}?q=${sterms}${iie})`,
                         color: 0x2F3136,
                         image: {
                             url: 'attachment://screenshot.png'
@@ -123,7 +126,7 @@ export const command: Command = {
                 }
                 message.channel.send({
                     embed: {
-                        description: `[Your answer](https://${sengine}?q=${sterms}${iie})`,
+                        description: `[Let Me Google That For You](https://${sengine}?q=${sterms}${iie})`,
                         color: 15277667
                     }
                 });
