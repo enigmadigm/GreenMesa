@@ -2,6 +2,7 @@ import xlg from '../../xlogger';
 import puppeteer from 'puppeteer';
 import Discord, { DMChannel, MessageEmbedOptions } from 'discord.js';
 import { Command } from 'src/gm';
+import { parseOptions } from '../../utils/parsers';
 
 const preload = `
 // overwrite the \`languages\` property to use a custom getter
@@ -42,6 +43,10 @@ const opts: puppeteer.LaunchOptions = {
 
 async function goMarionette(dest: string): Promise<{page: puppeteer.Page, browser: puppeteer.Browser}> {
     const browser = await puppeteer.launch(opts);
+    const contexts = browser.browserContexts();
+    contexts[0].overridePermissions("https://google.com", [
+        "geolocation"
+    ]);
     const page = await browser.newPage();
     await page.setExtraHTTPHeaders({// https://stackoverflow.com/a/47292022/10660033
         'Accept-Language': 'en'
@@ -56,15 +61,29 @@ async function goMarionette(dest: string): Promise<{page: puppeteer.Page, browse
             r.continue();
         }
     });*/
+    await page.setGeolocation({ latitude: 34.0536909, longitude: -118.242766 });
     await page.goto(dest);
     return { page, browser };
+    // Clicks on an element at position x,y https://stackoverflow.com/a/60254260/10660033
+    /* async function clickOnElement(elem, x = null, y = null) {
+        const rect = await page.evaluate(el => {
+            const { top, left, width, height } = el.getBoundingClientRect();
+            return { top, left, width, height };
+        }, elem);
+
+        // Use given position or default to center
+        const _x = x !== null ? x : rect.width / 2;
+        const _y = y !== null ? y : rect.height / 2;
+
+        await page.mouse.click(rect.left + _x, rect.top + _y);
+    } */
 }
 
 export const command: Command = {
     name: 'lmgtfy',
     description: {
         short: "teach the uninformed how to google",
-        long: "Teach the uninformed how to google, or just get a search link."
+        long: "Teach the uninformed how to google, or just get a search link.\n\nOptions:\n`-t` get a plaintext link\n`-e` get an explainer link (lmgtfy.app)\n`-i` search google images"
     },
     aliases:['search', 'google', 'iie'],
     usage:"[explainer: -e] [plain text link: -t] <search terms>",
@@ -74,37 +93,51 @@ export const command: Command = {
         try {
             if (!message.guild) return;
 
-            const useArgs: string[] = args.reduce((p, c, ci) => {
-                const condition = (pcv: string) => pcv.startsWith("-") && pcv.length < 20;
-                if (p.length === ci && condition(c)) {
-                    //useArgs.push(c);
-                    p.push(c);
-                    args.shift();
-                }
-                return p;
-            }, <string[]>[]);
+            const useArgs = parseOptions(args);
 
             let sengine = "google.com/search";
             let iie = "";
             let plainText = false;
             let sc;
             const sterms = encodeURIComponent(args.join(" "));
-            if (useArgs.includes('-t') && useArgs.includes('-e')) {
+            /*if (useArgs.includes('-t') && useArgs.includes('-e')) {
                 sengine = "lmgtfy.app/";
                 iie = "&iie=1";
                 plainText = true;
-            } else if (useArgs.includes('-e')) {
+            }*/
+            if (useArgs.includes('-e')) {
                 sengine = "lmgtfy.app/";
                 iie = "&iie=1";
-            } else if (useArgs.includes('-t')) {
+            } else if (useArgs.includes('-i')) {
+                sengine = "google.com/images";
+            }
+            if (useArgs.includes('-t')) {
                 plainText = true;
-            } else {
+            }
+
+            if (!useArgs.length || (!useArgs.includes("-e") && !useArgs.includes("-t"))) {
                 plainText = false;
                 message.channel.startTyping();
-                const {page, browser} = await goMarionette(`https://google.com/search?q=${sterms}${(!(message.channel instanceof DMChannel) && message.channel.nsfw) ? "" : "&safe=active"}&hl=en`);
+                const { page, browser } = await goMarionette(`https://${sengine}?q=${sterms}${(!(message.channel instanceof DMChannel) && message.channel.nsfw) ? "" : "&safe=active"}&hl=en`);
+                const voiceElement = await page.$$('[aria-label*="Search by voice"],.clear-button,.gb_Xd');
+                voiceElement.forEach((e) => {
+                    e.evaluate(node => node.style.display = 'none');
+                });
+                if (sengine === "google.com/images") {
+                    const cameraElement = await page.$$('[aria-label*="Search by image"],scrolling-carousel,body > div > c-wiz > div:nth-child(1),body > div > c-wiz > div:nth-child(1)');
+                    cameraElement.forEach((e) => {
+                        e.evaluate(node => node.style.display = 'none');
+                    });
+                } else {
+                    const miniappsElement = await page.$$('[data-async-type*="miniapps"],.ULSxyf,#top_nav');
+                    miniappsElement.forEach((e) => {
+                        e.evaluate(node => node.style.display = 'none');
+                    });
+                }
                 sc = await page.screenshot();
                 await browser.close();
             }
+
             if (plainText == true) {
                 await message.channel.send(`https://${sengine}?q=${sterms}${iie}`);
             } else {
