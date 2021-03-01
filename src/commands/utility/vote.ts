@@ -4,7 +4,10 @@ import xlg from "../../xlogger";
 
 export const command: Command = {
     name: 'vote',
-    description: 'Call a quick vote on the message the command was in',
+    description: {
+        short: "call a quick vote",
+        long: "Call a quick vote on the message the command was in.",
+    },
     usage: "[the content of the vote]",
     guildOnly: true,
     async execute(client, message, args) {
@@ -28,11 +31,12 @@ export const command: Command = {
                     }
                 }
             });
-            await voteEmbed.react('✅')
-                .catch(console.error);
-            voteEmbed.react('❌')
-                .catch(console.error);
-
+            try {
+                await voteEmbed.react('✅');
+                await voteEmbed.react('❌');
+            } catch (error) {
+                //
+            }
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
