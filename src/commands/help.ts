@@ -97,12 +97,13 @@ export const command: Command = {
                     embed.fields?.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
                 }
                 if (command.usage) {
-                    embed.fields?.push({ name: "Usage", value: `\`\`\`${message.gprefix}${command.name} ${command.usage}\`\`\`` });
+                    embed.fields?.push({ name: "Usage", value: `\`${message.gprefix}${command.name} ${command.usage/*.replace(/`/g, "\\`")*/}\`` });
                 }
                 if (command.examples && command.examples.length) {
+                    const longest = command.examples.reduce((p, c) => p.length < c.length ? c : p);
                     embed.fields?.push({
                         name: `Example${command.examples.length > 1 ? "s" : ""}`,
-                        value: `${command.examples.map(example => `\n\`${example}\``)}`
+                        value: `${command.examples.map(example => `\`${example}${longest.substring(example.length - 1, longest.length).split("").map(() => " ").join("")}\``).join("\n")}`
                     });
                 }
                 embed.fields?.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)`, inline: true });
