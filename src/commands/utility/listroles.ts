@@ -16,7 +16,18 @@ export const command: Command = {
         try {
             if (!message.guild) return;
             //const roles = await message.guild.roles.fetch();
-            const roleArray = message.guild.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).filter((x) => x.name !== "@everyone").array().map(r => `${message.guild?.roles.cache.get(r.id)}`);
+            const roleArray = message.guild.roles.cache
+                .sort((roleA, roleB) => roleB.position - roleA.position)
+                .filter((x) => x.name !== "@everyone")
+                .array()
+                .map(r => {
+                    const role = message.guild?.roles.cache.get(r.id);
+                    if (role) {
+                        return `${role.position + 1} ${role}`
+                    } else {
+                        return `unknown role`
+                    }
+                });
             const roleOverflowArray: string[][] = [];
             if (roleArray.length > maxlen || roleArray.join("\n").length > 1024) {
                 while (roleArray.length) {
