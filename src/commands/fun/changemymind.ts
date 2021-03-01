@@ -26,7 +26,7 @@ export const command: Command = {
                 message.channel.stopTyping();
                 return false;
             }
-            const url = `https://nekobot.xyz/api/imagegen?type=changemymind&text=${args.join(" ")}`;
+            const url = `https://nekobot.xyz/api/imagegen?type=changemymind&text=${encodeURIComponent(args.join(" "))}`;
             await fetch(url)
                 .then(res => res.json())
                 .then(async j => {
