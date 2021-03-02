@@ -39,7 +39,9 @@ export const command: Command = {
                 message.channel.send("Please don't mute me");
                 return;
             }
-            if (toMute.roles.highest.position >= message.member.roles.highest.position) {
+            const dbmr = await client.database?.getGuildSetting(message.guild, "mutedrole");
+            const mutedRoleID = dbmr ? dbmr.value : "";
+            if (toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0 >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
                 message.channel.send('You cannot mute a member that is equal to or higher than yourself');
                 return;
             }
@@ -47,10 +49,9 @@ export const command: Command = {
                 message.channel.send(`I don't have a high enough role to manage ${toMute || 'that user'}`);
                 return;
             }
-
-            // Check if the user has the mutedRole
-            let mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
-            // If the mentioned user does not have the muted role execute the following
+            // Check if the guild has the mutedRole
+            let mutedRole = message.guild.roles.cache.find(r => r.id === mutedRoleID || r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
+            // If the guild does not have the muted role execute the following
 
             if (!mutedRole) {
                 // Create a role called "Muted"
@@ -62,6 +63,8 @@ export const command: Command = {
                         position: 1
                     }
                 });
+
+                client.database?.editGuildSetting(message.guild, "mutedrole", mutedRole.id);
 
                 // Prevent the user from sending messages or reacting to messages
                 message.guild.channels.cache.each(async (channel) => {
