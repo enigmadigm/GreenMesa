@@ -2,6 +2,7 @@ import xlg from '../xlogger';
 import { permLevels } from '../permissions';
 import { Command } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';
+import { PaginationExecutor } from '../utils/pagination';
 
 // —
 
@@ -28,6 +29,7 @@ export const command: Command = {
         try {
             const { commands } = client;
             const { categories } = client;
+            if (!commands || !categories) return;
             //const cats = categories.map(c => c.name);
 
             // kind of an unnecessary and stupid part, this will rename any categories with the key being the original and the value being the new name
@@ -39,7 +41,7 @@ export const command: Command = {
                     categories.get(c).name = catnames[c];
                 }
             });*/
-            
+
             if (!args.length) {
                 const data = [];
                 //const helpfields = [];
@@ -56,24 +58,59 @@ export const command: Command = {
                 }).join('\n'));*/
 
                 data.push(`Send \`${message.gprefix}help [command name]\` to get help for a specific command!`);
-                const cmdcount = commands?.size; // commands.filter(co => co.category !== "owner").size;
-                await message.channel.send({
-                    embed: {
-                        title: `Help: Categories`,
-                        color: await client.database?.getColor("darkred_embed_color"),
-                        description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too much to send'}`,
-                        fields: helpfields,
-                        footer: {
-                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s) ● Full List: ${message.gprefix}commands`
-                        }
-                    }
-                });
 
+                const pages: MessageEmbedOptions[] = [];
+
+                const cmdcount = commands?.size; // commands.filter(co => co.category !== "owner").size;
+                const e: MessageEmbedOptions = {
+                    title: `Help: Categories`,
+                    color: await client.database?.getColor("darkred_embed_color"),
+                    description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too much to send'}`,
+                    fields: helpfields,
+                    footer: {
+                        text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s) ● Full List: ${message.gprefix}commands`
+                    }
+                };
+                pages.push(e);
+
+                for (const category of categories.array()) {
+                    if (category.name === "owner") {
+                        continue;
+                    }
+                    const data = [];
+                    //data.push(`**My public commands: (${commands.array().length})**`);
+                    // for some reason if you don't separate \` ${command.name} \` with a space it flips out
+                    //                                         ^               ^
+                    data.push(commands?.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).map(command => {
+                        let availableDesc = "";
+                        if (!command.description) {
+                            availableDesc = "*no description*";
+                        } else if (typeof command.description == "string") {
+                            availableDesc = command.description;
+                        } else {
+                            availableDesc = command.description.short || command.description.long
+                        }
+                        return `\`${message.gprefix}\`\u200b\`${command.name} \` - ${availableDesc}`
+                    }).join('\n'));
+                    data.push('')
+                    data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
+                    const cmdcount = commands?.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
+                    const e: MessageEmbedOptions = {
+                        title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
+                        color: await client.database?.getColor("darkred_embed_color"),
+                        description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
+                        footer: {
+                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
+                        }
+                    };
+                    pages.push(e);
+                }
+                PaginationExecutor.createEmbed(message, pages);
                 return;
             }
             const name = args[0].toLowerCase();
-            const command = commands?.get(name) || commands?.find(c => !!(c.aliases && c.aliases.includes(name)));
-            const category = categories?.get(name);
+            const command = commands.get(name) || commands?.find(c => !!(c.aliases && c.aliases.includes(name)));
+            const category = categories.get(name);
 
             if (command) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
