@@ -205,6 +205,7 @@ export interface UserDataRow {
     nicknames: string | null;
 }
 
+// 'delete' | 'warn' | 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban' | 'channelMessage' | 'courtesyMessage';
 export interface AutomoduleData {
     name: string;// name of module
     text: boolean;// module extra
@@ -213,10 +214,30 @@ export interface AutomoduleData {
     channelEffect?: 'enable' | 'disable';// effect to use channels for
     applyRoles: string[];// role ids to apply effect to
     roleEffect: 'ignore' | 'watch';// effect to use roles for
-    punishments?: string[];//'delete' | 'warn' | 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban' | 'channelMessage' | 'courtesyMessage';
-    actions?: string[];
-    strict?: boolean;// enable module strict mode if it has one
-    onlyOnMessage?: boolean;// if avail, only activate module on messages
+    /**
+     * The mode of hard punishment.
+     */
+    punishment?: 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban';
+    /**
+     * Time in seconds. This is the amount of time delay for temporary punishments (tempmute, tempban).
+     */
+    punishTime?: number;
+    /**
+     * The additional actions to take onViolation. Multiple may be selected.
+     */
+    actions?: ('delete' | 'warn' | 'channelMessage' | 'courtesyMessage')[];
+    /**
+     * The number of offenses allowed before punishment.
+     */
+    offensesOffset?: number;
+    /**
+     * enable module strict mode if it has one
+     */
+    strict?: boolean;
+    /**
+     * if available, only activate module on messages
+     */
+    onlyOnMessage?: boolean;
     ignoreBots?: boolean;// ignore bot users if avail
     sendDM?: boolean;// send a warning dm as an option
     notNested?: boolean;// extra

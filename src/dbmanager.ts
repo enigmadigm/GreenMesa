@@ -53,7 +53,7 @@ const levelRoles = [{
 
 export class DBManager {
     public db!: mysql.Connection;
-    private query!: (arg1: string | mysql.QueryOptions) => Promise < unknown >;
+    private query!: (arg1: string | mysql.QueryOptions) => Promise<unknown>;
     public connected: boolean;
 
     constructor() {
@@ -62,7 +62,7 @@ export class DBManager {
         this.connected = false;
     }
 
-    async handleDisconnect(): Promise < this > {
+    async handleDisconnect(): Promise<this> {
         try {
             const conn: mysql.Connection = mysql.createConnection(db_config);
             conn.connect((err) => {
@@ -369,7 +369,7 @@ export class DBManager {
      * @param guildid Guild ID
      */
     async getPrefix(guildid = ""): Promise<string | false> {
-        const rows = await <Promise<{guildid: string, prefix:string}[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+        const rows = await <Promise<{ guildid: string, prefix: string }[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
         if (rows.length > 0) {
             return rows[0].prefix;
         } else {
@@ -384,7 +384,7 @@ export class DBManager {
      */
     async setPrefix(guildid = "", newprefix = ""): Promise<void> {
         newprefix = newprefix.replace(/'/g, "\\'");
-        const rows = await <Promise<{guildid: string, prefix: string}[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+        const rows = await <Promise<{ guildid: string, prefix: string }[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
         if (rows.length > 0) {
             await <Promise<InsertionResult>>this.query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlog.error);
         } else {
@@ -397,7 +397,7 @@ export class DBManager {
      * @param guildid id of guild to look up
      * @param memberid id of member in guild to look up
      */
-    async getTop10(guildid = "", memberid = ""): Promise<{rows: ExpRow[], personal: PersonalExpRow} | false> {
+    async getTop10(guildid = "", memberid = ""): Promise<{ rows: ExpRow[], personal: PersonalExpRow } | false> {
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 10`);
         const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
         if (!rows.length) return false;
@@ -724,7 +724,7 @@ export class DBManager {
                 .replace(/\\t/g, "\\t")
                 .replace(/\\b/g, "\\b")
                 .replace(/\\f/g, "\\f");
-            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES (${escape(id)}, ${escape(`${username}#${discriminator}`)} , ${escape(avatar)}, ${escape(guildString)}) ON DUPLICATE KEY UPDATE tag = ${escape(`${ username }#${ discriminator }`)}, avatar = ${escape(avatar)}, guilds = ${escape(guildString)}`);
+            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES (${escape(id)}, ${escape(`${username}#${discriminator}`)} , ${escape(avatar)}, ${escape(guildString)}) ON DUPLICATE KEY UPDATE tag = ${escape(`${username}#${discriminator}`)}, avatar = ${escape(avatar)}, guilds = ${escape(guildString)}`);
             if (!result || !result.affectedRows) {
                 return false;
             }
@@ -742,7 +742,7 @@ export class DBManager {
         try {
             if (!id) return false;
             id = id.replace(/'/g, "\\'");
-            const result = await <Promise<{userid: string, tag: string, avatar: string, guilds: string}[]>>this.query(`SELECT * FROM dashusers WHERE userid = '${id}'`);
+            const result = await <Promise<{ userid: string, tag: string, avatar: string, guilds: string }[]>>this.query(`SELECT * FROM dashusers WHERE userid = '${id}'`);
             if (!result || !result[0] || !result[0].userid) {
                 return false;
             }
@@ -833,8 +833,10 @@ export class DBManager {
     /**
      * Update a user's data. This is global data (opposed to guild data).
      */
-    async updateUserData(userid: string, afk?: string | null, offenses?: number, nickname?: string): Promise<InsertionResult | false> {
+    async updateUserData(data: { userid: string, afk?: string | null, offenses?: number, nickname?: string}): Promise<InsertionResult | false> {
         try {
+            // eslint-disable-next-line prefer-const
+            let { userid, afk, offenses, nickname } = data;
             if (!userid) return false;
             userid = escape(userid);
             let afk2 = afk;
@@ -875,6 +877,7 @@ export class DBManager {
             enableAll: false,
             applyRoles: [],
             roleEffect: 'ignore',
+            offensesOffset: 0,
         }
         defaults.text = Bot.client.services?.isText(`automod_${mod}`) || false;
         if (defaults.text) {
@@ -966,25 +969,39 @@ export class DBManager {
         return false;
     }
 
-    async getGuildUserData(guildid: string, userid: string): Promise<GuildUserDataRow | false> {
+    async getGuildUserData(guildid: string, userid: string): Promise<GuildUserDataRow> {
+        const defaults: GuildUserDataRow = {
+            id: guildid + userid,
+            userid: userid,
+            guildid: guildid,
+            createdat: "",
+            updatedat: "",
+            offenses: 0,
+            warnings: 0,
+            bans: 0,
+            bio: "",
+            nicknames: "",
+            roles: "",
+        }
         try {
             const rows = await <Promise<GuildUserDataRow[]>>this.query(`SELECT * FROM guilduserdata WHERE id = ${escape(guildid + userid)}`);
             if (rows && rows.length > 0) {
                 return rows[0];
             } else {
-                return false;
+                return defaults;
             }
         } catch (error) {
             xlog.error(error);
-            return false;
+            return defaults;
         }
     }
 
     /**
      * Update a user's data. This is global data (opposed to guild data).
      */
-    async updateGuildUserData(guildid: string, userid: string, offenses?: number, warnings?: number, bans?: number, bio?: string, nicknames?: string): Promise<InsertionResult | false> {
+    async updateGuildUserData(data: { guildid: string, userid: string, offenses?: number, warnings?: number, bans?: number, bio?: string, nicknames?: string}): Promise<InsertionResult | false> {
         try {
+            const { guildid, userid, offenses, warnings, bans, bio, nicknames} = data;
             if (!guildid || !userid) return false;
             const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(nicknames || "")}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames)`;
             const result = await <Promise<InsertionResult>>this.query(sql);

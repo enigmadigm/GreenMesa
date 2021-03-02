@@ -401,7 +401,11 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
 
         // This section for the nickname history feature
         const ud = await Bot.client.database?.getGuildUserData(newMember.guild.id, newMember.user.id);
-        await Bot.client.database?.updateGuildUserData(newMember.guild.id, newMember.user.id, undefined, undefined, undefined, undefined, ud && ud.nicknames ? `${ud.nicknames},${newMember.nickname}` : `${newMember.nickname}`);
+        await Bot.client.database?.updateGuildUserData({
+            guildid: newMember.guild.id,
+            userid: newMember.user.id,
+            nicknames: ud && ud.nicknames ? `${ud.nicknames},${moment().utc().format("DD MMM YY hh:mm")} UTC: ${newMember.nickname?.escapeSpecialChars()}` : `${newMember.nickname?.escapeSpecialChars()}`
+        });
 
         const logChannel = await getLogChannel(newMember.guild);
         if (!logChannel) return;

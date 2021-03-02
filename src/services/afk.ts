@@ -11,7 +11,10 @@ export const service: MessageService = {
             if (!message.guild) return;
             const afk = await Bot.client.database?.getUserData(message.author.id);
             if (afk && afk.afk && afk.afk !== "~~off~~") {
-                await client.database?.updateUserData(message.author.id, "~~off~~");
+                await client.database?.updateUserData({
+                    userid: message.author.id,
+                    afk: "~~off~~"
+                });
             }
             if (message.mentions) {
                 //const u = message.mentions.users.first();

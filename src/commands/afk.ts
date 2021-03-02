@@ -13,7 +13,10 @@ export const command: Command = {
         try {
             const a = args.join(" ");
             if (a === "off") {
-                await client.database?.updateUserData(message.author.id, "~~off~~");
+                await client.database?.updateUserData({
+                    userid: message.author.id,
+                    afk: "~~off~~"
+                });
                 message.channel.send("You have disabled your afk response. The bot will send this message when someone mentions you.");
                 return;
             }
@@ -22,7 +25,10 @@ export const command: Command = {
                 await client.specials?.sendError(message.channel, `Your message is ${overLength} characters too long.`);
                 return;
             }
-            await client.database?.updateUserData(message.author.id, a);
+            await client.database?.updateUserData({
+                userid: message.author.id,
+                afk: a
+            });
             message.channel.send("Your afk message has been set. The bot will send this message when someone mentions you.");
         } catch (error) {
             xlg.error(error);
