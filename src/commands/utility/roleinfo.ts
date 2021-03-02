@@ -30,10 +30,11 @@ export const command: Command = {
                     description:
 `Role info for ${role}
 
-ID: ${role.id}
-Mentionable: ${role.mentionable}
-Permissions Int: ${role.permissions.bitfield}
-Color Hex: ${role.hexColor}
+**ID:** ${role.id}
+**Members (est.):** ${role.members.size}
+**Mentionable:** ${role.mentionable}
+**Permissions Int:** ${role.permissions.bitfield}
+**Color Hex:** ${role.hexColor}
 `
                 }
             })
