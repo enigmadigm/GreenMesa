@@ -29,8 +29,13 @@ export const command: Command = {
                     }
                 });
             const roleOverflowArray: string[][] = [];
+            let runs = 0;
             if (roleArray.length > maxlen || roleArray.join("\n").length > 1024) {
                 while (roleArray.length) {
+                    runs++;
+                    if (runs > 10000) {
+                        break;
+                    }
                     const overRoles: string[] = [];
                     while (overRoles.length <= maxlen && overRoles.join("\n").length <= 1024) {
                         overRoles.push(roleArray[0]);

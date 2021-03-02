@@ -56,7 +56,12 @@ export const command: Command = {
             if (list.length > maxlen || list.join("\n").length > 1024) {
                 //const f = list.shift();
                 const f = `***[${userList.length}/${target.members.size}]** =>*`;
+                let runs = 0;
                 while (list.length) {
+                    runs++;
+                    if (runs > 10000) {
+                        break;
+                    }
                     const overLines: string[] = [];
                     overLines.unshift(f);
                     for (const item of list) {
