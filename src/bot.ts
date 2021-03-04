@@ -36,9 +36,9 @@ String.prototype.escapeSpecialChars = function () {
 };
 
 String.prototype.escapeDiscord = function () {
-    return this.replace("*", "⁎")
-        .replace("_", "˾")
-        .replace("`", "'");
+    return this.replace(/\*/g, "⁎")
+        .replace(/_/g, "˾")
+        .replace(/`/g, "'");
 };
 
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
