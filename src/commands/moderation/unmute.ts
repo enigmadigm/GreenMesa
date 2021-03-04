@@ -45,7 +45,7 @@ export const command: Command = {
             }
 
             // Check if the user has the mutedRole ???? check if muted role exists
-            const mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
+            const mutedRole = message.guild.roles.cache.find(r => r.id === mutedRoleID || r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
 
             // If the mentioned user or ID does not have the "mutedRole" return a message
             if (!mutedRole || !toMute.roles.cache.has(mutedRole.id)) {
