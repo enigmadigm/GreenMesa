@@ -30,7 +30,7 @@ export const command: Command = {
                 message.channel.stopTyping();
                 return;
             }
-            if (target === "@everyone" || target === "@here" || target.name === "@everyone") {
+            if (target === "@everyone" || target === "@here"/* || target.name === "@everyone"*/) {
                 await client.specials?.sendError(message.channel, "No @everyone or @here! Everyone is in that role, obviously.")
                 message.channel.stopTyping();
                 return;
@@ -79,7 +79,7 @@ export const command: Command = {
                     overflowArray.push(overLines);
                 }
             } else if (list.length) {
-                list[0] = `***[${list.length - 1}/${userList.length}]** =>*`;
+                list.unshift(`***[${list.length}/${userList.length}]** =>*`);
                 overflowArray.push(list);
             } else {
                 list[0] = `*no members with this role*`;
