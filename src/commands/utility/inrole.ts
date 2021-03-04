@@ -30,7 +30,7 @@ export const command: Command = {
                 message.channel.stopTyping();
                 return;
             }
-            if (target === "@everyone" || target === "@here" || target.name === "@everyone") {
+            if (target === "@everyone" || target === "@here"/* || target.name === "@everyone"*/) {
                 await client.specials?.sendError(message.channel, "No @everyone or @here! Everyone is in that role, obviously.")
                 message.channel.stopTyping();
                 return;
