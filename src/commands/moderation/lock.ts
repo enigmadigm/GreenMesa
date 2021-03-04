@@ -25,25 +25,33 @@ export const command: Command = {
             const g = await message.guild.fetch();
             const channel = stringToChannel(message.guild, args.join(" "), true, true) || message.channel;
             if (!(channel instanceof TextChannel)) {
-                client.specials?.sendError(message.channel, "Channel must be a text channel");
+                await client.specials?.sendError(message.channel, "Channel must be a text channel");
                 return;
             }
             const everyone = g.roles.cache.find(x => x.position === 0);
             if (!everyone) {
-                client.specials?.sendError(message.channel, "Unable to access @everyone role");
+                await client.specials?.sendError(message.channel, "Unable to access @everyone role");
                 return;
             }
             const p = channel.permissionsFor(everyone);
-            if (!p?.serialize().SEND_MESSAGES) {
+            if (p && !p.has("SEND_MESSAGES")) {
                 await channel.updateOverwrite(everyone, {
                     'SEND_MESSAGES': true
                 });
-                channel.send("This channel has been unlocked");
+                try {
+                    await channel.send("This channel has been unlocked\n(send again to lock)");
+                } catch (error) {
+                    //
+                }
             } else {
                 await channel.updateOverwrite(everyone, {
                     'SEND_MESSAGES': false
                 });
-                channel.send("This channel has been locked");
+                try {
+                    await channel.send("This channel has been locked\n(send again to unlock)");
+                } catch (error) {
+                    //
+                }
             }
         } catch (error) {
             xlg.error(error);

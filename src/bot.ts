@@ -24,6 +24,23 @@ process.on('unhandledRejection', async (reason, promise) => {
     console.error(error, "Promise:", promise);
 });
 
+String.prototype.escapeSpecialChars = function () {
+    return this.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+};
+
+String.prototype.escapeDiscord = function () {
+    return this.replace(/\*/g, "⁎")
+        .replace(/_/g, "˾")
+        .replace(/`/g, "'");
+};
+
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
 import Discord, { GuildChannel, TextChannel } from "discord.js"; // Load discord.js library
 import config from "../auth.json"; // Loading app config file
@@ -390,7 +407,13 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
             let reply = `Arguments are needed to make that work!`;
             if (command.usage) {
-                reply += `\nUsage: \`${message.gprefix}${command.name} ${command.usage}\``;
+                reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
+            }
+            if (command.examples && command.examples.length) {
+                reply += `\n**Example${command.examples.length > 1 ? "s" : ""}:**`;
+                for (const example of command.examples) {
+                    reply += `\n\`${example}\``;
+                }
             }
     
             return message.channel.send({
@@ -398,7 +421,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                     description: reply,
                     color: fec_gs,
                     footer: {
-                        text: 'tip: separate arguments with spaces'
+                        text: ['tip: separate arguments with spaces', 'tip: [] means optional, <> means required\nreplace these with your arguments'][Math.floor(Math.random() * 2)]
                     }
                 }
             });
@@ -440,7 +463,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             if (config.msgLogging) {
                 const logChannel = client.channels.cache.get('661614128204480522');
                 if (logChannel && logChannel instanceof TextChannel) {
-                    logChannel.send(`${message.author.tag} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+                    logChannel.send(`${message.author.tag.escapeDiscord()} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
                 }
             }
 

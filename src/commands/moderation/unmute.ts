@@ -10,7 +10,7 @@ export const command: Command = {
         short: 'unmute a member',
         long: 'Allows a muted member to speak again.'
     },
-    usage: "<user @ / user id>",
+    usage: "<user @>",
     args: true,
     guildOnly: true,
     permLevel: permLevels.mod,
@@ -22,28 +22,30 @@ export const command: Command = {
             const toMute = await stringToMember(message.guild, args[0], false, false, false);
             // Check perms, self, rank, etc
             if (!message.guild.me?.hasPermission("MANAGE_ROLES")) { // check if the bot has the permissions to mute  members
-                message.channel.send("🟥 I do not have the permissions to do that");
+                message.channel.send("I do not have the permissions to do that");
                 return;
             }
             if (!toMute) {
-                message.channel.send('🟥 You did not specify a user mention or ID!');
+                message.channel.send('You did not specify a user mention or ID!');
                 return;
             }
             if (toMute.id === message.author.id) {
-                message.channel.send('🟥 You cannot unmute yourself!');
+                message.channel.send('You cannot unmute yourself!');
                 return;
             }
-            if (toMute.roles.highest.position >= message.member.roles.highest.position) {
-                message.channel.send('🟥 You cannot unmute a member that is equal to or higher than yourself!');
+            const dbmr = await client.database?.getGuildSetting(message.guild, "mutedrole");
+            const mutedRoleID = dbmr ? dbmr.value : "";
+            if (toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0 >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
+                message.channel.send('You cannot unmute a member that is equal to or higher than yourself!');
                 return;
             }
             if (!toMute.manageable) {
-                message.channel.send(`🟥 I don't have a high enough role to manage ${toMute || 'that user'}.`);
+                message.channel.send(`I don't have a high enough role to manage ${toMute || 'that user'}.`);
                 return;
             }
 
             // Check if the user has the mutedRole ???? check if muted role exists
-            const mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
+            const mutedRole = message.guild.roles.cache.find(r => r.id === mutedRoleID || r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
 
             // If the mentioned user or ID does not have the "mutedRole" return a message
             if (!mutedRole || !toMute.roles.cache.has(mutedRole.id)) {
@@ -63,4 +65,3 @@ export const command: Command = {
         }
     }
 }
-

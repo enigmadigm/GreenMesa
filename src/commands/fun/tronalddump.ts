@@ -6,7 +6,7 @@ import xlg from '../../xlogger';
 export const command: Command = {
     name: 'tronalddump',
     description: {
-        short: 'the dumbest things Donald Trump has ever said (not curated by me)',
+        short: 'the dumbest things Donald Trump has ever said',
         long: 'The dumbest things Donald Trump has ever said (not curated by me). Get either a random quote, a list of existing tags, or a quote under one of the tags (case sensitive).'
     },
     aliases: ['td', 'tronald'],

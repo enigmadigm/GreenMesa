@@ -127,3 +127,11 @@ export function stringToDuration(text: string): number {
 
     return ms;
 }
+
+export async function* delayedLoop(start: number, end: number, increment: number, delay: number): AsyncGenerator<number, void, unknown> {
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    for (let i = start; i < end; i += increment) {
+        yield i;
+        await sleep(delay);
+    }
+}

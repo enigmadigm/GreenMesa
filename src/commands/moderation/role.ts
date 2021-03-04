@@ -84,7 +84,7 @@ export const command: Command = {
                     return;
                 }
             }
-            if (targetRole.position >= message.member.roles.highest.position) {
+            if (targetRole.position >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
                 client.specials?.sendError(message.channel, `Sorry ${message.member}, ${targetRole} has a higher position than your highest role, you aren't allowed to manage it.`);
                 return;
             }

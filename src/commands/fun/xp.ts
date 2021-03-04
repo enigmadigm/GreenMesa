@@ -6,7 +6,10 @@ import xlg from "../../xlogger";
 
 export const command: Command = {
     name: 'xp',
-    description: 'Get the amount of xp someone has. Earn xp by sending any message in a guild with this bot. Points can only be generated once per minute for spam protection.',
+    description: {
+        short: "get someone's xp stats",
+        long: 'Get the amount of xp someone has. Earn xp by sending any message in a guild with this bot. Points can only be generated once per minute for spam protection.'
+    },
     aliases: ['exp', 'orbs', 'level', 'points'],
     usage: "[other user]",
     guildOnly: true,

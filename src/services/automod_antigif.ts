@@ -33,7 +33,7 @@ export const service: MessageService = {
             }
 
             if (hasGif) {
-                message.delete();
+                await client.services?.punish<XMessage>(modResult, message.member, message);
             }
         } catch (error) {
             xlg.error(error);

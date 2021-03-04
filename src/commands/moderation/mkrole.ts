@@ -11,6 +11,9 @@ export const command: Command = {
         long: "Creates a role with the given data. This does not take permissions, and by default will give no permissions to the role. NOTE that this command takes arguments separated by commas, do not include them in the name."
     },
     usage: "<role name>,[role color]",
+    examples: [
+        "sm mkrole red,0xFF0000"
+    ],
     args: true,
     permLevel: permLevels.admin,
     guildOnly: true,
@@ -25,8 +28,9 @@ export const command: Command = {
                 return;
             }
             const roleData: RoleData = { name: param[0] };
-            if (param[1] && parseInt(param[1], 16)) {
-                roleData.color = parseInt(param[1], 16);
+            const p1 = param[1].replace("#", "");
+            if (p1 && parseInt(p1, 16)) {
+                roleData.color = parseInt(p1, 16);
             }
             const nrole = await message.guild.roles.create({ data: roleData, reason: "with mkrole command" });
 

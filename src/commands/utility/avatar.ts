@@ -18,7 +18,7 @@ export const command: Command = {
                 embed: {
                     color: darkblue_embed_color,
                     author: {
-                        name: target.tag,
+                        name: target.tag.escapeDiscord(),
                         iconURL: target.displayAvatarURL(),
                     },
                     title: 'Avatar',

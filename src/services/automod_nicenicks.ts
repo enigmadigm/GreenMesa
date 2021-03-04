@@ -13,9 +13,11 @@ export const service: MessageService = {
             const modResult = await Bot.client.database?.getAutoModuleEnabled(member.guild.id, "nicenicks", undefined, undefined, member);
             if (!modResult) return;
             
+            let flag = false;
             const name = member.nickname || member.user.tag;
             const hits = /[^\x20-\x7E\n]/g.exec(name);
             if (hits && hits.index < 5) {
+                flag = true;
                 await member.setNickname("change name (stratum automod)", `automod:nicenicks saw a nondesirable nickname`);
 
                 if (modResult.sendDM) {
@@ -24,6 +26,10 @@ export const service: MessageService = {
 My \`nicenicks\` automodule noticed that your nickname isn't very nice to type out. The admins of ${member.guild.name} have requested that I change all user's undesirable nicknames to a placeholder until they change it to something nicer; please do so!`);
                     // THIS DM MESSAGE SHOULD BE CONFIGURABLE, IT SHOULD AT LEAST BE SOMETHING THAT CAN BE TOGGLED BY ADMINS ON THE DASHBOARD
                 }
+            }
+
+            if (flag) {
+                await client.services?.punish<GuildMember>(modResult, member);
             }
         } catch (error) {
             xlg.error(error);

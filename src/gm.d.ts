@@ -24,6 +24,7 @@ export interface Command {
     }
     category?: string;
     usage?: string;
+    examples?: string[];
     args?: boolean;
     specialArgs?: number;
     cooldown?: number;
@@ -178,6 +179,7 @@ export interface UnparsedTimedAction {
 
 export interface TimedAction {
     id: string;
+    case?: number;
     time: Date;
     type: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,13 +199,25 @@ export interface UnbanActionData {
     duration: string;
 }
 
+/*export interface UserData {
+    userid?: string;
+    afk?: string;
+    offenses?: number;
+    nicknames?: string | null;
+}*/
+
 export interface UserDataRow {
     userid: string;
-    afk: string | null;
-    offenses: number;
-    nicknames: string | null;
+    createdat?: string;
+    updatedat?: string;
+    bio?: string;
+    afk?: string | null;
+    offenses?: number;
+    nicknames?: string;
+    bans?: number;
 }
 
+// 'delete' | 'warn' | 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban' | 'channelMessage' | 'courtesyMessage';
 export interface AutomoduleData {
     name: string;// name of module
     text: boolean;// module extra
@@ -212,8 +226,30 @@ export interface AutomoduleData {
     channelEffect?: 'enable' | 'disable';// effect to use channels for
     applyRoles: string[];// role ids to apply effect to
     roleEffect: 'ignore' | 'watch';// effect to use roles for
-    strict?: boolean;// enable module strict mode if it has one
-    onlyOnMessage?: boolean;// if avail, only activate module on messages
+    /**
+     * The mode of hard punishment.
+     */
+    punishment?: 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban';
+    /**
+     * Time in seconds. This is the amount of time delay for temporary punishments (tempmute, tempban).
+     */
+    punishTime?: number;
+    /**
+     * The additional actions to take onViolation. Multiple may be selected.
+     */
+    actions?: ('delete' | 'warn' | 'channelMessage' | 'courtesyMessage')[];
+    /**
+     * The number of offenses allowed before punishment.
+     */
+    offensesOffset?: number;
+    /**
+     * enable module strict mode if it has one
+     */
+    strict?: boolean;
+    /**
+     * if available, only activate module on messages
+     */
+    onlyOnMessage?: boolean;
     ignoreBots?: boolean;// ignore bot users if avail
     sendDM?: boolean;// send a warning dm as an option
     notNested?: boolean;// extra
@@ -222,17 +258,17 @@ export interface AutomoduleData {
 }
 
 export interface GuildUserDataRow {
-    id: string;
-    userid: string;
-    guildid: string;
-    createdat: string;
-    updatedat: string;
-    offenses: number;
-    warnings: number;
-    bans: number;
-    bio: string;
-    nicknames: string;
-    roles: string;
+    id?: string;
+    userid?: string;
+    guildid?: string;
+    createdat?: string;
+    updatedat?: string;
+    offenses?: number;
+    warnings?: number;
+    bans?: number;
+    bio?: string;
+    nicknames?: string;
+    roles?: string;
 }
 
 export interface AutomoduleEndpointData extends GuildsEndpointBase {

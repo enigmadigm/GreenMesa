@@ -106,21 +106,23 @@ export const service: MessageService = {
             if (!message.guild || !message.member || !(message.channel instanceof TextChannel) || message.author.bot || message.webhookID) return;
             const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antispam", message.channel.id, undefined, message.member);
             if (!modResult) return;
+            let flag = false;
 
             if (message.mentions && (message.mentions.users.size > 5 || message.mentions.roles.size > 4)) {
+                flag = true;
                 message.delete();
-                return;
+            } else {
+                const cache = getCache(message.guild.id, message.channel.id);
+                cache.messages.push(message);
+                cache.messages = cache.messages.filter((m) => moment(m.createdTimestamp) > moment().subtract(10, "seconds"));
+                const perUnit = cache.messages.length / 10;
+                if (perUnit > 0.8) {
+                    flag = true;
+                    deleteMessages(cache.messages.filter(x => x.deletable && x.author.id === message.author.id), message.channel);
+                    //message.delete();
+                }
+                cache.lastMessageTime = message.createdAt;
             }
-
-            const cache = getCache(message.guild.id, message.channel.id);
-            cache.messages.push(message);
-            cache.messages = cache.messages.filter((m) => moment(m.createdTimestamp) > moment().subtract(10, "seconds"));
-            const perUnit = cache.messages.length / 10;
-            if (perUnit > 0.8) {
-                deleteMessages(cache.messages.filter(x => x.deletable && x.author.id === message.author.id), message.channel);
-                //message.delete();
-            }
-            cache.lastMessageTime = message.createdAt;
             /*const c: Message[] = [];
             for await(const m of cache.messages) {
                 for await(const m2 of cache.messages) {
@@ -144,6 +146,9 @@ export const service: MessageService = {
                 xlg.log("antispam could not delete message");
             }*/
             //updateCache(cache);
+            if (flag) {
+                await client.services?.punish<XMessage>(modResult, message.member, message);
+            }
         } catch (error) {
             xlg.error(error);
         }

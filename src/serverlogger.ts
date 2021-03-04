@@ -31,7 +31,7 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
                     "name": `Member ${joining ? 'Joined' : 'Left'}`,
                     "iconURL": member.user.displayAvatarURL()
                 },
-                "description": `${member.user.tag} (${member})${!joining ? `\n ${member.nickname || "***No nickname***"}` : ''}`,
+                "description": `${member.user.tag.escapeDiscord()} (${member})${!joining ? `\n ${member.nickname ? member.nickname.escapeDiscord() : "***No nickname***"}` : ''}`,
                 "fields": [
                     {
                         "name": `${joining ? 'Created' : 'Joined'}`,
@@ -100,7 +100,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
     
         let humanLog = `**Deleted Messages from #${first?.channel.name} (${first?.channel.id}) in ${first?.guild?.name} (${first?.guild?.id})**`;
         for (const message of messageCollection.array().reverse()) {
-            humanLog += `\r\n\r\n[${moment(message.createdAt).format()}] ${message.author?.tag} (${message.id})`;
+            humanLog += `\r\n\r\n[${moment(message.createdAt).format()}] ${message.author?.tag.replace("*", "⁎").replace("_", "\\_").replace("`", "\\`")} (${message.id})`;
             humanLog += ' : ' + message.content;
             if (message.attachments.size) {
                 humanLog += '\n*Attachments:*';
@@ -318,7 +318,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                         name: `Channel Permissions Changed`,
                         iconURL: logChannel.guild.iconURL() || ""
                     },
-                    description: `In channel: ${nc}\nPermissions updated for: \`${(subject instanceof Role ? subject?.name : subject?.user.tag)}\``,
+                    description: `In channel: ${nc}\nPermissions updated for: \`${(subject instanceof Role ? subject?.name.escapeDiscord() : subject?.user.tag.escapeDiscord())}\``,
                     footer: {
                         text: `Channel ID: ${nc.id}`
                     },
@@ -338,7 +338,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                     }*/
                 }
                 if (oldBitfield.deny !== newBitfield.deny && newBitfield.deny !== 0) {
-                    const flgs = new Discord.Permissions(newBitfield.deny).remove(oldBitfield.deny);
+                    const flgs = new Discord.Permissions(newBitfield.deny).remove(oldBitfield.deny);// i think newbit & oldbit would also work
                     embed.description += `\n**Denied:**\n${flgs.toArray().map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
                     didsomething = true;
                 }
@@ -401,7 +401,11 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
 
         // This section for the nickname history feature
         const ud = await Bot.client.database?.getGuildUserData(newMember.guild.id, newMember.user.id);
-        await Bot.client.database?.updateGuildUserData(newMember.guild.id, newMember.user.id, undefined, undefined, undefined, undefined, ud && ud.nicknames ? `${ud.nicknames},${newMember.nickname}` : `${newMember.nickname}`);
+        await Bot.client.database?.updateGuildUserData({
+            guildid: newMember.guild.id,
+            userid: newMember.user.id,
+            nicknames: ud && ud.nicknames ? `${ud.nicknames},${moment().utc().format("DD MMM YY hh:mm")} UTC: ${newMember.nickname?.escapeSpecialChars()}` : `${newMember.nickname?.escapeSpecialChars()}`
+        });
 
         const logChannel = await getLogChannel(newMember.guild);
         if (!logChannel) return;

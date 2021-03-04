@@ -19,7 +19,7 @@ export const command: Command = {
         try {
             if (!message.guild) return;
             
-            client.specials?.sendError(message.channel, "Command currently in development");
+            await client.specials?.sendError(message.channel, "Command currently in development");
         } catch (error) {
             xlg.error(error);
             client.specials?.sendError(message.channel);

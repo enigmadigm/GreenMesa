@@ -127,7 +127,7 @@ export function memoryUsage(): string {
 }
 
 // iannis
-export function delayedLoop(callback: (arg0: number) => void, start = 0, end = 1, increment = 1, delay = 0): void {
+/*export function delayedLoop(callback: (arg0: number) => void, start = 0, end = 1, increment = 1, delay = 0): void {
     let i = start;
 
     const iteration = () => {
@@ -137,7 +137,7 @@ export function delayedLoop(callback: (arg0: number) => void, start = 0, end = 1
     }
 
     iteration();
-}
+}*/
 
 type GuildCollection = Collection<string, Guild>;
 export async function getAllGuilds(client: XClient): Promise<GuildCollection | false> {

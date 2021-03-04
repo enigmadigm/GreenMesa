@@ -281,3 +281,31 @@ export function capitalizeFirstLetter(string: string): string {
 export function randomIntFromInterval(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+export function parseOptions(opts: string[]): string[] {
+    const n = opts.reduce((p, c, ci) => {
+        const condition = (pcv: string) => pcv.startsWith("-") && pcv.length < 20;
+        if (p.length === ci && condition(c)) {
+            //useArgs.push(c);
+            p.push(c);
+        }
+        return p;
+    }, <string[]>[]);
+    opts.splice(0, n.length);
+    return n;
+}
+
+export function ordinalSuffixOf(i: number): string {
+    const j = i % 10,
+        k = i % 100;
+    if (j == 1 && k != 11) {
+        return i + "st";
+    }
+    if (j == 2 && k != 12) {
+        return i + "nd";
+    }
+    if (j == 3 && k != 13) {
+        return i + "rd";
+    }
+    return i + "th";
+}
