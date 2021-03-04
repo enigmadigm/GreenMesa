@@ -43,7 +43,8 @@ export const service: MessageService = {
             }
 
             if (hasBadWord) {
-                await message.delete();
+                //await message.delete();
+                await client.services?.punish<XMessage>(modResult, message.member, message);
             }
         } catch (error) {
             xlg.error(error);

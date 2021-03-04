@@ -44,11 +44,17 @@ export const service: MessageService = {
             if (!message.guild || !message.member) return;
             const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antilink", message.channel.id, undefined, message.member);
             if (!modResult) return;
+            let flag = false;
 
             if (message.content) {
                 if (containsLink(message.content, modResult.strict, modResult.notNested)) {
-                    message.delete();
+                    flag = true;
+                    //message.delete();
                 }
+            }
+
+            if (flag) {
+                await client.services?.punish<XMessage>(modResult, message.member, message);
             }
         } catch (error) {
             xlg.error(error);

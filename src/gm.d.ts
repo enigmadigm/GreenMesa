@@ -179,6 +179,7 @@ export interface UnparsedTimedAction {
 
 export interface TimedAction {
     id: string;
+    case?: number;
     time: Date;
     type: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -198,11 +199,22 @@ export interface UnbanActionData {
     duration: string;
 }
 
+/*export interface UserData {
+    userid?: string;
+    afk?: string;
+    offenses?: number;
+    nicknames?: string | null;
+}*/
+
 export interface UserDataRow {
     userid: string;
-    afk: string | null;
-    offenses: number;
-    nicknames: string | null;
+    createdat?: string;
+    updatedat?: string;
+    bio?: string;
+    afk?: string | null;
+    offenses?: number;
+    nicknames?: string;
+    bans?: number;
 }
 
 // 'delete' | 'warn' | 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban' | 'channelMessage' | 'courtesyMessage';
@@ -246,17 +258,17 @@ export interface AutomoduleData {
 }
 
 export interface GuildUserDataRow {
-    id: string;
-    userid: string;
-    guildid: string;
-    createdat: string;
-    updatedat: string;
-    offenses: number;
-    warnings: number;
-    bans: number;
-    bio: string;
-    nicknames: string;
-    roles: string;
+    id?: string;
+    userid?: string;
+    guildid?: string;
+    createdat?: string;
+    updatedat?: string;
+    offenses?: number;
+    warnings?: number;
+    bans?: number;
+    bio?: string;
+    nicknames?: string;
+    roles?: string;
 }
 
 export interface AutomoduleEndpointData extends GuildsEndpointBase {

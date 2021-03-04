@@ -1,8 +1,9 @@
-import { GuildMember } from "discord.js";
+import { GuildMember, TextChannel } from "discord.js";
 import moment from "moment";
-import { UnmuteActionData, XClient } from "../gm";
+import { UnbanActionData, UnmuteActionData, UserDataRow, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
+import xlg from "../xlogger";
 
 // export class BaseModAction<T> {
 //     public client: XClient;
@@ -133,9 +134,11 @@ import uniqid from 'uniqid';
 //         }
 //     }
 // }
-
-export async function mute(client: XClient, target: GuildMember, time = 0, mod?: string): Promise<void> {
-
+/**
+ * Auto-mute a target permanently or for a period
+ */
+export async function mute(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel): Promise<void> {
+    const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
     const dbmr = await client.database?.getGuildSetting(target.guild, "mutedrole");
     const mutedRoleID = dbmr ? dbmr.value : "";
     // Check if the guild has the mutedRole
@@ -164,6 +167,10 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
                 });
             }
         });
+    } else {
+        if (mutedRole.id !== mutedRoleID) {
+            client.database?.editGuildSetting(target.guild, "mutedrole", mutedRole.id);
+        }
     }
     if (mutedRole.position < target.roles.highest.position) {
         mutedRole.setPosition(target.roles.highest.position);
@@ -171,20 +178,25 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
 
     // If the mentioned user already has the "mutedRole" then that can not be muted again
     if (target.roles.cache.has(mutedRole.id)) {
-        //message.channel.send(`\`${target.user.tag}\` is already muted`);
+        if (channel) {
+            channel.send(`\`${target.user.tag}\` is already muted`);
+        }
         return;
     }
 
-    await target.roles.add(mutedRole, `muted by ${mod}`).catch(e => console.log(e.stack));
+    await target.roles.add(mutedRole, `muted by ${moderator?.user.tag || "me"}`).catch(e => console.log(e.stack));
     if (target.voice.connection && !target.voice.mute) {
         await target.voice.setMute(true);
     }
-
-    //message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${toMute.user.tag}\`${mendm}`);
     let duration = "";
+    let mendm = "";
     if (time) {
         duration = durationToString(time);
-        //mendm = ` for ${dur}`
+        mendm = ` for ${duration}`
+    }
+
+    if (channel) {
+        channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${target.user.tag}\`${mendm}`);
     }
 
     if (time) {
@@ -205,12 +217,131 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
             duration: duration
         }
 
-         if (client.database) {
-             if (time) {
-                 const t = moment().add(time, "ms").toDate();
-                 await client.database.setAction(uniqid(), t, "unmute", data);
-             }
-         }
+        if (client.database) {
+            if (time) {
+                const t = moment().add(time, "ms").toDate();
+                await client.database.setAction(uniqid(), t, "unmute", data);
+            }
+        }
         //await set(data);
+    }
+}
+/**
+ * Ban a target permanently or for a period.
+ */
+export async function ban(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel): Promise<void> {
+    const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
+    const pud: UserDataRow = await client.database?.getUserData(target.id) || { userid: target.id };
+    if (!pud.bans) {
+        pud.bans = 1;
+    } else {
+        pud.bans++;
+    }
+    await target.ban({
+        reason: `banned by ${moderator?.user.tag || "me"}`
+    });
+
+    let duration = "";
+    let mendm = "";
+    if (time) {
+        duration = durationToString(time);
+        mendm = ` for ${duration}`
+    }
+
+    if (channel) {
+        channel.send(`<a:spinning_light00:680291499904073739>\\✅ Banned \`${target.user.tag}\`${mendm}`);
+    }
+
+    if (time) {
+        const data: UnbanActionData = {
+            guildid: target.guild.id,
+            userid: target.id,
+            duration: duration
+        }
+
+        if (client.database) {
+            if (time) {
+                const t = moment().add(time, "ms").toDate();
+                await client.database.setAction(uniqid(), t, "unban", data);
+            }
+        }
+    }
+    await client.database?.updateUserData(pud);
+}
+
+export async function checkWarnings(client: XClient, target: GuildMember): Promise<void> {
+    try {
+        if (!client.database || !target.bannable || !target.kickable) return;
+        const ud = await client.database.getGuildUserData(target.guild.id, target.id);
+        const warnConfig = await client.database?.getGuildSetting(target.guild, "warnconfig");
+        if (!warnConfig) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let conf: any = {};
+        try {
+            conf = JSON.parse(warnConfig.value);
+        } catch (error) {
+            //
+        }
+        if (!warnConfig) {
+            return;
+        }
+        if (!conf.treshold || typeof conf.threshold !== "number" || !conf.punishment || typeof conf.punishment !== "string") return;
+        const overWarnLimit = 0 < (conf.threshold ? conf.threshold : -1) && (ud.warnings || 0) > (conf.threshold ? conf.threshold : -1);
+        let ptime = 0;
+        if (conf.time && typeof conf.time === "number") {
+            ptime = conf.time;
+        }
+        // const warnPunishmentResult = await client.database.getGuildSetting(target.guild.id, "warnpunishment");
+        // const warnPunishment = warnPunishmentResult ? warnPunishmentResult.value : "";
+        if (overWarnLimit && target.bannable && target.kickable) {
+            switch (conf.punishment) {
+                case "ban": {
+                    if (ud.bans) {
+                        ud.bans++;
+                    } else {
+                        ud.bans = 1;
+                    }
+                    /*if (!pud.bans) {
+                        pud.bans = 1;
+                    } else {
+                        pud.bans++;
+                    }*/
+                    await ban(client, target, 0, client.user?.id);
+                    break;
+                }
+                case "kick": {
+                    await target.kick();
+                    break;
+                }
+                case "mute": {
+                    await mute(client, target, 0, client.user?.id);
+                    break;
+                }
+                case "tempban": {
+                    if (ud.bans) {
+                        ud.bans++;
+                    } else {
+                        ud.bans = 1;
+                    }
+                    /*if (!pud.bans) {
+                        pud.bans = 1;
+                    } else {
+                        pud.bans++;
+                    }*/
+                    await ban(client, target, ptime * 1000, client.user?.id);
+                    break;
+                }
+                case "tempmute": {
+                    await mute(client, target, ptime * 1000, client.user?.id);
+                    break;
+                }
+                default:
+                    conf.punishment = undefined;
+                    await client.database.editGuildSetting(target.guild, "warnconfig", JSON.stringify(conf));
+                    break;
+            }
+        }
+    } catch (error) {
+        xlg.error(error);
     }
 }
