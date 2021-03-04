@@ -1,7 +1,7 @@
 import xlg from "../../xlogger";
 import moment from 'moment';
 //import { getTop10, getXP, getGlobalSetting } from "../dbmanager";
-import { stringToMember } from "../../utils/parsers";
+import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
 import { Command } from "src/gm";
 import { Guild, GuildMember } from "discord.js";
@@ -17,20 +17,6 @@ function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the us
     }
 }
 
-function getOrdinalSuffix(i: number) {
-    const j = i % 10,
-        k = i % 100;
-    if (j === 1 && k !== 11) {
-        return i + "st";
-    }
-    if (j === 2 && k !== 12) {
-        return i + "nd";
-    }
-    if (j === 3 && k !== 13) {
-        return i + "rd";
-    }
-    return i + "th";
-}
 
 function getPresenceEmoji(target: GuildMember) {
     if (target.user.presence.status === 'online') return '<:736903507436896313:752118506950230067>';
@@ -56,7 +42,7 @@ export const command: Command = {
             const xp = await client.database?.getXP(target);
             if (!rank || !xp) {
                 client.specials?.sendError(message.channel, "User information could not be retrieved");
-                return;
+                //return;
             }
 
             let roles = '';
@@ -76,10 +62,10 @@ export const command: Command = {
 
             // get join rank of member
             let joinRank = `${(getJoinRank(target.id, target.guild) || -1) + 1}`;
-            if (joinRank === "1") {
+            if (joinRank === "1" || joinRank === "0") {
                 joinRank = 'oldest member';
             } else {
-                joinRank = getOrdinalSuffix(parseInt(joinRank, 10)) + ' member joined';
+                joinRank = ordinalSuffixOf(parseInt(joinRank, 10)) + ' member joined';
             }
 
             const permLev = await getPermLevel(target);
@@ -92,7 +78,7 @@ export const command: Command = {
                 embed: {
                     color: target.roles.hoist ? target.roles.hoist.color : await client.database?.getColor("info_embed_color") || 0,
                     author: {
-                        name: `Stats of ${target.user.tag} ${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}`,
+                        name: `Info for ${target.user.tag} ${rank && xp ? `${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}` : ""}`,
                         icon_url: target.user.displayAvatarURL()
                     },
                     thumbnail: {
@@ -132,7 +118,7 @@ export const command: Command = {
                         },
                         {
                             name: 'XP',
-                            value: `Rank: ${rank.personal ? rank.personal.rank : 'none'}\nLevel: ${xp ? xp.level : 'none'}`,
+                            value: `Rank: ${rank && xp ? `${rank.personal ? rank.personal.rank : 'none'}\nLevel: ${xp ? xp.level : 'none'}` : ""}`,
                             inline: true
                         },
                         {
