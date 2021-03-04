@@ -40,10 +40,10 @@ export const command: Command = {
             const target = await stringToMember(message.guild, args.join(" ")) || message.member;
             const rank = await client.database?.getTop10(message.guild.id, target.id);
             const xp = await client.database?.getXP(target);
-            if (!rank || !xp) {
+            /* if (!rank || !xp) {
                 client.specials?.sendError(message.channel, "User information could not be retrieved");
-                //return;
-            }
+                return;
+            } */
 
             let roles = '';
             const roleArray = target.roles.cache.array().sort((a, b) => a.position > b.position ? -1 : 1);
