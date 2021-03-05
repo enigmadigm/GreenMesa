@@ -3,6 +3,7 @@ import puppeteer from 'puppeteer';
 import Discord, { DMChannel, MessageEmbedOptions } from 'discord.js';
 import { Command } from 'src/gm';
 import { parseOptions } from '../../utils/parsers';
+import { PaginationExecutor } from '../../utils/pagination';
 
 const preload = `
 // overwrite the \`languages\` property to use a custom getter
@@ -153,7 +154,8 @@ export const command: Command = {
                         }
                     }
                     const scfile = new Discord.MessageAttachment(sc, 'screenshot.png');
-                    await message.channel.send({ files: [scfile], embed: embed });
+                    const response = await message.channel.send({ files: [scfile], embed: embed });
+                    PaginationExecutor.addCloseListener(response);
                     message.channel.stopTyping();
                     return;
                 }

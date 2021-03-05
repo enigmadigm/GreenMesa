@@ -1,6 +1,6 @@
 import { GuildMember, TextChannel } from "discord.js";
 import moment from "moment";
-import { UnbanActionData, UnmuteActionData, UserDataRow, XClient } from "../gm";
+import { UnbanActionData, UnmuteActionData, UserDataRow, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
 import xlg from "../xlogger";
@@ -276,7 +276,7 @@ export async function checkWarnings(client: XClient, target: GuildMember): Promi
         const warnConfig = await client.database?.getGuildSetting(target.guild, "warnconfig");
         if (!warnConfig) return;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let conf: any = {};
+        let conf: WarnConf = {};
         try {
             conf = JSON.parse(warnConfig.value);
         } catch (error) {
@@ -285,7 +285,13 @@ export async function checkWarnings(client: XClient, target: GuildMember): Promi
         if (!warnConfig) {
             return;
         }
-        if (!conf.treshold || typeof conf.threshold !== "number" || !conf.punishment || typeof conf.punishment !== "string") return;
+        if (!conf.threshold || typeof conf.threshold !== "number" || !conf.punishment || typeof conf.punishment !== "string") {
+            await client.database.editGuildSetting(target.guild, "warnconfig", undefined, true);
+            return;
+        }
+        if (conf.threshold === -1) {
+            return;
+        }
         const overWarnLimit = 0 < (conf.threshold ? conf.threshold : -1) && (ud.warnings || 0) > (conf.threshold ? conf.threshold : -1);
         let ptime = 0;
         if (conf.time && typeof conf.time === "number") {
