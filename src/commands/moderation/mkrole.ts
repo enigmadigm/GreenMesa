@@ -18,7 +18,7 @@ export const command: Command = {
     permLevel: permLevels.admin,
     guildOnly: true,
     moderation: true,
-    permissions: ["MANAGE_ROLES", "MANAGE_CHANNELS"],
+    permissions: ["MANAGE_ROLES"],
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
