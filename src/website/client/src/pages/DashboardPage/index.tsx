@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction } from 'react';
 //import { RouteComponentProps } from 'react-router-dom';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
-import { DashboardAutomod, DashboardCommands, DashboardHome, DashboardLeveling, DashHeader } from '../../components';
+import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashHeader } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
@@ -144,6 +144,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                     <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
                                 </li>
                                 <li>
+                                    <CustomNavItem to="autorole" text="Autorole" active={page === "autorole"} oc={setPage} ico={{ icon: faLayerPlus }} />
+                                </li>
+                                <li>
                                     <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
                                 </li>
                             </ul>
@@ -159,6 +162,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                             </Route>
                             <Route exact path="/dash/:id/leveling" >
                                 <DashboardLeveling user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
+                            <Route exact path="/dash/:id/autorole" >
+                                <DashboardAutorole user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
                             <Route exact path="/dash/:id/commands" >
                                 <DashboardCommands user={user} meta={meta} status={status} setStatus={setStatus} />
