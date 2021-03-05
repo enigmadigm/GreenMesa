@@ -118,7 +118,7 @@ export const command: Command = {
                         },
                         {
                             name: 'XP',
-                            value: `Rank: ${rank && xp ? `${rank.personal ? rank.personal.rank : 'none'}\nLevel: ${xp ? xp.level : 'none'}` : ""}`,
+                            value: rank && xp ? `Rank: ${rank.personal ? rank.personal.rank : 'none'}\nLevel: ${xp ? xp.level : 'none'}` : "none",
                             inline: true
                         },
                         {
