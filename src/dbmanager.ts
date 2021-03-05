@@ -171,48 +171,53 @@ export class DBManager {
      * @param {object} message message sent to be counted for author
      */
     async updateXP(message: Message): Promise<void> {
-        if (!message.guild) return;
-        const maxs = await this.getGlobalSetting("max_xp");
-
-        function genXP() {
-            if (!maxs) return 28;
-            return Math.floor(Math.random() * (parseInt(maxs.value, 10) - 15) + 15);
-        }
-        this.db.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}${message.guild.id}'`, (err, rows) => {
-            if (err) throw err;
-            let sql;
-            if (rows.length < 1) {
-                sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild?.id}', '${message.author.id}', '${message.guild?.id}', ${genXP()}, 0)`;
-            } else {
-                // SENSITIVE AREA
-                // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
-                const xp = rows[0].xp + genXP();
-                let levelNow = rows[0].level;
-                let totalNeeded = 0;
-                for (let x = 0; x < rows[0].level + 1; x++) {
-                    totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
-                }
-                if (xp > totalNeeded) levelNow++;
-                // SENSITIVE AREA
-                /*let levelNow = Math.floor(0.1 * Math.sqrt(xp));
-                if (rows[0].level !== levelNow) {
-                    rows[0].level = levelNow;
-                }*/
-                sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = '${message.author.id}${message.guild?.id}'`
-
-                if (message.member) {
-                    this.updateLevelRole(message.member, levelNow);
-                }
+        try {
+            
+            if (!message.guild) return;
+            const maxs = await this.getGlobalSetting("max_xp");
+    
+            const genXP = () => {
+                if (!maxs) return 28;
+                return Math.floor(Math.random() * (parseInt(maxs.value, 10) - 15) + 15);
             }
-            this.query(sql).catch((err) => {
-                if (err.code === "ER_DUP_ENTRY") {
-                    xlog.error('error: ER_DUP_ENTRY caught and deflected');
-                    return;
+            this.db.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}${message.guild.id}'`, (err, rows) => {
+                if (err) throw err;
+                let sql;
+                if (rows.length < 1) {
+                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild?.id}', '${message.author.id}', '${message.guild?.id}', ${genXP()}, 0)`;
                 } else {
-                    throw err;
+                    // SENSITIVE AREA
+                    // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
+                    const xp = rows[0].xp + genXP();
+                    let levelNow = rows[0].level;
+                    let totalNeeded = 0;
+                    for (let x = 0; x < rows[0].level + 1; x++) {
+                        totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
+                    }
+                    if (xp > totalNeeded) levelNow++;
+                    // SENSITIVE AREA
+                    /*let levelNow = Math.floor(0.1 * Math.sqrt(xp));
+                    if (rows[0].level !== levelNow) {
+                        rows[0].level = levelNow;
+                    }*/
+                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = '${message.author.id}${message.guild?.id}'`
+    
+                    if (message.member) {
+                        this.updateLevelRole(message.member, levelNow);
+                    }
                 }
+                this.query(sql).catch((err) => {
+                    if (err.code === "ER_DUP_ENTRY") {
+                        xlog.error('error: ER_DUP_ENTRY caught and deflected');
+                        return;
+                    } else {
+                        throw err;
+                    }
+                });
             });
-        });
+        } catch (error) {
+            xlog.error(error);
+        }
     }
 
     /**
@@ -221,7 +226,7 @@ export class DBManager {
      * @param level the level of the member to apply
      */
     async updateLevelRole(member: GuildMember, level: number): Promise<boolean> {
-        if (!member || !member.guild || !member.guild.id || !level) return false;
+        if (!member || !member.guild || !member.guild.id || !level || !member.guild.me?.hasPermission("MANAGE_ROLES")) return false;
         let levelsEnabled: false | GuildSettingsRow | string = await this.getGuildSetting(member.guild, 'xp_levels');
         levelsEnabled = levelsEnabled ? levelsEnabled.value : false;
         if (levelsEnabled === "enabled") {
