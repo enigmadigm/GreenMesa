@@ -42,7 +42,7 @@ String.prototype.escapeDiscord = function () {
 };
 
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
-import Discord, { GuildChannel, TextChannel } from "discord.js"; // Load discord.js library
+import Discord, { GuildChannel, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
 import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
@@ -448,6 +448,21 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
             timestamps.set(message.author.id, now);
             setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+        }
+
+        if (command.permissions && command.permissions.length) {
+            const lacking: PermissionString[] = [];
+            for (const perm of command.permissions) {
+                if (!message.guild?.me?.hasPermission(perm)) {
+                    lacking.push(perm);
+                }
+            }
+            if (lacking.length) {
+                if (message.guild?.me?.permissionsIn(message.channel).has("SEND_MESSAGES")) {
+                    await message.channel.send(`I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`);
+                }
+                return;
+            }
         }
     
         try {

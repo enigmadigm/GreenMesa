@@ -39,6 +39,7 @@ import express, { Router } from 'express';
 import { IncomingMessage } from 'http';
 import { Bot } from '../../bot';
 import { Channel, TextChannel } from 'discord.js';
+import { getAllGuilds } from '../../utils/specials';
 
 let currToken: string;
 let tokenExpiresIn = 0;
@@ -152,11 +153,15 @@ export function twitchRouter(client: XClient): Router {
                             if (subs) {
                                 for (let i = 0; i < subs.length; i++) {
                                     const sub = subs[i];
-                                    const guild = await client.guilds.fetch(sub.guildid);
-                                    if (guild) {
-                                        const channel = guild.channels.cache.get(sub.channelid);
-                                        if (channel && channel instanceof TextChannel) {
-                                            channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                                    const guilds = await getAllGuilds(client);
+                                    // const guild = await client.guilds.fetch(sub.guildid);
+                                    if (guilds) {
+                                        const guild = guilds.find(x => x.id === sub.guildid);
+                                        if (guild) {
+                                            const channel = guild.channels.cache.get(sub.channelid);
+                                            if (channel && channel instanceof TextChannel) {
+                                                channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                                            }
                                         }
                                     }
                                 }
