@@ -440,7 +440,7 @@ export class DBManager {
      * @param value value to set for the property
      * @param deleting whether to delete the setting
      */
-    async editGuildSetting(guild: Guild, name = "", value = "", deleting = false): Promise<InsertionResult> {
+    async editGuildSetting(guild: Guild | PartialGuildObject, name = "", value = "", deleting = false): Promise<InsertionResult> {
         return new Promise((resolve, reject) => {
             if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
             if (deleting) {

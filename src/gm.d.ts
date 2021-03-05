@@ -1,4 +1,4 @@
-import { Client, Collection, Message } from "discord.js";
+import { Client, Collection, Message, PermissionString } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -32,6 +32,7 @@ export interface Command {
     moderation?: boolean;
     guildOnly?: boolean;
     ownerOnly?: boolean;
+    permissions?: PermissionString[];
     execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean>;
 }
 
@@ -344,4 +345,18 @@ export interface LevelsEndpointData  extends GuildsEndpointBase {
 
 export interface GuildsEndpointBase {
     id: string;
+}
+
+export interface AutoroleEndpointData extends GuildsEndpointBase {
+    roles: AutoroleData[];
+}
+
+export interface WarnConf {
+    punishment?: string;
+    threshold?: number;
+    time?: number;
+}
+
+export interface WarnConfEndpointData extends GuildsEndpointBase {
+    conf: WarnConf;
 }

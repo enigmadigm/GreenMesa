@@ -1,6 +1,6 @@
 import React from 'react';
 import { HomeProps } from '../../pages/DashboardPage';
-import { Center, Collapse, FormControl, FormLabel, Spinner, Switch, useDisclosure } from '@chakra-ui/react';
+import { Center, Collapse, FormControl, FormLabel, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Spinner, Switch, useDisclosure } from '@chakra-ui/react';
 import { AutomoduleData, AutomoduleEndpointData, ChannelData, RoleData } from '../../../../../gm';
 import Select, { GroupTypeBase, OptionsType, OptionTypeBase, Styles } from "react-select";
 import isEqual from 'lodash.isequal';
@@ -29,8 +29,8 @@ export interface AMCustomOptionsProps extends CustomModuleCardProps {
 }
 
 export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
-    control: (styles, state) => ({ ...styles, backgroundColor: '#3A4149', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "hsl(0, 0%, 80%)" }),
-    menu: (styles) => ({ ...styles, backgroundColor: '#3A4149' }),
+    control: (styles, state) => ({ ...styles, backgroundColor: '#343B41', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "hsl(0, 0%, 80%)" }),
+    menu: (styles) => ({ ...styles, backgroundColor: '#343B41' }),
     multiValue: (styles) => ({ ...styles, backgroundColor: '#001e52', borderColor: '#424242' }),
     multiValueLabel: (styles) => ({ ...styles, color: '#9c9c9c' }),
     multiValueRemove: (styles) => ({ ...styles, color: '#8a70ff' }),
@@ -38,6 +38,7 @@ export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase
     dropdownIndicator: (styles, state) => ({ ...styles, color: state.isDisabled ? "#343B41" : styles.color }),
     indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor }),
     input: (styles) => ({ ...styles, color: "#8a70ff" }),
+    singleValue: (styles) => ({...styles, color: "#fff"}),
 };
 
 const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
@@ -82,6 +83,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
     const [original, setOriginal] = React.useState<AutomoduleData>({ name: props.name, text: false, enableAll: false, applyRoles: [], roleEffect: 'ignore' });
     const { isOpen: channelCollapse, onToggle: channelCollapseToggle } = useDisclosure();
     const { isOpen: roleCollapse, onToggle: roleCollapseToggle } = useDisclosure();
+    const { isOpen: punishCollapse, onToggle: punishCollapseToggle } = useDisclosure();
 
     React.useEffect(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/automod/${props.name}`)
@@ -107,6 +109,14 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
             return;
         }
     }, [mod, original, unsaved])
+
+    /* React.useEffect(() => {
+        setTimeout(() => {
+            if (!overflow) {
+                overflow yes
+            }
+        }, 1000)
+    }, [channelCollapse]) */
 
     const handleEnableAllToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         const state = e.target.checked;
@@ -138,6 +148,24 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
         const state = e.target.checked;
         const m = Object.assign({}, mod);
         m.roleEffect = state ? "watch" : "ignore";
+        setMod(m);
+    }
+
+    const handlePunishmentValueChange = (v: any) => {
+        const m = Object.assign({}, mod);
+        m.punishment = v.value || undefined;
+        setMod(m);
+    }
+
+    const onPunishTimeChange = (valueAsString: string, valueAsNumber: number) => {
+        const m = Object.assign({}, mod);
+        m.punishTime = valueAsNumber;
+        setMod(m);
+    }
+
+    const handleActionsValueChange = (v: OptionsType<OptionTypeBase>) => {
+        const m = Object.assign({}, mod);
+        m.actions = v.map(v1 => v1.value);
         setMod(m);
     }
 
@@ -254,6 +282,56 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                             Watch
                         </FormLabel>
                     </FormControl>
+                </Collapse>
+                <hr style={{ marginTop: 10, marginBottom: 10 }} />
+                <h4 className="cardsubtitle" onClick={punishCollapseToggle} style={{ cursor: "pointer" }}>
+                    <span style={{ marginRight: 8 }}><CollapseIndicator collapsed={punishCollapse} /></span>
+                    Punishment
+                </h4>
+                <Collapse in={punishCollapse} style={{ overflow: "visible" }}>
+                    <p>Select the punishments and actions that should be taken when there is an infraction.</p>
+                    <br style={{ height: 5 }} />
+                    <p style={{ fontWeight: 700 }}>Punishment:</p>
+                    <Select
+                        placeholder="Select punishment . . ."
+                        options={['tempmute', 'mute', 'kick', 'tempban', 'ban'].map(c => {
+                            return { value: c, label: `${c}` };
+                        })}
+                        menuPlacement="auto"
+                        value={mod.punishment ? { value: mod.punishment, label: mod.punishment } : {label: "None"}}
+                        onChange={handlePunishmentValueChange}
+                        styles={selectStylesMK1}
+                    />
+                    {mod.punishment && ["tempmute","tempban"].includes(mod.punishment) ? (
+                        <>
+                            <br style={{ height: 5 }} />
+                            <p style={{ fontWeight: 700 }}>Punishment Length (sec):</p>
+                            <NumberInput id="ae-punishtime" defaultValue={0} value={mod.punishTime} onChange={onPunishTimeChange}>
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                </NumberInputStepper>
+                            </NumberInput>
+                        </>
+                    ) : <></>}
+                    <br style={{ height: 5 }} />
+                    <p style={{ fontWeight: 700 }}>Actions:</p>
+                    <Select
+                        placeholder="Select actions . . ."
+                        isMulti
+                        options={[{ value: 'delete', display: "Delete message" }, { value: 'warn', display: "Warn" }, { value: 'channelMessage', display: "Post to channel" }, { value: 'courtesyMessage', display: "Courtesy message" }].filter(x => props.isTextModule ? true : (x.value === "delete" || x.value === "channelMessage" ? false : true)).map(c => {
+                            return { value: c.value, label: `${c.display}` };
+                        })}
+                        menuPlacement="auto"
+                        value={mod.actions?.map(c => {
+                            const opts = [{ value: 'delete', display: "Delete message" }, { value: 'warn', display: "Warn" }, { value: 'channelMessage', display: "Post to channel" }, { value: 'courtesyMessage', display: "Courtesy message" }];
+                            const display = opts.find(x => x.value === c)?.display || c;
+                            return { value: c, label: `${display}` };
+                        }) || []}
+                        onChange={handleActionsValueChange}
+                        styles={selectStylesMK1}
+                    />
                 </Collapse>
                 {CustomOptions ? (
                     <>
