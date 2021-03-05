@@ -59,7 +59,7 @@ export function DashboardAutorole(props: HomeProps) {
                         <div className="x-card-header">Autorole</div>
                         <div className="x-card-body">
                             <p style={{ marginBottom: "1rem" }}>View the autorole configuration.</p>
-                            <h4 className="cardsubtitle">Leveling</h4>
+                            <h4 className="cardsubtitle">Autoroles</h4>
                             <p style={{ marginBottom: "1rem" }}>Nothing here yet.</p>
                         </div>
                     </div>

@@ -136,13 +136,14 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                             <p>Warnings may be issued by the automod or by moderators. Use this config tool to select what happens if warnings surpass a set limit.</p>
                             <div style={{ height: 5 }} />
                             <p style={{ fontWeight: 700 }}>Warn Threshold:</p>
-                            <NumberInput id="wc-threshold" min={-1} defaultValue={0} value={warnConf.threshold} onChange={handleWarnThresholdChange}>
+                            <NumberInput id="wc-threshold" min={-1} defaultValue={-1} value={warnConf.threshold} onChange={handleWarnThresholdChange}>
                                 <NumberInputField />
                                 <NumberInputStepper>
                                     <NumberIncrementStepper />
                                     <NumberDecrementStepper />
                                 </NumberInputStepper>
                             </NumberInput>
+                            <p style={{ marginBottom: "1rem", color: "rgba(228,231,234, 0.5)" }}><i>Set to -1 to disable.</i></p>
                             <div style={{ height: 5 }} />
                             <p style={{ fontWeight: 700 }}>Punishment:</p>
                             <Select
