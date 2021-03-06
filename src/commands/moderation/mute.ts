@@ -17,16 +17,13 @@ export const command: Command = {
     guildOnly: true,
     permLevel: permLevels.mod,
     moderation: true,
+    permissions: ["MANAGE_ROLES", "MUTE_MEMBERS"],
     async execute(client, message, args) {
         try {
             if (!message.guild || !message.member) return;
 
             const toMute = await stringToMember(message.guild, args[0], false, false, false);
             // Check perms, self, rank, etc
-            if (!message.guild.me?.hasPermission("MANAGE_ROLES")) {// check if the bot has the permissions to mute  members
-                message.channel.send("I do not have the permissions to do that");
-                return;
-            }
             if (!toMute) {
                 message.channel.send('You did not specify a user mention or ID!');
                 return;
@@ -41,7 +38,7 @@ export const command: Command = {
             }
             const dbmr = await client.database?.getGuildSetting(message.guild, "mutedrole");
             const mutedRoleID = dbmr ? dbmr.value : "";
-            if (toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0 >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
+            if ((toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
                 message.channel.send('You cannot mute a member that is equal to or higher than yourself');
                 return;
             }
