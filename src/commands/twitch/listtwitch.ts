@@ -1,5 +1,5 @@
-import xlg from "../xlogger";
-import { permLevels } from '../permissions';
+import xlg from "../../xlogger";
+import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 //import { getTwitchSubsGuild, getGlobalSetting } from "../dbmanager";
 //const { twitchIDLookup } = require("../website/routes/twitch");
