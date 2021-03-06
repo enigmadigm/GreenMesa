@@ -104,7 +104,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
             setUnsaved(true);
             return;
         }
-        if (isEqual(mod, original)) {
+        else if (isEqual(mod, original)) {
             setUnsaved(false);
             return;
         }
