@@ -165,11 +165,6 @@ export class MessageServices {
             if (pastOffset && target.bannable && target.kickable) {
                 switch (mod.punishment) {
                     case "ban": {
-                        if (ud.bans) {
-                            ud.bans++;
-                        } else {
-                            ud.bans = 1;
-                        }
                         /*if (!pud.bans) {
                             pud.bans = 1;
                         } else {
@@ -187,11 +182,6 @@ export class MessageServices {
                         break;
                     }
                     case "tempban": {
-                        if (ud.bans) {
-                            ud.bans++;
-                        } else {
-                            ud.bans = 1;
-                        }
                         /*if (!pud.bans) {
                             pud.bans = 1;
                         } else {

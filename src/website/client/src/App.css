@@ -315,6 +315,16 @@ body, html {
   padding: 1.25rem;
 }
 
+.card-footer:last-child {
+  border-radius: 0 0 calc(.25rem - 1px) calc(.25rem - 1px);
+}
+
+.card-footer {
+  padding: .75rem 1.25rem;
+  background-color: #343b41;
+  border-top: 1px solid #23282c;
+}
+
 .card-section {
   margin-bottom: 1rem;
 }
@@ -353,6 +363,18 @@ body, html {
 
 .c-button:disabled {
   background-color: #000000;
+}
+
+.card-footer-button {
+  padding: 8px 25px;
+  color: #fff;
+  border-radius: 2px;
+  background-color: #00315f;
+  transition: background-color 0.2s;
+}
+
+.card-footer-button:hover {
+  background-color: #001f3f;
 }
 
 code {

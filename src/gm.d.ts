@@ -3,7 +3,6 @@ import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
 import { MessageServices } from "./services";
-import { AutoRoler } from "./utils/arhandler";
 
 export interface XClient extends Client {
     commands?: Collection<string, Command>;
@@ -12,7 +11,6 @@ export interface XClient extends Client {
     specials?: typeof Specials;
     database?: DBManager;
     services?: MessageServices;
-    ar?: AutoRoler;
 }
 
 export interface Command {
@@ -220,13 +218,34 @@ export interface UserDataRow {
 
 // 'delete' | 'warn' | 'tempmute' | 'mute' | 'kick' | 'tempban' | 'ban' | 'channelMessage' | 'courtesyMessage';
 export interface AutomoduleData {
-    name: string;// name of module
-    text: boolean;// module extra
-    enableAll: boolean;// enable module or override channels
-    channels?: string[];// channel ids to apply effect to
-    channelEffect?: 'enable' | 'disable';// effect to use channels for
-    applyRoles: string[];// role ids to apply effect to
-    roleEffect: 'ignore' | 'watch';// effect to use roles for
+    /**
+     * name of module
+     */
+    name: string;
+    /**
+     * whether the module is a text module
+     */
+    text: boolean;
+    /**
+     * enable module and override channels
+     */
+    enableAll: boolean;
+    /**
+     * channel ids to apply channel effect to
+     */
+    channels?: string[];
+    /**
+     * effect to apply to channels
+     */
+    channelEffect?: 'enable' | 'disable';
+    /**
+     * role ids to apply effect to
+     */
+    applyRoles: string[];
+    /**
+     * effect to use roles for
+     */
+    roleEffect: 'ignore' | 'watch';
     /**
      * The mode of hard punishment.
      */
@@ -251,11 +270,17 @@ export interface AutomoduleData {
      * if available, only activate module on messages
      */
     onlyOnMessage?: boolean;
-    ignoreBots?: boolean;// ignore bot users if avail
-    sendDM?: boolean;// send a warning dm as an option
-    notNested?: boolean;// extra
-    customList?: string[];// extra
-    option1?: boolean;// extra extra
+    /**
+     * ignore bot users if avail
+     */
+    ignoreBots?: boolean;
+    /**
+     * send a warning dm as an option
+     */
+    sendDM?: boolean;
+    notNested?: boolean;
+    customList?: string[];
+    option1?: boolean;
 }
 
 export interface GuildUserDataRow {
@@ -270,6 +295,7 @@ export interface GuildUserDataRow {
     bio?: string;
     nicknames?: string;
     roles?: string;
+    banned?: string;
 }
 
 export interface AutomoduleEndpointData extends GuildsEndpointBase {
@@ -331,10 +357,15 @@ export interface XKCDEndpointResponse {
 }
 
 export interface AutoroleData {
-    name: string;
-    enabled: boolean;
-    roles: string[];
+    disabled?: boolean;
+    /**
+     * the roles to automatically give people when they join
+     */
+    roles?: string[];
     ignore?: string[];
+    /**
+     * the roles to automatically give to bots when they join
+     */
     botRoles?: string[];
 }
 
@@ -348,7 +379,7 @@ export interface GuildsEndpointBase {
 }
 
 export interface AutoroleEndpointData extends GuildsEndpointBase {
-    roles: AutoroleData[];
+    data: AutoroleData;
 }
 
 export interface WarnConf {

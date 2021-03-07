@@ -1,6 +1,6 @@
 import { GuildMember, TextChannel } from "discord.js";
 import moment from "moment";
-import { UnbanActionData, UnmuteActionData, UserDataRow, WarnConf, XClient } from "../gm";
+import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
 import xlg from "../xlogger";
@@ -226,17 +226,13 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
         //await set(data);
     }
 }
+
 /**
  * Ban a target permanently or for a period.
  */
 export async function ban(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel): Promise<void> {
+    if (!client.database) return;
     const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
-    const pud: UserDataRow = await client.database?.getUserData(target.id) || { userid: target.id };
-    if (!pud.bans) {
-        pud.bans = 1;
-    } else {
-        pud.bans++;
-    }
     await target.ban({
         reason: `banned by ${moderator?.user.tag || "me"}`
     });
@@ -266,7 +262,25 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
             }
         }
     }
-    await client.database?.updateUserData(pud);
+    registerBan(client, target);
+}
+
+export async function registerBan(client: XClient, target: GuildMember): Promise<void> {
+    if (!client.database) return;
+    const pud = await client.database.getUserData(target.id);
+    const gud = await client.database.getGuildUserData(target.guild.id, target.id);
+    if (!pud.bans) {
+        pud.bans = 1;
+    } else {
+        pud.bans++;
+    }
+    if (gud.bans) {
+        gud.bans++;
+    } else {
+        gud.bans = 1;
+    }
+    await client.database.updateUserData(pud);
+    await client.database.updateGuildUserData(gud);
 }
 
 export async function checkWarnings(client: XClient, target: GuildMember): Promise<void> {

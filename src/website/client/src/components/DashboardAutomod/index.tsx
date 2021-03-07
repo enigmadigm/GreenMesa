@@ -1,22 +1,21 @@
 import React from 'react';
 import './Automod.css';
-import { Center, NumberInputStepper, Spinner, NumberInput, NumberInputField, NumberIncrementStepper, NumberDecrementStepper } from '@chakra-ui/react';
+import { Center, Spinner } from '@chakra-ui/react';
 import { HomeProps } from '../../pages/DashboardPage';
-import { AutomoduleCard, selectStylesMK1 } from './AutomoduleCard';
+import { AutomoduleCard } from './AutomoduleCard';
 import { AntiEmbed } from './AntiEmbed';
 import { AntiGif } from './AntiGif';
 import { AntiLink } from './AntiLink';
 import { NiceNicks } from './NiceNicks';
 import { Profanity } from './Profanity';
-import { ChannelData, ChannelEndpointData, RoleData, RoleEndpointData, WarnConf, WarnConfEndpointData } from '../../../../../gm';
-import Select from 'react-select';
+import { ChannelData, ChannelEndpointData, RoleData, RoleEndpointData } from '../../../../../gm';
+import { WarnConfInterface } from './WarnConf';
 
 export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
     const { setStatus } = props;
     const [loaded, setLoaded] = React.useState(false);
     const [channels, setChannels] = React.useState<ChannelData[]>([]);
     const [roles, setRoles] = React.useState<RoleData[]>([]);
-    const [warnConf, setWarnConf] = React.useState<WarnConf>({ punishment: "", threshold: 0, time: 0});
 
     React.useEffect(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/channels`)
@@ -28,11 +27,6 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
             .then(x => x.json())
             .then((d: RoleEndpointData) => {
                 setRoles(d.roles);
-                return fetch(`/api/discord/guilds/${props.meta.id}/warnconf`);
-            })
-            .then(x => x.json())
-            .then((d: WarnConfEndpointData) => {
-                setWarnConf(d.conf);
             })
             .catch(e => {
                 setStatus(e.message);
@@ -71,54 +65,6 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
         }
     };
 
-    const handleWarnConfSaveClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        const hdrs = new Headers();
-        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
-        const fd = new URLSearchParams();
-        const stringConf = JSON.stringify(warnConf);
-        fd.append("data", `${stringConf}`);
-        const obj = {
-            method: 'PUT',
-            headers: hdrs,
-            body: fd
-        };
-        try {
-            fetch(`/api/discord/guilds/${props.meta.id}/warnconf`, obj)
-                .then(x => x.json())
-                .then((d) => {
-                    if (d.guild.data) {
-                        setStatus({ msg: "Saved.", success: true });
-                    } else {
-                        setStatus({ msg: "Failed to save.", success: false });
-                    }
-                }).catch(e => {
-                    console.error(e);
-                    setStatus({ msg: "Error", success: false });
-                });
-        } catch (error) {
-            console.error(error);
-            setStatus({ msg: "Failed to save.", success: false });
-        }
-    };
-
-    const handleWarnPunishmentChange = (v: any) => {
-        const m = Object.assign({}, warnConf);
-        m.punishment = v.value || undefined;
-        setWarnConf(m);
-    }
-
-    const handleWarnTimeChange = (valueAsString: string, valueAsNumber: number) => {
-        const m = Object.assign({}, warnConf);
-        m.time = valueAsNumber;
-        setWarnConf(m);
-    }
-
-    const handleWarnThresholdChange = (valueAsString: string, valueAsNumber: number) => {
-        const m = Object.assign({}, warnConf);
-        m.threshold = valueAsNumber;
-        setWarnConf(m);
-    }
-
     return loaded ? (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
@@ -135,43 +81,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                             <h4 className="cardsubtitle">Member Warns</h4>
                             <p>Warnings may be issued by the automod or by moderators. Use this config tool to select what happens if warnings surpass a set limit.</p>
                             <div style={{ height: 5 }} />
-                            <p style={{ fontWeight: 700 }}>Warn Threshold:</p>
-                            <NumberInput id="wc-threshold" min={-1} defaultValue={0} value={warnConf.threshold} onChange={handleWarnThresholdChange}>
-                                <NumberInputField />
-                                <NumberInputStepper>
-                                    <NumberIncrementStepper />
-                                    <NumberDecrementStepper />
-                                </NumberInputStepper>
-                            </NumberInput>
-                            <div style={{ height: 5 }} />
-                            <p style={{ fontWeight: 700 }}>Punishment:</p>
-                            <Select
-                                placeholder="Select punishment . . ."
-                                options={['tempmute', 'mute', 'kick', 'tempban', 'ban'].map(c => {
-                                    return { value: c, label: `${c}` };
-                                })}
-                                menuPlacement="auto"
-                                value={warnConf.punishment ? { value: warnConf.punishment, label: warnConf.punishment } : { label: "None" }}
-                                onChange={handleWarnPunishmentChange}
-                                styles={selectStylesMK1}
-                            />
-                            {warnConf.punishment && ["tempmute", "tempban"].includes(warnConf.punishment || "") ? (
-                                <>
-                                    <div style={{ height: 5 }} />
-                                    <p style={{ fontWeight: 700 }}>Punishment Length (sec):</p>
-                                    <NumberInput id="wc-punishtime" min={0} defaultValue={0} value={warnConf.time} onChange={handleWarnTimeChange}>
-                                        <NumberInputField />
-                                        <NumberInputStepper>
-                                            <NumberIncrementStepper />
-                                            <NumberDecrementStepper />
-                                        </NumberInputStepper>
-                                    </NumberInput>
-                                </>
-                            ) : <></>}
-                            <div>
-                                <hr style={{ marginTop: 10, marginBottom: 5 }} />
-                                <button className="am-save-button" onClick={handleWarnConfSaveClick}>Save</button>
-                            </div>
+                            <WarnConfInterface {...props} />
                         </div>
                     </div>
                 </div>
