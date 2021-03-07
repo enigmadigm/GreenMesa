@@ -1,7 +1,7 @@
 import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
@@ -394,13 +394,13 @@ export default function routerBuild (client: XClient): express.Router {
         const g = mg.find(x => x.id === id);
         if (!g) return res.sendStatus(404);
 
-        const arsRes = await client.database?.getGuildSetting(g.id, 'autoroles');
-        const autoroles = [];
-
         try {
+            const arsRes = await client.database?.getGuildSetting(g.id, 'autorole');
+            const arDat: AutoroleData = arsRes ? JSON.parse(arsRes.value) : { roles: [], botRoles: [], disabled: true };
+
             const toSend: AutoroleEndpointData = {
                 id,
-                roles: []
+                data: arDat
             }
             res.send(toSend);
         } catch (e) {
@@ -598,7 +598,7 @@ export default function routerBuild (client: XClient): express.Router {
 
         try {
             const g = await client.guilds.fetch(id);
-            const result = await client.database?.editGuildSetting(g, `automod_${module}`, JSON.stringify(parsedData));
+            const result = await client.database?.editGuildSetting(g, `automod_${module}`, JSON.stringify(parsedData).escapeSpecialChars());
             if (!result || !result.affectedRows) {
                 return res.sendStatus(500);
             }
@@ -651,7 +651,63 @@ export default function routerBuild (client: XClient): express.Router {
 
             try {
                 const g = await client.guilds.fetch(id);
-                const result = await client.database?.editGuildSetting(g, `warnconfig`, JSON.stringify(parsedData));
+                const result = await client.database?.editGuildSetting(g, `warnconfig`, JSON.stringify(parsedData).escapeSpecialChars());
+                if (!result || !result.affectedRows) {
+                    return res.sendStatus(500);
+                }
+                res.send({
+                    guild: {
+                        id,
+                        data: parsedData
+                    },
+                });
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/autorole", async (req, res) => {
+        try {
+            const { data } = req.body;
+            if (!module || !data || typeof data !== "string") {
+                return res.sendStatus(400);
+            }
+            const { id } = req.params;
+            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const conformsToAR = (o: any): o is WarnConf => {
+                return typeof o.roles === "object" && typeof o.botRoles === "object";
+            }
+
+            let parsedData: AutoroleData;
+            try {
+                parsedData = JSON.parse(data);
+                if (!conformsToAR(parsedData)) {
+                    return res.sendStatus(400);
+                }
+            } catch (error) {
+                return res.sendStatus(400);
+            }
+
+            try {
+                const g = await client.guilds.fetch(id);
+                const result = await client.database?.editGuildSetting(g, `autorole`, JSON.stringify(parsedData).escapeSpecialChars());
                 if (!result || !result.affectedRows) {
                     return res.sendStatus(500);
                 }

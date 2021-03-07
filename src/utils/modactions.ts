@@ -1,6 +1,6 @@
 import { GuildMember, TextChannel } from "discord.js";
 import moment from "moment";
-import { UnbanActionData, UnmuteActionData, UserDataRow, WarnConf, XClient } from "../gm";
+import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
 import xlg from "../xlogger";

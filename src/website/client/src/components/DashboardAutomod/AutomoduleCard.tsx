@@ -41,7 +41,7 @@ export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase
     singleValue: (styles) => ({...styles, color: "#fff"}),
 };
 
-const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
+export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
     control: (styles, state) => ({ ...styles, backgroundColor: '#3A4149', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "hsl(0, 0%, 80%)" }),
     menu: (styles) => ({ ...styles, backgroundColor: '#3A4149', zIndex: 10000 }),
     multiValue: (styles) => ({ ...styles, backgroundColor: '#001e52', borderColor: '#424242' }),
@@ -153,7 +153,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
 
     const handlePunishmentValueChange = (v: any) => {
         const m = Object.assign({}, mod);
-        m.punishment = v.value || undefined;
+        m.punishment = v.value === "none" ? undefined : v.value;
         setMod(m);
     }
 
@@ -294,7 +294,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                     <p style={{ fontWeight: 700 }}>Punishment:</p>
                     <Select
                         placeholder="Select punishment . . ."
-                        options={['tempmute', 'mute', 'kick', 'tempban', 'ban'].map(c => {
+                        options={['none', 'tempmute', 'mute', 'kick', 'tempban', 'ban'].map(c => {
                             return { value: c, label: `${c}` };
                         })}
                         menuPlacement="auto"
@@ -338,13 +338,12 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                         <CustomOptions {...props} {...{mod, setMod, loaded, setLoaded, unsaved}} />
                     </>
                 ) : <></>}
-                {unsaved ? (
-                    <div>
-                        <hr style={{ marginTop: 20, marginBottom: 5 }} />
-                        <button className="am-save-button" onClick={handleSaveClick}>Save</button>
-                    </div>
-                ) : <></>}
             </div>
+            {unsaved ? (
+                <div className="card-footer">
+                    <button className="card-footer-button" onClick={handleSaveClick}>Save</button>
+                </div>
+            ) : <></>}
         </div>
     ) : (
             <div className="x-card" style={{ minWidth: "50ch" }}>

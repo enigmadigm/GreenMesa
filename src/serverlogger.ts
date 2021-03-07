@@ -21,8 +21,15 @@ async function getLogChannel(guild?: Guild | null): Promise<TextChannel | false>
 
 export async function logMember(member: GuildMember, joining: boolean): Promise<void> {
     try {
+        if (!joining) {
+            await Bot.client.database?.updateGuildUserData({
+                roles: member.roles.cache.map(r => r.id).join(",")
+            });
+        }
+
         const logChannel = await getLogChannel(member.guild);
         if (!logChannel || logChannel.type !== 'text') return;
+
         
         // "color": joining ? 0x00ff00 : 0xff0000,
         logChannel.send({

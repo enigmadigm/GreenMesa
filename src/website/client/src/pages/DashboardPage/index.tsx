@@ -6,7 +6,7 @@ import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, 
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
-import { faHomeLgAlt, faLayerPlus, faLevelUpAlt } from '@fortawesome/pro-solid-svg-icons';
+import { faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller } from '@fortawesome/pro-solid-svg-icons';
 import { faBadgeSheriff } from '@fortawesome/pro-duotone-svg-icons';
 
 export interface IUser {
@@ -144,7 +144,7 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                     <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
                                 </li>
                                 <li>
-                                    <CustomNavItem to="autorole" text="Autorole" active={page === "autorole"} oc={setPage} ico={{ icon: faLayerPlus }} />
+                                    <CustomNavItem to="autorole" text="Autorole" active={page === "autorole"} oc={setPage} ico={{ icon: faPaintRoller }} />
                                 </li>
                                 <li>
                                     <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />

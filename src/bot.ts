@@ -47,7 +47,6 @@ import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
 import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname } from './serverlogger';
-import * as ar from "./utils/arhandler";
 import MesaWebsite from "./website/app";
 import { Commands } from './commands';
 import { Command, XClient, XMessage } from "./gm";
@@ -55,7 +54,6 @@ import { DBManager } from "./dbmanager";
 import * as specials from './utils/specials';
 import { MessageServices } from "./services";
 import { TimedActionsSubsystem } from "./tactions";
-import { AutoRoler } from './utils/arhandler';
 import { PaginationExecutor } from "./utils/pagination";
 
 export class Bot {
@@ -89,9 +87,6 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     await client.services.load();
 
     const tas = new TimedActionsSubsystem();
-
-    const ar = new AutoRoler(client);
-    client.ar = ar;
 
     xlg.log(`Bot ${client.user?.tag}(${client.user?.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
     const lo = client.channels.cache.get('661614128204480522');
@@ -192,8 +187,8 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
 
 client.on('guildMemberAdd', async member => {
     logMember(member, true);
-    ar.potatoRoler(member);
     client.services?.run(client, "automod_nicenicks", member);
+    client.services?.run(client, "autorole", member);
 });
 
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
