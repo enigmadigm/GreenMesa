@@ -296,6 +296,7 @@ export interface GuildUserDataRow {
     nicknames?: string;
     roles?: string;
     banned?: string;
+    modnote?: string;
 }
 
 export interface AutomoduleEndpointData extends GuildsEndpointBase {
@@ -390,4 +391,60 @@ export interface WarnConf {
 
 export interface WarnConfEndpointData extends GuildsEndpointBase {
     conf: WarnConf;
+}
+
+export interface ModActionData {
+    id?: number;
+    guildid: string;
+    casenumber?: number;
+    userid: string;
+    type: string;
+    created?: string;
+    updated?: string;
+    duration?: number;
+    mod: string;
+    summary?: string;
+}
+
+export interface ServerlogData {
+    channels: LogChannelData;
+    events: LogEventsMap;
+}
+
+export interface LogChannelData {
+    default?: string;
+    members?: string;
+    server?: string;
+    voice?: string;
+    messages?: string;
+    memberJoinLeave?: string;
+    ignoredChannels?: string[];
+}
+
+export interface LogEventsMap {
+    memberState?: boolean;
+    messageDeletion?: boolean;
+    messagePurge?: boolean;
+    messageUpdate?: boolean;
+    roleSate?: boolean;
+    channelState?: boolean;
+    channelUpdate?: boolean;
+    emojiState?: boolean;
+    nicknameChange?: boolean;
+    memberUpdate?: boolean;
+    voiceUpdate?: boolean;
+}
+
+export interface ServerlogEndpointData extends GuildsEndpointBase {
+    channels: LogChannelData;
+    events: LogEventsMap;
+}
+
+export interface UserNote {
+    id: number;
+    authorID: string;
+    author: string;
+    content: string;
+    created: string;
+    updated: string;
 }

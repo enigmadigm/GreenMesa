@@ -36,6 +36,21 @@ export async function sendError(channel: Channel, message?: string, errorTitle =
     }
 }
 
+export async function sendInfo(channel: Channel, message: string): Promise<void> {
+    try {
+        if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
+        channel.send({
+            embed: {
+                color: await Bot.client.database?.getColor("info_embed_color"),
+                description: `<:sminfo:818342088088354866> ${message}`
+            }
+        });
+        return;
+    } catch (error) {
+        xlg.error(error);
+    }
+}
+
 export async function argsNumRequire(channel: Channel, args: string[], num: number): Promise<boolean> {
     try {
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return false;
