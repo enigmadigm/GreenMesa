@@ -164,7 +164,7 @@ export async function logMessageUpdate(omessage: Message, nmessage: Message): Pr
             newContent = newContent.slice(0, 1020) + '...';
             newShortened = true;
         }
-    
+
         logChannel.send({
             embed: {
                 author: {
@@ -444,6 +444,27 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
             }
         });
         
+    } catch (error) {
+        xlg.error(error);
+    }
+}
+
+export async function logAutoBan(member: GuildMember): Promise<void> {
+    try {
+        const logChannel = await getLogChannel(member.guild);
+        if (!logChannel) return;
+
+        await logChannel.send({
+            embed: {
+                author: {
+                    name: `Member Autobanned`,
+                    iconURL: logChannel.guild.iconURL() || ""
+                },
+                color: await Bot.client.database?.getColor("info_embed_color"),
+                description: `Autoban has been activated on ${member.user.tag} (${member.id}).\nThey are now banned permanently.`,
+                timestamp: new Date(),
+            }
+        });
     } catch (error) {
         xlg.error(error);
     }
