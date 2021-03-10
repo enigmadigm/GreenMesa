@@ -258,7 +258,13 @@ export const command: Command = {
                 }
                 case 'megalog':
                 case 'serverlog': {
-                    argIndex++;
+                    await message.channel.send({
+                        embed: {
+                            color: await client.database?.getColor("info_embed_color"),
+                            description: `Now you can go to the [dashboard](https://stratum.hauge.rocks/dash) to configure the serverlog.`,
+                        }
+                    });
+                    /*argIndex++;
                     const slogValue = await client.database?.getGuildSetting(message.guild, 'server_log');
                     const slogChannel = slogValue && slogValue.value ? stringToChannel(message.guild, slogValue.value) : null;
                     if (!args[argIndex]) {
@@ -313,7 +319,7 @@ export const command: Command = {
                             }
                             break;
                         }
-                    }
+                    }*/
                     break;
                 }
                 case 'modrole': {
