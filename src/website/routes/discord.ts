@@ -1,7 +1,7 @@
 import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
@@ -455,6 +455,59 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
+    router.get("/guilds/:id/serverlog", async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+                return res.sendStatus(400);
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+            const g = mg.find(x => x.id === id);
+            if (!g) return res.sendStatus(404);
+
+            const serverLog = await client.database?.getGuildSetting(id, "serverlog");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let data: any = {};
+            try {
+                if (serverLog) {
+                    data = JSON.parse(serverLog.value);
+                }
+            } catch (error) {
+                //
+            }
+            if (typeof data.events !== "number" || typeof data.ignored_channels !== "object" || typeof data.log_channel !== "string") {
+                await client.database?.editGuildSetting(g, "serverlog", undefined, true);
+            }
+
+            try {
+                const toSend: ServerlogEndpointData = {
+                    id,
+                    log_channel: data.log_channel || "",
+                    member_channel: data.member_channel || "",
+                    server_channel: data.server_channel || "",
+                    voice_channel: data.voice_channel || "",
+                    messages_channel: data.messages_channel || "",
+                    movement_channel: data.movement_channel || "",
+                    ignored_channels: data.ignored_channels || [],
+                    events: data.events || 0,
+                }
+                res.send(toSend);
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            return res.sendStatus(500);
+        }
+    });
+
     // PUTters
 
     router.put("/guilds/:id/prefix", async (req, res) => {
@@ -691,14 +744,70 @@ export default function routerBuild (client: XClient): express.Router {
             }
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const conformsToAR = (o: any): o is WarnConf => {
+            const conformsToAR = (o: any): o is AutoroleData => {
                 return typeof o.roles === "object" && typeof o.botRoles === "object";
             }
 
-            let parsedData: AutoroleData;
+            let parsedData;
             try {
                 parsedData = JSON.parse(data);
                 if (!conformsToAR(parsedData)) {
+                    return res.sendStatus(400);
+                }
+            } catch (error) {
+                return res.sendStatus(400);
+            }
+
+            try {
+                const g = await client.guilds.fetch(id);
+                const result = await client.database?.editGuildSetting(g, `autorole`, JSON.stringify(parsedData).escapeSpecialChars());
+                if (!result || !result.affectedRows) {
+                    return res.sendStatus(500);
+                }
+                res.send({
+                    guild: {
+                        id,
+                        data: parsedData
+                    },
+                });
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/serverlog", async (req, res) => {
+        try {
+            const { data } = req.body;
+            if (!module || !data || typeof data !== "string") {
+                return res.sendStatus(400);
+            }
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds.array() : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const conformsToSL = (o: any): o is ServerlogData => {
+                return typeof o.events === "number" && typeof o.log_channel === "object";
+            }
+
+            let parsedData;
+            try {
+                parsedData = JSON.parse(data);
+                if (!conformsToSL(parsedData)) {
                     return res.sendStatus(400);
                 }
             } catch (error) {

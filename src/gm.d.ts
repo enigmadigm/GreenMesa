@@ -407,38 +407,18 @@ export interface ModActionData {
 }
 
 export interface ServerlogData {
-    channels: LogChannelData;
-    events: LogEventsMap;
+    log_channel: string;
+    member_channel: string;
+    server_channel: string;
+    voice_channel: string;
+    messages_channel: string;
+    movement_channel: string;
+    ignored_channels: string[];
+    events: number;
 }
 
-export interface LogChannelData {
-    default?: string;
-    members?: string;
-    server?: string;
-    voice?: string;
-    messages?: string;
-    memberJoinLeave?: string;
-    ignoredChannels?: string[];
-}
-
-export interface LogEventsMap {
-    memberState?: boolean;
-    messageDeletion?: boolean;
-    messagePurge?: boolean;
-    messageUpdate?: boolean;
-    roleSate?: boolean;
-    channelState?: boolean;
-    channelUpdate?: boolean;
-    emojiState?: boolean;
-    nicknameChange?: boolean;
-    memberUpdate?: boolean;
-    voiceUpdate?: boolean;
-}
-
-export interface ServerlogEndpointData extends GuildsEndpointBase {
-    channels: LogChannelData;
-    events: LogEventsMap;
-}
+//export interface ServerlogEndpointData extends GuildsEndpointBase {}
+export type ServerlogEndpointData = GuildsEndpointBase & ServerlogData;
 
 export interface UserNote {
     id: number;
@@ -448,3 +428,31 @@ export interface UserNote {
     created: string;
     updated: string;
 }
+
+/*export interface LogChannelData {
+    log_channel: string;
+    member_channel: string;
+    server_channel: string;
+    voice_channel: string;
+    messages_channel: string;
+    movement_channel: string;
+    ignored_channels: string[];
+}
+
+export type LogObject = Record<LogString, boolean>;
+export type LogFlags = Record<LogString, number>;
+
+export type LogString =
+    | 'MEMBER_STATE'
+    | 'MESSAGE_DELETION'
+    | 'MESSAGE_UPDATE'
+    | 'ROLE_CREATION'
+    | 'ROLE_DELETION'
+    | 'CHANNEL_CREATION'
+    | 'CHANNEL_DELETION'
+    | 'CHANNEL_UPDATE'
+    | 'EMOJI_CREATION'
+    | 'EMOJI_DELETION'
+    | 'NICKNAME_UPDATE'
+    | 'MEMBER_UPDATE'
+    | 'VOICE_ANY';*/
