@@ -17,7 +17,7 @@ export const command: Command = {
     permLevel: permLevels.admin,
     moderation: true,
     guildOnly: true,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    permissions: ["MANAGE_CHANNELS"],
     async execute(client, message, args) {
         try {
             if (!message.guild || !message.member) return;
@@ -39,9 +39,10 @@ export const command: Command = {
                     'SEND_MESSAGES': true
                 });
                 try {
+                    // if (!channel.permissionsFor(message.guild.me || "")?.has("SEND_MESSAGES")) {}
                     await channel.send("This channel has been unlocked\n(send again to lock)");
                 } catch (error) {
-                    //
+                    message.author.send(`I gave @ everyone permissions to speak in ${channel}, but I do not have the permissions to speak`);
                 }
             } else {
                 await channel.updateOverwrite(everyone, {
@@ -50,7 +51,7 @@ export const command: Command = {
                 try {
                     await channel.send("This channel has been locked\n(send again to unlock)");
                 } catch (error) {
-                    //
+                    message.author.send(`${channel} is now locked, and I do not have the permissions to speak in it.`);
                 }
             }
         } catch (error) {
