@@ -39,20 +39,12 @@ import express, { Router } from 'express';
 import { IncomingMessage } from 'http';
 import { Bot } from '../../bot';
 import { Channel, TextChannel } from 'discord.js';
-import { getAllGuilds } from '../../utils/specials';
 
 let currToken: string;
 let tokenExpiresIn = 0;
 setInterval(() => {
     tokenExpiresIn--;
 }, 1000);
-
-//const { StaticAuthProvider } = require('twitch-auth');
-
-//const http = require('http').Server(app);
-/*app.listen(config.port, function() {
-    console.log('Server raised on', config.port);
-});*/
 
 interface CustomIncoming extends IncomingMessage {
     twitch_hub: boolean;
@@ -153,15 +145,18 @@ export function twitchRouter(client: XClient): Router {
                             if (subs) {
                                 for (let i = 0; i < subs.length; i++) {
                                     const sub = subs[i];
-                                    const guilds = await getAllGuilds(client);
-                                    // const guild = await client.guilds.fetch(sub.guildid);
-                                    if (guilds) {
-                                        const guild = guilds.find(x => x.id === sub.guildid);
-                                        if (guild) {
-                                            const channel = guild.channels.cache.get(sub.channelid);
-                                            if (channel && channel instanceof TextChannel) {
-                                                channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                                    const channels = await client.specials?.getAllChannels(client);
+                                    if (channels) {
+                                        const channel = channels.find(c => c.id === sub.channelid);
+                                        if (channel) {
+                                            client.shard?.broadcastEval(`
+                                            const c = this.channels.cache.get('${sub.channelid}');
+                                            if (c && c.send) {
+                                                c.send(\`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
                                             }
+                                            `);
+                                            // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
+                                            //channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
                                         }
                                     }
                                 }
@@ -201,13 +196,15 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
         uid = await idLookup(username);
     }
     if (!uid || !uid.data || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
-    const existingSubs = await Bot.client.database?.getTwitchSubsForID(uid.data[0].id);
-    if (existingSubs && existingSubs.length > 0) {
-        for (let i = 0; i < existingSubs.length; i++) {
-            const sub = existingSubs[i];
-            if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) {
-                await addTwitchWebhook(uid.data[0].id, true);
-                return "ALREADY_EXISTS";
+    if (guildid) {
+        const existingSubs = await Bot.client.database?.getTwitchSubsForID(uid.data[0].id);
+        if (existingSubs && existingSubs.length > 0) {
+            for (let i = 0; i < existingSubs.length; i++) {
+                const sub = existingSubs[i];
+                if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) {
+                    await addTwitchWebhook(uid.data[0].id, true);
+                    return "ALREADY_EXISTS";
+                }
             }
         }
     }
