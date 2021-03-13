@@ -15,7 +15,7 @@ export const command: Command = {
         short: "ban a member",
         long: "Use to permanently ban a member. This will kick and prevent them from rejoining the server."
     },
-    usage: "<member>",
+    usage: "<member> [reason]",
     args: true,
     specialArgs: undefined,
     permLevel: permLevels.mod,
@@ -28,7 +28,20 @@ export const command: Command = {
 
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target || !(target instanceof Discord.GuildMember)) {
-                await client.specials?.sendError(message.channel, "Not a member");
+                if (/^[0-9]{18}$/g.test(args[0])) {
+                    const storedBans = await client.database?.getGuildSetting(message.guild, "toban");
+                    if (storedBans) {
+                        const bans: string[] = JSON.parse(storedBans.value);
+                        if (bans.includes(args[0])) {
+                            client.specials?.sendError(message.channel, `A member with that ID could not be found, but that ID already exists in the autoban list.`);
+                            return;
+                        }
+                        bans.push(args[0]);
+                        await client.database?.editGuildSetting(message.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                        return;
+                    }
+                }
+                await client.specials?.sendError(message.channel, "That target could not be found, it may not be a member.\nTo ban a member that has left, send their ID.");
                 return;
             }
             if (!target.bannable) {
@@ -67,7 +80,9 @@ export const command: Command = {
             const reason = args.join(" ");
             try {
                 const permsActual = await getPermLevel(target);// getting the perm level of the target, this should not play into their bannability
-                await target.ban({ reason: reason });
+                await target.ban({
+                    reason: reason || `banned by ${message.author.tag}`
+                });
                 if (permsActual >= permLevels.botMaster) {
                     message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}\nhttps://i.imgur.com/wdmSvX6.gif`);
                 } else {

@@ -296,6 +296,7 @@ export interface GuildUserDataRow {
     nicknames?: string;
     roles?: string;
     banned?: string;
+    modnote?: string;
 }
 
 export interface AutomoduleEndpointData extends GuildsEndpointBase {
@@ -391,3 +392,67 @@ export interface WarnConf {
 export interface WarnConfEndpointData extends GuildsEndpointBase {
     conf: WarnConf;
 }
+
+export interface ModActionData {
+    id?: number;
+    guildid: string;
+    casenumber?: number;
+    userid: string;
+    type: string;
+    created?: string;
+    updated?: string;
+    duration?: number;
+    mod: string;
+    summary?: string;
+}
+
+export interface ServerlogData {
+    log_channel: string;
+    member_channel: string;
+    server_channel: string;
+    voice_channel: string;
+    messages_channel: string;
+    movement_channel: string;
+    ignored_channels: string[];
+    events: number;
+}
+
+//export interface ServerlogEndpointData extends GuildsEndpointBase {}
+export type ServerlogEndpointData = GuildsEndpointBase & ServerlogData;
+
+export interface UserNote {
+    id: number;
+    authorID: string;
+    author: string;
+    content: string;
+    created: string;
+    updated: string;
+}
+
+/*export interface LogChannelData {
+    log_channel: string;
+    member_channel: string;
+    server_channel: string;
+    voice_channel: string;
+    messages_channel: string;
+    movement_channel: string;
+    ignored_channels: string[];
+}
+
+export type LogObject = Record<LogString, boolean>;
+export type LogFlags = Record<LogString, number>;
+
+export type LogString =
+    | 'MEMBER_STATE'
+    | 'MESSAGE_DELETION'
+    | 'MESSAGE_UPDATE'
+    | 'ROLE_CREATION'
+    | 'ROLE_DELETION'
+    | 'CHANNEL_CREATION'
+    | 'CHANNEL_DELETION'
+    | 'CHANNEL_UPDATE'
+    | 'EMOJI_CREATION'
+    | 'EMOJI_DELETION'
+    | 'NICKNAME_UPDATE'
+    | 'MEMBER_UPDATE'
+    | 'VOICE_ANY';*/

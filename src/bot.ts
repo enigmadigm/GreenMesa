@@ -46,7 +46,7 @@ import Discord, { GuildChannel, PermissionString, TextChannel } from "discord.js
 import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
-import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname } from './serverlogger';
+import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logAutoBan } from './serverlogger';
 import MesaWebsite from "./website/app";
 import { Commands } from './commands';
 import { Command, XClient, XMessage } from "./gm";
@@ -186,9 +186,28 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
 });
 
 client.on('guildMemberAdd', async member => {
-    logMember(member, true);
-    client.services?.run(client, "automod_nicenicks", member);
-    client.services?.run(client, "autorole", member);
+    try {
+        await logMember(member, true);
+        const storedBans = await client.database?.getGuildSetting(member.guild, "toban");
+        if (storedBans) {
+            try {
+                const bans: string[] = JSON.parse(storedBans.value);
+                if (bans.includes(member.id)) {
+                    await member.ban();
+                    bans.splice(bans.indexOf(member.id), 1);
+                    await client.database?.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                    await logAutoBan(member);
+                    return;
+                }
+            } catch (error) {
+                xlg.error(error);
+            }
+        }
+        client.services?.run(client, "automod_nicenicks", member);
+        client.services?.run(client, "autorole", member);
+    } catch (error) {
+        xlg.error(error);
+    }
 });
 
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.

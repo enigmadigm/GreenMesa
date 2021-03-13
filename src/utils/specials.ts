@@ -2,7 +2,7 @@
 import xlg from "../xlogger";
 import moment from 'moment';
 import { XClient } from '../gm';
-import { Channel, Collection, DMChannel, Guild, TextChannel } from 'discord.js';
+import { Channel, DMChannel, Guild, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
@@ -28,6 +28,21 @@ export async function sendError(channel: Channel, message?: string, errorTitle =
                 color: await Bot.client.database?.getColor("fail_embed_color") || 16711680,
                 title: (errorTitle) ? "Error" : undefined,
                 description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
+            }
+        });
+        return;
+    } catch (error) {
+        xlg.error(error);
+    }
+}
+
+export async function sendInfo(channel: Channel, message: string): Promise<void> {
+    try {
+        if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
+        channel.send({
+            embed: {
+                color: await Bot.client.database?.getColor("info_embed_color"),
+                description: `<:sminfo:818342088088354866> ${message}`
             }
         });
         return;
@@ -139,22 +154,33 @@ export function memoryUsage(): string {
     iteration();
 }*/
 
-type GuildCollection = Collection<string, Guild>;
-export async function getAllGuilds(client: XClient): Promise<GuildCollection | false> {
-    const reductionFunc = (a: GuildCollection, b: Guild[]) => {
-        const bc: GuildCollection = new Collection()
-        for (const bg of b) {
-            bc.set(bg.id, bg);
+export async function getAllGuilds(client: XClient): Promise<Guild[] | false> {
+    const reductionFunc = (p: Guild[], c: Guild[]) => {
+        for (const bg of c) {
+            p.push(bg);
         }
-        return a.concat(bc);
+        return p;
     };
-    const guilds: GuildCollection = (await client.shard?.fetchClientValues("guilds.cache"))?.reduce(reductionFunc, <GuildCollection>(new Collection()));
+    const guilds = (await client.shard?.fetchClientValues("guilds.cache"))?.reduce(reductionFunc, <Guild[]>[]);
     if (!guilds) {
         return false;
     }
     return guilds;
 }
 
+export async function getAllChannels(client: XClient): Promise<Channel[] | false> {
+    const reductionFunc = (p: Channel[], c: Channel[]) => {
+        for (const chan of c) {
+            p.push(chan);
+        }
+        return p;
+    };
+    const channels = (await client.shard?.fetchClientValues("channels.cache"))?.reduce(reductionFunc, []);
+    if (!channels) {
+        return false;
+    }
+    return channels;
+}
 /*exports.sendModerationDisabled = sendModerationDisabled;
 exports.sendError = sendError;
 exports.timedMessagesHandler = timedMessagesHandler;
