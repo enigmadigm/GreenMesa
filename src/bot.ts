@@ -193,9 +193,13 @@ client.on('guildMemberAdd', async member => {
             try {
                 const bans: string[] = JSON.parse(storedBans.value);
                 if (bans.includes(member.id)) {
-                    await member.ban();
-                    bans.splice(bans.indexOf(member.id), 1);
-                    await client.database?.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                    try {
+                        await member.ban();
+                        bans.splice(bans.indexOf(member.id), 1);
+                        await client.database?.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                    } catch (error) {
+                        await member.kick().catch((o_O) => o_O);
+                    }
                     await logAutoBan(member);
                     return;
                 }
