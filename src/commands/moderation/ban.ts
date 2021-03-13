@@ -29,7 +29,7 @@ export const command: Command = {
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target || !(target instanceof Discord.GuildMember)) {
                 if (/^[0-9]{18}$/g.test(args[0])) {
-                    const storedBans = await client.database?.getGuildSetting(message.guild, "toban");
+                    const storedBans = await client.database?.getGuildSetting(message.guild, "toban") || {value: "[]"};
                     if (storedBans) {
                         const bans: string[] = JSON.parse(storedBans.value);
                         if (bans.includes(args[0])) {
@@ -38,6 +38,7 @@ export const command: Command = {
                         }
                         bans.push(args[0]);
                         await client.database?.editGuildSetting(message.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                        await message.channel.send(`User with ID ${args[0]} added to autoban list`);
                         return;
                     }
                 }
