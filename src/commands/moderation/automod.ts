@@ -20,7 +20,7 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            
+
             const allMods = await client.database?.getAllAutoModules(message.guild.id) || [];
 
             let argIndex = 0;
@@ -89,7 +89,7 @@ export const command: Command = {
                             mod.channels = [];
                             mod.channelEffect = "enable";
                             await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
-                            message.channel.send(`Enabled \`${mod.name}\` in all channels`);
+                            message.channel.send(`Enabled \`${mod.name}\` in all channels. **WARNING:** Further configuration may be required in the dashboard.`);
                             break;
                         }
                         mod.enableAll = false;
