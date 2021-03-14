@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction } from 'react';
 //import { RouteComponentProps } from 'react-router-dom';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
-import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashHeader } from '../../components';
+import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashboardServerlog, DashHeader } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
@@ -147,6 +147,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                     <CustomNavItem to="autorole" text="Autorole" active={page === "autorole"} oc={setPage} ico={{ icon: faPaintRoller }} />
                                 </li>
                                 <li>
+                                    <CustomNavItem to="serverlog" text="Serverlog" active={page === "serverlog"} oc={setPage} ico={{ icon: faPaintRoller }} />
+                                </li>
+                                <li>
                                     <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
                                 </li>
                             </ul>
@@ -165,6 +168,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                             </Route>
                             <Route exact path="/dash/:id/autorole" >
                                 <DashboardAutorole user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
+                            <Route exact path="/dash/:id/serverlog" >
+                                <DashboardServerlog user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
                             <Route exact path="/dash/:id/commands" >
                                 <DashboardCommands user={user} meta={meta} status={status} setStatus={setStatus} />

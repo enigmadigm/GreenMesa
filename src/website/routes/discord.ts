@@ -478,17 +478,16 @@ export default function routerBuild (client: XClient): express.Router {
             try {
                 if (serverLog) {
                     data = JSON.parse(serverLog.value);
+                    if (typeof data.events !== "number" || typeof data.ignored_channels !== "object" || typeof data.log_channel !== "string") {
+                        await client.database?.editGuildSetting(g, "serverlog", undefined, true);
+                    }
                 }
             } catch (error) {
                 //
             }
-            if (typeof data.events !== "number" || typeof data.ignored_channels !== "object" || typeof data.log_channel !== "string") {
-                await client.database?.editGuildSetting(g, "serverlog", undefined, true);
-            }
 
             try {
                 const toSend: ServerlogEndpointData = {
-                    id,
                     log_channel: data.log_channel || "",
                     member_channel: data.member_channel || "",
                     server_channel: data.server_channel || "",
@@ -504,6 +503,7 @@ export default function routerBuild (client: XClient): express.Router {
                 res.sendStatus(500);
             }
         } catch (error) {
+            xlg.error(error);
             return res.sendStatus(500);
         }
     });
@@ -783,7 +783,7 @@ export default function routerBuild (client: XClient): express.Router {
     router.put("/guilds/:id/serverlog", async (req, res) => {
         try {
             const { data } = req.body;
-            if (!module || !data || typeof data !== "string") {
+            if (!data || typeof data !== "string") {
                 return res.sendStatus(400);
             }
             const { id } = req.params;
@@ -801,7 +801,7 @@ export default function routerBuild (client: XClient): express.Router {
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const conformsToSL = (o: any): o is ServerlogData => {
-                return typeof o.events === "number" && typeof o.log_channel === "object";
+                return typeof o.events === "number" && typeof o.log_channel === "string";
             }
 
             let parsedData;
@@ -816,7 +816,7 @@ export default function routerBuild (client: XClient): express.Router {
 
             try {
                 const g = await client.guilds.fetch(id);
-                const result = await client.database?.editGuildSetting(g, `autorole`, JSON.stringify(parsedData).escapeSpecialChars());
+                const result = await client.database?.editGuildSetting(g, `serverlog`, JSON.stringify(parsedData).escapeSpecialChars());
                 if (!result || !result.affectedRows) {
                     return res.sendStatus(500);
                 }

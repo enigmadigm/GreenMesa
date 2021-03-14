@@ -418,7 +418,7 @@ export interface ServerlogData {
 }
 
 //export interface ServerlogEndpointData extends GuildsEndpointBase {}
-export type ServerlogEndpointData = GuildsEndpointBase & ServerlogData;
+export type ServerlogEndpointData = ServerlogData;
 
 export interface UserNote {
     id: number;

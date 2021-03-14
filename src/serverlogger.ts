@@ -39,13 +39,16 @@ async function getLogChannel(guild: Guild, address: number, category: 'log_chann
             return false;
         }
         const logging: ServerlogData = JSON.parse(logValue.value);
-        if (!logging.events || !(logging.events & address)) {
+        if (!logging.events || (logging.events & address) !== address) {
             return false;
         }
         const logID = logging[category] || logging.log_channel || false;
         if (logID) {
             const logChannel = stringToChannel(guild, logID, false, false);
             if (logChannel && logChannel instanceof TextChannel) {
+                if (logging.ignored_channels && logging.ignored_channels.includes(logChannel.id)) {
+                    return false;
+                }
                 return logChannel;
             }
         }
@@ -108,8 +111,8 @@ export async function logMessageDelete(message: Message): Promise<void> {
         if (!message.guild) return;
         const logChannel = await getLogChannel(message.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel");
         if (!logChannel || logChannel.type !== 'text') return;
-        if (logChannel.id === message.channel.id) return;
-        if (message.author.id == message.client.user?.id) return;
+        //if (logChannel.id === message.channel.id) return;
+        if (message.author.id === message.client.user?.id) return;
         // shorten message if it's longer then 1024 (thank you bulletbot)
         let shortened = false;
         let content = message.content;
