@@ -7,7 +7,7 @@ import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 import { faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller } from '@fortawesome/pro-solid-svg-icons';
-import { faBadgeSheriff } from '@fortawesome/pro-duotone-svg-icons';
+import { faBadgeSheriff, faThList } from '@fortawesome/pro-duotone-svg-icons';
 
 export interface IUser {
     guilds?: RESTAPIPartialCurrentUserGuild[];
@@ -147,7 +147,7 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                     <CustomNavItem to="autorole" text="Autorole" active={page === "autorole"} oc={setPage} ico={{ icon: faPaintRoller }} />
                                 </li>
                                 <li>
-                                    <CustomNavItem to="serverlog" text="Serverlog" active={page === "serverlog"} oc={setPage} ico={{ icon: faPaintRoller }} />
+                                    <CustomNavItem to="serverlog" text="Serverlog" active={page === "serverlog"} oc={setPage} ico={{ icon: faThList }} />
                                 </li>
                                 <li>
                                     <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
