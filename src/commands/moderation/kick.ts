@@ -25,23 +25,27 @@ export const command: Command = {
             if (target && target instanceof Discord.GuildMember) {
                 args.shift();
                 const reason = args.join(" ");
-                await target.send({
-                    embed: {
-                        color: await client.database?.getColor("warn_embed_color"),
-                        title: `Kick Notice`,
-                        description: `Kicked from ${message.guild.name}`,
-                        fields: [
-                            {
-                                name: "Moderator",
-                                value: `${message.author.tag}`,
-                            },
-                            {
-                                name: "Reason",
-                                value: `${reason || "*none*"}`,
-                            }
-                        ],
-                    }
-                });
+                try {
+                    await target.send({
+                        embed: {
+                            color: await client.database?.getColor("warn_embed_color"),
+                            title: `Kick Notice`,
+                            description: `Kicked from ${message.guild.name}`,
+                            fields: [
+                                {
+                                    name: "Moderator",
+                                    value: `${message.author.tag}`,
+                                },
+                                {
+                                    name: "Reason",
+                                    value: `${reason || "*none*"}`,
+                                }
+                            ],
+                        }
+                    });
+                } catch (error) {
+                    //
+                }
                 /**
                  * Kick the member
                  * Make sure you run this on a member, not a user!
