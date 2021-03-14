@@ -81,8 +81,29 @@ export const command: Command = {
             const reason = args.join(" ");
             try {
                 const permsActual = await getPermLevel(target);// getting the perm level of the target, this should not play into their bannability
+                try {
+                    await target.send({
+                        embed: {
+                            color: await client.database?.getColor("fail_embed_color"),
+                            title: `Ban Notice`,
+                            description: `Banned from ${message.guild.name}${time ? `\nThis is a temporary ban, it will end in ${dur}` : ""}`,
+                            fields: [
+                                {
+                                    name: "Moderator",
+                                    value: `${message.author.tag}`,
+                                },
+                                {
+                                    name: "Reason",
+                                    value: `${reason || "*none*"}`,
+                                }
+                            ],
+                        }
+                    });
+                } catch (error) {
+                    //
+                }
                 await target.ban({
-                    reason: reason || `banned by ${message.author.tag}`
+                    reason: reason || `by ${message.author.tag}${reason ? ` | ${reason}` : ""}`
                 });
                 if (permsActual >= permLevels.botMaster) {
                     message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}\nhttps://i.imgur.com/wdmSvX6.gif`);
