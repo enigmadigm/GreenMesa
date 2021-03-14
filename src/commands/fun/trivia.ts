@@ -10,33 +10,59 @@ interface TriviaScoreboard {
 }
 
 const deftime = 15;
-const games: TGame[] = [];
+export const games: TGame[] = [];
 class TGame {
 	public cid: string;
 	public msg: string;
+    public manager: string;
 	public round: number;
 	public scores: TriviaScoreboard[];
 
-    constructor(channelid: string, messageid: string, initround = 1) {
+    constructor(channelid: string, message: Message, initround = 1) {
         this.cid = channelid;
-        this.msg = messageid;
+        this.msg = message.id;
+        this.manager = message.author.id;
         this.round = initround;
         this.scores = [];
     }
 
     displayScores(message: Message, ignoreround = false) {
-        const round = this.round - 1;
-        if (((round) % 5) === 0 || ignoreround) {
-            // Need to review this one for understanding \\\ Supposed to sort scores in descending order \\\ makes sense now
-            this.scores.sort((a, b) => b.score - a.score);
-            const newScoreList = this.scores.map((ela) => `${ela.score} ⁞ ${ela.user.displayName}`)
-            if (!newScoreList.length) newScoreList[0] = 'nobody scored';
-            message.channel.send({
-                embed: {
-                    color: 0xffa500,
-                    description: `\`\`\`\nRound ${round}\n${newScoreList.join("\n")}\n\`\`\``
-                }
-            }).catch(xlg.error);
+        try {
+            const round = this.round - 1;
+            if (((round) % 5) === 0 || ignoreround) {
+                // Need to review this one for understanding \\\ Supposed to sort scores in descending order \\\ makes sense now
+                this.scores.sort((a, b) => b.score - a.score);
+                const newScoreList = this.scores.map((ela) => `${ela.score} ⁞ ${ela.user.displayName}`)
+                if (!newScoreList.length) newScoreList[0] = 'nobody scored';
+                message.channel.send({
+                    embed: {
+                        color: 0xffa500,
+                        description: `\`\`\`\nRound ${round}\n${newScoreList.join("\n")}\n\`\`\``,
+                        footer: {
+                            text: `ID: ${this.msg}`,
+                        },
+                    }
+                });
+            }
+        } catch (error) {
+            xlg.error(error);
+        }
+    }
+
+    setRound(r: number): void {
+        this.round = r;
+    }
+
+    killGame(): void {
+        this.cid = "~";
+    }
+
+    increaseScore(scorer: GuildMember): void {
+        const scorecard = this.scores.find(x => x.user.id === scorer.id);
+        if (scorecard) {
+            scorecard.score += 1;
+        } else {
+            this.scores.push({ user: scorer, score: 1 })
         }
     }
 }
@@ -74,15 +100,33 @@ export const command: Command = {
     cooldown: 3,
     async execute(client, message, args) {
         try {
-            const r = await fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986`)
+            const triviaCommand = client.commands?.get('trivia');
+            if (!triviaCommand) {
+                client.specials?.sendError(message.channel, "Apparently this command no longer exists in the bot, sorry.");
+                return;
+            }
+            if (!process.env.TRIVIA_SESSION) {
+                process.env.TRIVIA_SESSION = "~";
+                const r = await fetch(`https://opentdb.com/api_token.php?command=request`);
+                const j = await r.json();
+                if (j.response_code === 0 && j.token && typeof j.token === "string") {
+                    process.env.TRIVIA_SESSION = j.token;
+                }
+            }
+            const r = await fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986&token=${process.env.TRIVIA_SESSION}`);
             const j = await r.json();
-            if (j.response_code != 0 && j.response_code != "0") {
+            if (j.response_code !== 0) {
+                if (j.response_code === 3 || j.response_code === 4) {
+                    process.env.TRIVIA_SESSION = undefined;
+                    triviaCommand.execute(client, message, args);
+                    return;
+                }
                 client.specials?.sendError(message.channel, 'There\'s been an error, we will address this issue as soon as possible. Until we do, you will continue to receive this message upon execution.');
                 return;
             }
             //Setting up for message
             const correctIndex = Math.floor(Math.random() * j.results[0].incorrect_answers.length);
-    
+
             const triviaQuestion = decodeURIComponent(j.results[0].question);
             const triviaCategory = decodeURIComponent(j.results[0].category);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,13 +134,8 @@ export const command: Command = {
             const triviaChoiceLetters = ['🇦', '🇧', '🇨', '🇩'];
             const triviaChoiceASCII = ['a', 'b', 'c', 'd'];
             // let triviaTFChoice = ['✅', '❌'];
-    
-            const triviaCommand = client.commands?.get('trivia');
-            if (!triviaCommand) {
-                client.specials?.sendError(message.channel, "Apparently this command no longer exists in the bot, sorry.");
-                return;
-            }
-            const game = games.find(g => g.cid === message.channel.id) || new TGame(message.channel.id, message.id);
+
+            const game = games.find(g => g.cid === message.channel.id) || new TGame(message.channel.id, message);
             if (!games.find(g => g.cid === message.channel.id)) {
                 games.push(game);
             } else {
@@ -104,12 +143,11 @@ export const command: Command = {
                     return client.specials?.sendError(message.channel, "A game is already in progress");
                 }
             }
-    
+
             // *went with alternative
             triviaChoices.splice(correctIndex, 0, `${j.results[0].correct_answer}`);
             triviaChoices = triviaChoices.map((e, i) => `${triviaChoiceLetters[i]} : ${decodeURIComponent(e)}`);
-    
-    
+
             // Send the message that users will respond to
             const filter: CollectorFilter = (response) => {
                 return triviaChoiceASCII.includes(response.content.toLowerCase());
@@ -123,8 +161,8 @@ export const command: Command = {
                     title: triviaQuestion,
                     description: triviaChoices.join('\n'),
                     footer: {
-                        text: 'Trivia | ' + triviaCategory + ' | Round ' + game.round
-                    }
+                        text: `Trivia | ${triviaCategory} | Round ${game.round}`,
+                    },
                 }
             });
             let allowedTime = deftime;
@@ -150,9 +188,9 @@ export const command: Command = {
                     return collector.stop();
                 }
             });
-            
+
             collector.on('end', async (collected, reason) => {
-                game.round += 1;
+                game.setRound(game.round + 1);
                 if (reason == 'time' || !collected.last()) {
                     triviaMessage.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
                     triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
@@ -174,12 +212,12 @@ export const command: Command = {
                             //displayScores(message, game.round, game.scores);
                             game.displayScores(message);
                             triviaCommand.execute(client, message, args);
-                        })
+                        })  
                         .catch(() => {
                             gameEndCallout.edit('**Looks like nobody got the answer this time.** Scores deleted.').catch(xlg.error);
                             //displayScores(message, round, scores, true);
                             game.displayScores(message, true);
-                        games.splice(games.indexOf(game), 1);
+                            games.splice(games.indexOf(game), 1);
                         });
                     return;
                 }
@@ -193,29 +231,9 @@ export const command: Command = {
                 }).join('\n');
                 await triviaMessage.edit(new Discord.MessageEmbed(triviaMessage.embeds[0])).catch(xlg.error);
                 allowedTime = -100;
-    
-                if (game.scores.length == 0) {
-                    game.scores = [
-                        {
-                            user: last.member,
-                            score: 1
-                        }
-                    ]
-                } else {
-                    let existsIndex;
-                    for (let i = 0; i < game.scores.length; i++) {
-                        const elem = game.scores[i];
-                        if (elem.user && elem.user.user.id == collected.last()?.author.id) {
-                            existsIndex = i;
-                        }
-                    }
-                    if (existsIndex) {
-                        game.scores[existsIndex].score += 1;
-                    } else {
-                        game.scores.push({ user: last.member, score: 1})
-                    }
-                }
-    
+
+                game.increaseScore(last.member);
+
                 await countDownMessage.edit(`Game ended.`).catch(xlg.error);
                 const gameEndCallout = await message.channel.send(`**${collectedLast} got the correct answer!** *Respond with \` tr \` in 10 sec to start a new game quickly.*`);
                 gameEndCallout.channel.awaitMessages(r => r.content.toLowerCase() == 'tr', {
@@ -233,7 +251,8 @@ export const command: Command = {
                         gameEndCallout.edit(`**${collectedLast} got the correct answer!** Scores deleted.`).catch(xlg.error);
                         //displayScores(message, round, scores, true);
                         game.displayScores(message, true);
-                        games.splice(games.indexOf(game), 1);
+                        game.killGame();
+                        //games.splice(games.indexOf(game), 1);
                     });
             });
         } catch (error) {

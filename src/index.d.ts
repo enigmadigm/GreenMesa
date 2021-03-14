@@ -25,6 +25,7 @@ declare namespace NodeJS {
         DASHBOARD_CALLBACK_URL?: string;
         DASHBOARD_STATIC_LOC?: string;
         DASHBOARD_COOKIE_SECRET?: string;
+        TRIVIA_SESSION?: string;
         NODE_ENV?: string;
     }
 }
