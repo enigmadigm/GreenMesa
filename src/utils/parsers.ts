@@ -260,10 +260,10 @@ export function durationToString(duration: number): string {
 
     let durationString = '';
 
-    if (days != 0) durationString += days + 'd ';
-    if (hours != 0) durationString += hours + 'h ';
-    if (minutes != 0) durationString += minutes + 'm ';
-    if (seconds != 0) durationString += seconds + 's';
+    if (days != 0) durationString += `${days}days `;
+    if (hours != 0) durationString += `${hours}hours `;
+    if (minutes != 0) durationString += `${minutes}minutes `;
+    if (seconds != 0) durationString += `${seconds}seconds`;
 
     if (durationString == '') durationString = '0s';
 
