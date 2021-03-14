@@ -1,9 +1,9 @@
 import React from 'react';
-import Select from 'react-select';
+import Select, { OptionsType, OptionTypeBase } from 'react-select';
 import { Center, Spinner } from '@chakra-ui/react';
 import { ChannelData, ChannelEndpointData, ServerlogData, ServerlogEndpointData } from '../../../../../gm';
 import { HomeProps } from '../../pages/DashboardPage';
-import { selectStylesMK1, selectStylesMK2 } from '../DashboardAutomod/AutomoduleCard';
+import { selectStylesMK1 } from '../DashboardAutomod/AutomoduleCard';
 import { isEqual } from 'lodash';
 
 import FormControl from '@material-ui/core/FormControl';
@@ -12,6 +12,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 
 const LoggingFlags = {
+    ALL_EVENTS: 1 << 14,
     MEMBER_STATE: 1 << 0,
     MEMBER_UPDATE: 1 << 11,
     NICKNAME_UPDATE: 1 << 10,
@@ -27,7 +28,7 @@ const LoggingFlags = {
     VOICE_ANY: 1 << 12,
     OTHER_EVENTS: 1 << 13
 };
-    // 16383
+// 16383 this figure is outdated because of additional options
 
 type logtypes = 'log_channel' | 'member_channel' | 'server_channel' | 'voice_channel' | 'messages_channel' | 'movement_channel';
 interface LogChannelSelectProps {
@@ -177,6 +178,12 @@ export function DashboardServerlog(props: HomeProps) {
         setData(m);
     }
 
+    const handleChannelsValueChange = (v: OptionsType<OptionTypeBase>) => {
+        const m = Object.assign({}, data);
+        m.ignored_channels = v.map(v1 => v1.value);
+        setData(m);
+    }
+
     return loaded ? (
         <>
             <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
@@ -199,6 +206,26 @@ export function DashboardServerlog(props: HomeProps) {
                                 <LogChannelSelect {...{ data, channels }} ch={handleChannelValueChange} cat="server_channel" />
                                 <p style={{ fontWeight: 700, marginTop: 10 }}>Voice:</p>
                                 <LogChannelSelect {...{ data, channels }} ch={handleChannelValueChange} cat="voice_channel" />
+                                <p style={{ fontWeight: 700, marginTop: 20 }}>Ignored Channels:</p>
+                                <Select
+                                    placeholder="Select channels . . ."
+                                    isMulti
+                                    options={channels.map(c => {
+                                        return { value: c.id, label: `#${c.name}` };
+                                    })}
+                                    menuPlacement="auto"
+                                    value={data.ignored_channels.map(c => {
+                                        const cr = channels.find(x => x.id === c);
+                                        if (cr) {
+                                            return { value: cr.id, label: `#${cr.name}` };
+                                        } else {
+                                            return {};
+                                        }
+                                    })}
+                                    onChange={handleChannelsValueChange}
+                                    styles={selectStylesMK1}
+                                />
+                                <p style={{ color: "rgba(228,231,234, 0.8)", marginTop: 5 }}><i>Events in these channels will not be logged.</i></p>
                             </div>
                         </div>
                     </div>
