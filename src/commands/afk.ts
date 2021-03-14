@@ -29,7 +29,7 @@ export const command: Command = {
                 userid: message.author.id,
                 afk: a
             });
-            message.channel.send("Your afk message has been set. The bot will send this message when someone mentions you.");
+            message.channel.send("Your afk message has been set. The bot will send this message when someone mentions you. If the bot sees you send a message, the message will be cleared.");
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
