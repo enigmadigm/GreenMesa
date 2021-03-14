@@ -131,7 +131,7 @@ export class MessageServices {
                             const e: MessageEmbedOptions = {
                                 color: await Bot.client.database?.getColor("warn_embed_color"),
                                 title: `Automod Violation`,
-                                description: `**Server:** ${target.guild.name}\nYou were caught in violation of the ${mod.name} module.${!ud.offenses ? "\nThis is your **first** offense" : `\nThis is your **${ordinalSuffixOf(ud.offenses)}** offense`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`
+                                description: `**Server:** ${target.guild.name}\nYou were caught in violation of the ${mod.name} module.${!ud.offenses || ud.offenses === 1 ? "\nThis is your **first** offense" : `\nThis is your **${ordinalSuffixOf(ud.offenses)}** offense`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`
                             }
                             await target.send({ embed: e });
                             break;
