@@ -30,7 +30,7 @@ export const command: Command = {
                         embed: {
                             color: await client.database?.getColor("warn_embed_color"),
                             title: `Kick Notice`,
-                            description: `Kicked from ${message.guild.name}`,
+                            description: `Kicked from ${message.guild.name}.`,
                             fields: [
                                 {
                                     name: "Moderator",

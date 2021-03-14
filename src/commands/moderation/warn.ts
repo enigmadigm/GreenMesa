@@ -43,7 +43,7 @@ export const command: Command = {
                     embed: {
                         color: await client.database?.getColor("warn_embed_color"),
                         title: `Warn Notice`,
-                        description: `Warned in ${message.guild.name}`,
+                        description: `Warned in ${message.guild.name}.`,
                         fields: [
                             {
                                 name: "Moderator",

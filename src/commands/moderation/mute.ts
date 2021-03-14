@@ -106,7 +106,7 @@ export const command: Command = {
                     embed: {
                         color: await client.database?.getColor("fail_embed_color"),
                         title: `Mute Notice`,
-                        description: `Muted in ${message.guild.name}${time ? `\nThis is a temporary mute, it will end in ${dur}` : ""}`,
+                        description: `Muted in ${message.guild.name}.${time ? `\nThis is a temporary mute, it will end in ${dur}` : ""}.`,
                         fields: [
                             {
                                 name: "Moderator",

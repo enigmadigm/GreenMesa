@@ -86,7 +86,7 @@ export const command: Command = {
                         embed: {
                             color: await client.database?.getColor("fail_embed_color"),
                             title: `Ban Notice`,
-                            description: `Banned from ${message.guild.name}${time ? `\nThis is a temporary ban, it will end in ${dur}` : ""}`,
+                            description: `Banned from ${message.guild.name}.${time ? `\nThis is a temporary ban, it will end in ${dur}` : ""}.`,
                             fields: [
                                 {
                                     name: "Moderator",
