@@ -11,7 +11,7 @@ export const command: Command = {
         short: 'kick a user',
         long: 'Remove any non-elevated member from the server. This will not ban them, they may rejoin.'
     },
-    usage: '<user mention>',
+    usage: '<user mention> [reason]',
     args: true,
     guildOnly: true,
     permLevel: permLevels.mod,
@@ -25,13 +25,34 @@ export const command: Command = {
             if (target && target instanceof Discord.GuildMember) {
                 args.shift();
                 const reason = args.join(" ");
+                try {
+                    await target.send({
+                        embed: {
+                            color: await client.database?.getColor("warn_embed_color"),
+                            title: `Kick Notice`,
+                            description: `Kicked from ${message.guild.name}.`,
+                            fields: [
+                                {
+                                    name: "Moderator",
+                                    value: `${message.author.tag}`,
+                                },
+                                {
+                                    name: "Reason",
+                                    value: `${reason || "*none*"}`,
+                                }
+                            ],
+                        }
+                    });
+                } catch (error) {
+                    //
+                }
                 /**
                  * Kick the member
                  * Make sure you run this on a member, not a user!
                  * There are big differences between a user and a member
                  */
                 try {
-                    await target.kick(reason)
+                    await target.kick(`by ${message.author.tag}${reason ? ` | ${reason}` : ""}`)
                     message.channel.send(`<a:spinning_light00:680291499904073739>✅ Kicked ${target.user.tag}`);
                     /*logChannel.send({
                         embed: {

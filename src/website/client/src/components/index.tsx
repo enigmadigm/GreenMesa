@@ -5,3 +5,5 @@ export { DashboardLeveling } from './DashboardLeveling';
 export { DashboardCommands } from './DashboardCommands';
 export { DashboardAutomod } from './DashboardAutomod';
 export { DashboardAutorole } from './DashboardAutorole';
+export { DashboardServerlog } from './DashboardServerlog';
+export { ChannelSelect } from './ChannelSelect';

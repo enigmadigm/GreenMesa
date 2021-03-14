@@ -20,8 +20,8 @@ const LoggingFlags = {
     NICKNAME_UPDATE: 1 << 10,
     MEMBER_UPDATE: 1 << 11,
     VOICE_ANY: 1 << 12,
-    OTHER_EVENTS: 1 << 13
-    // _: 1n << 13n,
+    OTHER_EVENTS: 1 << 13,
+    ALL_EVENTS: 1 << 14,
     // _: 1n << 14n,
     // _: 1n << 15n,
     // _: 1n << 16n,
@@ -31,7 +31,7 @@ const LoggingFlags = {
     // _: 1n << 20n,
 };
 
-async function getLogChannel(guild: Guild, address: number, category: 'log_channel' | 'member_channel' | 'server_channel' | 'voice_channel' | 'messages_channel' | 'movement_channel'): Promise<TextChannel | false> {
+async function getLogChannel(guild: Guild, address: number, category: 'log_channel' | 'member_channel' | 'server_channel' | 'voice_channel' | 'messages_channel' | 'movement_channel', channel?: GuildChannel): Promise<TextChannel | false> {
     try {
         if (!guild) return false;
         const logValue = await Bot.client.database?.getGuildSetting(guild, 'serverlog');
@@ -39,13 +39,16 @@ async function getLogChannel(guild: Guild, address: number, category: 'log_chann
             return false;
         }
         const logging: ServerlogData = JSON.parse(logValue.value);
-        if (!logging.events || !(logging.events & address)) {
+        if (!logging.events || ((logging.events & LoggingFlags.ALL_EVENTS) !== LoggingFlags.ALL_EVENTS && (logging.events & address) !== address)) {
             return false;
         }
         const logID = logging[category] || logging.log_channel || false;
         if (logID) {
             const logChannel = stringToChannel(guild, logID, false, false);
             if (logChannel && logChannel instanceof TextChannel) {
+                if (channel && logging.ignored_channels && logging.ignored_channels.includes(channel.id)) {
+                    return false;
+                }
                 return logChannel;
             }
         }
@@ -105,11 +108,11 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
 
 export async function logMessageDelete(message: Message): Promise<void> {
     try {
-        if (!message.guild) return;
-        const logChannel = await getLogChannel(message.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel");
+        if (!message.guild || message.channel instanceof DMChannel) return;
+        const logChannel = await getLogChannel(message.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", message.channel);
         if (!logChannel || logChannel.type !== 'text') return;
-        if (logChannel.id === message.channel.id) return;
-        if (message.author.id == message.client.user?.id) return;
+        //if (logChannel.id === message.channel.id) return;
+        if (message.author.id === message.client.user?.id) return;
         // shorten message if it's longer then 1024 (thank you bulletbot)
         let shortened = false;
         let content = message.content;
@@ -148,7 +151,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
         const first = messageCollection.first();
         if (!first || !first.guild) return;
         if (messageCollection instanceof DMChannel || first.channel instanceof DMChannel) return;
-        const logChannel = await getLogChannel(first.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel");
+        const logChannel = await getLogChannel(first.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", first.channel);
         if (!logChannel || logChannel.type !== 'text') return;
         if (logChannel.id === messageCollection.first()?.channel.id) return;
     
@@ -192,8 +195,8 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
 
 export async function logMessageUpdate(omessage: Message, nmessage: Message): Promise<void> {
     try {
-        if (omessage.content == nmessage.content || !nmessage.guild) return;
-        const logChannel = await getLogChannel(nmessage.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel");
+        if (omessage.content == nmessage.content || !nmessage.guild || nmessage.channel instanceof DMChannel) return;
+        const logChannel = await getLogChannel(nmessage.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", nmessage.channel);
         if (!logChannel || logChannel.type !== 'text') return;
         if (logChannel.id === nmessage.channel.id) return;
         if (nmessage.author.id == nmessage.client.user?.id) return;
@@ -269,7 +272,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
 
 export async function logChannelState(channel: GuildChannel, deletion = false): Promise<void> {
     try {
-        const logChannel = await getLogChannel(channel.guild, deletion ? LoggingFlags.CHANNEL_DELETION : LoggingFlags.CHANNEL_CREATION, "server_channel");
+        const logChannel = await getLogChannel(channel.guild, deletion ? LoggingFlags.CHANNEL_DELETION : LoggingFlags.CHANNEL_CREATION, "server_channel", channel);
         if (!logChannel || logChannel.type !== 'text') return;
         const nameref = channel.name ? ` (${channel.name})` : "";
         const titletyperef = channel.type !== "category" ? `${capitalizeFirstLetter(channel.type)} ` : "";
@@ -295,7 +298,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
 
 export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Promise<void> {// grouping of all types of change in channels
     try {
-        const logChannel = await getLogChannel(nc.guild, LoggingFlags.CHANNEL_UPDATE, "server_channel");
+        const logChannel = await getLogChannel(nc.guild, LoggingFlags.CHANNEL_UPDATE, "server_channel", nc);
         if (!logChannel || !(logChannel instanceof Discord.TextChannel)) return;
         if (!(oc instanceof Discord.GuildChannel) || !(nc instanceof Discord.GuildChannel)) return;
 

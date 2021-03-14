@@ -28,6 +28,7 @@ export const command: Command = {
                 message.channel.send('You did not specify a user mention or ID!');
                 return;
             }
+            args.shift();
             if (toMute.id === message.author.id) {
                 message.channel.send('You cannot mute yourself!');
                 return;
@@ -91,12 +92,35 @@ export const command: Command = {
             let mendm = ""
             let time = 0;
             let dur = "";
-            if (args[1]) {
-                time = stringToDuration(args[1])
+            if (args[0]) {
+                time = stringToDuration(args[0])
             }
             if (time) {
                 dur = durationToString(time);
                 mendm = ` for ${dur}`
+                args.shift();
+            }
+            const reason = args.join(" ");
+            try {
+                await toMute.send({
+                    embed: {
+                        color: await client.database?.getColor("fail_embed_color"),
+                        title: `Mute Notice`,
+                        description: `Muted in ${message.guild.name}.${time ? `\nThis is a temporary mute, it will end in ${dur}` : ""}.`,
+                        fields: [
+                            {
+                                name: "Moderator",
+                                value: `${message.author.tag}`,
+                            },
+                            {
+                                name: "Reason",
+                                value: `${reason || "*none*"}`,
+                            }
+                        ],
+                    }
+                });
+            } catch (error) {
+                //
             }
 
             message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${toMute.user.tag}\`${mendm}`);
