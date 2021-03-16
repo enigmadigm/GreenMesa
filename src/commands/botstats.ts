@@ -101,10 +101,10 @@ export const command: Command = {
             message.channel.send({
                 files: [fileToAttach],
                 embed: {
-                    title: "GreenMesa Stats",
+                    title: `${client.user?.username} Stats`,
                     fields: [
                         {
-                            name: 'Total Servers',
+                            name: 'Servers',
                             value: rows[0].numGuilds,
                             inline: true
                         },
@@ -114,27 +114,27 @@ export const command: Command = {
                             inline: true
                         },
                         {
-                            name: 'Total Channels',
+                            name: 'Channels',
                             value: rows[0].numChannels,
                             inline: true
                         },
                         {
-                            name: 'Total Users',
+                            name: 'Users',
                             value: rows[0].numUsers,
                             inline: true
                         },
                         {
-                            name: "Avg. user change (24hr)",
+                            name: `User Movement (${limiter || 24}hr)`,
                             value: chngPrefix + avgUserChange + "/hr",
                             inline: true
                         },
                         {
-                            name: "Unique Words Defined",
+                            name: "Defined Words",
                             value: config.wordsDefined.length,
                             inline: true
                         },
                         {
-                            name: "Total Commands Completed",
+                            name: "Commands Executed",
                             value: ((await client.database?.getTotalCmdUsage()) || [{ used: 0 }])[0].used,
                             inline: true
                         }
