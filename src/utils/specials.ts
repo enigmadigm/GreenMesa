@@ -41,7 +41,7 @@ export async function sendInfo(channel: Channel, message: string): Promise<void>
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
         channel.send({
             embed: {
-                color: await Bot.client.database?.getColor("info_embed_color"),
+                color: 0x337fd5/* await Bot.client.database?.getColor("info_embed_color") */,
                 description: `<:sminfo:818342088088354866> ${message}`
             }
         });
