@@ -1,9 +1,8 @@
-import { Client, Util } from 'discord.js';
+import { Client } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
 import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
-import guildsRouter from './guilds';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
 //import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
@@ -840,20 +839,39 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
-    router.use("/guilds/:id", async (req, res) => {
-        const { id } = req.params;
-        if (!/^[0-9]{18}$/g.test(id)) {
-            return res.status(400).send("Bad id");
+    router.delete("/guilds/:id/twitch/:channel", async (req, res) => {
+        try {
+            const { id, channel } = req.params;
+            if (!/^[0-9]{18}$/g.test(id) || !channel) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            try {
+                const result = await client.database?.removeTwitchSubscription(channel, id);
+                if (!result) {
+                    return res.status(400).send({
+                        success: false
+                    });
+                }
+                res.send({
+                    success: true
+                });
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
         }
-        if (!req.user) {
-            return res.sendStatus(401);
-        }
-        const allGuilds = await client.specials?.getAllGuilds(client);
-        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-        if (!mg.find(x => x.id && x.id === id)) {
-            return res.sendStatus(401);
-        }
-        return guildsRouter(client);
     });
 
     return router;
