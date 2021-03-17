@@ -45,7 +45,7 @@ export const command: Command = {
                         }
                     ],
                     footer: {
-                        text: "is.gd"
+                        text: "tinyurl.com"
                     }
                 }
             });
