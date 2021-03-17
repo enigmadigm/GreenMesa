@@ -1,25 +1,28 @@
-import { Client, Guild } from 'discord.js';
+import { Client, Util } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
 import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
+import guildsRouter from './guilds';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
 //import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
 
-function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
+export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
-        return botGuilds.find(g2 => (g.id === g2.id))
+        return botGuilds.find(g2 => (g.id === g2.id));
     });
 }
 
-function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
+export function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
-        return botGuilds.find(g2 => (g.id === g2.id) && (g.permissions & 0x20) === 0x20)
+        return botGuilds.find(g2 => (g.id === g2.id) && (g.permissions & 0x20) === 0x20);
     });
 }
 
-function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
+export function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): {
+    excluded: PartialGuildObject[], included: PartialGuildObject[]
+} {
     const validGuilds = userGuilds.filter((guild) => (guild.permissions & 0x20) === 0x20);
     const included: PartialGuildObject[] = [];
     const excluded = validGuilds.filter((guild) => {
@@ -37,7 +40,7 @@ export default function routerBuild (client: XClient): express.Router {
 
     // GETters
 
-    router.get('/guilds', (req, res) => {
+    router.get('/guilds', async (req, res) => {
         if (!req.user) {
             return res.sendStatus(401);
         }
@@ -45,7 +48,8 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(500);
         }
 
-        const { excluded, included } = getApplicableGuilds(req.user.guilds, client.guilds.cache.array());
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const { excluded, included } = getApplicableGuilds(req.user.guilds, allGuilds || []);
         const guilds: GuildItemSpecial[] = [
             ...excluded.map((e) => {
                 const g: GuildItemSpecial = {
@@ -836,7 +840,21 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
+    router.use("/guilds/:id", async (req, res) => {
+        const { id } = req.params;
+        if (!/^[0-9]{18}$/g.test(id)) {
+            return res.status(400).send("Bad id");
+        }
+        if (!req.user) {
+            return res.sendStatus(401);
+        }
+        const allGuilds = await client.specials?.getAllGuilds(client);
+        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+        if (!mg.find(x => x.id && x.id === id)) {
+            return res.sendStatus(401);
+        }
+        return guildsRouter(client);
+    });
+
     return router;
 }
-
-module.exports = routerBuild;
