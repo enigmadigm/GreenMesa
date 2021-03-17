@@ -1,7 +1,7 @@
 //import { getGlobalSetting } from '../dbmanager';
 import xlg from "../xlogger";
 import moment from 'moment';
-import { XClient } from '../gm';
+import { PartialGuildObject, XClient } from '../gm';
 import { Channel, DMChannel, Guild, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 
@@ -154,7 +154,7 @@ export function memoryUsage(): string {
     iteration();
 }*/
 
-export async function getAllGuilds(client: XClient): Promise<Guild[] | false> {
+export async function getAllGuilds(client: XClient): Promise<PartialGuildObject[] | false> {
     const reductionFunc = (p: Guild[], c: Guild[]) => {
         for (const bg of c) {
             p.push(bg);
