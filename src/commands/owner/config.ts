@@ -1,6 +1,6 @@
-import xlg from "../xlogger";
+import xlg from "../../xlogger";
 import moment from "moment";
-import { permLevels } from '../permissions';
+import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 
 export const command: Command = {
