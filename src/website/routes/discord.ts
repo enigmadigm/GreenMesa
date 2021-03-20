@@ -1,8 +1,10 @@
 import { Client } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
+import { addTwitchWebhook } from './twitch';
+import { stringToChannel } from '../../utils/parsers';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
 //import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
@@ -176,7 +178,7 @@ export default function routerBuild (client: XClient): express.Router {
     });
 
     router.get("/guilds/:id/channels", async (req, res) => {
-        const { id } = req.params;
+        const { id, text } = req.params;
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
             return res.sendStatus(400);
         }
@@ -215,7 +217,7 @@ export default function routerBuild (client: XClient): express.Router {
                 data.topic = c.topic || "";
             }
             return data;
-        }).sort((a, b) => a.position - b.position);
+        }).filter(c => text && text === "yes" ? c.type === "text" : true).sort((a, b) => a.position - b.position);
 
         try {
             res.send({
@@ -863,6 +865,100 @@ export default function routerBuild (client: XClient): express.Router {
                 }
                 res.send({
                     success: true
+                });
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.get("/guilds/:id/twitch", async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            try {
+                const subs = await client.database?.getTwitchSubsGuild(id);
+                if (!subs || !subs.length) {
+                    const payload: TwitchEndpointData = [];
+                    return res.send(payload);
+                }
+
+                const payload: TwitchEndpointData = [];
+                for (const sub of subs) {
+                    payload.push({
+                        channel_id: sub.channelid,
+                        streamer_login: sub.streamerlogin,
+                        streamer_id: sub.streamerid,
+                        message: sub.message || "",
+                    });
+                }
+
+                res.send(payload);
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/twitch", async (req, res) => {
+        try {
+            const { sid, login, cid, message } = req.body;
+            if (typeof sid !== "string" || typeof login !== "string" || typeof cid !== "string") {
+                return res.sendStatus(400);
+            }
+            const msg = typeof message !== "string" ? undefined : message;
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+            try {
+                const g = await client.guilds.fetch(id);
+                const c = stringToChannel(g, cid, false, false);
+                if (!c) {
+                    return res.status(400).send({
+                        error: 'BAD_ID',
+                    });
+                }
+                const result = await addTwitchWebhook(login, false, id, c, msg);
+                if (result === true) {
+                    return res.send({
+                        success: true
+                    });
+                }
+                if (!result) {
+                    return res.status(400).send({
+                        error: 'UNKNOWN',
+                    });
+                }
+                return res.status(400).send({
+                    error: result,
                 });
             } catch (e) {
                 xlg.error(e);

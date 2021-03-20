@@ -34,7 +34,7 @@ export const command: Command = {
         try {
             if (!message.guild) return;
             const iec = await client.database?.getColor("info_embed_color");
-            
+
             let targetUsername = args.join(" ") || "";
             if (!targetUsername) {
                 await message.channel.send({

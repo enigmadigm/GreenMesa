@@ -185,7 +185,7 @@ export function twitchRouter(client: XClient): Router {
     return router;
 }
 
-export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string): Promise<boolean | string> {
+export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string): Promise<boolean | 'ID_NOT_FOUND' | 'ALREADY_EXISTS'> {
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
