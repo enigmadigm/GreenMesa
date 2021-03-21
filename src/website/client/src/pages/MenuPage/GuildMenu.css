@@ -8,6 +8,10 @@
     overflow: hidden;
 }
 
+.gmi-no {
+    width: 250px;
+}
+
 .gmi {
     background-color: rgb(2, 67, 128);
     padding: 10px 25px;
@@ -20,6 +24,15 @@
 .gmi.gmi-unclaimed {
     background-color: rgb(63, 0, 71);
     color: rgba(255, 255, 255, 0.7);
+}
+
+.gmi.gmi-title {
+    background-color: rgb(35, 40, 44);
+}
+
+.gmi-text {
+    text-align: center;
+    display: initial;
 }
 
 .gmi:last-child {

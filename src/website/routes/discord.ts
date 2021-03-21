@@ -42,90 +42,100 @@ export default function routerBuild (client: XClient): express.Router {
     // GETters
 
     router.get('/guilds', async (req, res) => {
-        if (!req.user) {
-            return res.sendStatus(401);
-        }
-        if (!(client instanceof Client) || !Array.isArray(req.user.guilds) || !req.user.guilds.length) {
-            return res.sendStatus(500);
-        }
+        try {
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            if (!Array.isArray(req.user.guilds)) {
+                return res.sendStatus(500);
+            }
 
-        const allGuilds = await client.specials?.getAllGuilds(client);
-        const { excluded, included } = getApplicableGuilds(req.user.guilds, allGuilds || []);
-        const guilds: GuildItemSpecial[] = [
-            ...excluded.map((e) => {
-                const g: GuildItemSpecial = {
-                    bot: false,
-                    icon: e.icon,
-                    id: e.id,
-                    name: e.name,
-                    owner: e.owner,
-                    permissions: e.permissions
-                };
-                return g;
-            }),
-            ...included.map((e) => {
-                const g: GuildItemSpecial = {
-                    bot: true,
-                    icon: e.icon,
-                    id: e.id,
-                    name: e.name,
-                    owner: e.owner,
-                    permissions: e.permissions
-                };
-                return g;
-            })
-        ].sort((a) => a.bot ? -1 : 1);
-        const r: GuildsEndpointData = {
-            guilds
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const { excluded, included } = getApplicableGuilds(req.user.guilds, allGuilds || []);
+            const guilds: GuildItemSpecial[] = [
+                ...excluded.map((e) => {
+                    const g: GuildItemSpecial = {
+                        bot: false,
+                        icon: e.icon,
+                        id: e.id,
+                        name: e.name,
+                        owner: e.owner,
+                        permissions: e.permissions
+                    };
+                    return g;
+                }),
+                ...included.map((e) => {
+                    const g: GuildItemSpecial = {
+                        bot: true,
+                        icon: e.icon,
+                        id: e.id,
+                        name: e.name,
+                        owner: e.owner,
+                        permissions: e.permissions
+                    };
+                    return g;
+                })
+            ].sort((a) => a.bot ? -1 : 1);
+            const r: GuildsEndpointData = {
+                guilds
+            }
+            res.send(r);
+        } catch (error) {
+            xlg.error(error);
+            res.sendStatus(500);
         }
-        res.send(r);
     });
 
     router.get('/guildsall', async (req, res) => {
-        if (!req.user) {
-            return res.sendStatus(401);
+        try {
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            if (!Array.isArray(req.user.guilds)) {
+                return res.sendStatus(500);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuilds(req.user.guilds, allGuilds ? allGuilds : []);
+            res.send({
+                guilds: mg,
+                user: req.user
+            });
+        } catch (error) {
+            xlg.error(error);
+            res.sendStatus(500);
         }
-        if (!(client instanceof Client) || !Array.isArray(req.user.guilds) || !req.user.guilds.length) {
-            return res.sendStatus(500);
-        }
-        const allGuilds = await client.specials?.getAllGuilds(client);
-        const mg = getMutualGuilds(req.user.guilds, allGuilds ? allGuilds : []);
-        res.send({
-            guilds: mg,
-            user: req.user
-        });
     });
 
     router.get("/guilds/:id/config", async (req, res) => {
-        const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.sendStatus(400);
-        }
-        if (!req.user) {
-            return res.sendStatus(401);
-        }
-        const allGuilds = await client.specials?.getAllGuilds(client);
-        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-        if (!mg.find(x => x.id && x.id === id)) {
-            return res.sendStatus(401);
-        }
-        const g = await client.guilds.fetch(id);
-        if (!g) return res.sendStatus(404);
-        const r = await Bot.client.database?.getPrefix(id);
-        let prefix = r ? r : false;
-        if (!prefix) {
-            const r = await client.database?.getGlobalSetting('global_prefix');
-            prefix = r ? r.value : "sm";
-        }
-        if (!prefix) {
-            return res.status(500).send({ msg: "Unable to retrieve prefix" });
-        }
-        const modAllRes = await client.database?.getGuildSetting(id, 'all_moderation');
-        let modAll = false;
-        if (modAllRes && modAllRes.value === "enabled") {
-            modAll = true;
-        }
         try {
+            const { id } = req.params;
+            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+                return res.sendStatus(400);
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+            const g = await client.guilds.fetch(id);
+            if (!g) return res.sendStatus(404);
+            const r = await Bot.client.database?.getPrefix(id);
+            let prefix = r ? r : false;
+            if (!prefix) {
+                const r = await client.database?.getGlobalSetting('global_prefix');
+                prefix = r ? r.value : "sm";
+            }
+            if (!prefix) {
+                return res.status(500).send({ msg: "Unable to retrieve prefix" });
+            }
+            const modAllRes = await client.database?.getGuildSetting(id, 'all_moderation');
+            let modAll = false;
+            if (modAllRes && modAllRes.value === "enabled") {
+                modAll = true;
+            }
             res.send({
                 id,
                 name: g.name,
@@ -456,6 +466,7 @@ export default function routerBuild (client: XClient): express.Router {
                 res.sendStatus(500);
             }
         } catch (error) {
+            xlg.error(error)
             return res.sendStatus(500);
         }
     });
