@@ -73,19 +73,19 @@ export default class MesaWebsite {
         this.app.get("/logout", (req, res) => {
             req.logout();
             res.redirect("/");
-        })
+        });
 
         if (process.env.NODE_ENV === "production") {
             this.app.use(express.static(path.join(__dirname, "../../src/website", 'client/build')));
-            this.app.get(/(dash\/?|menu\/?|embark\/?).*/, function (req, res) {
+            this.app.get(/(dash\/?|menu\/?|embark\/?|error\/?).*/, function (req, res) {
                 res.sendFile(path.join(__dirname, "../../src/website", 'client/build', 'index.html'));
             });
         }
 
         this.app.set('view engine', 'pug');
         this.app.get("/c", (req, res) => {
-            res.render("c", { title: "Command Checklist", list: client.commands?.sort((a, b) => a.name.localeCompare(b.name)).map(x => `${x.name}`)})
-        })
+            res.render("c", { title: "Command Checklist", list: client.commands?.sort((a, b) => a.name.localeCompare(b.name)).map(x => `${x.name}`) });
+        });
 
         // Since this is the last non-error-handling
         // middleware use()d, we assume 404, as nothing else
