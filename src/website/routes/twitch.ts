@@ -149,10 +149,14 @@ export function twitchRouter(client: XClient): Router {
                                     if (channels) {
                                         const channel = channels.find(c => c.id === sub.channelid);
                                         if (channel) {
+                                            const name = req.body.data[0].user_name;
+                                            const link = `https://twitch.tv/${req.body.data[0].user_name}`;
+                                            const msg = sub.message || "";
+                                            const message = `${msg.replace(/\{name\}/g, name).replace(/\{link\}/g, link) || `${name} just went live!`}${!/\{link\}/g.exec(msg)?.length ? `\n${link}` : ""}`;
                                             client.shard?.broadcastEval(`
                                             const c = this.channels.cache.get('${sub.channelid}');
                                             if (c && c.send) {
-                                                c.send(\`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
+                                                c.send(\`${message.escapeDiscord()}\`)
                                             }
                                             `);
                                             // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
