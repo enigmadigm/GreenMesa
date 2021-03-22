@@ -322,7 +322,7 @@ export class DBManager {
                 const c = sg.channels.cache.get(scConf ? scConf.value.split(",")[1] : "813404897403732008");
                 if (c) {
                     await c.edit({
-                        name: `Conquest: ${guilds} servers`
+                        name: `${guilds} servers`
                     });
                 }
             }
