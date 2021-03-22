@@ -102,7 +102,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `bans` int(11) DEFAULT 0, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `roles` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -636,19 +636,18 @@ export class DBManager {
             if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
             const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
             const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
-            message = message.replace(/'/g, "\\'");
             if (!result || !result[0]) {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${expiresTimestamp}', '${name}')`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
                 } else {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${message}', '${expiresTimestamp}', '${name}')`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
                 }
                 return true;
             } else {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}', streamerlogin = '${name}' WHERE id = '${streamerid}${guildid}'`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 } else {
-                    await this.query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}', streamerlogin = '${name}', message = '${message}' WHERE id = '${streamerid}${guildid}'`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 }
                 return true;
             }
@@ -775,7 +774,7 @@ export class DBManager {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).replace(/'/g, "\\'");
 
-            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)})`);
+            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)}) ON DUPLICATE KEY UPDATE`);
 
             if (!r || !r.affectedRows) {
                 return false;
@@ -804,11 +803,28 @@ export class DBManager {
                 id: a.actionid,
                 time: moment(a.exectime).toDate(),
                 type: a.actiontype,
-                data: JSON.parse(a.actiondata)
+                data: JSON.parse(a.actiondata),
+                case: a.casenumber
             }
             parsed.push(b);
         }
         return parsed;
+    }
+
+    async getAction(id: string): Promise<TimedAction | false> {
+        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE actionid = ${escape(id)}`);
+        if (!r || !r.length) {
+            return false;
+        }
+        const a = r[0];
+        const b: TimedAction = {
+            id: a.actionid,
+            time: moment(a.exectime).toDate(),
+            type: a.actiontype,
+            data: JSON.parse(a.actiondata),
+            case: a.casenumber
+        }
+        return b;
     }
 
     /**

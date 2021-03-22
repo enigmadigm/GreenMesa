@@ -22,6 +22,14 @@ body, html {
 
 .app {
   display: flex;
+  height: 100%;
+}
+
+#rootportal {
+  top: 0;
+  position: fixed;
+  height: 100%;
+  width: 100%;
 }
 
 .top-header {
@@ -176,7 +184,7 @@ body, html {
 
 .controls-body {
   /* Setting this to 100% actually gives the cards space */
-  /*width: 100%;*/
+  width: 100%;
   display: flex;
   margin-top: 55px;
 }
@@ -270,9 +278,16 @@ body, html {
 }
 
 @media screen and (max-width: 950px) {
+  .control-row {
+    position: relative;
+  }
+  .x-card-parent {
+    width: 100%;
+  }
   .x-card {
+    /* width: initial;
+    max-width: 83ch; */
     width: initial;
-    max-width: 83ch;
   }
 }
 
@@ -537,6 +552,22 @@ code {
 .field-alert-out {
   opacity: 0;
   transition: opacity 200ms;
+}
+
+.inline-alert {
+  color: orange;
+  margin-bottom: 1em;
+  padding: 10px 20px;
+  background-color: rgba(110, 110, 70, 0.5);
+  border-radius: 7px;
+}
+
+.inline-error {
+  color: #ff0033;
+  margin-bottom: 1em;
+  padding: 10px 20px;
+  background-color: rgba(235, 0, 47, 0.377);
+  border-radius: 7px;
 }
 
 @media screen and (max-width: 800px) {

@@ -1,25 +1,28 @@
-import { Client, Guild } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
+import { addTwitchWebhook } from './twitch';
+import { stringToChannel } from '../../utils/parsers';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
 //import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
 
-function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
+export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
-        return botGuilds.find(g2 => (g.id === g2.id))
+        return botGuilds.find(g2 => (g.id === g2.id));
     });
 }
 
-function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
+export function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
-        return botGuilds.find(g2 => (g.id === g2.id) && (g.permissions & 0x20) === 0x20)
+        return botGuilds.find(g2 => (g.id === g2.id) && (g.permissions & 0x20) === 0x20);
     });
 }
 
-function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[]) {
+export function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): {
+    excluded: PartialGuildObject[], included: PartialGuildObject[]
+} {
     const validGuilds = userGuilds.filter((guild) => (guild.permissions & 0x20) === 0x20);
     const included: PartialGuildObject[] = [];
     const excluded = validGuilds.filter((guild) => {
@@ -30,6 +33,11 @@ function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: Guild[
     return { excluded, included };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const conformsToWarnConf = (o: any): o is WarnConf => {
+    return typeof o.threshold === "number" && typeof o.punishment === "string" && typeof o.time === "number";
+}
+
 export default function routerBuild (client: XClient): express.Router {
     const router = express.Router();
 
@@ -37,90 +45,101 @@ export default function routerBuild (client: XClient): express.Router {
 
     // GETters
 
-    router.get('/guilds', (req, res) => {
-        if (!req.user) {
-            return res.sendStatus(401);
-        }
-        if (!(client instanceof Client) || !Array.isArray(req.user.guilds) || !req.user.guilds.length) {
-            return res.sendStatus(500);
-        }
+    router.get('/guilds', async (req, res) => {
+        try {
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            if (!Array.isArray(req.user.guilds)) {
+                return res.sendStatus(500);
+            }
 
-        const { excluded, included } = getApplicableGuilds(req.user.guilds, client.guilds.cache.array());
-        const guilds: GuildItemSpecial[] = [
-            ...excluded.map((e) => {
-                const g: GuildItemSpecial = {
-                    bot: false,
-                    icon: e.icon,
-                    id: e.id,
-                    name: e.name,
-                    owner: e.owner,
-                    permissions: e.permissions
-                };
-                return g;
-            }),
-            ...included.map((e) => {
-                const g: GuildItemSpecial = {
-                    bot: true,
-                    icon: e.icon,
-                    id: e.id,
-                    name: e.name,
-                    owner: e.owner,
-                    permissions: e.permissions
-                };
-                return g;
-            })
-        ].sort((a) => a.bot ? -1 : 1);
-        const r: GuildsEndpointData = {
-            guilds
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const { excluded, included } = getApplicableGuilds(req.user.guilds, allGuilds || []);
+            const guilds: GuildItemSpecial[] = [
+                ...excluded.map((e) => {
+                    const g: GuildItemSpecial = {
+                        bot: false,
+                        icon: e.icon,
+                        id: e.id,
+                        name: e.name,
+                        owner: e.owner,
+                        permissions: e.permissions
+                    };
+                    return g;
+                }),
+                ...included.map((e) => {
+                    const g: GuildItemSpecial = {
+                        bot: true,
+                        icon: e.icon,
+                        id: e.id,
+                        name: e.name,
+                        owner: e.owner,
+                        permissions: e.permissions
+                    };
+                    return g;
+                })
+            ].sort((a) => a.bot ? -1 : 1);
+            const r: GuildsEndpointData = {
+                guilds
+            }
+            res.send(r);
+        } catch (error) {
+            xlg.error(error);
+            res.sendStatus(500);
         }
-        res.send(r);
     });
 
     router.get('/guildsall', async (req, res) => {
-        if (!req.user) {
-            return res.sendStatus(401);
+        try {
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            if (!Array.isArray(req.user.guilds)) {
+                return res.sendStatus(500);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuilds(req.user.guilds, allGuilds ? allGuilds : []);
+            res.send({
+                guilds: mg,
+                user: req.user
+            });
+        } catch (error) {
+            xlg.error(error);
+            res.sendStatus(500);
         }
-        if (!(client instanceof Client) || !Array.isArray(req.user.guilds) || !req.user.guilds.length) {
-            return res.sendStatus(500);
-        }
-        const allGuilds = await client.specials?.getAllGuilds(client);
-        const mg = getMutualGuilds(req.user.guilds, allGuilds ? allGuilds : []);
-        res.send({
-            guilds: mg,
-            user: req.user
-        });
     });
 
     router.get("/guilds/:id/config", async (req, res) => {
-        const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.sendStatus(400);
-        }
-        if (!req.user) {
-            return res.sendStatus(401);
-        }
-        const allGuilds = await client.specials?.getAllGuilds(client);
-        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-        if (!mg.find(x => x.id && x.id === id)) {
-            return res.sendStatus(401);
-        }
-        const g = await client.guilds.fetch(id);
-        if (!g) return res.sendStatus(404);
-        const r = await Bot.client.database?.getPrefix(id);
-        let prefix = r ? r : false;
-        if (!prefix) {
-            const r = await client.database?.getGlobalSetting('global_prefix');
-            prefix = r ? r.value : "sm";
-        }
-        if (!prefix) {
-            return res.status(500).send({ msg: "Unable to retrieve prefix" });
-        }
-        const modAllRes = await client.database?.getGuildSetting(id, 'all_moderation');
-        let modAll = false;
-        if (modAllRes && modAllRes.value === "enabled") {
-            modAll = true;
-        }
         try {
+            const { id } = req.params;
+            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+                return res.sendStatus(400);
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+            const g = await client.guilds.fetch(id);
+            if (!g) return res.sendStatus(404);
+            const r = await Bot.client.database?.getPrefix(id);
+            let prefix = r ? r : false;
+            if (!prefix) {
+                const r = await client.database?.getGlobalSetting('global_prefix');
+                prefix = r ? r.value : "sm";
+            }
+            if (!prefix) {
+                return res.status(500).send({ msg: "Unable to retrieve prefix" });
+            }
+            const modAllRes = await client.database?.getGuildSetting(id, 'all_moderation');
+            let modAll = false;
+            if (modAllRes && modAllRes.value === "enabled") {
+                modAll = true;
+            }
             res.send({
                 id,
                 name: g.name,
@@ -173,7 +192,7 @@ export default function routerBuild (client: XClient): express.Router {
     });
 
     router.get("/guilds/:id/channels", async (req, res) => {
-        const { id } = req.params;
+        const { id, text } = req.params;
         if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
             return res.sendStatus(400);
         }
@@ -212,7 +231,7 @@ export default function routerBuild (client: XClient): express.Router {
                 data.topic = c.topic || "";
             }
             return data;
-        }).sort((a, b) => a.position - b.position);
+        }).filter(c => text && text === "yes" ? c.type === "text" : true).sort((a, b) => a.position - b.position);
 
         try {
             res.send({
@@ -427,7 +446,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!g) return res.sendStatus(404);
 
             const warnConfig = await client.database?.getGuildSetting(id, "warnconfig");
-            let conf: WarnConf = {};
+            let conf: WarnConf = { punishment: "", threshold: -1, time: 0 };
             try {
                 if (warnConfig) {
                     conf = JSON.parse(warnConfig.value);
@@ -435,9 +454,13 @@ export default function routerBuild (client: XClient): express.Router {
             } catch (error) {
                 //
             }
-            if (!conf.threshold || typeof conf.threshold !== "number" || !conf.punishment || typeof conf.punishment !== "string") {
-                await client.database?.editGuildSetting(g, "warnconfig", undefined, true);
-                conf = {};
+            if (warnConfig && !conformsToWarnConf(conf)) {
+                try {
+                    await client.database?.editGuildSetting(g, "warnconfig", undefined, true);
+                } catch (error) {
+                    //
+                }
+                conf = { punishment: "", threshold: -1, time: 0 };
             }
 
             try {
@@ -451,6 +474,7 @@ export default function routerBuild (client: XClient): express.Router {
                 res.sendStatus(500);
             }
         } catch (error) {
+            xlg.error(error)
             return res.sendStatus(500);
         }
     });
@@ -687,11 +711,6 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(401);
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const conformsToWarnConf = (o: any): o is WarnConf => {
-                return typeof o.threshold === "number" && typeof o.punishment === "string" && typeof o.time === "number";
-            }
-
             let parsedData: WarnConf;
             try {
                 parsedData = JSON.parse(data);
@@ -836,7 +855,134 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
+    router.delete("/guilds/:id/twitch/:channel", async (req, res) => {
+        try {
+            const { id, channel } = req.params;
+            if (!/^[0-9]{18}$/g.test(id) || !channel) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            try {
+                const result = await client.database?.removeTwitchSubscription(channel, id);
+                if (!result) {
+                    return res.status(400).send({
+                        success: false
+                    });
+                }
+                res.send({
+                    success: true
+                });
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.get("/guilds/:id/twitch", async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            try {
+                const subs = await client.database?.getTwitchSubsGuild(id);
+                if (!subs || !subs.length) {
+                    const payload: TwitchEndpointData = [];
+                    return res.send(payload);
+                }
+
+                const payload: TwitchEndpointData = [];
+                for (const sub of subs) {
+                    payload.push({
+                        channel_id: sub.channelid,
+                        streamer_login: sub.streamerlogin,
+                        streamer_id: sub.streamerid,
+                        message: sub.message || "",
+                    });
+                }
+
+                res.send(payload);
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/twitch", async (req, res) => {
+        try {
+            const { sid, login, cid, message } = req.body;
+            if (typeof sid !== "string" || typeof login !== "string" || typeof cid !== "string") {
+                return res.sendStatus(400);
+            }
+            const msg = typeof message !== "string" ? undefined : message;
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+            try {
+                const g = await client.guilds.fetch(id);
+                const c = stringToChannel(g, cid, false, false);
+                if (!c) {
+                    return res.status(400).send({
+                        error: 'BAD_ID',
+                    });
+                }
+                const result = await addTwitchWebhook(sid, true, id, c, msg, true);
+                if (result === true) {
+                    return res.send({
+                        success: true
+                    });
+                }
+                if (!result) {
+                    return res.status(400).send({
+                        error: 'UNKNOWN',
+                    });
+                }
+                return res.status(400).send({
+                    error: result,
+                });
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
     return router;
 }
-
-module.exports = routerBuild;

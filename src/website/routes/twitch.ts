@@ -30,7 +30,7 @@ import querystring from 'querystring';
 //import { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } from "../../dbmanager";
 
 import xlg from '../../xlogger';
-import { XClient } from 'src/gm';
+import { TwitchSearchChannelsReturns, XClient } from 'src/gm';
 // discord client
 //const Bot = require('../../bot');
 //no
@@ -86,6 +86,35 @@ export function twitchRouter(client: XClient): Router {
                 "Authorization": `Bearer ${currToken}`
             }
         }).then(res => res.json()).then(body => res.json(body))
+    });
+
+    router.get("/search", async (req, res) => {
+        try {
+            if (typeof req.query.q !== "string") {
+                return res.sendStatus(400);
+            }
+            const first = typeof req.query.l === "string" && parseInt(req.query.l, 10) < 101 ? parseInt(req.query.l, 10) : 10;
+            // if (!req.user) {
+            //     return res.sendStatus(401);
+            // }
+            const q = decodeURIComponent(req.query.q);
+            await getOAuth();
+            if (!currToken || !currToken.length) return res.send("bad token");
+            const r = await fetch(`https://api.twitch.tv/helix/search/channels?query=${encodeURIComponent(q)}&first=${first}`, {
+                method: "GET",
+                headers: {
+                    "Client-ID": `${config.client_id}`,
+                    "Authorization": `Bearer ${currToken}`
+                }
+            });
+            const j: { data: TwitchSearchChannelsReturns[], pagination: { cursor: string } } = await r.json();
+            if (j.data) {
+                return res.json(j.data);
+            }
+            res.json(j);
+        } catch (error) {
+            res.sendStatus(500);
+        }
     });
     
     /*router.get("/unsubscribe", async (req, res) => {
@@ -149,10 +178,14 @@ export function twitchRouter(client: XClient): Router {
                                     if (channels) {
                                         const channel = channels.find(c => c.id === sub.channelid);
                                         if (channel) {
+                                            const name = req.body.data[0].user_name;
+                                            const link = `https://twitch.tv/${req.body.data[0].user_name}`;
+                                            const msg = sub.message || "";
+                                            const message = `${msg.replace(/\{name\}/g, name).replace(/\{link\}/g, link) || `${name} just went live!`}${!/\{link\}/g.exec(msg)?.length ? `\n${link}` : ""}`;
                                             client.shard?.broadcastEval(`
                                             const c = this.channels.cache.get('${sub.channelid}');
                                             if (c && c.send) {
-                                                c.send(\`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
+                                                c.send(\`${message.escapeDiscord()}\`)
                                             }
                                             `);
                                             // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
@@ -185,7 +218,7 @@ export function twitchRouter(client: XClient): Router {
     return router;
 }
 
-export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string): Promise<boolean | string> {
+export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string, editing = false): Promise<boolean | 'ID_NOT_FOUND' | 'ALREADY_EXISTS'> {
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
@@ -196,38 +229,45 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
         uid = await idLookup(username);
     }
     if (!uid || !uid.data || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
+    let preexists = false;
     if (guildid) {
         const existingSubs = await Bot.client.database?.getTwitchSubsForID(uid.data[0].id);
         if (existingSubs && existingSubs.length > 0) {
             for (let i = 0; i < existingSubs.length; i++) {
                 const sub = existingSubs[i];
                 if (sub.streamerid === uid.data[0].id && guildid === sub.guildid) {
-                    await addTwitchWebhook(uid.data[0].id, true);
-                    return "ALREADY_EXISTS";
+                    preexists = true;
+                    if (!editing) {
+                        await addTwitchWebhook(uid.data[0].id, true);
+                        return "ALREADY_EXISTS";
+                    }
                 }
             }
         }
     }
 
-    const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
-        method: 'POST',
-        body: JSON.stringify({
-            "hub.callback": `${config.callback_domain}/api/twitch?streamer=${uid.data[0].id}`,
-            "hub.mode": "subscribe",
-            "hub.topic": `https://api.twitch.tv/helix/streams?user_id=${uid.data[0].id}`,
-            "hub.lease_seconds": 864000,// 864000
-            "hub.secret": config.hub_secret
-        }),
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${currToken}`,
-            "Client-ID": `${config.client_id}`
-        }
-    });
+    if (!preexists) {
+        const res = await fetch("https://api.twitch.tv/helix/webhooks/hub", {
+            method: 'POST',
+            body: JSON.stringify({
+                "hub.callback": `${config.callback_domain}/api/twitch?streamer=${uid.data[0].id}`,
+                "hub.mode": "subscribe",
+                "hub.topic": `https://api.twitch.tv/helix/streams?user_id=${uid.data[0].id}`,
+                "hub.lease_seconds": 864000,// 864000
+                "hub.secret": config.hub_secret
+            }),
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${currToken}`,
+                "Client-ID": `${config.client_id}`
+            }
+        });
+        if (!res) return false;
+    }
 
     if (guildid && targetChannel && targetChannel instanceof TextChannel) {
         const subRes = await Bot.client.database?.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
-        if (!subRes || !res) return false;
+        if (!subRes) return false;
         if (uid.data[0].display_name || uid.data[0].login) {
             targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
         } else {

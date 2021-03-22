@@ -1,7 +1,5 @@
 import moment from 'moment';
 import { Command } from 'src/gm';
-//import { getGlobalSetting } from "../dbmanager";
-//const { getDayDiff } = require('../utils/time');
 import xlg from "../../xlogger";
 
 export const command: Command = {
@@ -24,7 +22,8 @@ export const command: Command = {
             ]
             if (message.guild.channels.cache.filter(x => x.type == 'news').size) channels.push(`News: ${message.guild.channels.cache.filter(x => x.type == 'news').size}`);
             if (message.guild.channels.cache.filter(x => x.type == 'store').size) channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
-            //if (message.guild.channels.cache.filter(x => x.type == 'unknown').size) channels.push(`Unknown: ${message.guild.channels.cache.filter(x => x.type == 'unknown').size}`);// no type
+
+            const invites = await message.guild.fetchInvites();
             message.channel.send({
                 embed: {
                     "color": await client.database?.getColor("info_embed_color"),
@@ -58,12 +57,17 @@ export const command: Command = {
                         },
                         {
                             "name": "Roles <:atsign_1:757386730960584815>",
-                            "value": `Count: ${message.guild.roles.cache.size}`,
+                            "value": `${message.guild.roles.cache.size}`,
+                            "inline": true
+                        },
+                        {
+                            "name": "Open Invites",
+                            "value": `${invites.size}`,
                             "inline": true
                         },
                         {
                             "name": "Emojis 😏",
-                            "value": `Total: ${message.guild.emojis.cache.size}\n<:giflabel1:757354173086957608>: ${message.guild.emojis.cache.filter(e => e.animated).size}`,
+                            "value": `Total: ${message.guild.emojis.cache.size}\nAnimated: ${message.guild.emojis.cache.filter(e => e.animated).size}\n<:giflabel1:757354173086957608>`,
                             "inline": true
                         },
                         {

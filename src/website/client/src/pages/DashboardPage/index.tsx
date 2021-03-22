@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction } from 'react';
 //import { RouteComponentProps } from 'react-router-dom';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
-import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashboardServerlog, DashHeader } from '../../components';
+import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashboardServerlog, DashboardTwitch, DashHeader } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
@@ -152,6 +152,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                 <li>
                                     <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
                                 </li>
+                                <li>
+                                    <CustomNavItem to="twitch" text="Twitch" active={page === "twitch"} oc={setPage} ico={{ icon: faLayerPlus }} />
+                                </li>
                             </ul>
                         </nav>
                     </div>
@@ -174,6 +177,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                             </Route>
                             <Route exact path="/dash/:id/commands" >
                                 <DashboardCommands user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
+                            <Route exact path="/dash/:id/twitch" >
+                                <DashboardTwitch user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
                         </Switch>
                     </div>

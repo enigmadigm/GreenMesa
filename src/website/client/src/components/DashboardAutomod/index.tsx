@@ -33,7 +33,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                 setLoaded(false);
             })
             .then(() => setLoaded(true))
-    }, [props, setStatus]);
+    }, [props.meta.id, setStatus]);
 
     const handleModuleSave = (mod: string, data: string, setModuleLoading?: React.Dispatch<React.SetStateAction<boolean>>) => {
         const hdrs = new Headers();

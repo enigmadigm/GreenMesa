@@ -1,4 +1,4 @@
-// THANK YOU BULLETBOT, A LOT OF THE BASE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
+// THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
 import { Guild, GuildChannel, GuildMember, MessageEmbed, Role, User } from "discord.js";
@@ -8,8 +8,8 @@ import { XClient } from "src/gm";
  * Returns similarity value based on Levenshtein distance.
  * The value is between 0 and 1
  *
- * @param {string} s1 first string
- * @param {string} s2 second string
+ * @param s1 first string
+ * @param s2 second string
  * @returns
  */
 export function stringSimilarity(s1: string, s2: string): number {
@@ -29,8 +29,8 @@ export function stringSimilarity(s1: string, s2: string): number {
 /**
  * helper function for stringSimilarity
  *
- * @param {string} s1
- * @param {string} s2
+ * @param s1
+ * @param s2
  * @returns
  */
 function editDistance(s1: string, s2: string) {
@@ -63,8 +63,8 @@ function editDistance(s1: string, s2: string) {
 /**
  * Executes a RegExp on a string and returns last result of first search if successful
  *
- * @param {string} str String to search in
- * @param {RegExp} regex RegExp to search with
+ * @param str String to search in
+ * @param regex RegExp to search with
  * @returns
  */
 function extractString(str: string, regex: RegExp) {
@@ -78,8 +78,8 @@ function extractString(str: string, regex: RegExp) {
  * Extracts the id from a string and the fetches the User
  *
  * @export
- * @param {XClient} client the client
- * @param {string} text Text to extract id from
+ * @param client the client
+ * @param text Text to extract id from
  * @returns User
  */
 export async function stringToUser(client: XClient, text: string): Promise<User | undefined> {
@@ -147,10 +147,10 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
  * - similar role name
  *
  * @export
- * @param {Guild} guild guild where the role is in
- * @param {string} text string to parse
- * @param {boolean} [byName=true] if it should also search by name (default true)
- * @param {boolean} [bySimilar=true] if it should also search by similar name (default true)
+ * @param guild guild where the role is in
+ * @param text string to parse
+ * @param [byName=true] if it should also search by name (default true)
+ * @param [bySimilar=true] if it should also search by similar name (default true)
  * @returns
  */
 
@@ -192,8 +192,8 @@ export function stringToRole(guild: Guild, text: string, byName = true, bySimila
  * - similar channel name
  *
  * @export
- * @param {Guild} guild guild where channel is in
- * @param {string} text string to parse
+ * @param guild guild where channel is in
+ * @param text string to parse
  * @returns
  */
 export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): GuildChannel | undefined {
@@ -218,7 +218,7 @@ export function stringToChannel(guild: Guild, text: string, byName = true, bySim
  * Parses a string into a JSON object for Embed.
  *
  * @export
- * @param {string} text string to parse
+ * @param text string to parse
  * @returns
  */
 export function stringToEmbed(text: string): MessageEmbed | null {
@@ -232,10 +232,6 @@ export function stringToEmbed(text: string): MessageEmbed | null {
     return embed
 }
 
-/*function timeParser() {
-
-}*/
-
 /**
  * converts milliseconds into a string. Examples:
  * - 3m 4s
@@ -244,7 +240,7 @@ export function stringToEmbed(text: string): MessageEmbed | null {
  * - 1d 1h 1m 1s
  *
  * @export
- * @param {number} duration duration in milliseconds
+ * @param duration duration in milliseconds
  * @returns
  */
 export function durationToString(duration: number): string {
@@ -256,10 +252,14 @@ export function durationToString(duration: number): string {
     const minutes = duration % 60;
     duration = (duration - minutes) / 60;
     const hours = duration % 24;
-    const days = (duration - hours) / 24;
+    duration = (duration - hours) / 24;
+    const days = duration % 365;
+    duration = (duration - days) / 365;
+    const years = duration;
 
     let durationString = '';
 
+    if (years != 0) durationString += `${years} ${years > 1 ? "years" : "year"} `;
     if (days != 0) durationString += `${days} ${days > 1 ? "days" : "day"} `;
     if (hours != 0) durationString += `${hours} ${hours > 1 ? "hours" : "hour"} `;
     if (minutes != 0) durationString += `${minutes} ${minutes > 1 ? "minutes" : "minute"} `;
@@ -272,7 +272,7 @@ export function durationToString(duration: number): string {
 
 /**
  * Capitalizes the first letter in a string
- * @param {string} string String to capitalize
+ * @param string String to capitalize
  */
 export function capitalizeFirstLetter(string: string): string {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -295,6 +295,11 @@ export function parseOptions(opts: string[]): string[] {
     return n;
 }
 
+/**
+ * Get the suffix of any given number combined with the number.
+ * @param i number to get suffix of
+ * @returns number with suffix attached
+ */
 export function ordinalSuffixOf(i: number): string {
     const j = i % 10,
         k = i % 100;
@@ -309,3 +314,42 @@ export function ordinalSuffixOf(i: number): string {
     }
     return i + "th";
 }
+
+// title ?: string;
+// description ?: string;
+// url ?: string;
+// timestamp ?: Date | number;
+// color ?: ColorResolvable;
+// fields ?: EmbedFieldData[];
+// files ?: (MessageAttachment | string | FileOptions)[];
+// author ?: Partial<MessageEmbedAuthor> & { icon_url?: string; proxy_icon_url?: string };
+// thumbnail ?: Partial<MessageEmbedThumbnail> & { proxy_url?: string };
+// image ?: Partial<MessageEmbedImage> & { proxy_url?: string };
+// video ?: Partial<MessageEmbedVideo> & { proxy_url?: string };
+// footer ?: Partial<MessageEmbedFooter> & { icon_url?: string; proxy_icon_url?: string };
+
+// export function conformsToField(o: any): o is EmbedFieldData {
+//     if (typeof o === "undefined") {
+//         return true;
+//     }
+//     return 'name' in o && 'value' in o && typeof o.name === "string" && typeof o.value === "string" && (typeof o.inline === "undefined" || typeof o.inline === "boolean");
+// }
+
+// export function conformsToFooter(o: any): o is MessageEmbedFooter {
+//     return true;
+// }
+
+// // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// export function conformsToEmbed(o: Record<string, any>): o is MessageEmbedOptions {
+//     if (typeof o !== "object") {
+//         return false;
+//     }
+//     const isTitle = typeof o.title === "string" || typeof o.title === "undefined";
+//     const isDescription = typeof o.description === "string" || typeof o.description === "undefined";
+//     const isURL = typeof o.url === "string" || typeof o.url === "undefined";
+//     const isTimestamp = typeof o.timestamp === "number" || o.timestamp instanceof Date || typeof o.timestamp === "undefined";
+//     const isColor = typeof o.color === "undefined" || !!Util.resolveColor(o.color);
+//     const isFields = typeof o.fields === "undefined" || ('fields' in o && Array.isArray(o.fields) && o.fields.every((x) => conformsToField(x)));
+//     const isFooter = typeof o.footer === "undefined" || conformsToFooter(o.footer);
+//     return isTitle && isDescription && isURL && isTimestamp && isColor && isFields;
+// }

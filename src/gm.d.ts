@@ -174,6 +174,7 @@ export interface UnparsedTimedAction {
     exectime: string;
     actiontype: string;
     actiondata: string;
+    casenumber: number;
 }
 
 export interface TimedAction {
@@ -456,3 +457,25 @@ export type LogString =
     | 'NICKNAME_UPDATE'
     | 'MEMBER_UPDATE'
     | 'VOICE_ANY';*/
+
+export interface TwitchSub {
+    channel_id: string;
+    streamer_id: string;
+    streamer_login: string;
+    message: string;
+}
+
+type TwitchEndpointData = TwitchSub[];
+
+export interface TwitchSearchChannelsReturns {
+    id: string;
+    broadcaster_login: string;
+    game_id?: string;
+    display_name?: string;
+    broadcaster_language?: string;
+    title?: string;
+    thumbnail_url?: string;
+    is_live?: boolean;
+    started_at?: string;
+    tag_ids?: string;
+}

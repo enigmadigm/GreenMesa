@@ -448,7 +448,6 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
     }
 }
 
-
 /**
  * Checks for nickname change in a guildmember update event
  */
@@ -461,7 +460,9 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
         await Bot.client.database?.updateGuildUserData({
             guildid: newMember.guild.id,
             userid: newMember.user.id,
-            nicknames: ud && ud.nicknames ? `${ud.nicknames},${moment().utc().format("DD MMM YY hh:mm")} UTC: ${newMember.nickname?.escapeSpecialChars()}` : `${newMember.nickname?.escapeSpecialChars()}`
+            nicknames: ud && ud.nicknames ?
+                `${ud.nicknames},${moment().utc().format("DD MMM YY HH:mm")} UTC: ${newMember.nickname?.escapeSpecialChars()}` :
+                `${moment().utc().format("DD MMM YY HH:mm")} UTC: ${newMember.nickname?.escapeSpecialChars()}`
         });
 
         const logChannel = await getLogChannel(newMember.guild, LoggingFlags.NICKNAME_UPDATE, "member_channel");
@@ -499,6 +500,10 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
     }
 }
 
+/**
+ * Logs an event where autoban banned a member on join.
+ * @param member member who was autobanned
+ */
 export async function logAutoBan(member: GuildMember): Promise<void> {
     try {
         const logChannel = await getLogChannel(member.guild, LoggingFlags.OTHER_EVENTS, "log_channel");
