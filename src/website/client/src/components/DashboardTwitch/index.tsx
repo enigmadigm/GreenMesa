@@ -30,6 +30,7 @@ export function DashboardTwitch(props: HomeProps) {
     const [editing, setEditing] = React.useState<boolean>(false);
     const [waiting, setWaiting] = React.useState<boolean>(false);
     const [em, setEm] = React.useState("");
+    const [mc, setMc] = React.useState("");
     //const [typing, setTyping] = React.useState<number>(0);
     const modalWrapper = React.useRef(null);
 
@@ -65,6 +66,14 @@ export function DashboardTwitch(props: HomeProps) {
     // React.useEffect(() => {
     //     console.log(pending);
     // }, [pending])
+
+    React.useEffect(() => {
+        if (showing) {
+            setTimeout(() => setMc("opaque"), 100)
+        } else {
+            setTimeout(() => setMc(""), 100)
+        }
+    }, [showing])
 
     const useOutsideClicker = (ref: React.MutableRefObject<any>) => {// https://stackoverflow.com/questions/32553158/detect-click-outside-react-component
         React.useEffect(() => {
@@ -271,7 +280,7 @@ export function DashboardTwitch(props: HomeProps) {
                 {showing ? (
                     <Rootportal show={showing}>
                         <div className="twitch-pm">
-                            <div className="t-pu" ref={modalWrapper}>
+                            <div className={`t-pu ${mc}`} ref={modalWrapper}>
                                 {!waiting ? (
                                 <>
                                     <div className="tpu-form-container">
@@ -311,7 +320,7 @@ export function DashboardTwitch(props: HomeProps) {
                                         <p style={{ fontWeight: 700, marginTop: 10, marginBottom: 5 }}>Message</p>
                                         <textarea className="tc-ta"
                                             rows={7}
-                                            placeholder={`${pending.streamer_login} is live! Go check out {name} at {link}`}
+                                            placeholder={`${pending.streamer_login || "{name}"} is live! Go check out {name} at {link}`}
                                             onChange={handleMessageChange}
                                             value={pending.message}
                                         ></textarea>

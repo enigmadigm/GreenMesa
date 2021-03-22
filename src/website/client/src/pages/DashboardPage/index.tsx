@@ -8,6 +8,7 @@ import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } fro
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 import { faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller } from '@fortawesome/pro-solid-svg-icons';
 import { faBadgeSheriff, faThList } from '@fortawesome/pro-duotone-svg-icons';
+import { faTwitch } from '@fortawesome/free-brands-svg-icons';
 
 export interface IUser {
     guilds?: RESTAPIPartialCurrentUserGuild[];
@@ -141,19 +142,19 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                     <CustomNavItem to="automod" text="Automod" active={page === "automod"} oc={setPage} ico={{ icon: faBadgeSheriff }} />
                                 </li>
                                 <li>
-                                    <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
-                                </li>
-                                <li>
                                     <CustomNavItem to="autorole" text="Autorole" active={page === "autorole"} oc={setPage} ico={{ icon: faPaintRoller }} />
                                 </li>
                                 <li>
                                     <CustomNavItem to="serverlog" text="Serverlog" active={page === "serverlog"} oc={setPage} ico={{ icon: faThList }} />
                                 </li>
                                 <li>
-                                    <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
+                                    <CustomNavItem to="twitch" text="Twitch" active={page === "twitch"} oc={setPage} ico={{ icon: faTwitch }} />
                                 </li>
                                 <li>
-                                    <CustomNavItem to="twitch" text="Twitch" active={page === "twitch"} oc={setPage} ico={{ icon: faLayerPlus }} />
+                                    <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
+                                </li>
+                                <li>
+                                    <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
                                 </li>
                             </ul>
                         </nav>

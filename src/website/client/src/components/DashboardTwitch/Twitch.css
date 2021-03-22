@@ -104,38 +104,44 @@
 .twitch-add > div {
     font-size: 1.2em;
     padding: 5px 15px;
-    transition: opacity 0.3s;
     width: 100%;
     height: 100%;
     bottom: 0;
+    /* transition: opacity 0.3s; */
 }
 
 .twitch-add .twitch-add-front {
+    transition: color 0.3s;
     position: relative;
     z-index: 3;
 }
 
 .twitch-add .twitch-add-back {
-    background: radial-gradient(circle, rgba(0, 0, 0, 0) 0%, rgba(100, 65, 164, 1) 100%);
+    background: radial-gradient(circle, rgb(22, 33, 43) 0%, rgba(100, 65, 164, 1) 100%);
     position: absolute;
     opacity: 0;
     z-index: 2;
     transition-timing-function: ease-out;
+    transition: opacity 0.3s;
 }
 
 .twitch-add .twitch-add-middle {
-    background: radial-gradient(circle, rgba(100, 65, 164, 1) 0%, rgba(0, 0, 0, 0) 100%);
+    background: radial-gradient(circle, rgba(100, 65, 164, 1) 0%, rgba(100, 65, 164, 1) 100%);
     position: absolute;
     z-index: 1;
-    transition-timing-function: ease-in;
+    /* transition-timing-function: ease-in; */
 }
 
 .twitch-add:hover>.twitch-add-back {
     opacity: 1;
 }
 
-.twitch-add:hover>.twitch-add-middle {
+/* .twitch-add:hover>.twitch-add-middle {
     opacity: 0;
+} */
+
+.twitch-add:hover>.twitch-add-front {
+    color: rgb(100, 65, 164)
 }
 
 .twitch-pm {
@@ -156,6 +162,8 @@
     transform: translateX(-50%);
     min-height: 500px;
     border-radius: 5px;
+    transition: opacity 0.3s;
+    opacity: 0;
 }
 
 .twitch-pm .tpu-form-container {
@@ -193,6 +201,7 @@
 
 .tpu-buttons button.primary-button {
     background-color: rgb(100, 65, 164);
+    transition: opacity 0.3s;
 }
 
 .tpu-buttons button.primary-button:hover {
@@ -202,9 +211,10 @@
 .tpu-buttons button.primary-button:disabled {
     color: rgb(122, 122, 122);
     cursor: not-allowed;
-    background-image: linear-gradient(63deg, #230063 38.89%, #610000 38.89%, #610000 50%, #230063 50%, #230063 88.89%, #610000 88.89%, #610000 100%);
-    background-size: 10.10px 19.82px;
+    /* background-image: linear-gradient(63deg, #230063 38.89%, #610000 38.89%, #610000 50%, #230063 50%, #230063 88.89%, #610000 88.89%, #610000 100%); */
+    /* background-size: 10.10px 19.82px; */
     /* background-color: rgba(35, 0, 99, 0.8); */
+    opacity: 0.5;
 }
 
 .twitch-cancel-bottom {
