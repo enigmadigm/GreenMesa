@@ -333,10 +333,11 @@ export class DBManager {
 
     /**
      * get the current db stats for gm counters
-     * @param {int} limiter number of past hours to retrieve
+     * @param limiter number of past hours to retrieve
      */
     async getGMStats(limiter = 24): Promise<BSRow[]> {
-        const rows = await <Promise<BSRow[]>>this.query(`SELECT * FROM botstats ORDER BY updateId DESC LIMIT ${limiter}`).catch(xlog.error);
+        const et = moment().subtract(limiter, "hours").format('YYYY-MM-DD HH:mm:ss');
+        const rows = await <Promise<BSRow[]>>this.query(`SELECT * FROM botstats WHERE logDate >= ${escape(et)} ORDER BY updateId DESC LIMIT ${limiter}`).catch(xlog.error);
         return rows;
     }
 
@@ -769,12 +770,12 @@ export class DBManager {
      * Set an action to be executed automatically at a given time
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>): Promise<boolean> {
+    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>, casenumber?: number): Promise<boolean> {
         try {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
-            const actionData = JSON.stringify(data).replace(/'/g, "\\'");
+            const actionData = JSON.stringify(data).escapeSpecialChars();
 
-            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)}) ON DUPLICATE KEY UPDATE`);
+            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata, casenumber) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)}, ${escape(casenumber || 0)}) ON DUPLICATE KEY UPDATE exectime = ${escape(mtime)}, actiontype = ${escape(actionType)}, actiondata = ${escape(actionData)}, casenumber = ${escape(casenumber || 0)} WHERE actionid = ${escape(id)}`);
 
             if (!r || !r.affectedRows) {
                 return false;
