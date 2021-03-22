@@ -76,7 +76,7 @@ export class DBManager {
             });
             conn.on('error', (err) => {
                 //console.log('db error', err);
-                if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
                     this.handleDisconnect();
                 } else {
                     throw err;
