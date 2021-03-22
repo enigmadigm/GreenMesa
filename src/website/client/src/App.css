@@ -554,6 +554,22 @@ code {
   transition: opacity 200ms;
 }
 
+.inline-alert {
+  color: orange;
+  margin-bottom: 1em;
+  padding: 10px 20px;
+  background-color: rgba(110, 110, 70, 0.5);
+  border-radius: 7px;
+}
+
+.inline-error {
+  color: #ff0033;
+  margin-bottom: 1em;
+  padding: 10px 20px;
+  background-color: rgba(235, 0, 47, 0.377);
+  border-radius: 7px;
+}
+
 @media screen and (max-width: 800px) {
   .app .x-sidebar, .field-alert {
     width: 50px;

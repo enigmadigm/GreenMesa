@@ -466,3 +466,16 @@ export interface TwitchSub {
 }
 
 type TwitchEndpointData = TwitchSub[];
+
+export interface TwitchSearchChannelsReturns {
+    id: string;
+    broadcaster_login: string;
+    game_id?: string;
+    display_name?: string;
+    broadcaster_language?: string;
+    title?: string;
+    thumbnail_url?: string;
+    is_live?: boolean;
+    started_at?: string;
+    tag_ids?: string;
+}

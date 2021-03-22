@@ -1,4 +1,3 @@
-import { Client } from 'discord.js';
 import xlg from '../../xlogger';
 import express from 'express';
 import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
@@ -32,6 +31,11 @@ export function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds:
         included.push(guild);
     });
     return { excluded, included };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const conformsToWarnConf = (o: any): o is WarnConf => {
+    return typeof o.threshold === "number" && typeof o.punishment === "string" && typeof o.time === "number";
 }
 
 export default function routerBuild (client: XClient): express.Router {
@@ -442,7 +446,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!g) return res.sendStatus(404);
 
             const warnConfig = await client.database?.getGuildSetting(id, "warnconfig");
-            let conf: WarnConf = {};
+            let conf: WarnConf = { punishment: "", threshold: -1, time: 0 };
             try {
                 if (warnConfig) {
                     conf = JSON.parse(warnConfig.value);
@@ -450,9 +454,13 @@ export default function routerBuild (client: XClient): express.Router {
             } catch (error) {
                 //
             }
-            if (!conf.threshold || typeof conf.threshold !== "number" || !conf.punishment || typeof conf.punishment !== "string") {
-                await client.database?.editGuildSetting(g, "warnconfig", undefined, true);
-                conf = {};
+            if (warnConfig && !conformsToWarnConf(conf)) {
+                try {
+                    await client.database?.editGuildSetting(g, "warnconfig", undefined, true);
+                } catch (error) {
+                    //
+                }
+                conf = { punishment: "", threshold: -1, time: 0 };
             }
 
             try {
@@ -701,11 +709,6 @@ export default function routerBuild (client: XClient): express.Router {
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const conformsToWarnConf = (o: any): o is WarnConf => {
-                return typeof o.threshold === "number" && typeof o.punishment === "string" && typeof o.time === "number";
             }
 
             let parsedData: WarnConf;
@@ -957,7 +960,7 @@ export default function routerBuild (client: XClient): express.Router {
                         error: 'BAD_ID',
                     });
                 }
-                const result = await addTwitchWebhook(login, false, id, c, msg);
+                const result = await addTwitchWebhook(sid, true, id, c, msg, true);
                 if (result === true) {
                     return res.send({
                         success: true

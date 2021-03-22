@@ -1,7 +1,8 @@
 import React from 'react';
 import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
 import { Center, Spinner } from '@chakra-ui/react';
-import { ChannelData, ChannelEndpointData, TwitchEndpointData, TwitchSub } from '../../../../../gm';
+import { ChannelData, ChannelEndpointData, TwitchEndpointData, TwitchSearchChannelsReturns, TwitchSub } from '../../../../../gm';
 import { HomeProps } from '../../pages/DashboardPage';
 import { selectStylesMK1 } from '../DashboardAutomod/AutomoduleCard';
 import { Rootportal } from '../Rootportal';
@@ -11,6 +12,13 @@ import { faTwitch } from '@fortawesome/free-brands-svg-icons';
 import { faPlus } from '@fortawesome/pro-solid-svg-icons';
 import PacmanLoader from "react-spinners/PacmanLoader";
 import './Twitch.css';
+import { stringSimilarity } from '../../utils/parsers';
+
+// export const selectStylesMK3: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
+//     ...selectStylesMK1,
+// }
+
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 export function DashboardTwitch(props: HomeProps) {
     const { setStatus } = props;
@@ -21,7 +29,8 @@ export function DashboardTwitch(props: HomeProps) {
     const [showing, setShowing] = React.useState<boolean>(false);
     const [editing, setEditing] = React.useState<boolean>(false);
     const [waiting, setWaiting] = React.useState<boolean>(false);
-    const [typing, setTyping] = React.useState<Date>();
+    const [em, setEm] = React.useState("");
+    //const [typing, setTyping] = React.useState<number>(0);
     const modalWrapper = React.useRef(null);
 
     React.useEffect(() => {
@@ -42,16 +51,16 @@ export function DashboardTwitch(props: HomeProps) {
             })
     }, [props, setStatus]);
 
-    React.useEffect(() => {
-        const tt = setInterval(() => {
-            if ((Date.now() - (typing?.getTime() || 0)) / 1000) {
-                //
-            }
-        }, 1000)
-        return () => {
-            clearInterval(tt);
-        }
-    }, [showing, typing])
+    // React.useEffect(() => {
+    //     const tt = setInterval(() => {
+    //         if ((Date.now() - (typing?.getTime() || 0)) / 1000) {
+    //             //
+    //         }
+    //     }, 1000)
+    //     return () => {
+    //         clearInterval(tt);
+    //     }
+    // }, [showing, typing])
 
     // React.useEffect(() => {
     //     console.log(pending);
@@ -80,6 +89,7 @@ export function DashboardTwitch(props: HomeProps) {
     useOutsideClicker(modalWrapper);
 
     const handleSaveClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        if (!pending.channel_id || !pending.streamer_id) return;
         setWaiting(true);
         const hdrs = new Headers();
         hdrs.append("Content-Type", "application/x-www-form-urlencoded");
@@ -101,18 +111,22 @@ export function DashboardTwitch(props: HomeProps) {
                         setStatus({ msg: "Saved.", success: true });
                         setShowing(false);
                         setPending({ channel_id: "", streamer_id: "", streamer_login: "", message: "" });
+                        setEm("");
                     } else {
-                        setStatus({ msg: "Failed to save.", success: false });
+                        setStatus({ msg: "Failed save", success: false });
+                        setEm(`There was an error in the backend, you may need to report it. ${d.error && `MSG: ${d.error}`}`);
                     }
                     setWaiting(false);
                 }).catch(e => {
                     console.error(e);
                     setStatus({ msg: "Error", success: false });
+                    setEm(e.message);
                     setWaiting(false);
                 });
         } catch (error) {
             console.error(error);
-            setStatus({ msg: "Failed to save.", success: false });
+            setStatus({ msg: "Failed save", success: false });
+            setEm(error.message);
             setWaiting(false);
         }
     };
@@ -142,6 +156,7 @@ export function DashboardTwitch(props: HomeProps) {
     const handleCancelClick = () => {
         setShowing(false);
         setPending({ channel_id: "", streamer_id: "", streamer_login: "", message: "" });
+        setEm("");
     }
 
     const handleChannelValueChange = (v: any) => {
@@ -162,6 +177,36 @@ export function DashboardTwitch(props: HomeProps) {
             setEditing(false);
             setShowing(true);
         }
+    }
+
+    let t = 0;
+    const loadStreamOptions = async (inputValue: string) => {
+        try {
+            const nt = t + 1;
+            t = nt;
+            await sleep(500);
+            if (t === nt) {
+                const r = await fetch(`/api/twitch/search?q=${encodeURIComponent(inputValue)}&l=50`);
+                const j: TwitchSearchChannelsReturns[] = await r.json();
+                const streamers = j.map(x => {
+                    return { label: x.display_name || x.broadcaster_login, value: x.id };
+                }).sort((a,b) => {
+                    return (stringSimilarity(a.label, inputValue) > stringSimilarity(b.label, inputValue) ? -1 : 1);
+                });
+                return streamers;
+            }
+            return [];
+        } catch (error) {
+            console.error(error);
+            return [{ label: "Could not load", value: "", isDisabled: true }];
+        }
+    }
+
+    const handleStreamerValueChange = (v: any) => {
+        const m = Object.assign({}, pending);
+        m.streamer_id = v.value;
+        m.streamer_login = v.label;
+        setPending(m);
     }
 
     return loaded ? (
@@ -193,7 +238,7 @@ export function DashboardTwitch(props: HomeProps) {
                                                 </div>
                                                 <div className="tc-buttons" >
                                                     <div>
-                                                        <button onClick={(e) => {
+                                                        <button className="tc-cancel" onClick={(e) => {
                                                             handleDeleteClick(e, x.streamer_id);
                                                         }}><FontAwesomeIcon icon={faTrashAlt} /></button>
                                                         <button onClick={() => {
@@ -212,8 +257,12 @@ export function DashboardTwitch(props: HomeProps) {
                                     </>
                                 )}
                                 <button className="twitch-add" onClick={handleCreateClick}>
-                                    <FontAwesomeIcon icon={faTwitch} />
-                                    <FontAwesomeIcon icon={faPlus} style={{ fontSize: "1em", marginLeft: 10 }} />
+                                    <div className="twitch-add-front">
+                                        <FontAwesomeIcon icon={faTwitch} />
+                                        <FontAwesomeIcon icon={faPlus} style={{ fontSize: "1em", marginLeft: 10 }} />
+                                    </div>
+                                    <div className="twitch-add-middle"></div>
+                                    <div className="twitch-add-back"></div>
                                 </button>
                             </div>
                         </div>
@@ -224,12 +273,29 @@ export function DashboardTwitch(props: HomeProps) {
                         <div className="twitch-pm">
                             <div className="t-pu" ref={modalWrapper}>
                                 {!waiting ? (
-                                    <div style={{ padding: "1.25rem" }}>
+                                <>
+                                    <div className="tpu-form-container">
+                                        {em && (
+                                            <div className="inline-error">
+                                                {em}
+                                            </div>
+                                        )}
                                         <p>{!!showing}</p>
                                         {editing ? (
                                             <p>Editing the subscription for <strong>{pending.streamer_login}</strong>.</p>
-                                        ) : (
-                                            <p>Setup a new subscription.</p>
+                                        ) :
+                                        (
+                                        <>
+                                            <p>Setup a new <FontAwesomeIcon icon={faTwitch} style={{ color: "rgb(100, 65, 164)" }} /> subscription.</p>
+                                            <p style={{ fontWeight: 700, marginTop: 10, marginBottom: 5 }}>Streamer</p>
+                                            <AsyncSelect styles={selectStylesMK1}
+                                                loadOptions={loadStreamOptions}
+                                                noOptionsMessage={() => 'Type something'}
+                                                cacheOptions
+                                                onChange={handleStreamerValueChange}
+                                            />
+                                            <p style={{ color: "rgba(209, 105, 142, 0.8)", marginTop: 5, fontSize: "0.9em" }}><i>Only channels that have streamed in the last <strong>six (6)</strong> months will be shown.</i></p>
+                                        </>
                                         )}
                                         <p style={{ fontWeight: 700, marginTop: 20, marginBottom: 5 }}>Channel</p>
                                         <Select
@@ -244,17 +310,19 @@ export function DashboardTwitch(props: HomeProps) {
                                         />
                                         <p style={{ fontWeight: 700, marginTop: 10, marginBottom: 5 }}>Message</p>
                                         <textarea className="tc-ta"
-                                            cols={30}
-                                            rows={10}
+                                            rows={7}
                                             placeholder={`${pending.streamer_login} is live! Go check out {name} at {link}`}
                                             onChange={handleMessageChange}
+                                            value={pending.message}
                                         ></textarea>
-                                        <br />
-                                        <div className="tpu-buttons">
-                                            <button className="card-footer-button" onClick={handleSaveClick}>Save</button>
-                                            <button className="card-footer-button twitch-cancel-bottom" onClick={handleCancelClick}>Cancel</button>
-                                        </div>
                                     </div>
+                                    <div className="tpu-buttons">
+                                        <hr/>
+                                            <button className="card-footer-button primary-button" onClick={handleSaveClick} disabled={!pending.channel_id || !pending.streamer_id}>{editing ? "Save" : "Create"}</button>
+                                            {(!pending.channel_id || !pending.streamer_id) && <span style={{ color: "red", marginLeft: 10 }}>Missing options</span>}
+                                        <button className="card-footer-button twitch-cancel-bottom" onClick={handleCancelClick}>Cancel</button>
+                                    </div>
+                                </>
                                 ) : (
                                     <div className="waiting-wrapper">
                                         <PacmanLoader color="rgb(100, 65, 164)" />

@@ -1,4 +1,4 @@
-// THANK YOU BULLETBOT, A LOT OF THE BASE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
+// THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
 import { Guild, GuildChannel, GuildMember, MessageEmbed, Role, User } from "discord.js";
@@ -314,3 +314,42 @@ export function ordinalSuffixOf(i: number): string {
     }
     return i + "th";
 }
+
+// title ?: string;
+// description ?: string;
+// url ?: string;
+// timestamp ?: Date | number;
+// color ?: ColorResolvable;
+// fields ?: EmbedFieldData[];
+// files ?: (MessageAttachment | string | FileOptions)[];
+// author ?: Partial<MessageEmbedAuthor> & { icon_url?: string; proxy_icon_url?: string };
+// thumbnail ?: Partial<MessageEmbedThumbnail> & { proxy_url?: string };
+// image ?: Partial<MessageEmbedImage> & { proxy_url?: string };
+// video ?: Partial<MessageEmbedVideo> & { proxy_url?: string };
+// footer ?: Partial<MessageEmbedFooter> & { icon_url?: string; proxy_icon_url?: string };
+
+// export function conformsToField(o: any): o is EmbedFieldData {
+//     if (typeof o === "undefined") {
+//         return true;
+//     }
+//     return 'name' in o && 'value' in o && typeof o.name === "string" && typeof o.value === "string" && (typeof o.inline === "undefined" || typeof o.inline === "boolean");
+// }
+
+// export function conformsToFooter(o: any): o is MessageEmbedFooter {
+//     return true;
+// }
+
+// // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// export function conformsToEmbed(o: Record<string, any>): o is MessageEmbedOptions {
+//     if (typeof o !== "object") {
+//         return false;
+//     }
+//     const isTitle = typeof o.title === "string" || typeof o.title === "undefined";
+//     const isDescription = typeof o.description === "string" || typeof o.description === "undefined";
+//     const isURL = typeof o.url === "string" || typeof o.url === "undefined";
+//     const isTimestamp = typeof o.timestamp === "number" || o.timestamp instanceof Date || typeof o.timestamp === "undefined";
+//     const isColor = typeof o.color === "undefined" || !!Util.resolveColor(o.color);
+//     const isFields = typeof o.fields === "undefined" || ('fields' in o && Array.isArray(o.fields) && o.fields.every((x) => conformsToField(x)));
+//     const isFooter = typeof o.footer === "undefined" || conformsToFooter(o.footer);
+//     return isTitle && isDescription && isURL && isTimestamp && isColor && isFields;
+// }

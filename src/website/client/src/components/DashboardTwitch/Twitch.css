@@ -57,7 +57,7 @@
     background-color: #16212b;
     font-size: 1.3em;
     line-height: 1.7;
-    color: rgb(63, 98, 204);
+    color: rgb(44, 74, 165);
     cursor: default;
     padding-left: 5px;
 }
@@ -71,26 +71,71 @@
 }
 
 .twitchcard:hover .tc-buttons {
-    color: rgb(44, 74, 165);
+    color: rgb(63, 98, 204);
+}
+
+.twitchcard .tc-buttons button {
+    transition: color ease-out 0.1s;
+    /* transition: font-size ease-in 0.2s; */
 }
 
 .twitchcard .tc-buttons button:hover {
     /* color: #0074D9; */
-    color: rgb(63, 98, 204);
+    color: rgb(44, 74, 165);
+    /* font-size: 1.1em; */
+}
+
+.tc-buttons .tc-cancel:hover {
+    color: rgb(186, 52, 42) !important;
 }
 
 .twitch-add {
-    font-size: 1.2em;
     width: 100%;
     margin-top: 15px;
-    padding: 5px 15px;
-    border-radius: 15px;
-    background-color: rgb(100, 65, 164);
-    transition: background-color 0.2s;
+    border-radius: 8px;
+    overflow: hidden;
+
+    position: relative;
+    background-color: transparent;
+    /* transition: background 0.3s; */
+    /* background-color: rgb(100, 65, 164); */
 }
 
-.twitch-add:hover {
-    background-color: rgba(100, 65, 164, 0.7);
+.twitch-add > div {
+    font-size: 1.2em;
+    padding: 5px 15px;
+    transition: opacity 0.3s;
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+}
+
+.twitch-add .twitch-add-front {
+    position: relative;
+    z-index: 3;
+}
+
+.twitch-add .twitch-add-back {
+    background: radial-gradient(circle, rgba(0, 0, 0, 0) 0%, rgba(100, 65, 164, 1) 100%);
+    position: absolute;
+    opacity: 0;
+    z-index: 2;
+    transition-timing-function: ease-out;
+}
+
+.twitch-add .twitch-add-middle {
+    background: radial-gradient(circle, rgba(100, 65, 164, 1) 0%, rgba(0, 0, 0, 0) 100%);
+    position: absolute;
+    z-index: 1;
+    transition-timing-function: ease-in;
+}
+
+.twitch-add:hover>.twitch-add-back {
+    opacity: 1;
+}
+
+.twitch-add:hover>.twitch-add-middle {
+    opacity: 0;
 }
 
 .twitch-pm {
@@ -106,10 +151,16 @@
     position: absolute;
     top: 100px;
     width: 450px;
-    background-color: black;
+    background-color: #1d2125;
     left: 50%;
     transform: translateX(-50%);
-    min-height: 498px;
+    min-height: 500px;
+    border-radius: 5px;
+}
+
+.twitch-pm .tpu-form-container {
+    padding: 1.25rem;
+    position: relative;
 }
 
 .waiting-wrapper {
@@ -126,19 +177,42 @@
 }
 
 .tc-ta {
-    margin-bottom: 10px;
+    margin-bottom: 90px;
     background-color: #3A4149;
     width: 100%;
+    padding: 3px 5px;
 }
 
-.tpu-buttons button:first-child {
+.tpu-buttons {
+    position: absolute;
+    width: 100%;
+    padding: 1.25em;
+    bottom: 0;
+    left: 0;
+}
+
+.tpu-buttons button.primary-button {
     background-color: rgb(100, 65, 164);
 }
 
-.tpu-buttons button:first-child:hover {
+.tpu-buttons button.primary-button:hover {
     background-color: rgba(100, 65, 164, 0.8);
+}
+
+.tpu-buttons button.primary-button:disabled {
+    color: rgb(122, 122, 122);
+    cursor: not-allowed;
+    background-image: linear-gradient(63deg, #230063 38.89%, #610000 38.89%, #610000 50%, #230063 50%, #230063 88.89%, #610000 88.89%, #610000 100%);
+    background-size: 10.10px 19.82px;
+    /* background-color: rgba(35, 0, 99, 0.8); */
 }
 
 .twitch-cancel-bottom {
     margin-left: 15px;
+    position: absolute;
+    right: 1.25em;
+}
+
+.tpu-buttons hr:first-child {
+    margin-bottom: 10px;
 }

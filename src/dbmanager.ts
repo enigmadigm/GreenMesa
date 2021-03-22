@@ -636,19 +636,18 @@ export class DBManager {
             if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
             const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
             const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
-            message = message.replace(/'/g, "\\'");
             if (!result || !result[0]) {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${expiresTimestamp}', '${name}')`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
                 } else {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin) VALUES ('${streamerid}${guildid}', '${streamerid}', '${guildid}', '${channelid}', '${message}', '${expiresTimestamp}', '${name}')`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
                 }
                 return true;
             } else {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}', streamerlogin = '${name}' WHERE id = '${streamerid}${guildid}'`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 } else {
-                    await this.query(`UPDATE twitchhooks SET expires = '${expiresTimestamp}', streamerlogin = '${name}', message = '${message}' WHERE id = '${streamerid}${guildid}'`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 }
                 return true;
             }

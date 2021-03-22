@@ -29,8 +29,8 @@ export interface AMCustomOptionsProps extends CustomModuleCardProps {
 }
 
 export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
-    control: (styles, state) => ({ ...styles, backgroundColor: '#343B41', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "hsl(0, 0%, 80%)" }),
-    menu: (styles) => ({ ...styles, backgroundColor: '#343B41' }),
+    control: (styles, state) => ({ ...styles, backgroundColor: '#343B41', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "#23282c" }),
+    menu: (styles) => ({ ...styles, backgroundColor: '#292e33', marginTop: 0 }),
     multiValue: (styles) => ({ ...styles, backgroundColor: '#001e52', borderColor: '#424242' }),
     multiValueLabel: (styles) => ({ ...styles, color: '#9c9c9c' }),
     multiValueRemove: (styles) => ({ ...styles, color: '#8a70ff' }),
@@ -38,13 +38,22 @@ export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase
     dropdownIndicator: (styles, state) => ({ ...styles, color: state.isDisabled ? "#343B41" : styles.color }),
     indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor }),
     input: (styles) => ({ ...styles, color: "#8a70ff" }),
-    singleValue: (styles) => ({...styles, color: "#fff"}),
+    singleValue: (styles) => ({ ...styles, color: "#fff" }),
 };
 
 export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
-    control: (styles, state) => ({ ...styles, backgroundColor: '#3A4149', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "hsl(0, 0%, 80%)" }),
-    menu: (styles) => ({ ...styles, backgroundColor: '#3A4149', zIndex: 10000 }),
-    multiValue: (styles) => ({ ...styles, backgroundColor: '#001e52', borderColor: '#424242' }),
+    //container: (styles) => ({ ...styles, border: "1px solid #23282c" }),
+    control: (styles, state) => ({ ...styles, backgroundColor: '#343B41', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "#23282c" }),
+    menu: (styles) => ({ ...styles, backgroundColor: '#292e33', zIndex: 10000 }),
+    multiValue: (styles, { data }) => {
+        const color = chroma(data.color);
+        return {
+            ...styles,
+            backgroundColor: 
+                chroma.contrast(color, '#3A4149') < 4.5 ? color.darken() : data.color,
+            borderColor: '#424242'
+        }
+    },
     multiValueLabel: (styles) => ({ ...styles, color: '#9c9c9c' }),
     multiValueRemove: (styles) => ({ ...styles, color: '#8a70ff' }),
     option: (styles, { data, isDisabled, isFocused, isSelected }) => {
@@ -58,7 +67,7 @@ export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase
             color:
                 isDisabled ? "#cccccc" :
                 isSelected ? chroma.contrast(color, '#3A4149') > 2 ? 'white' : 'black' :
-                data.color,
+                chroma.distance(color, '#292e33') < 35 ? "#fff" : data.color,
             cursor: isDisabled ? 'not-allowed' : 'default',
             ':active': {
                 ...styles[':active'],
@@ -97,7 +106,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                 setStatus(e.message);
                 setLoaded(true);
             })
-    }, [props, setStatus]);
+    }, [props.meta.id, props.name, setStatus]);
 
     React.useEffect(() => {
         if (!isEqual(mod, original) && !unsaved) {
