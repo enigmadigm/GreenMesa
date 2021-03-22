@@ -8,7 +8,7 @@ import { selectStylesMK1 } from './AutomoduleCard';
 export function WarnConfInterface(props: HomeProps) {
     const { setStatus } = props;
     const [loaded, setLoaded] = React.useState(false);
-    const [warnConf, setWarnConf] = React.useState<WarnConf>({ punishment: "", threshold: 0, time: 0 });
+    const [warnConf, setWarnConf] = React.useState<WarnConf>({ punishment: "", threshold: -1, time: 0 });
 
     React.useEffect(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/warnconf`)
@@ -21,7 +21,7 @@ export function WarnConfInterface(props: HomeProps) {
                 setStatus(e.message);
                 setLoaded(true);
             })
-    }, [props, setStatus]);
+    }, [props.meta.id, setStatus]);
 
     const handleWarnConfSaveClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         const hdrs = new Headers();
