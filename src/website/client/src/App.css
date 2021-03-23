@@ -145,6 +145,11 @@ body, html {
   position: relative;
   padding-left: .5rem;
   padding-right: .5rem;
+  transition: opacity 0.15s;
+}
+
+.rnav-nav li:hover {
+  opacity: 0.7;
 }
 
 .rnav-logout a {
@@ -162,6 +167,8 @@ body, html {
   max-height: 55px;
   overflow: hidden;
   white-space: nowrap;
+  cursor: default;
+  user-select: none;
 }
 
 .rnav-guild-divider {
@@ -600,6 +607,14 @@ code {
 
 hr {
   border-color: initial;
+}
+
+.opaque {
+  opacity: 1 !important;
+}
+
+.clear {
+  opacity: 0 !important;
 }
 
 @media screen and (max-width: 700px) {

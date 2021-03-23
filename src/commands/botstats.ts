@@ -124,7 +124,7 @@ export const command: Command = {
                             inline: true
                         },
                         {
-                            name: `User Movement (${limiter || 24}hr)`,
+                            name: `User Movement (${rows.length || 24}hr)`,
                             value: chngPrefix + avgUserChange + "/hr",
                             inline: true
                         },
