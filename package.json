@@ -40,7 +40,8 @@
     "puppeteer": "^5.5.0",
     "rpg-dice-roller": "^4.5.2",
     "source-map-support": "^0.5.19",
-    "ytdl-core": "^3.4.2"
+    "ytdl-core": "^3.4.2",
+    "is-svg": ">=4.2.2"
   },
   "license": "ISC",
   "bugs": {
