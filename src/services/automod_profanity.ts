@@ -1,7 +1,6 @@
 import xlg from "../xlogger";
 import { MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
-//import expletives from '../../expletives.json';
 import expletives from 'corpora/data/words/expletives.json';
 const expletiveList: string[] = expletives.expletives;
 
@@ -31,7 +30,8 @@ export const service: MessageService = {
                 }
             }
             if (!hasBadWord && modResult.customList?.length) {
-                for (const phrase of modResult.customList) {
+                for (let phrase of modResult.customList) {
+                    phrase = phrase.toLowerCase();
                     if (modResult.strict && a.indexOf(phrase) !== -1) {
                         hasBadWord = true;
                         break;
