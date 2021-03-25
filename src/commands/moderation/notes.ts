@@ -23,12 +23,19 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            const target = await stringToMember(message.guild, args.join(" "), true, true, true);
-            if (!target) {
-                await client.specials?.sendError(message.channel, `Could not find target`);
-                return;
+            const a = args.join(" ");
+            let targetId = /^[0-9]{18}$/.test(a) && !message.guild.members.cache.get(a) ? a : "";
+            let targetName = targetId ? "Expired Member" : "";
+            if (!targetId) {
+                const target = await stringToMember(message.guild, a, true, true, true);
+                if (!target) {
+                    await client.specials?.sendError(message.channel, `Could not find target`);
+                    return;
+                }
+                targetId = target.id;
+                targetName = `${target}`;
             }
-            const gud = await client.database?.getGuildUserData(message.guild.id, target.id);
+            const gud = await client.database?.getGuildUserData(message.guild.id, targetId);
             if (!gud) {
                 await client.specials?.sendError(message.channel, `Could not retrieve user info`);
                 return;
@@ -40,7 +47,7 @@ export const command: Command = {
             }
             const embed: MessageEmbedOptions = {
                 color: await client.database?.getColor("info_embed_color"),
-                description: `Notes for ${target} (${target.id})`,
+                description: `Notes for ${targetName} (${targetId})`,
                 fields: []
             };
             for (const n of notes) {
