@@ -7,11 +7,11 @@ export const service: MessageService = {
     text: true,
     async execute(client, message: XMessage) {
         if (message.author.bot || message.system) return;
-        if (!message.guild || !client.user || !client.commands || !client.categories) return;
+        if (!message.guild || !message.member || !client.user || !client.commands || !client.categories) return;
 
         const now = Date.now();
         if (!xpcooldowns.has(message.author.id)) {
-            client.database?.updateXP(message);
+            client.database?.updateXP(message.member);
             xpcooldowns.set(message.author.id, now);
             setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
         }

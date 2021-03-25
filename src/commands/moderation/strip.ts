@@ -38,7 +38,6 @@ export const command: Command = {
     },
     usage: "<member>",
     args: true,
-    specialArgs: undefined,
     cooldown: 1,
     permLevel: permLevels.admin,
     guildOnly: true,

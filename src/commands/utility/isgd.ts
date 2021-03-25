@@ -12,8 +12,7 @@ export const command: Command = {
         long: "This command will take any valid link and shorten it to the public domain [is.gd](https://is.gd). URLs should not contain whitespace, and may be limited in length."
     },
     usage: "<url>",
-    args: true,
-    specialArgs: 1,
+    args: 1,
     permLevel: permLevels.member,
     guildOnly: false,
     async execute(client, message, args) {

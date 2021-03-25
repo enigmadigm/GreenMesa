@@ -1,6 +1,5 @@
 import React from 'react';
 import { OptionsType, OptionTypeBase } from 'react-select';
-
 import CreatableSelect from 'react-select/creatable';
 import { selectStylesMK1 } from './AutomoduleCard';
 
@@ -24,11 +23,11 @@ export function CreatableInputOnly(props: CIOProps) {
     const [inputValue, setInputValue] = React.useState('');
 
     const handleChange = (value: OptionsType<OptionTypeBase>) => {
-        updateValues(value.map(x => x.value));
+        updateValues(value.map(x => x.value.toLowerCase()));
     };
 
     const handleInputChange = (inputValue: string) => {
-        setInputValue(inputValue);
+        setInputValue(inputValue.toLowerCase());
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
@@ -36,8 +35,10 @@ export function CreatableInputOnly(props: CIOProps) {
         switch (event.key) {
             case 'Enter':
             case 'Tab':
-                setInputValue('');
-                updateValues([...values, inputValue]);
+                if (!values.includes(inputValue)) {
+                    setInputValue('');
+                    updateValues([...values, inputValue]);
+                }
                 event.preventDefault();
         }
     };
@@ -52,7 +53,7 @@ export function CreatableInputOnly(props: CIOProps) {
             onChange={handleChange}
             onInputChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Enter text here . . ."
+            placeholder="Enter phrases here . . ."
             value={values.map(x => createOption(x))}
             styles={selectStylesMK1}
         />

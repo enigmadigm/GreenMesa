@@ -6,10 +6,9 @@ export const command: Command = {
     name: "quadratic",
     description: "find the 0s of a quadratic",
     usage: "<a> <b> <c>",
-    args: true,
+    args: 3,
     async execute(client, message, args) {
         try {
-            if (!(await client.specials?.argsNumRequire(message.channel, args, 3))) return false;
             if (!(await client.specials?.argsMustBeNum(message.channel, args))) return false;
     
             /* Thanks, this saved me time

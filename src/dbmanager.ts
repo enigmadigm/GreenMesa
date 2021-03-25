@@ -4,7 +4,7 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 import { Bot } from "./bot";
 
 const levelRoles = [{
@@ -156,9 +156,9 @@ export class DBManager {
 
     /**
      * Get the current amount of xp assigned to a user
-     * @param {Discord.GuildMember} target discord user object to select in database
+     * @param target discord user object to select in database
      */
-    async getXP(target: Discord.GuildMember): Promise<ExpRow | false> {
+    async getXP(target: GuildMember): Promise<ExpRow | false> {
         if (!target) return false;
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = '${target.user.id}${target.guild.id}'`);
         if (rows && rows.length) {
@@ -167,57 +167,126 @@ export class DBManager {
         return false;
     }
 
+    getPointsForLevel(lvl: number): number {
+        return (5 * (lvl ^ 2)) + (50 * lvl) + 100;
+    }
+
     /**
      * Uses a message sent by author to update their xp in the database
-     * @param {object} message message sent to be counted for author
+     * 
+     * To generate xp, uses the formula:
+     * 
+     * `xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100`
+     * 
+     * @param message message sent to be counted for author
+     * @returns nothing
      */
-    async updateXP(message: Message): Promise<void> {
+    async updateXP(member: GuildMember): Promise<void> {
         try {
-            
-            if (!message.guild) return;
             const maxs = await this.getGlobalSetting("max_xp");
     
             const genXP = () => {
-                if (!maxs) return 28;
+                if (!maxs) return 15;
                 return Math.floor(Math.random() * (parseInt(maxs.value, 10) - 15) + 15);
             }
-            this.db.query(`SELECT * FROM dgmxp WHERE id = '${message.author.id}${message.guild.id}'`, (err, rows) => {
-                if (err) throw err;
+            const { level } = await this.setXP(member.guild.id, member.id, genXP(), 1);
+
+            if (level > -1) {
+                this.updateLevelRole(member, level);
+            }
+        } catch (error) {
+            xlog.error(error);
+        }
+    }
+
+    /**
+     * Set the amount of activity points assigned to a user using a direct value. Add to the current value or set value.
+     * @param guildid string id of target guild
+     * @param userid string id of target
+     * @param amount target amount of points to add, subtract, or set to
+     * @param mode the point set mode, specify less than 0 to subtract, 0 to set exactly, and greater than 0 to add
+     * @returns the updated points and new level
+     */
+    async setXP(guildid: string, userid: string, amount: number, mode = 0): Promise<{points: number, level: number}> {
+        try {
+            if (!guildid || !userid || typeof guildid !== "string" || typeof userid !== "string") return { points: -1, level: -1 };
+            let l = 0;
+            let p = 0;
+            if (!mode) {
+                let level = 0;
+                let totalNeeded = 0;
+                while (amount > totalNeeded) {
+                    totalNeeded += this.getPointsForLevel(level);
+                    if (amount > totalNeeded) level++;
+                }
+                await <Promise<InsertionResult>>this.query(`INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${amount}, 0) ON DUPLICATE KEY UPDATE xp = ${amount}, level = ${level}`);
+                l = level;
+                p = amount;
+            } else {
+                const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = ${escape(userid + guildid)}`);
                 let sql;
                 if (rows.length < 1) {
-                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES ('${message.author.id}${message.guild?.id}', '${message.author.id}', '${message.guild?.id}', ${genXP()}, 0)`;
+                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${amount}, 0)`;
                 } else {
                     // SENSITIVE AREA
                     // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
-                    const xp = rows[0].xp + genXP();
+                    const xp = mode > 0 ? rows[0].xp + amount : rows[0].xp - amount;
                     let levelNow = rows[0].level;
+                    // let totalNeeded = 0;
+                    // for (let x = 0; x < rows[0].level + 1; x++) {
+                    //     totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
+                    // }
+                    // if (xp > totalNeeded) levelNow++;
                     let totalNeeded = 0;
-                    for (let x = 0; x < rows[0].level + 1; x++) {
-                        totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
+                    while (xp > totalNeeded) {
+                        totalNeeded += this.getPointsForLevel(levelNow);
+                        if (amount > totalNeeded) levelNow++;
                     }
-                    if (xp > totalNeeded) levelNow++;
                     // SENSITIVE AREA
                     /*let levelNow = Math.floor(0.1 * Math.sqrt(xp));
                     if (rows[0].level !== levelNow) {
                         rows[0].level = levelNow;
                     }*/
-                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = '${message.author.id}${message.guild?.id}'`
-    
-                    if (message.member) {
-                        this.updateLevelRole(message.member, levelNow);
-                    }
+                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = ${escape(userid + guildid)}`;
                 }
-                this.query(sql).catch((err) => {
-                    if (err.code === "ER_DUP_ENTRY") {
-                        xlog.error('error: ER_DUP_ENTRY caught and deflected');
-                        return;
-                    } else {
-                        throw err;
-                    }
-                });
-            });
+                await <Promise<InsertionResult>>this.query(sql);
+                return { points: p, level: l };
+            }
         } catch (error) {
-            xlog.error(error);
+            if (error.code === "ER_DUP_ENTRY") {
+                xlog.error('error: ER_DUP_ENTRY caught and deflected');
+            } else {
+                xlog.error(error);
+            }
+        }
+        return { points: -1, level: -1 };
+    }
+
+    /**
+     * Get a data object for member's points that goes beyond the ExpRow
+     * @returns extensive data about the points that members have
+     */
+    async getFullPointsData(target: GuildMember): Promise<FullPointsData | false> {
+        if (!target) return false;
+        const xpData = await this.getXP(target);
+        if (!xpData) return false;
+        const xp = xpData.xp;
+        const level = xpData.level;
+        const pointsLevelNow = this.getPointsForLevel(xpData.level);
+        const pointsLevelNext = this.getPointsForLevel(xpData.level + 1);
+        const toGo = pointsLevelNext - xp;
+        const last = new Date(xpData.timeUpdated);
+        const first = new Date(xpData.timeAdded);
+        return {
+            guild: target.guild.id,
+            user: target.id,
+            points: xp,
+            level,
+            pointsLevelNext,
+            pointsToGo: toGo,
+            pointsLevelNow,
+            firstCounted: first,
+            lastGained: last,
         }
     }
 
@@ -322,7 +391,7 @@ export class DBManager {
                 const c = sg.channels.cache.get(scConf ? scConf.value.split(",")[1] : "813404897403732008");
                 if (c) {
                     await c.edit({
-                        name: `Conquest: ${guilds} servers`
+                        name: `${guilds} servers`
                     });
                 }
             }
@@ -777,6 +846,24 @@ export class DBManager {
 
             const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata, casenumber) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)}, ${escape(casenumber || 0)}) ON DUPLICATE KEY UPDATE exectime = ${escape(mtime)}, actiontype = ${escape(actionType)}, actiondata = ${escape(actionData)}, casenumber = ${escape(casenumber || 0)} WHERE actionid = ${escape(id)}`);
 
+            if (!r || !r.affectedRows) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Update the time an action will be executed at. If the action does not exist
+     */
+    async updateActionTime(id: string, time: Date): Promise<boolean> {
+        try {
+            const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
+
+            const r = await <Promise<InsertionResult>>this.query(`UPDATE timedactions SET exectime = ${escape(mtime)} WHERE actionid = ${escape(id)}`);
             if (!r || !r.affectedRows) {
                 return false;
             }

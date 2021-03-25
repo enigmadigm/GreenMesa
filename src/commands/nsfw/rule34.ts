@@ -18,7 +18,6 @@ export const command: Command = {
     category: "nsfw",
     usage: "[tag]",
     args: false,
-    specialArgs: 1,
     permLevel: permLevels.member,
     guildOnly: true,
     async execute(client, message, args) {

@@ -1,10 +1,10 @@
 import moment from "moment";
 import { Command, UnmuteActionData } from "src/gm";
-//import { getGuildSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
 import { stringToMember, durationToString } from '../../utils/parsers';
 import { stringToDuration } from '../../utils/time';
 import xlg from "../../xlogger";
+import uniqid from 'uniqid';
 
 export const command: Command = {
     name: 'mute',
@@ -143,7 +143,7 @@ export const command: Command = {
                     roleid: mutedRole.id,
                     duration: dur
                 }
-                await client.database?.setAction(message.id, t, "unmute", data);
+                await client.database?.setAction(uniqid("ta$"), t, "unmute", data);
             }
         } catch (e) {
             xlg.error(e);

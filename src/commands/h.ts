@@ -8,8 +8,7 @@ export const command: Command = {
         short: "ignore me (must enable)",
         long: "This command must be explicitly enabled to use."
     },
-    specialArgs: 0,
-    cooldown: 1,
+    cooldown: 0,
     permLevel: permLevels.trustedMember,
     guildOnly: true,
     async execute(client, message, args) {

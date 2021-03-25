@@ -23,7 +23,6 @@ export const command: Command = {
     },
     usage: "[reset | reselect]",
     args: false,
-    specialArgs: undefined,
     permLevel: permLevels.member,
     guildOnly: true,
     ownerOnly: false,

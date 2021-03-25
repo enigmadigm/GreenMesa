@@ -1,12 +1,12 @@
 import xlg from "../../xlogger";
 import { getPermLevel, permLevels } from '../../permissions';
-//import { getGuildSetting } from "../dbmanager";
 import { durationToString, stringToMember } from "../../utils/parsers";
 import Discord from 'discord.js';
 import { Command, UnbanActionData } from "src/gm";
 import { stringToDuration } from "../../utils/time";
 import moment from "moment";
 import { registerBan } from "../../utils/modactions";
+import uniquid from 'uniqid';
 
 export const command: Command = {
     name: "ban",
@@ -17,7 +17,6 @@ export const command: Command = {
     },
     usage: "<member> [reason]",
     args: true,
-    specialArgs: undefined,
     permLevel: permLevels.mod,
     guildOnly: true,
     moderation: true,
@@ -46,7 +45,7 @@ export const command: Command = {
                 return;
             }
             if (!target.bannable) {
-                await client.specials?.sendError(message.channel, `${target} is not bannable`);
+                await client.specials?.sendError(message.channel, `I can't ban ${target}`);
                 return;
             }
             if (target.id === message.author.id) {
@@ -129,7 +128,7 @@ export const command: Command = {
                         userid: target.id,
                         duration: dur
                     }
-                    await client.database?.setAction(message.id, t, "unban", data);
+                    await client.database?.setAction(uniquid("ta$"), t, "unban", data);
                 }
             } catch (e) {
                 message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Could not ban ${target.user.tag}`);

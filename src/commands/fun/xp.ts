@@ -1,8 +1,6 @@
 // NOTE: This whole xp system is in long-term development and needs work. The updates will probably come with a web console if there ever is one.
 import { Command } from "src/gm";
 import xlg from "../../xlogger";
-//const { getPermLevel } = require('../permissions');
-//import { getGlobalSetting, getXP } from "../dbmanager";
 
 export const command: Command = {
     name: 'xp',
@@ -22,12 +20,9 @@ export const command: Command = {
             }
 
             const rows = await client.database?.getXP(target);
-            
             const warn_embed_color = await client.database?.getColor("warn_embed_color");
             const info_embed_color = await client.database?.getColor("info_embed_color");
-
             const xpTypeGlobal = await client.database?.getGlobalSetting('xp_type');
-
 
             if (!rows) {
                 message.channel.send({

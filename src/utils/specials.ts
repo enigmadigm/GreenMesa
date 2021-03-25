@@ -76,17 +76,22 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
         let forResult = true;
         for (let i = 0; i < args.length; i++) {
             const arg = args[i];
+            if (!/^[0-9]+(?:\.[0-9]+)?$/.test(arg)) {
+                forResult = false;
+                break;
+            }
             const nr = parseInt(arg, 10);
             if (isNaN(nr)) {
                 forResult = false;
+                break;
             }
         }
         if (!forResult) {
             channel.send({
                 embed: {
                     color: await Bot.client.database?.getColor("fail_embed_color"),
-                    title: "invalid arguments",
-                    description: "all arguments must be numbers (floating or integer)"
+                    title: "Invalid Arguments",
+                    description: "All arguments must be numbers (floating or integer)"
                 }
             }).catch(xlg.error);
             return false;

@@ -11,7 +11,7 @@ export const command: Command = {
             message.channel.send({
                 embed: {
                     color: info_embed_color,
-                    description: `Invite to the (new) support server: [invite link](https://discord.gg/AvXvvSg)`
+                    description: `Invite to the support server: [invite link](https://discord.gg/AvXvvSg)`
                 }
             });
         } catch (error) {

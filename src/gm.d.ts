@@ -15,16 +15,31 @@ export interface XClient extends Client {
 
 export interface Command {
     name: string;
+    /**
+     * Alternate names to use to call the command
+     */
     aliases?: string[];
+    /**
+     * The help description(s) displayed when calling the help command
+     */
     description?: string | {
         short: string,
         long: string
     }
     category?: string;
+    /**
+     * Optional usage instructions for the command
+     */
     usage?: string;
+    /**
+     * Options usage examples displayed with the help command and when not being used correctly
+     */
     examples?: string[];
-    args?: boolean;
-    specialArgs?: number;
+    /**
+     * Whether arguments should be required, or the number of arguments needed
+     */
+    args?: boolean | number;
+    // specialArgs?: number;
     cooldown?: number;
     permLevel?: number;
     moderation?: boolean;
@@ -478,4 +493,16 @@ export interface TwitchSearchChannelsReturns {
     is_live?: boolean;
     started_at?: string;
     tag_ids?: string;
+}
+
+export interface FullPointsData {
+    guild: string;
+    user: string;
+    points: number;
+    level: number;
+    firstCounted: Date;
+    lastGained: Date;
+    pointsToGo: number;
+    pointsLevelNext: number;
+    pointsLevelNow: number;
 }

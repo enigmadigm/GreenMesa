@@ -12,8 +12,7 @@ export const command: Command = {
         long: "This command will take any valid link and shorten it to the domain tinyurl.com."
     },
     usage: "<url>",
-    args: true,
-    specialArgs: 1,
+    args: 1,
     permLevel: permLevels.member,
     guildOnly: false,
     ownerOnly: false,
