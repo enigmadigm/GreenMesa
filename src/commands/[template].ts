@@ -11,7 +11,6 @@ export const command: Command = {
     },
     usage: "",
     args: false,
-    specialArgs: undefined,
     cooldown: 1,
     permLevel: permLevels.trustedMember,
     moderation: undefined,
