@@ -35,36 +35,6 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
             .then(() => setLoaded(true))
     }, [props.meta.id, setStatus]);
 
-    const handleModuleSave = (mod: string, data: string, setModuleLoading?: React.Dispatch<React.SetStateAction<boolean>>) => {
-        const hdrs = new Headers();
-        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
-        const fd = new URLSearchParams();
-        fd.append("module", `${mod}`);
-        fd.append("data", `${data}`);
-        const obj = {
-            method: 'PUT',
-            headers: hdrs,
-            body: fd
-        };
-        try {
-            fetch(`/api/discord/guilds/${props.meta.id}/automod`, obj)
-                .then(x => x.json())
-                .then((d) => {
-                    if (d.guild.module) {
-                        setStatus({ msg: "Saved.", success: true });
-                    } else {
-                        setStatus({ msg: "Failed to save.", success: false });
-                    }
-                }).catch(e => {
-                    console.error(e);
-                    setStatus({ msg: "Error", success: false });
-                });
-        } catch (error) {
-            console.error(error);
-            setStatus({ msg: "Failed to save.", success: false });
-        }
-    };
-
     return loaded ? (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
@@ -86,7 +56,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                     </div>
                 </div>
                 <div className="x-card-parent">
-                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles} handleModuleSave={handleModuleSave}
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
                         displayName="Spam Prevention"
                         headerTag="ALPHA"
                         name="antispam"
@@ -95,25 +65,16 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                     />
                 </div>
                 <div className="x-card-parent">
-                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles} handleModuleSave={handleModuleSave}
-                        displayName="Anti Embed"
-                        name="antiembed"
-                        description="This module will suppress all embeds that appear in a channel. This includes embeds from bots and links. Soon there will be an option to toggle for bots or roles."
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
+                        displayName="Christian Mode / Banned Phrases"
+                        name="profanity"
+                        description="Christian mode for your server. Enabling this module will censore all popular obscene language and many variations of that totally vulgar content."
                         isTextModule
-                        CustomOptions={AntiEmbed}
+                        CustomOptions={Profanity}
                     />
                 </div>
                 <div className="x-card-parent">
-                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles} handleModuleSave={handleModuleSave}
-                        displayName="Anti Gif"
-                        name="antigif"
-                        description="This module will delete all messages that have GIFs (the most common animated image format) attached to them."
-                        isTextModule
-                        CustomOptions={AntiGif}
-                    />
-                </div>
-                <div className="x-card-parent">
-                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles} handleModuleSave={handleModuleSave}
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
                         displayName="Anti Link"
                         name="antilink"
                         description="This module will delete all messages containing links detected in their text. This does not apply to embeds (the special message blocks sent by bots or webhooks)."
@@ -122,7 +83,16 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                     />
                 </div>
                 <div className="x-card-parent">
-                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles} handleModuleSave={handleModuleSave}
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
+                        displayName="Anti Embed"
+                        name="antiembed"
+                        description="This module will suppress all embeds that appear in a channel. This includes embeds from bots and links. Soon there will be an option to toggle for bots or roles."
+                        isTextModule
+                        CustomOptions={AntiEmbed}
+                    />
+                </div>
+                <div className="x-card-parent">
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
                         displayName="Nice Nicknames"
                         name="nicenicks"
                         description="This module will watch the nicknames of new users or any changes in existing users to make sure at least the first five letters exist on the printable ASCII table. If a user has an unfriendly username, it will automatically be changed to a placeholder and they will receive a message from the bot."
@@ -130,12 +100,12 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                     />
                 </div>
                 <div className="x-card-parent">
-                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles} handleModuleSave={handleModuleSave}
-                        displayName="Christian Mode / Banned Phrases"
-                        name="profanity"
-                        description="Christian mode for your server. Enabling this module will censore all popular obscene language and many variations of that totally vulgar content."
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
+                        displayName="Anti Gif"
+                        name="antigif"
+                        description="This module will delete all messages that have GIFs (the most common animated image format) attached to them."
                         isTextModule
-                        CustomOptions={Profanity}
+                        CustomOptions={AntiGif}
                     />
                 </div>
             </div>

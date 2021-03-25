@@ -16,7 +16,8 @@ interface CustomModuleCardProps extends HomeProps {
     headerTag?: string;
     channels: ChannelData[];
     roles: RoleData[];
-    handleModuleSave: (mod: string, data: string, setModuleLoading?: React.Dispatch<React.SetStateAction<boolean>> | undefined) => void;
+    reload?: number;
+    // handleModuleSave: (mod: string, data: string, setModuleLoading?: React.Dispatch<React.SetStateAction<boolean>> | undefined) => void;
     CustomOptions?(props: AMCustomOptionsProps): JSX.Element;
 }
 
@@ -67,7 +68,7 @@ export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase
             color:
                 isDisabled ? "#cccccc" :
                 isSelected ? chroma.contrast(color, '#3A4149') > 2 ? 'white' : 'black' :
-                chroma.distance(color, '#292e33') < 35 ? "#fff" : data.color,
+                        chroma.distance(color, '#292e33') < 35 ? "#c5c5c5" : data.color,
             cursor: isDisabled ? 'not-allowed' : 'default',
             ':active': {
                 ...styles[':active'],
@@ -85,7 +86,7 @@ function CollapseIndicator(props: {collapsed: boolean}) {
 }
 
 export function AutomoduleCard(props: CustomModuleCardProps) {
-    const { setStatus, handleModuleSave, CustomOptions } = props;
+    const { setStatus, CustomOptions } = props;
     const [loaded, setLoaded] = React.useState(false);
     const [unsaved, setUnsaved] = React.useState(false);
     const [mod, setMod] = React.useState<AutomoduleData>({ name: props.name, text: false, enableAll: false, applyRoles: [], roleEffect: 'ignore' });
@@ -94,7 +95,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
     const { isOpen: roleCollapse, onToggle: roleCollapseToggle } = useDisclosure();
     const { isOpen: punishCollapse, onToggle: punishCollapseToggle } = useDisclosure();
 
-    React.useEffect(() => {
+    const load = React.useCallback(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/automod/${props.name}`)
             .then(x => x.json())
             .then((d: AutomoduleEndpointData) => {
@@ -106,7 +107,11 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                 setStatus(e.message);
                 setLoaded(true);
             })
-    }, [props.meta.id, props.name, setStatus]);
+    }, [props.meta.id, props.name, setStatus])
+
+    React.useEffect(() => {
+        load();
+    }, [props.meta.id, props.name, setStatus, props.reload, load]);
 
     React.useEffect(() => {
         if (!isEqual(mod, original) && !unsaved) {
@@ -126,6 +131,39 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
             }
         }, 1000)
     }, [channelCollapse]) */
+
+    const handleModuleSave = (mod: string, data: string, setModuleLoading?: React.Dispatch<React.SetStateAction<boolean>>) => {
+        const hdrs = new Headers();
+        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
+        const fd = new URLSearchParams();
+        fd.append("module", `${mod}`);
+        fd.append("data", `${data}`);
+        const obj = {
+            method: 'PUT',
+            headers: hdrs,
+            body: fd
+        };
+        try {
+            fetch(`/api/discord/guilds/${props.meta.id}/automod`, obj)
+                .then(x => x.json())
+                .then((d) => {
+                    if (d.guild.module) {
+                        setStatus({ msg: "Saved.", success: true });
+                    } else {
+                        setStatus({ msg: "Failed to save.", success: false });
+                    }
+                    load();
+                }).catch(e => {
+                    console.error(e);
+                    setStatus({ msg: "Error", success: false });
+                    load();
+                });
+        } catch (error) {
+            console.error(error);
+            setStatus({ msg: "Failed to save.", success: false });
+            load();
+        }
+    };
 
     const handleEnableAllToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         const state = e.target.checked;
