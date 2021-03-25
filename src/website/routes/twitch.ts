@@ -90,7 +90,7 @@ export function twitchRouter(client: XClient): Router {
 
     router.get("/search", async (req, res) => {
         try {
-            if (typeof req.query.q !== "string") {
+            if (typeof req.query.q !== "string" || !req.query.q) {
                 return res.sendStatus(400);
             }
             const first = typeof req.query.l === "string" && parseInt(req.query.l, 10) < 101 ? parseInt(req.query.l, 10) : 10;
@@ -185,7 +185,7 @@ export function twitchRouter(client: XClient): Router {
                                             client.shard?.broadcastEval(`
                                             const c = this.channels.cache.get('${sub.channelid}');
                                             if (c && c.send) {
-                                                c.send(\`${message.escapeDiscord()}\`)
+                                                c.send(\`${message}\`)
                                             }
                                             `);
                                             // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
