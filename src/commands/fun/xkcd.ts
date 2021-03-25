@@ -60,7 +60,6 @@ export const command: Command = {
     },
     usage: "[latest|byid|random] ...options]",
     args: false,
-    specialArgs: undefined,
     cooldown: 1,
     permLevel: permLevels.member,
     moderation: undefined,

@@ -11,8 +11,7 @@ export const command: Command = {
         long: "Use to unban a banned member or all banned members. This will remove their ban."
     },
     usage: "<user id | all>",
-    args: true,
-    specialArgs: 1,
+    args: 1,
     permLevel: permLevels.mod,
     guildOnly: true,
     moderation: true,

@@ -420,7 +420,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
         }
 
-        if (command.args && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
+        if (command.args && (typeof command.args === "boolean" || command.args > 0) && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
             const fec_gs = await client.database?.getColor("fail_embed_color");
 
             let reply = `Arguments are needed to make that work!`;
@@ -433,8 +433,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                     reply += `\n\`${example}\``;
                 }
             }
-    
-            return message.channel.send({
+
+            await message.channel.send({
                 embed: {
                     description: reply,
                     color: fec_gs,
@@ -443,8 +443,22 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                     }
                 }
             });
+            return;
+        } else if (command.args && typeof command.args === "number" && args.length !== command.args) {
+            let reply = "Illegal Arguments";
+            if (command.args === 0) {
+                reply = "**No arguments** are allowed for this command.";
+            } else {
+                reply = `Incorrect arguments. Please provide ${command.args} arguments.`;
+            }
+            if (command.usage) {
+                reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
+            }
+
+            await client.specials?.sendError(message.channel, reply)
+            return;
         }
-    
+
         if (!cooldowns.has(command.name)) {
             cooldowns.set(command.name, new Discord.Collection());
         }

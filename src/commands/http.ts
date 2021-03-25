@@ -13,7 +13,6 @@ export const command: Command = {
         long: "Find out what an http error code means. This command is under development."
     },
     usage: "<code>",
-    specialArgs: undefined,
     permLevel: permLevels.trustedMember,
     async execute(client, message, args) {
         try {

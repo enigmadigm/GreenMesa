@@ -12,7 +12,6 @@ export const command: Command = {
     },
     usage: "<acronym>",
     args: true,
-    specialArgs: 1,
     permLevel: permLevels.member,
     guildOnly: true,
     ownerOnly: false,
