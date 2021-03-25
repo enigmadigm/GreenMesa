@@ -43,12 +43,12 @@ export function LogChannelSelect(props: LogChannelSelectProps) {
     return (
         <>
             <Select
-                placeholder="None selected"
+                placeholder="No channel"
                 options={[{ id: 'none', name: 'None' }, ...channels.filter(x => x.type === "text")/*.sort((a, b) => a.position - b.position)*/].map(c => {
                     return { value: c.id, label: `${c.id !== "none" ? `#${c.name}` : c.name}` };
                 })}
                 menuPlacement="auto"
-                value={data[cat] ? { value: data[cat], label: channels.find(c => c.id === data[cat])?.name } : { label: "None selected" }}
+                value={data[cat] ? { value: data[cat], label: channels.find(c => c.id === data[cat])?.name } : { label: "No channel" }}
                 onChange={(e) => ch(e, cat)}
                 styles={selectStylesMK1}
             />
@@ -163,7 +163,10 @@ export function DashboardServerlog(props: HomeProps) {
 
     const handleChannelValueChange = (v: any, s: logtypes) => {
         const m = Object.assign({}, data);
-        m[s] = v.value === "none" ? undefined : v.value;
+        m[s] = v.value === "none" ? "" : v.value;
+        console.log(v.value)
+        console.log(s)
+        console.log(m)
         setData(m);
     }
 
