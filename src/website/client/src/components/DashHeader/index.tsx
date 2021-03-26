@@ -54,9 +54,9 @@ export function DashHeader(props: DashProps) {
                         {props.user.tag ? (
                             <div className="userbox-uid">
                                 {props.user.tag.split("#").map((x, i) => (
-                                    <>
-                                        {i === 0 ? <span className="userbox-uname">{x}</span> : <span className="userbox-disc">#{x}</span>}
-                                    </>
+                                    <span className={i === 0 ? "userbox-uname" : "userbox-disc"} key={i === 0 ? `ub-uname-${x}` : `ub-disc-${x}`}>
+                                        {i === 0 ? `${x}` : `#${x}`}
+                                    </span>
                                 ))}
                             </div>
                         ) : ""}
