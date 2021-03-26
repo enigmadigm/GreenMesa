@@ -37,7 +37,7 @@ export function MenuPage(/*props: RouteComponentProps*/) {
     return (
         <div>
             <LoadingBar
-                color='#01FF70'
+                color='#024380'
                 progress={progress}
                 onLoaderFinished={() => setProgress(0)}
             />
