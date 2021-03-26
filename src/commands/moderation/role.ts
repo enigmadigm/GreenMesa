@@ -98,7 +98,7 @@ export const command: Command = {
                 const fu = parseFriendlyUptime(t);
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("info_embed_color"),
+                        color: await client.database.getColor("info_embed_color"),
                         description: `**ETA:**\n${fu}`
                     }
                 });
@@ -131,7 +131,7 @@ export const command: Command = {
 
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("success_embed_color"),
+                        color: await client.database.getColor("success_embed_color"),
                         description: `${targetRole || "Role"} ${target === "all" ? "toggled on" : target === "allon" ? "given to" : "removed from"} ${affected} member(s)`
                     }
                 });
@@ -144,7 +144,7 @@ export const command: Command = {
                 const fu = parseFriendlyUptime(t);
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("info_embed_color"),
+                        color: await client.database.getColor("info_embed_color"),
                         description: `**ETA:**\n${fu}`
                     }
                 });
@@ -170,7 +170,7 @@ export const command: Command = {
 
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("success_embed_color"),
+                        color: await client.database.getColor("success_embed_color"),
                         description: `${targetRole || "Role"} toggled on ${targets.length} member(s)`
                     }
                 });
@@ -180,7 +180,7 @@ export const command: Command = {
                     //await sleep(500);
                     await message.channel.send({
                         embed: {
-                            color: await client.database?.getColor("success_embed_color"),
+                            color: await client.database.getColor("success_embed_color"),
                             description: `${targetRole || "Role"} removed from ${target}`
                         }
                     });
@@ -189,7 +189,7 @@ export const command: Command = {
                     //await sleep(500);
                     await message.channel.send({
                         embed: {
-                            color: await client.database?.getColor("success_embed_color"),
+                            color: await client.database.getColor("success_embed_color"),
                             description: `${targetRole || "Role"} given to ${target}`
                         }
                     });

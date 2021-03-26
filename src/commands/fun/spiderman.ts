@@ -16,24 +16,24 @@ export const command: Command = {
     async execute(client, message) {
         try {
             if (!message.member) return;
-            const xpInfo = await client.database?.getXP(message.member);
+            const xpInfo = await client.database.getXP(message.member);
             if (xpInfo && xpInfo.spideySaved && xpInfo.spideySaved !== null && new Date(xpInfo.spideySaved)) {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("darkred_embed_color"),
+                        color: await client.database.getColor("darkred_embed_color"),
                         description: '<:spidey_face:754750502083887165> says: [everybody gets one](https://digmsl.link/3nn2WFX)'
                     }
                 });
                 return true;
             }
-            const savedRes = await client.database?.setSpideySaved(message.member);
+            const savedRes = await client.database.setSpideySaved(message.member);
             if (!savedRes) {
                 await client.specials?.sendError(message.channel, "**error**, Spiderman was unavailable :/")
                 return false;
             }
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("darkred_embed_color"),
+                    color: await client.database.getColor("darkred_embed_color"),
                     title: "<:spidey_face:754750502083887165> :spider_web:",
                     description: "Spiderman saves you"
                 }

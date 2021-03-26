@@ -159,7 +159,7 @@ export const command: Command = {
                                         fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
                                             if (err) return console.log(err);
                                         });*/
-                                        client.database?.logDefined();
+                                        client.database.logDefined();
                                         if (defsArray.join(", ").length < 1020) {
                                             const sDef = {
                                                 name: `📖  ${r.hwi.hw.split('*').join("")} *${r.fl}*`,

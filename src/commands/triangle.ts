@@ -17,7 +17,7 @@ export const command: Command = {
     
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("darkgreen_embed_color"),
+                    color: await client.database.getColor("darkgreen_embed_color"),
                     title: "Area of Triangle",
                     description: `The area of a triangle with \`BASExHEIGHT\` \`${x}x${y}\` is \`${(x * y) / 2}\``
                 }

@@ -18,8 +18,8 @@ export const command: Command = {
     async execute(client, message) {
         try {
             if (!message.guild || !message.member) return;
-            const warn_embed_color = await client.database?.getColor("warn_embed_color");
-            const levellingEnabled = await client.database?.getGuildSetting(message.guild, 'xp_levels');
+            const warn_embed_color = await client.database.getColor("warn_embed_color");
+            const levellingEnabled = await client.database.getGuildSetting(message.guild, 'xp_levels');
             if (!levellingEnabled || levellingEnabled.value === 'disabled') {
                 message.channel.send({
                     embed: {
@@ -29,8 +29,8 @@ export const command: Command = {
                 });
                 return;
             }
-            const levelRows = await client.database?.checkForLevelRoles(message.guild);
-            const targetRow = await client.database?.getXP(message.member);
+            const levelRows = await client.database.checkForLevelRoles(message.guild);
+            const targetRow = await client.database.getXP(message.member);
             if (!levelRows || !targetRow) {
                 client.specials?.sendError(message.channel);
                 return;
@@ -46,7 +46,7 @@ export const command: Command = {
                 return `${curr ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild?.roles.cache.find(ro => ro.id === lvl.roleid) || 'no role found'}${curr ? ' < you' : ''}`
             });
 
-            const info_embed_color = await client.database?.getColor("info_embed_color");
+            const info_embed_color = await client.database.getColor("info_embed_color");
             message.channel.send({
                 embed: {
                     color: info_embed_color,

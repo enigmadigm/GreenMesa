@@ -5,12 +5,11 @@ import DiscordStrategy from 'passport-discord';
 import { MessageServices } from "./services";
 
 export interface XClient extends Client {
-    commands?: Collection<string, Command>;
-    categories?: Collection<string, Category>;
-    gprefix?: string;
-    specials?: typeof Specials;
-    database?: DBManager;
-    services?: MessageServices;
+    commands: Collection<string, Command>;
+    categories: Collection<string, Category>;
+    specials: typeof Specials;
+    database: DBManager;
+    services: MessageServices;
 }
 
 export interface Command {

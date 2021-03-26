@@ -31,7 +31,7 @@ export const command: Command = {
       
       message.channel.send({
         embed: {
-					color: await client.database?.getColor("darkgreen_embed_color"),
+					color: await client.database.getColor("darkgreen_embed_color"),
           title: "Area of Cylinder: Answer",
           description: `The total area is \`${cyl.Volume().toFixed(4)}\``
         }

@@ -13,7 +13,7 @@ export const command: Command = {
         try {
             const a = args.join(" ");
             if (a === "off") {
-                await client.database?.updateUserData({
+                await client.database.updateUserData({
                     userid: message.author.id,
                     afk: "~~off~~"
                 });
@@ -25,7 +25,7 @@ export const command: Command = {
                 await client.specials?.sendError(message.channel, `Your message is ${overLength} characters too long.`);
                 return;
             }
-            await client.database?.updateUserData({
+            await client.database.updateUserData({
                 userid: message.author.id,
                 afk: a
             });

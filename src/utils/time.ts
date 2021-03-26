@@ -30,8 +30,8 @@ interface FriendlyTime {
 
 /**
  * calculates and returns an object of time units that represent the distributed value of the provided duration
- * @param {number} msAlive duration in milliseconds
- * @param {boolean} leadingzero whether times should have leading zeroes
+ * @param msAlive duration in milliseconds
+ * @param leadingzero whether times should have leading zeroes
  */
 export function getFriendlyUptime(msAlive = 0, leadingzero = false): FriendlyTime {
     msAlive = Math.abs(msAlive);
@@ -81,8 +81,8 @@ export function getFriendlyUptime(msAlive = 0, leadingzero = false): FriendlyTim
  * This function gets the rounded day difference between two timestamps using getDurationDiff.
  *
  * @export
- * @param {number} timestamp0 first timestamp
- * @param {number} timestamp1 second timestamp
+ * @param timestamp0 first timestamp
+ * @param timestamp1 second timestamp
  * @returns
  */
 export function getDayDiff(timestamp0: number, timestamp1: number): number {
@@ -92,9 +92,9 @@ export function getDayDiff(timestamp0: number, timestamp1: number): number {
 /**
  * This function returns how many times a specified duration fits into a time frame.
  *
- * @param {number} timestamp0 first timestamp
- * @param {number} timestamp1 second timestamp
- * @param {(number | timeUnits)} duration duration of time
+ * @param timestamp0 first timestamp
+ * @param timestamp1 second timestamp
+ * @param duration duration of time
  * @returns
  */
 export function getDurationDiff(timestamp0: number, timestamp1: number, duration: number): number {
@@ -109,7 +109,7 @@ export function getDurationDiff(timestamp0: number, timestamp1: number, duration
  * - Nd = N days
  *
  * @export
- * @param {string} text input text
+ * @param text input text
  * @returns
  */
 export function stringToDuration(text: string): number {

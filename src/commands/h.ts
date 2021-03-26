@@ -15,8 +15,8 @@ export const command: Command = {
         try {
             if (message.gprefix !== "sm" || args.length || message.content !== "smh") return;// I pretty much only need the last check, but whatever
 
-            const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
-            const commandEnabledGuild = await client.database?.getGuildSetting(message.guild || "", `${command.name}_toggle`);
+            const commandEnabledGlobal = await client.database.getGlobalSetting(`${command.name}_enabled`);
+            const commandEnabledGuild = await client.database.getGuildSetting(message.guild || "", `${command.name}_toggle`);
             if ((commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (!commandEnabledGuild || commandEnabledGuild.value === 'disable')) {
                 return;
             }

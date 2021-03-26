@@ -22,7 +22,7 @@ export const command: Command = {
             const be = dom.window.document.querySelector('div.result.result-2 > .option-text');
             const msg = await message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("info_embed_color"),
+                    color: await client.database.getColor("info_embed_color"),
                     description: `Would you rather:\n**🅰 | ${ae.textContent}**\nor\n**🅱 | ${be.textContent}**`
                 }
             });

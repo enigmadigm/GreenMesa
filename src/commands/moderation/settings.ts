@@ -19,9 +19,9 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            // const fail_embed_color = await client.database?.getColor("fail_embed_color");
-            const info_embed_color = await client.database?.getColor("info_embed_color");
-            const success_embed_color = await client.database?.getColor("success_embed_color");
+            // const fail_embed_color = await client.database.getColor("fail_embed_color");
+            const info_embed_color = await client.database.getColor("info_embed_color");
+            const success_embed_color = await client.database.getColor("success_embed_color");
             if (!args.length) {
                 message.channel.send({
                     embed: {
@@ -54,14 +54,14 @@ export const command: Command = {
             switch (args[argIndex]) {
                 case 'moderation': {
                     argIndex++;
-                    const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+                    const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
                     switch (args[argIndex]) {
                         case 'enable': {
                             if (moderationEnabled && moderationEnabled.value === 'enabled') {
                                 message.channel.send('Moderation is already **enabled**.');
                                 return;
                             }
-                            const editResult = await client.database?.editGuildSetting(message.guild, 'all_moderation', 'enabled');
+                            const editResult = await client.database.editGuildSetting(message.guild, 'all_moderation', 'enabled');
                             if (editResult && editResult.affectedRows == 1) {
                                 message.channel.send('Moderation **enabled**!');
                             } else {
@@ -74,7 +74,7 @@ export const command: Command = {
                                 message.channel.send('Moderation is already **disabled**.');
                                 return;
                             }
-                            const editResult = await client.database?.editGuildSetting(message.guild, 'all_moderation', 'disabled', true);
+                            const editResult = await client.database.editGuildSetting(message.guild, 'all_moderation', 'disabled', true);
                             if (editResult && editResult.affectedRows == 1) {
                                 message.channel.send('Moderation **disabled**!');
                             } else {
@@ -111,7 +111,7 @@ export const command: Command = {
                 case 'levelling':
                 case 'levels': {
                     argIndex++;
-                    const levellingEnabled = await client.database?.getGuildSetting(message.guild, 'xp_levels');
+                    const levellingEnabled = await client.database.getGuildSetting(message.guild, 'xp_levels');
                     if (!args[argIndex]) {
                         message.channel.send({
                             embed: {
@@ -136,8 +136,8 @@ export const command: Command = {
                                 message.channel.send('Levels are already **enabled**.');
                                 return;
                             }
-                            const rolesResult = await client.database?.checkForLevelRoles(message.guild);
-                            const editResult = await client.database?.editGuildSetting(message.guild, 'xp_levels', 'enabled');
+                            const rolesResult = await client.database.checkForLevelRoles(message.guild);
+                            const editResult = await client.database.editGuildSetting(message.guild, 'xp_levels', 'enabled');
                             if (editResult && editResult.affectedRows == 1 && rolesResult && rolesResult.length > 0) {
                                 message.channel.send('Levelling **enabled**!');
                             } else {
@@ -151,10 +151,10 @@ export const command: Command = {
                                 message.channel.send('Levels are already **disabled**.');
                                 return;
                             }
-                            const editResult = await client.database?.editGuildSetting(message.guild, 'xp_levels', 'disabled');
+                            const editResult = await client.database.editGuildSetting(message.guild, 'xp_levels', 'disabled');
                             let massDeletionResult = true;
                             if (args[argIndex] == '--forget') {
-                                const massdeletion = await client.database?.deleteAllLevelRoles(message.guild)
+                                const massdeletion = await client.database.deleteAllLevelRoles(message.guild)
                                 if (!massdeletion || massdeletion.affectedRows == 0) {
                                     massDeletionResult = false;
                                 }
@@ -173,7 +173,7 @@ export const command: Command = {
                                 message.channel.send(`Levelling is disabled. Enable with \`mod levels enable\`.`);
                                 return;
                             }
-                            const levelRows = await client.database?.checkForLevelRoles(message.guild);
+                            const levelRows = await client.database.checkForLevelRoles(message.guild);
                             if (!levelRows) {
                                 throw new Error();
                             }
@@ -205,7 +205,7 @@ export const command: Command = {
                                 message.channel.send('Please send a valid level < 1001.');
                                 return;
                             }
-                            const result = await client.database?.setLevelRole(newlevel, message.guild, role);
+                            const result = await client.database.setLevelRole(newlevel, message.guild, role);
                             if (!result || result !== 1) {
                                 xlg.log('UNABLE to REGISTER role');
                                 message.channel.send('The role could not be registered.');
@@ -232,12 +232,12 @@ export const command: Command = {
                                 message.channel.send('Please send a valid role.');
                                 return;
                             }
-                            const roleEntry = await client.database?.setLevelRole(null, message.guild, role);
+                            const roleEntry = await client.database.setLevelRole(null, message.guild, role);
                             if (!roleEntry) {
                                 client.specials?.sendError(message.channel, `${role} is not a reward role. Please send a role that is being rewarded.`)
                                 return;
                             }
-                            const result = await client.database?.setLevelRole(null, message.guild, role, true);
+                            const result = await client.database.setLevelRole(null, message.guild, role, true);
                             if (!result || result !== 1) {
                                 //xlg.log('UNABLE to DELETE role');
                                 message.channel.send('The role could not be removed.');
@@ -260,12 +260,12 @@ export const command: Command = {
                 case 'serverlog': {
                     await message.channel.send({
                         embed: {
-                            color: await client.database?.getColor("info_embed_color"),
+                            color: await client.database.getColor("info_embed_color"),
                             description: `Now you can go to the [dashboard](https://stratum.hauge.rocks/dash) to configure the serverlog.`,
                         }
                     });
                     /*argIndex++;
-                    const slogValue = await client.database?.getGuildSetting(message.guild, 'server_log');
+                    const slogValue = await client.database.getGuildSetting(message.guild, 'server_log');
                     const slogChannel = slogValue && slogValue.value ? stringToChannel(message.guild, slogValue.value) : null;
                     if (!args[argIndex]) {
                         message.channel.send({
@@ -291,7 +291,7 @@ export const command: Command = {
                                 message.channel.send('The server log is already disabled.');
                                 return;
                             }
-                            const result = await client.database?.editGuildSetting(message.guild, 'server_log', undefined, true);
+                            const result = await client.database.editGuildSetting(message.guild, 'server_log', undefined, true);
                             if (result && result.affectedRows === 1) {
                                 message.channel.send('Server log has been disabled.');
                             }
@@ -311,7 +311,7 @@ export const command: Command = {
                                 message.channel.send('Server log **already set** to specified channel.')
                                 return false;
                             }
-                            const result = await client.database?.editGuildSetting(message.guild, 'server_log', newSlogChannel.id)
+                            const result = await client.database.editGuildSetting(message.guild, 'server_log', newSlogChannel.id)
                             if (result && result.affectedRows === 1) {
                                 message.channel.send(`The megalog has been **enabled** in ${newSlogChannel}. Soon you will be able to set custom functions.`);
                             } else {
@@ -326,7 +326,7 @@ export const command: Command = {
                     //await client.specials.sendError(message.channel, 'This subcommand is currently in development.');
                     argIndex++;
                     if (!args[argIndex]) {
-                        const result = await client.database?.getGuildSetting(message.guild, "mod_role");
+                        const result = await client.database.getGuildSetting(message.guild, "mod_role");
                         let mrid = "";
                         if (result && result && result.value) {
                             mrid = result.value;
@@ -341,7 +341,7 @@ export const command: Command = {
                         return;
                     }
                     if (args[argIndex] === "reset" && !args[argIndex + 1]) {
-                        await client.database?.editGuildSetting(message.guild, "mod_role", ``, true);
+                        await client.database.editGuildSetting(message.guild, "mod_role", ``, true);
                         message.channel.send({
                             embed: {
                                 color: success_embed_color,
@@ -355,7 +355,7 @@ export const command: Command = {
                         client.specials?.sendError(message.channel, 'Please send a valid role.');
                         return;
                     }
-                    const result = await client.database?.editGuildSetting(message.guild, "mod_role", `${role.id}`)
+                    const result = await client.database.editGuildSetting(message.guild, "mod_role", `${role.id}`)
                     if (!result) {
                         client.specials?.sendError(message.channel, 'The role could not be registered.');
                         return;
@@ -379,14 +379,14 @@ export const command: Command = {
                 case 'pm':
                 case 'accessmsg': {
                     argIndex++;
-                    const accessMessage = await client.database?.getGuildSetting(message.guild, 'access_message');
+                    const accessMessage = await client.database.getGuildSetting(message.guild, 'access_message');
                     switch (args[argIndex]) {
                         case 'enable': {
                             if (accessMessage && accessMessage.value === 'enabled') {
                                 message.channel.send('Perms message is already **enabled**.');
                                 return;
                             }
-                            const editResult = await client.database?.editGuildSetting(message.guild, 'access_message', 'enabled');
+                            const editResult = await client.database.editGuildSetting(message.guild, 'access_message', 'enabled');
                             if (editResult && editResult.affectedRows == 1) {
                                 message.channel.send('Perms message **enabled**!');
                             } else {
@@ -399,7 +399,7 @@ export const command: Command = {
                                 message.channel.send('Perms message is already **disabled**.');
                                 return;
                             }
-                            const editResult = await client.database?.editGuildSetting(message.guild, 'access_message', 'disabled', true);
+                            const editResult = await client.database.editGuildSetting(message.guild, 'access_message', 'disabled', true);
                             if (editResult && editResult.affectedRows == 1) {
                                 message.channel.send('Perms message **disabled**!');
                             } else {

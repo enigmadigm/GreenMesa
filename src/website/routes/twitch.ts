@@ -170,7 +170,7 @@ export function twitchRouter(client: XClient): Router {
                     if (req.query.streamer && req.query.streamer.length) {
                         if (req.body.data && req.body.data.length && req.body.data[0].user_name && req.body.data[0].type === "live" && typeof req.query.streamer === "string") {
                             // twitch sender
-                            const subs = await Bot.client.database?.getTwitchSubsForID(req.query.streamer);
+                            const subs = await Bot.client.database.getTwitchSubsForID(req.query.streamer);
                             if (subs) {
                                 for (let i = 0; i < subs.length; i++) {
                                     const sub = subs[i];
@@ -231,7 +231,7 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
     if (!uid || !uid.data || !uid.data[0] || !uid.data[0].id) return "ID_NOT_FOUND";
     let preexists = false;
     if (guildid) {
-        const existingSubs = await Bot.client.database?.getTwitchSubsForID(uid.data[0].id);
+        const existingSubs = await Bot.client.database.getTwitchSubsForID(uid.data[0].id);
         if (existingSubs && existingSubs.length > 0) {
             for (let i = 0; i < existingSubs.length; i++) {
                 const sub = existingSubs[i];
@@ -266,7 +266,7 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
     }
 
     if (guildid && targetChannel && targetChannel instanceof TextChannel) {
-        const subRes = await Bot.client.database?.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
+        const subRes = await Bot.client.database.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
         if (!subRes) return false;
         if (uid.data[0].display_name || uid.data[0].login) {
             targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
@@ -313,7 +313,7 @@ export async function unsubscribeTwitchWebhook(username: string, guildid: string
     /*if () {
         return false;
     }*/
-    const remres = await Bot.client.database?.removeTwitchSubscription(uid.data[0].id, guildid)
+    const remres = await Bot.client.database.removeTwitchSubscription(uid.data[0].id, guildid)
     if ((remres || remres === 0) && remres < 1) {
         return "NO_SUBSCRIPTION";
     }

@@ -8,7 +8,7 @@ export const command: Command = {
         try {
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("info_embed_color") || 3447003,
+                    color: await client.database.getColor("info_embed_color") || 3447003,
                     fields: [{
                         name: "Why?",
                         value: "because"

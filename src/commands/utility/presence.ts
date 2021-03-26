@@ -8,10 +8,10 @@ export const command: Command = {
     permLevel: permLevels.botMaster,
     args: true,
     async execute(client, message, args) {
-        const fail_embed_color = await client.database?.getColor("fail_embed_color");
-        const success_embed_color = await client.database?.getColor("success_embed_color");
+        const fail_embed_color = await client.database.getColor("fail_embed_color");
+        const success_embed_color = await client.database.getColor("success_embed_color");
         if (['online', 'idle', 'dnd', 'invisible'].includes(args.join(" "))) {
-            const result = await client.database?.getGlobalSetting('game_status');
+            const result = await client.database.getGlobalSetting('game_status');
             if (result && result.value === args.join(" ")) {
                 message.channel.send({
                     embed: {
@@ -21,7 +21,7 @@ export const command: Command = {
                 });
                 return;
             }
-            const editRes = await client.database?.editGlobalSettings('name', 'game_status', message.author, args.join(" "));
+            const editRes = await client.database.editGlobalSettings('name', 'game_status', message.author, args.join(" "));
             if (editRes && editRes.affectedRows === 1) {
                 message.channel.send({
                     embed: {
@@ -31,7 +31,7 @@ export const command: Command = {
                 });
             }
         } else if (['PLAYING', 'STREAMING', 'WATCHING', 'LISTENING', 'COMPETING'].includes(args.join(" "))) {
-            const result = await client.database?.getGlobalSetting('game_prefix')
+            const result = await client.database.getGlobalSetting('game_prefix')
             if (result && result.value === args.join(" ")) {
                 message.channel.send({
                     embed: {
@@ -41,7 +41,7 @@ export const command: Command = {
                 });
                 return;
             }
-            const editRes = await client.database?.editGlobalSettings('name', 'game_prefix', message.author, args.join(" "));
+            const editRes = await client.database.editGlobalSettings('name', 'game_prefix', message.author, args.join(" "));
             if (editRes && editRes.affectedRows === 1) {
                 message.channel.send({
                     embed: {
@@ -51,7 +51,7 @@ export const command: Command = {
                 });
             }
         } else {
-            const result = await client.database?.getGlobalSetting('game_name');
+            const result = await client.database.getGlobalSetting('game_name');
             if (result && result.value === args.join(" ")) {
                 message.channel.send({
                     embed: {
@@ -61,7 +61,7 @@ export const command: Command = {
                 });
                 return;
             }
-            const editRes = await client.database?.editGlobalSettings('name', 'game_name', message.author, args.join(" "));
+            const editRes = await client.database.editGlobalSettings('name', 'game_name', message.author, args.join(" "));
             if (editRes && editRes.affectedRows === 1) {
                 message.channel.send({
                     embed: {

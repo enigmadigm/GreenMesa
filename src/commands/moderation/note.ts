@@ -32,7 +32,7 @@ export const command: Command = {
                 await client.specials?.sendError(message.channel, `You did not specify a note\n\`<user> <note>\``);
                 return;
             }
-            const gud = await client.database?.getGuildUserData(message.guild.id, target.id);
+            const gud = await client.database.getGuildUserData(message.guild.id, target.id);
             if (!gud) {
                 await client.specials?.sendError(message.channel, `Could not retrieve user info`);
                 return;
@@ -57,7 +57,7 @@ export const command: Command = {
             });
 
             gud.modnote = JSON.stringify(notes).escapeSpecialChars();
-            await client.database?.updateGuildUserData(gud);
+            await client.database.updateGuildUserData(gud);
             await client.specials?.sendInfo(message.channel, `Note added (ID: ${notes[notes.length - 1].id})`);
         } catch (error) {
             xlg.error(error);

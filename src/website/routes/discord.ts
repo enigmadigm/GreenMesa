@@ -126,16 +126,16 @@ export default function routerBuild (client: XClient): express.Router {
             }
             const g = await client.guilds.fetch(id);
             if (!g) return res.sendStatus(404);
-            const r = await Bot.client.database?.getPrefix(id);
+            const r = await Bot.client.database.getPrefix(id);
             let prefix = r ? r : false;
             if (!prefix) {
-                const r = await client.database?.getGlobalSetting('global_prefix');
+                const r = await client.database.getGlobalSetting('global_prefix');
                 prefix = r ? r.value : "sm";
             }
             if (!prefix) {
                 return res.status(500).send({ msg: "Unable to retrieve prefix" });
             }
-            const modAllRes = await client.database?.getGuildSetting(id, 'all_moderation');
+            const modAllRes = await client.database.getGuildSetting(id, 'all_moderation');
             let modAll = false;
             if (modAllRes && modAllRes.value === "enabled") {
                 modAll = true;
@@ -170,7 +170,7 @@ export default function routerBuild (client: XClient): express.Router {
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
 
-        const amRes = await client.database?.getGuildSetting(id, 'access_message');
+        const amRes = await client.database.getGuildSetting(id, 'access_message');
         let am = false;
         if (amRes && amRes.value === "enabled") {
             am = true;
@@ -300,7 +300,7 @@ export default function routerBuild (client: XClient): express.Router {
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
 
-        const mods = await client.database?.getAllAutoModules(id);
+        const mods = await client.database.getAllAutoModules(id);
         if (!mods) {
             res.sendStatus(500);
             return;
@@ -343,7 +343,7 @@ export default function routerBuild (client: XClient): express.Router {
         const g = mg.find(x => x.id === id);
         if (!g) return res.sendStatus(404);
 
-        const mod = await client.database?.getAutoModule(id, name);
+        const mod = await client.database.getAutoModule(id, name);
         if (!mod) {
             res.sendStatus(500);
             return;
@@ -377,12 +377,12 @@ export default function routerBuild (client: XClient): express.Router {
         const g = mg.find(x => x.id === id);
         if (!g) return res.sendStatus(404);
 
-        const levellingEnabled = await client.database?.getGuildSetting(g.id, 'xp_levels');
+        const levellingEnabled = await client.database.getGuildSetting(g.id, 'xp_levels');
         let enabled = true;
         if (!levellingEnabled || levellingEnabled.value === 'disabled') {
             enabled = false;
         }
-        const levelRows = await client.database?.getLevelRoles(g.id) || [];
+        const levelRows = await client.database.getLevelRoles(g.id) || [];
 
         try {
             const toSend: LevelsEndpointData = {
@@ -414,7 +414,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!g) return res.sendStatus(404);
 
         try {
-            const arsRes = await client.database?.getGuildSetting(g.id, 'autorole');
+            const arsRes = await client.database.getGuildSetting(g.id, 'autorole');
             const arDat: AutoroleData = arsRes ? JSON.parse(arsRes.value) : { roles: [], botRoles: [], disabled: true };
 
             const toSend: AutoroleEndpointData = {
@@ -445,7 +445,7 @@ export default function routerBuild (client: XClient): express.Router {
             const g = mg.find(x => x.id === id);
             if (!g) return res.sendStatus(404);
 
-            const warnConfig = await client.database?.getGuildSetting(id, "warnconfig");
+            const warnConfig = await client.database.getGuildSetting(id, "warnconfig");
             let conf: WarnConf = { punishment: "", threshold: -1, time: 0 };
             try {
                 if (warnConfig) {
@@ -456,7 +456,7 @@ export default function routerBuild (client: XClient): express.Router {
             }
             if (warnConfig && !conformsToWarnConf(conf)) {
                 try {
-                    await client.database?.editGuildSetting(g, "warnconfig", undefined, true);
+                    await client.database.editGuildSetting(g, "warnconfig", undefined, true);
                 } catch (error) {
                     //
                 }
@@ -496,14 +496,14 @@ export default function routerBuild (client: XClient): express.Router {
             const g = mg.find(x => x.id === id);
             if (!g) return res.sendStatus(404);
 
-            const serverLog = await client.database?.getGuildSetting(id, "serverlog");
+            const serverLog = await client.database.getGuildSetting(id, "serverlog");
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let data: any = {};
             try {
                 if (serverLog) {
                     data = JSON.parse(serverLog.value);
                     if (typeof data.events !== "number" || typeof data.ignored_channels !== "object" || typeof data.log_channel !== "string") {
-                        await client.database?.editGuildSetting(g, "serverlog", undefined, true);
+                        await client.database.editGuildSetting(g, "serverlog", undefined, true);
                     }
                 }
             } catch (error) {
@@ -552,7 +552,7 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(401);
         }
         try {
-            await client.database?.setPrefix(id, prefix);
+            await client.database.setPrefix(id, prefix);
             res.send({
                 guild: {
                     id,
@@ -585,9 +585,9 @@ export default function routerBuild (client: XClient): express.Router {
         try {
             const g = await client.guilds.fetch(id);
             if (moderation === "true") {
-                await client.database?.editGuildSetting(g, "all_moderation", "enabled");
+                await client.database.editGuildSetting(g, "all_moderation", "enabled");
             } else {
-                await client.database?.editGuildSetting(g, "all_moderation", undefined, true);
+                await client.database.editGuildSetting(g, "all_moderation", undefined, true);
             }
             res.send({
                 guild: {
@@ -622,9 +622,9 @@ export default function routerBuild (client: XClient): express.Router {
         try {
             const g = await client.guilds.fetch(id);
             if (permnotif === "true") {
-                await client.database?.editGuildSetting(g, "access_message", "enabled");
+                await client.database.editGuildSetting(g, "access_message", "enabled");
             } else {
-                await client.database?.editGuildSetting(g, "access_message", undefined, true);
+                await client.database.editGuildSetting(g, "access_message", undefined, true);
             }
             res.send({
                 guild: {
@@ -675,7 +675,7 @@ export default function routerBuild (client: XClient): express.Router {
 
         try {
             const g = await client.guilds.fetch(id);
-            const result = await client.database?.editGuildSetting(g, `automod_${module}`, JSON.stringify(parsedData).escapeSpecialChars());
+            const result = await client.database.editGuildSetting(g, `automod_${module}`, JSON.stringify(parsedData).escapeSpecialChars());
             if (!result || !result.affectedRows) {
                 return res.sendStatus(500);
             }
@@ -723,7 +723,7 @@ export default function routerBuild (client: XClient): express.Router {
 
             try {
                 const g = await client.guilds.fetch(id);
-                const result = await client.database?.editGuildSetting(g, `warnconfig`, JSON.stringify(parsedData).escapeSpecialChars());
+                const result = await client.database.editGuildSetting(g, `warnconfig`, JSON.stringify(parsedData).escapeSpecialChars());
                 if (!result || !result.affectedRows) {
                     return res.sendStatus(500);
                 }
@@ -779,7 +779,7 @@ export default function routerBuild (client: XClient): express.Router {
 
             try {
                 const g = await client.guilds.fetch(id);
-                const result = await client.database?.editGuildSetting(g, `autorole`, JSON.stringify(parsedData).escapeSpecialChars());
+                const result = await client.database.editGuildSetting(g, `autorole`, JSON.stringify(parsedData).escapeSpecialChars());
                 if (!result || !result.affectedRows) {
                     return res.sendStatus(500);
                 }
@@ -835,7 +835,7 @@ export default function routerBuild (client: XClient): express.Router {
 
             try {
                 const g = await client.guilds.fetch(id);
-                const result = await client.database?.editGuildSetting(g, `serverlog`, JSON.stringify(parsedData).escapeSpecialChars());
+                const result = await client.database.editGuildSetting(g, `serverlog`, JSON.stringify(parsedData).escapeSpecialChars());
                 if (!result || !result.affectedRows) {
                     return res.sendStatus(500);
                 }
@@ -871,7 +871,7 @@ export default function routerBuild (client: XClient): express.Router {
             }
 
             try {
-                const result = await client.database?.removeTwitchSubscription(channel, id);
+                const result = await client.database.removeTwitchSubscription(channel, id);
                 if (!result) {
                     return res.status(400).send({
                         success: false
@@ -906,7 +906,7 @@ export default function routerBuild (client: XClient): express.Router {
             }
 
             try {
-                const subs = await client.database?.getTwitchSubsGuild(id);
+                const subs = await client.database.getTwitchSubsGuild(id);
                 if (!subs || !subs.length) {
                     const payload: TwitchEndpointData = [];
                     return res.send(payload);

@@ -22,7 +22,7 @@ export const command: Command = {
 
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("info_embed_color"),
+                    color: await client.database.getColor("info_embed_color"),
                     author: {
                         name: `${target.user.tag}`,
                         icon_url: target.user.displayAvatarURL()

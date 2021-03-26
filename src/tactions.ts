@@ -18,7 +18,7 @@ export class TimedActionsSubsystem {
 
     async poll(): Promise<void> {
         try {
-            const r = await Bot.client.database?.getActions(1);
+            const r = await Bot.client.database.getActions(1);
             if (!r || !r.length) return;
             for (const action of r) {
                 if (!this.scheduled.find(x => x.id === action.id)) {
@@ -88,7 +88,7 @@ export class TimedActionsSubsystem {
                     break;
             }
 
-            await Bot.client.database?.deleteAction(action.id);
+            await Bot.client.database.deleteAction(action.id);
         } catch (error) {
             xlg.error(error);
         }

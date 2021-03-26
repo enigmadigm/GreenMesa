@@ -17,7 +17,7 @@ export const command: Command = {
     permLevel: permLevels.botMaster,
     async execute(client, message, args) {
         try {
-            const fail_embed_color = await client.database?.getColor("fail_embed_color");
+            const fail_embed_color = await client.database.getColor("fail_embed_color");
             if (!args.length) {
                 message.channel.send({
                     embed: {
@@ -31,7 +31,7 @@ export const command: Command = {
                 });
                 return;
             }
-            const info_embed_color = await client.database?.getColor("info_embed_color");
+            const info_embed_color = await client.database.getColor("info_embed_color");
             let argIndex = 0;
             switch (args[argIndex]) {
                 case 'view': {
@@ -40,7 +40,7 @@ export const command: Command = {
                         message.channel.send("Please retry and supply a setting name to view.");
                         return false;
                     }
-                    const setting = await client.database?.getGlobalSetting(args[argIndex]);
+                    const setting = await client.database.getGlobalSetting(args[argIndex]);
                     if (!setting) {
                         message.channel.send("The property does not exist. You may create it with the `edit` option.");
                         return false;
@@ -89,7 +89,7 @@ export const command: Command = {
                         message.channel.send("Please retry and supply:```\nSELECTOR : SELECTOR VALUE : NEW VALUE\n```");
                         return false;
                     }
-                    const status = await client.database?.editGlobalSettings(args[argIndex], args[argIndex + 1], message.author, args.slice(argIndex + 2).join("_"));
+                    const status = await client.database.editGlobalSettings(args[argIndex], args[argIndex + 1], message.author, args.slice(argIndex + 2).join("_"));
                     if (!status) {
                         client.specials?.sendError(message.channel);
                         return;

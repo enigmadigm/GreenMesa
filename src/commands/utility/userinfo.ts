@@ -38,8 +38,8 @@ export const command: Command = {
             message.channel.startTyping();
             await message.guild.fetch();
             const target = await stringToMember(message.guild, args.join(" ")) || message.member;
-            const rank = await client.database?.getTop10(message.guild.id, target.id);
-            const xp = await client.database?.getXP(target);
+            const rank = await client.database.getTop10(message.guild.id, target.id);
+            const xp = await client.database.getXP(target);
             /* if (!rank || !xp) {
                 client.specials?.sendError(message.channel, "User information could not be retrieved");
                 return;
@@ -76,7 +76,7 @@ export const command: Command = {
 
             message.channel.send({
                 embed: {
-                    color: target.roles.hoist ? target.roles.hoist.color : await client.database?.getColor("info_embed_color") || 0,
+                    color: target.roles.hoist ? target.roles.hoist.color : await client.database.getColor("info_embed_color") || 0,
                     author: {
                         name: `Info for ${target.user.tag} ${rank && xp ? `${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}` : ""}`,
                         icon_url: target.user.displayAvatarURL()

@@ -7,7 +7,7 @@ export const service: MessageService = {
     async execute(client, member: GuildMember) {
         try {
             if (!member.guild) return;
-            const ar = await Bot.client.database?.getGuildSetting(member.guild, "autorole");
+            const ar = await Bot.client.database.getGuildSetting(member.guild, "autorole");
             if (!ar) return;
             const autorole: AutoroleData = JSON.parse(ar.value);
             if (member.user.bot) {

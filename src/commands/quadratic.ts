@@ -30,7 +30,7 @@ export const command: Command = {
                 // result
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("darkgreen_embed_color"),
+                        color: await client.database.getColor("darkgreen_embed_color"),
                         title: "Quadratic Solution: Two Real Roots",
                         description: `The roots of quadratic equation are \`${root1}\` and \`${root2}\``
                     }
@@ -44,7 +44,7 @@ export const command: Command = {
                 // result
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("darkgreen_embed_color"),
+                        color: await client.database.getColor("darkgreen_embed_color"),
                         title: "Quadratic Solution: Double Root",
                         description: `The roots of quadratic equation are \`${root1}\` and \`${root2}\``
                     }
@@ -59,7 +59,7 @@ export const command: Command = {
                 // result
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("darkgreen_embed_color"),
+                        color: await client.database.getColor("darkgreen_embed_color"),
                         title: "Quadratic Solution: Imaginary Roots",
                         description: `The roots of quadratic equation are \`${realPart} + ${imagPart}i\` and \`${realPart} - ${imagPart}i\``
                     }

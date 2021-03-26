@@ -26,7 +26,7 @@ export const command: Command = {
             }
             args.shift();
             const reason = args.join(" ");
-            const gud = await client.database?.getGuildUserData(message.guild.id, target.id);
+            const gud = await client.database.getGuildUserData(message.guild.id, target.id);
             if (!gud || !gud.id) {
                 await client.specials?.sendError(message.channel, "Unable to retrieve user information.", true);
                 return;
@@ -37,11 +37,11 @@ export const command: Command = {
                 gud.warnings++;
             }
             checkWarnings(client, target);
-            await client.database?.updateGuildUserData(gud);
+            await client.database.updateGuildUserData(gud);
             try {
                 await target.send({
                     embed: {
-                        color: await client.database?.getColor("warn_embed_color"),
+                        color: await client.database.getColor("warn_embed_color"),
                         title: `Warn Notice`,
                         description: `Warned in ${message.guild.name}.`,
                         fields: [

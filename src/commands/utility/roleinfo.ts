@@ -26,7 +26,7 @@ export const command: Command = {
             }
             await message.channel.send({
                 embed: {
-                    color: role.color > 150 ? role.color : await client.database?.getColor("info_embed_color"), 
+                    color: role.color > 150 ? role.color : await client.database.getColor("info_embed_color"), 
                     description:
 `Role info for ${role}
 
