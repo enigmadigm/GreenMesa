@@ -33,10 +33,10 @@ export const command: Command = {
 
             const iec = await client.database.getColor("info_embed_color");
             message.channel.send({
-                content: `Even better, use the dashboard: https://stratum.hauge.rocks`,
                 embed: {
                     color: iec,
                     title: "Twitch Subscriptions",
+                    url: client.specials.getDashboardLink(message.guild.id, "twitch"),
                     description: `${streamers.join("\n")}\n`
                 }
             })

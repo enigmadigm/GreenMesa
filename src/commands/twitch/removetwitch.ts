@@ -50,34 +50,29 @@ export const command: Command = {
             } else {
                 const unsubres = await unsubscribeTwitchWebhook(args.join(" "), message.guild.id);
                 if (unsubres === true) {
-                    confMsg.content = `This command is great and all, but you can use the dashboard next time: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("success_embed_color") || null;
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = `Your notifier has been removed.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "NO_DATA") {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
                     confMsg.embeds[0].description = `Twitch is not responding, please try again later.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "NO_USER") {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `That streamer does not exist.`;
+                    confMsg.embeds[0].description = `That streamer does not exist.\nQuickly remove streamer with the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "INVALID") {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
                     confMsg.embeds[0].description = `Invalid input.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "NO_SUBSCRIPTION") {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `Your notifier could not be removed, it may not exist.`;
+                    confMsg.embeds[0].description = `Your notifier could not be removed, it may not exist.\nView subscriptions from the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else {
                     confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;

@@ -59,7 +59,7 @@ export const command: Command = {
                 embed: {
                     color: iec,
                     title: "Twitch Notif Setup 2️⃣",
-                    description: `**What channel should the notifications be sent in?** Send the channel in the chat. To change this later, use the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`,
+                    description: `**What channel should the notifications be sent in?** Send the channel in the chat.\nTo change this later, use the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`,
                 }
             });
             const channelCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 100, { time: 20000, max: 1 });
@@ -115,7 +115,6 @@ export const command: Command = {
             } else {
                 const hookRes = await addTwitchWebhook(targetUsername, false, message.guild.id, targetChannel, notifmsg);
                 if (!hookRes) {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = "Error when creating subscription with Twitch";
@@ -124,31 +123,28 @@ export const command: Command = {
                     await confMsg.reactions.removeAll();
                     
                 } else if (hookRes === "ID_NOT_FOUND") {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = null;
-                    confMsg.embeds[0].description = `Your streamer, \`${targetUsername}\`, could not be found`;
+                    confMsg.embeds[0].description = `Your streamer, \`${targetUsername}\`, could not be found\n\nUse the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}) instead to avoid this`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                     //client.specials.sendError(message.channel, `Your streamer, \`${targetUsername}\`, could not be found`);
                     await confMsg.reactions.removeAll();
                     
                 } else if (hookRes === "ALREADY_EXISTS") {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = null;
-                    confMsg.embeds[0].description = `A subscription for \`${targetUsername}\` already exists`;
+                    confMsg.embeds[0].description = `A subscription for \`${targetUsername}\` already exists\n\nView subscriptions from the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")})`;
                     confMsg.embeds[0].footer = {
-                        text: "delete it with the remt command"
+                        text: "delete it with the rmtwitch command or from the dash"
                     };
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                     //client.specials.sendError(message.channel, `A subscription for \`${targetUsername}\` already exists`);
                     await confMsg.reactions.removeAll();
 
                 } else {
-                    confMsg.content = `This command is great and all, but you can use the dashboard next time: https://stratum.hauge.rocks`;
                     confMsg.embeds[0].color = await client.database.getColor("success_embed_color") || null;
                     confMsg.embeds[0].title = "Subscribed";
-                    confMsg.embeds[0].description = `You server is now subscribed to notifications in ${targetChannel} for when **${targetUsername}** goes live.`;
+                    confMsg.embeds[0].description = `You server is now subscribed to notifications in ${targetChannel} for when **${targetUsername}** goes live.\n\nEdit subscription from the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")})`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
 
                     const reactsToRemove = confMsg.reactions.cache.filter(r => r.users.cache.has(client.user?.id || ""));
