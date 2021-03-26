@@ -28,7 +28,7 @@ export const command: Command = {
                 try {
                     await target.send({
                         embed: {
-                            color: await client.database?.getColor("warn_embed_color"),
+                            color: await client.database.getColor("warn_embed_color"),
                             title: `Kick Notice`,
                             description: `Kicked from ${message.guild.name}.`,
                             fields: [

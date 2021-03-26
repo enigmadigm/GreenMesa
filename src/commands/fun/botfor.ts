@@ -11,7 +11,7 @@ export const command: Command = {
         try {
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("fail_embed_color"),
+                    color: await client.database.getColor("fail_embed_color"),
                     title: "Error 501",
                     description: "This command will deliver you the right bot for what you want, using AI!"
                 }

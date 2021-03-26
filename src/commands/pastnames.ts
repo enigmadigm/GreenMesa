@@ -24,7 +24,7 @@ export const command: Command = {
                 client.specials?.sendError(message.channel, "Target invalid");
                 return;
             }
-            const ud = await client.database?.getGuildUserData(target.guild.id, target.user.id);
+            const ud = await client.database.getGuildUserData(target.guild.id, target.user.id);
             if (!ud || !ud.nicknames) {
                 client.specials?.sendError(message.channel, `Could not access user data. ${target} may not have any nicknames yet.`);
                 return;
@@ -58,7 +58,7 @@ export const command: Command = {
             const pages: MessageEmbedOptions[] = [];
             for (const page of overflowArray) {
                 const e: MessageEmbedOptions = {
-                    color: await client.database?.getColor("info_embed_color"),
+                    color: await client.database.getColor("info_embed_color"),
                     title: `Nicknames of ${target.user.tag.escapeDiscord()}`,
                     description: `\`\`\`\n${page.join("\n")}\n\`\`\``
                 }

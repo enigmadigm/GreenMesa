@@ -20,7 +20,7 @@ export const command: Command = {
             if (!message.guild) return;
             const confMsg = await message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("info_embed_color"),
+                    color: await client.database.getColor("info_embed_color"),
                     title: "Confirm",
                     description: `This will completely remove your Twitch notifier, continue?`
                 }
@@ -34,7 +34,7 @@ export const command: Command = {
                 time: 60000
             });
             if (!collected || !collected.size || collected.first()?.emoji.name === "🚫") {
-                confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
+                confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                 confMsg.embeds[0].title = null;
                 confMsg.embeds[0].description = "Aborted deletion process.";
                 await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0])).catch(xlg.error);
@@ -50,32 +50,33 @@ export const command: Command = {
             } else {
                 const unsubres = await unsubscribeTwitchWebhook(args.join(" "), message.guild.id);
                 if (unsubres === true) {
-                    confMsg.embeds[0].color = await client.database?.getColor("success_embed_color") || null;
+                    confMsg.embeds[0].color = await client.database.getColor("success_embed_color") || null;
                     confMsg.embeds[0].title = null;
                     confMsg.embeds[0].description = `Your notifier has been removed.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "NO_DATA") {
-                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
+                    confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
                     confMsg.embeds[0].description = `Twitch is not responding, please try again later.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "NO_USER") {
-                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
+                    confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `That streamer does not exist.`;
+                    confMsg.embeds[0].description = `That streamer does not exist.\nQuickly remove streamer with the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "INVALID") {
-                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
+                    confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
                     confMsg.embeds[0].description = `Invalid input.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else if (unsubres === "NO_SUBSCRIPTION") {
-                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
+                    confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `Your notifier could not be removed, it may not exist.`;
+                    confMsg.embeds[0].description = `Your notifier could not be removed, it may not exist.\nView subscriptions from the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 } else {
-                    confMsg.embeds[0].color = await client.database?.getColor("fail_embed_color") || null;
+                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
+                    confMsg.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
                     confMsg.embeds[0].title = "Error";
                     confMsg.embeds[0].description = `Your notifier could not be removed.`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));

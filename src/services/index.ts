@@ -119,7 +119,7 @@ export class MessageServices {
                                 await data.channel.send({
                                     content: `${target}`,
                                     embed: {
-                                        color: await Bot.client.database?.getColor("warn_embed_color"),
+                                        color: await Bot.client.database.getColor("warn_embed_color"),
                                         title: `Automod Alert`,
                                         description: `${target} has been caught by the ${mod.name} module.${!ud.offenses ? "\nThis is their **first** offense" : `\nThis is their **${ordinalSuffixOf(ud.offenses)}** offense`}`
                                     }
@@ -129,7 +129,7 @@ export class MessageServices {
                         }
                         case "courtesyMessage": {
                             const e: MessageEmbedOptions = {
-                                color: await Bot.client.database?.getColor("warn_embed_color"),
+                                color: await Bot.client.database.getColor("warn_embed_color"),
                                 title: `Automod Violation`,
                                 description: `**Server:** ${target.guild.name}\nYou were caught in violation of the ${mod.name} module.${!ud.offenses || ud.offenses === 1 ? "\nThis is your **first** offense" : `\nThis is your **${ordinalSuffixOf(ud.offenses)}** offense`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`
                             }
@@ -149,7 +149,7 @@ export class MessageServices {
                                 ud.warnings++;
                             }
                             const e: MessageEmbedOptions = {
-                                color: await Bot.client.database?.getColor("warn_embed_color"),
+                                color: await Bot.client.database.getColor("warn_embed_color"),
                                 title: `Warning`,
                                 description: `**Server:** ${target.guild.name}\nYou have received a **warning**.${!ud.warnings ? "\n**First** warning" : `\n**${ordinalSuffixOf(ud.warnings)}** warning`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`
                             }

@@ -55,6 +55,7 @@ import * as specials from './utils/specials';
 import { MessageServices } from "./services";
 import { TimedActionsSubsystem } from "./tactions";
 import { PaginationExecutor } from "./utils/pagination";
+import Client from "./struct/Client";
 
 export class Bot {
     static client: XClient;
@@ -66,8 +67,9 @@ export class Bot {
     }
 }
 
-const client: XClient = new Discord.Client({ partials: ["MESSAGE"] });
-client.specials = specials;
+const client: XClient = new Client({
+    partials: ["MESSAGE"],
+});
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
@@ -76,16 +78,6 @@ client.specials = specials;
 const cooldowns: Discord.Collection<Command["name"], Discord.Collection<string, number>> = new Discord.Collection();
 
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
-    client.database = await new DBManager().handleDisconnect();
-    // Stats updates in logs and database
-    const co = new Commands();
-    await co.load(co.rootCommandPath);
-    client.commands = co.commands;
-    client.categories = co.categories;
-
-    client.services = new MessageServices();
-    await client.services.load();
-
     const tas = new TimedActionsSubsystem();
 
     xlg.log(`Bot ${client.user?.tag}(${client.user?.id}) has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
@@ -98,7 +90,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
         if (lo instanceof TextChannel) {
             lo.send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
         }
-        client.database?.updateBotStats(client);
+        client.database.updateBotStats(client);
     }, 3600000);
 
     setInterval(async () => {
@@ -107,9 +99,9 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
             if (err) return console.log(err);
         });
 
-        const game = await client.database?.getGlobalSetting('game_name');
-        const gamePrefix = await client.database?.getGlobalSetting('game_prefix');
-        const gameStatus = await client.database?.getGlobalSetting('game_status');
+        const game = await client.database.getGlobalSetting('game_name');
+        const gamePrefix = await client.database.getGlobalSetting('game_prefix');
+        const gameStatus = await client.database.getGlobalSetting('game_status');
         if (game && game.value !== 'default') {
             client.user?.setPresence({
                 activity: {
@@ -181,14 +173,14 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
         lo.send(`Removed from: ${guild.name} (id: ${guild.id})`).catch(console.error);
     }
     // client.user.setActivity(`Serving ${client.guilds.size} servers`);
-    const clearRes = await client.database?.massClearXP(guild);
+    const clearRes = await client.database.massClearXP(guild);
     if (!clearRes) xlg.log(`Couldn't clear XP of guild: ${guild.id}`);
 });
 
 client.on('guildMemberAdd', async member => {
     try {
         await logMember(member, true);
-        const storedBans = await client.database?.getGuildSetting(member.guild, "toban");
+        const storedBans = await client.database.getGuildSetting(member.guild, "toban");
         if (storedBans) {
             try {
                 const bans: string[] = JSON.parse(storedBans.value);
@@ -196,7 +188,7 @@ client.on('guildMemberAdd', async member => {
                     try {
                         await member.ban();
                         bans.splice(bans.indexOf(member.id), 1);
-                        await client.database?.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                        await client.database.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
                     } catch (error) {
                         await member.kick().catch((o_O) => o_O);
                     }
@@ -216,7 +208,7 @@ client.on('guildMemberAdd', async member => {
 
 client.on("guildMemberRemove", async member => { //Emitted whenever a member leaves a guild, or is kicked.
     if (!member.partial) {
-        /*const clearRes = await client.database?.clearXP(member) || 0;
+        /*const clearRes = await client.database.clearXP(member) || 0;
         if (!clearRes) {
             xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
         }*/
@@ -294,7 +286,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
-        client.database?.logMsgReceive();// log reception of message event
+        client.database.logMsgReceive();// log reception of message event
 
         client.services?.runAll(client, message);// run all passive command services
 
@@ -309,22 +301,22 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         
         let special_prefix;
         if (!dm) {
-            const gpr = await client.database?.getPrefix(message.guild?.id);
+            const gpr = await client.database.getPrefix(message.guild?.id);
             if (gpr) {
                 special_prefix = gpr;
             } else {
-                const gsr = await client.database?.getGlobalSetting('global_prefix');
+                const gsr = await client.database.getGlobalSetting('global_prefix');
                 if (gsr) special_prefix = gsr.value;
             }
         } else {
-            const gsr = await client.database?.getGlobalSetting('global_prefix');
+            const gsr = await client.database.getGlobalSetting('global_prefix');
             if (gsr) special_prefix = gsr.value;
         }
         message.gprefix = special_prefix || "";
     
         if (message.mentions && message.mentions.has(client.user)) {
             if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
-                const iec_gs = await client.database?.getColor("info_embed_color");
+                const iec_gs = await client.database.getColor("info_embed_color");
                 message.channel.send({
                     embed: {
                         "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
@@ -345,7 +337,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const commandName = args.shift()?.toLowerCase() || "";
 
         let permLevel = permLevels.member;
-        const bmr = await client.database?.getGlobalSetting("botmasters").catch(xlg.error);
+        const bmr = await client.database.getGlobalSetting("botmasters").catch(xlg.error);
         let botmasters: string[];
         if (bmr) {
             botmasters = bmr.value.split(',');
@@ -373,15 +365,15 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
         if (command.permLevel && permLevel < command.permLevel) {// insufficient bot permissions
             // TODO: add admin option to make it notify users that they don't have permissions
-            const accessMessage = await client.database?.getGuildSetting(message.guild || "", "access_message");
+            const accessMessage = await client.database.getGuildSetting(message.guild || "", "access_message");
             if (accessMessage && accessMessage.value === "enabled") {
                 message.channel.send("You lack the permissions required to use this command.")
             }
             return;
         }
 
-        const commandEnabledGlobal = await client.database?.getGlobalSetting(`${command.name}_enabled`);
-        const commandEnabledGuild = message.guild ? await client.database?.getGuildSetting(message.guild, `${command.name}_toggle`) : false;
+        const commandEnabledGlobal = await client.database.getGlobalSetting(`${command.name}_enabled`);
+        const commandEnabledGuild = message.guild ? await client.database.getGuildSetting(message.guild, `${command.name}_toggle`) : false;
         const commandDisabled = (commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable');
         if (commandDisabled) {
             if (command.name === "h") return;
@@ -396,8 +388,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             });
             return;
         } else if (command.category) {
-            const groupGlobal = await client.database?.getGlobalSetting(`${command.category}_enabled`);
-            const groupGuild = message.guild ? await client.database?.getGuildSetting(message.guild, `${command.category}_toggle`) : false;
+            const groupGlobal = await client.database.getGlobalSetting(`${command.category}_enabled`);
+            const groupGuild = message.guild ? await client.database.getGuildSetting(message.guild, `${command.category}_toggle`) : false;
             const groupDisabled = (groupGlobal && groupGlobal.value == 'false') || (groupGuild && groupGuild.value === 'disable');
             if (groupDisabled) {
                 message.channel.send({
@@ -414,14 +406,14 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         if (command.moderation && message.guild) {
-            const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+            const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled || moderationEnabled.value === 'disabled') {
                 return client.specials?.sendModerationDisabled(message.channel);
             }
         }
 
         if (command.args && (typeof command.args === "boolean" || command.args > 0) && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
-            const fec_gs = await client.database?.getColor("fail_embed_color");
+            const fec_gs = await client.database.getColor("fail_embed_color");
 
             let reply = `Arguments are needed to make that work!`;
             if (command.usage) {
@@ -514,7 +506,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 }
             }
 
-            client.database?.logCmdUsage(commandName);
+            client.database.logCmdUsage(commandName);
         } catch (error) {
             xlg.error(error);
             client.specials?.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');

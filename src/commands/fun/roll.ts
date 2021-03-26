@@ -17,7 +17,7 @@ export const command: Command = {
             if (!notation) {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("darkred_embed_color"),
+                        color: await client.database.getColor("darkred_embed_color"),
                         title: '🔤 dice notation :game_die:',
                         description: "**Die quantity**\nA single die has a minimum quantity of `1`, and a maximum quantity of `999`.\n*These are valid:* `d8, 1d10, 999d6, 20d4 + 999d10`\n*These are not:* `0d10, 1000d6, -1d20`\n\n**Standard (d{n})**\nA standard die has a positive numerical number of sides, like typical 6 sided dice, or a d20. You can roll dice with almost any number of sides.```js\nd6 // roll a single 6 sided dice \n4d10 // roll a 10 sided dice 4 times and add the results together\n```\n**Percentile dice (d%)**\nPercentile dice roll a whole number between `1-100`, and are specified with the format `d%`. This is a shorthand for a standard die with 100 sides, `d100`\n```js\n4d%  // roll a percentile die 4 times and add the results together\n```Is equivalent to:```js\n4d100 // roll a 100 sided die 4 times and add the results together\n```\n[Dice Notation](https://en.wikipedia.org/wiki/Dice_notation) Wikipedia article\n[RPGDR](https://github.com/GreenImp/rpg-dice-roller) ([MIT](https://opensource.org/licenses/MIT))",
                         footer: {
@@ -34,7 +34,7 @@ export const command: Command = {
                 if (desc.length > 2044) throw new Error("The message would have broken Discord's character limit.");
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("darkred_embed_color"),
+                        color: await client.database.getColor("darkred_embed_color"),
                         description: desc,
                         footer: {
                             text: "RPG Dice Roller",
@@ -45,7 +45,7 @@ export const command: Command = {
             } catch (error) {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail_embed_color"),
                         title: 'Error Rolling',
                         description: `${error.message}`
                     }

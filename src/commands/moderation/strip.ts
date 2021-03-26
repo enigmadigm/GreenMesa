@@ -75,7 +75,7 @@ export const command: Command = {
                 const fu = parseFriendlyUptime(t);
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("info_embed_color"),
+                        color: await client.database.getColor("info_embed_color"),
                         description: `**ETA:**\n${fu}`
                     }
                 });
@@ -93,7 +93,7 @@ export const command: Command = {
 
             await message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("success_embed_color"),
+                    color: await client.database.getColor("success_embed_color"),
                     description: `All roles successfully stripped from ${target} (${target.id})`
                 }
             });

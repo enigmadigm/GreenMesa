@@ -9,9 +9,9 @@ export const service: MessageService = {
     async execute(client, message: Message) {
         try {
             if (!message.guild) return;
-            const afk = await Bot.client.database?.getUserData(message.author.id);
+            const afk = await Bot.client.database.getUserData(message.author.id);
             if (afk && afk.afk && afk.afk !== "~~off~~") {
-                await client.database?.updateUserData({
+                await client.database.updateUserData({
                     userid: message.author.id,
                     afk: "~~off~~"
                 });
@@ -23,7 +23,7 @@ export const service: MessageService = {
                     const match = matches[0];
                     const target = await stringToMember(message.guild, match, false, false, false);
                     if (target && target.id !== message.author.id) {
-                        const afk = await Bot.client.database?.getUserData(target.id);
+                        const afk = await Bot.client.database.getUserData(target.id);
                         if (afk && afk.afk && afk.afk !== "~~off~~") {
                             let b = `**${target.user.tag} is currently afk:**\n${afk.afk}`;
                             if (b.length > 2000) {
@@ -37,7 +37,7 @@ export const service: MessageService = {
                     }
                 }
                 /*if () {
-                    const iec_gs = await client.database?.getColor("info_embed_color");
+                    const iec_gs = await client.database.getColor("info_embed_color");
                     message.channel.send({
                         embed: {
                             "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,

@@ -43,7 +43,7 @@ export const command: Command = {
                 return;
             }
             const a = args.join(" ");
-            const gud = await client.database?.getGuildUserData(message.guild.id, target.id);
+            const gud = await client.database.getGuildUserData(message.guild.id, target.id);
             if (!gud) {
                 await client.specials?.sendError(message.channel, `Could not retrieve user info`);
                 return;
@@ -62,7 +62,7 @@ export const command: Command = {
             note.updated = moment().format('YYYY-MM-DD HH:mm:ss');
 
             gud.modnote = JSON.stringify(notes).escapeSpecialChars();
-            await client.database?.updateGuildUserData(gud);
+            await client.database.updateGuildUserData(gud);
             await client.specials?.sendInfo(message.channel, "Note edited");
         } catch (error) {
             xlg.error(error);

@@ -17,7 +17,7 @@ export const command: Command = {
     async execute(client, message) {
         try {
             if (!message.guild) return;
-            const subs = await client.database?.getTwitchSubsGuild(message.guild.id);
+            const subs = await client.database.getTwitchSubsGuild(message.guild.id);
             if (!subs) {
                 client.specials?.sendError(message.channel, "No subscriptions found.");
                 return false;
@@ -31,11 +31,12 @@ export const command: Command = {
                 }
             })
 
-            const iec = await client.database?.getColor("info_embed_color");
+            const iec = await client.database.getColor("info_embed_color");
             message.channel.send({
                 embed: {
                     color: iec,
                     title: "Twitch Subscriptions",
+                    url: client.specials.getDashboardLink(message.guild.id, "twitch"),
                     description: `${streamers.join("\n")}\n`
                 }
             })

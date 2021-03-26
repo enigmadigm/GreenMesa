@@ -20,7 +20,7 @@ export const command: Command = {
                 return;
             }
             message.delete().catch();
-            const info_embed_color = await client.database?.getColor("info_embed_color");
+            const info_embed_color = await client.database.getColor("info_embed_color");
             const voteEmbed = await message.channel.send({
                 embed: {
                     color: info_embed_color,

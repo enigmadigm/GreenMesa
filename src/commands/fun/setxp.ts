@@ -26,11 +26,11 @@ export const command: Command = {
             if (!(await client.specials?.argsMustBeNum(message.channel, args))) return false;// if (/[0-9]/.test(args[0]))
             const amount = parseInt(args[0], 10);
 
-            // const xpData = await client.database?.getXP(target);
+            // const xpData = await client.database.getXP(target);
             // const xp = xpData ? xpData.xp : 0;
             // const newPoints = xp + amount;
-            const xpType = await client.database?.getGlobalSetting('xp_type');
-            await client.database?.setXP(target.guild.id, target.id, amount, 0);
+            const xpType = await client.database.getGlobalSetting('xp_type');
+            await client.database.setXP(target.guild.id, target.id, amount, 0);
 
             await client.specials?.sendInfo(message.channel, `Set ${amount} ${xpType ? xpType.value : "points"} on ${target}`);
         } catch (error) {

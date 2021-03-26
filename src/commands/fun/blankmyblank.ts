@@ -22,7 +22,7 @@ export const command: Command = {
             const sentence = `That really ${actions[Math.floor(Math.random() * actions.length)]} my ${accusative[Math.floor(Math.random() * accusative.length)]}`;
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("info_embed_color"),
+                    color: await client.database.getColor("info_embed_color"),
                     description: `${sentence}`
                 }
             });

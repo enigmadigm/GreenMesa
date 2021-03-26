@@ -23,7 +23,7 @@ export const command: Command = {
                 await client.specials?.sendError(message.channel, "Invalid target", true);
                 return;
             }
-            const gud = await client.database?.getGuildUserData(message.guild.id, target.id);
+            const gud = await client.database.getGuildUserData(message.guild.id, target.id);
             if (!gud || !gud.id) {
                 await client.specials?.sendError(message.channel, "Unable to retrieve user information.", true);
                 return;
@@ -33,7 +33,7 @@ export const command: Command = {
                 return;
             }
             gud.warnings = 0;
-            await client.database?.updateGuildUserData(gud);
+            await client.database.updateGuildUserData(gud);
             await message.channel.send(`Warnings cleared for ${target}`);
         } catch (error) {
             xlg.error(error);

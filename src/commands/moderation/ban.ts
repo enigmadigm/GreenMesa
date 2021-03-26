@@ -28,7 +28,7 @@ export const command: Command = {
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target || !(target instanceof Discord.GuildMember)) {
                 if (/^[0-9]{18}$/g.test(args[0])) {
-                    const storedBans = await client.database?.getGuildSetting(message.guild, "toban") || {value: "[]"};
+                    const storedBans = await client.database.getGuildSetting(message.guild, "toban") || {value: "[]"};
                     if (storedBans) {
                         const bans: string[] = JSON.parse(storedBans.value);
                         if (bans.includes(args[0])) {
@@ -36,7 +36,7 @@ export const command: Command = {
                             return;
                         }
                         bans.push(args[0]);
-                        await client.database?.editGuildSetting(message.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                        await client.database.editGuildSetting(message.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
                         await message.channel.send(`User with ID ${args[0]} added to autoban list`);
                         return;
                     }
@@ -56,7 +56,7 @@ export const command: Command = {
                 message.channel.send("Please don't ban me");
                 return;
             }
-            const dbmr = await client.database?.getGuildSetting(message.guild, "mutedrole");
+            const dbmr = await client.database.getGuildSetting(message.guild, "mutedrole");
             const mutedRoleID = dbmr ? dbmr.value : "";
             if ((target.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
                 message.channel.send('You cannot ban a member that is equal to or higher than yourself');
@@ -83,7 +83,7 @@ export const command: Command = {
                 try {
                     await target.send({
                         embed: {
-                            color: await client.database?.getColor("fail_embed_color"),
+                            color: await client.database.getColor("fail_embed_color"),
                             title: `Ban Notice`,
                             description: `Banned from ${message.guild.name}.${time ? `\nThis is a temporary ban, it will end in ${dur}` : ""}.`,
                             fields: [
@@ -128,7 +128,7 @@ export const command: Command = {
                         userid: target.id,
                         duration: dur
                     }
-                    await client.database?.setAction(uniquid("ta$"), t, "unban", data);
+                    await client.database.setAction(uniquid("ta$"), t, "unban", data);
                 }
             } catch (e) {
                 message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Could not ban ${target.user.tag}`);

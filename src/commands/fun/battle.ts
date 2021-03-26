@@ -19,9 +19,9 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            const fail_embed_color = await client.database?.getColor("fail_embed_color");
-            const info_embed_color = await client.database?.getColor("info_embed_color");
-            const success_embed_color = await client.database?.getColor("success_embed_color");
+            const fail_embed_color = await client.database.getColor("fail_embed_color");
+            const info_embed_color = await client.database.getColor("info_embed_color");
+            const success_embed_color = await client.database.getColor("success_embed_color");
 
             const target = await stringToMember(message.guild, args.join(" ")) || message.mentions.members?.first();
             const action = actions[Math.floor(Math.random() * actions.length)];

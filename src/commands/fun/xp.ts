@@ -19,10 +19,10 @@ export const command: Command = {
                 return;
             }
 
-            const rows = await client.database?.getXP(target);
-            const warn_embed_color = await client.database?.getColor("warn_embed_color");
-            const info_embed_color = await client.database?.getColor("info_embed_color");
-            const xpTypeGlobal = await client.database?.getGlobalSetting('xp_type');
+            const rows = await client.database.getXP(target);
+            const warn_embed_color = await client.database.getColor("warn_embed_color");
+            const info_embed_color = await client.database.getColor("info_embed_color");
+            const xpTypeGlobal = await client.database.getGlobalSetting('xp_type');
 
             if (!rows) {
                 message.channel.send({

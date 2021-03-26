@@ -3,7 +3,7 @@ import { db_config } from "../auth.json";
 import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
-import Discord, { Guild, GuildMember, Message, PartialGuildMember, Role, User } from 'discord.js';
+import Discord, { Guild, GuildMember, PartialGuildMember, Role, User } from 'discord.js';
 import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 import { Bot } from "./bot";
 
@@ -385,7 +385,7 @@ export class DBManager {
             const guilds = (await client.shard?.fetchClientValues("guilds.cache.size"))?.reduce(reductionFunc, 0);
             const channels = (await client.shard?.fetchClientValues("channels.cache.size"))?.reduce(reductionFunc, 0);
             this.query(`INSERT INTO botstats (numUsers, numGuilds, numChannels) VALUES (${users}, ${guilds}, ${channels})`);
-            const scConf = await client.database?.getGlobalSetting("sc_conf");
+            const scConf = await client.database.getGlobalSetting("sc_conf");
             const sg = await client.guilds.fetch(scConf ? scConf.value.split(",")[0] : "745670883074637904");
             if (sg) {
                 const c = sg.channels.cache.get(scConf ? scConf.value.split(",")[1] : "813404897403732008");
@@ -1177,6 +1177,24 @@ export class DBManager {
         } catch (error) {
             xlog.error(error);
             return false;
+        }
+    }
+
+    /**
+     * Gets the highest case number recorded in modactions for a guild. This will always return 0 if caselogging is turned off.
+     * @param guildid id of guild
+     */
+    async getHighestCaseNumber(guildid: string): Promise<number> {
+        try {
+            if (!guildid) return 0;
+            const rows = await <Promise<ModActionData[]>>this.query(`SELECT \`casenumber\` FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber > 0 ORDER BY \`casenumber\` DESC LIMIT 1`);
+            if (rows && rows.length > 0) {
+                return rows[0].casenumber || 1;
+            }
+            return 0;
+        } catch (error) {
+            xlog.error(error);
+            return 0;
         }
     }
 }

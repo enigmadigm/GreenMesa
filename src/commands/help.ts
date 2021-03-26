@@ -64,7 +64,7 @@ export const command: Command = {
                 const cmdcount = commands?.size; // commands.filter(co => co.category !== "owner").size;
                 const e: MessageEmbedOptions = {
                     title: `Help: Categories`,
-                    color: await client.database?.getColor("darkred_embed_color"),
+                    color: await client.database.getColor("darkred_embed_color"),
                     description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too much to send'}`,
                     fields: helpfields,
                     footer: {
@@ -97,7 +97,7 @@ export const command: Command = {
                     const cmdcount = commands?.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
                     const e: MessageEmbedOptions = {
                         title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
-                        color: await client.database?.getColor("darkred_embed_color"),
+                        color: await client.database.getColor("darkred_embed_color"),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
                             text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
@@ -180,7 +180,7 @@ export const command: Command = {
                 await message.channel.send({
                     embed: {
                         title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
-                        color: await client.database?.getColor("darkred_embed_color"),
+                        color: await client.database.getColor("darkred_embed_color"),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
                             text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
@@ -190,7 +190,7 @@ export const command: Command = {
             } else {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail_embed_color"),
                         description: `that is not a valid command or category`,
                         footer: {
                             text: `an nlp command assistant is in the works`

@@ -71,7 +71,7 @@ export const command: Command = {
             if (!args.length) {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("info_embed_color"),
+                        color: await client.database.getColor("info_embed_color"),
                         title: "xkcd comics",
                         description: `A command that lets you view xkcd comics.\nYou can use the following subcommands:
 \`\`\`prolog

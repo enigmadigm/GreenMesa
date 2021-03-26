@@ -12,7 +12,7 @@ export const command: Command = {
             if (!args.length) {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("info_embed_color"),
+                        color: await client.database.getColor("info_embed_color"),
                         title: `${message.gprefix}`,
                         description: `guild prefix`
                     }
@@ -20,24 +20,22 @@ export const command: Command = {
                 return;
             }
             const permLevel = await getPermLevel(message.member);
-            if (args.length > 0) {
-                if (permLevel < permLevels.admin) {
-                    message.channel.send(":frowning2: Insufficient permissions.").catch(xlg.error);
-                    return;
-                }
-                if (args.join(" ").length > 46) {
-                    message.channel.send(":frowning2: Prefix must be less than 47 characters.");
-                    return;
-                }
-                await client.database?.setPrefix(message.guild.id, args.join(" "));
-                message.channel.send({
-                    embed: {
-                        color: await client.database?.getColor("success_embed_color"),
-                        description: `prefix updated`
-                    }
-                });
+            if (permLevel < permLevels.admin) {
+                message.channel.send(":frowning2: Insufficient permissions.").catch(xlg.error);
                 return;
             }
+            const a = args.join(" ");
+            if (a.length > 46) {
+                message.channel.send(":frowning2: Prefix must be less than 47 characters.");
+                return;
+            }
+            await client.database.setPrefix(message.guild.id, a);
+            message.channel.send({
+                embed: {
+                    color: await client.database.getColor("success_embed_color"),
+                    description: `Prefix changed to ${a}`,
+                }
+            });
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
@@ -45,4 +43,3 @@ export const command: Command = {
         }
     }
 }
-

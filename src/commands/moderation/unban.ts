@@ -45,13 +45,13 @@ export const command: Command = {
                 ub = await message.guild.fetchBan(t);
             } catch (e) {
                 if (e.message === "Unknown Ban") {
-                    const storedBans = await client.database?.getGuildSetting(message.guild, "toban");
+                    const storedBans = await client.database.getGuildSetting(message.guild, "toban");
                     if (storedBans) {
                         try {
                             const bans: string[] = JSON.parse(storedBans.value);
                             if (bans.includes(t)) {
                                 bans.splice(bans.indexOf(t), 1);
-                                await client.database?.editGuildSetting(message.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
+                                await client.database.editGuildSetting(message.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
                                 await message.channel.send(`That ID was found and removed from the autoban list.`);
                                 return;
                             }

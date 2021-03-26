@@ -37,7 +37,7 @@ export const command: Command = {
             }
             const id = parseInt(args[0], 10);
             args.shift();
-            const gud = await client.database?.getGuildUserData(message.guild.id, target.id);
+            const gud = await client.database.getGuildUserData(message.guild.id, target.id);
             if (!gud) {
                 await client.specials?.sendError(message.channel, `Could not retrieve user info`);
                 return;
@@ -51,7 +51,7 @@ export const command: Command = {
             notes.splice(notes.indexOf(note), 1);
 
             gud.modnote = JSON.stringify(notes).escapeSpecialChars();
-            await client.database?.updateGuildUserData(gud);
+            await client.database.updateGuildUserData(gud);
             await client.specials?.sendInfo(message.channel, "Note deleted");
         } catch (error) {
             xlg.error(error);

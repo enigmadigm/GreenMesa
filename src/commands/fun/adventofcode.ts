@@ -29,22 +29,22 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            const tempsession = await client.database?.getGuildSetting(message.guild, "aoc_session");
+            const tempsession = await client.database.getGuildSetting(message.guild, "aoc_session");
             let session = "";
             if (tempsession) {
                 session = tempsession.value;
             }
-            const templb = await client.database?.getGuildSetting(message.guild, "aoc_leaderboard");
+            const templb = await client.database.getGuildSetting(message.guild, "aoc_leaderboard");
             let lb = "";
             if (templb) {
                 lb = templb.value;
             }
-            const tempyear = await client.database?.getGuildSetting(message.guild, "aoc_year")
+            const tempyear = await client.database.getGuildSetting(message.guild, "aoc_year")
             let year = "";
             if (tempyear) {
                 year = tempyear.value;
             }
-            const iec = await client.database?.getColor("info_embed_color");
+            const iec = await client.database.getColor("info_embed_color");
             let resetting = "";
             if (args.join(" ").toLowerCase() === "reset" || args.join(" ").toLowerCase() === "reselect") {
                 resetting = args.join(" ");
@@ -73,7 +73,7 @@ export const command: Command = {
                     } else {
                         session = sessionCollected.first()?.content || "";
                     }
-                    await client.database?.editGuildSetting(message.guild, "aoc_session", session);
+                    await client.database.editGuildSetting(message.guild, "aoc_session", session);
                 } else {
                     await message.channel.send({
                         embed: {
@@ -97,7 +97,7 @@ export const command: Command = {
                     return false;
                 } else {
                     year = yearCollected.first()?.content || "";
-                    await client.database?.editGuildSetting(message.guild, "aoc_year", year);
+                    await client.database.editGuildSetting(message.guild, "aoc_year", year);
                 }
 
                 await message.channel.send({
@@ -114,7 +114,7 @@ export const command: Command = {
                 } else {
                     if (numCollected.first()?.content.toLowerCase() !== "no") {
                         lb = numCollected.first()?.content || "";
-                        await client.database?.editGuildSetting(message.guild, "aoc_leaderboard", lb);
+                        await client.database.editGuildSetting(message.guild, "aoc_leaderboard", lb);
                     }
                 }
                 refetching = true;
@@ -141,13 +141,13 @@ export const command: Command = {
                     }
                     if (res.status >= 500 && res.status < 600) {
                         client.specials?.sendError(message.channel, "Received a bad response from [AOC](https://adventofcode.com). It is likely that the session cookie is invalid.\nResend the command to set it again.");
-                        await client.database?.editGuildSetting(message.guild, "aoc_session", "", true);
+                        await client.database.editGuildSetting(message.guild, "aoc_session", "", true);
                         return false;
                     }
                     if (res.status === 404) {
                         client.specials?.sendError(message.channel, `[Your leaderboard](${url}) could not be found.\nResend the command to set it again.`);
-                        await client.database?.editGuildSetting(message.guild, "aoc_leaderboard", "", true);
-                        await client.database?.editGuildSetting(message.guild, "aoc_year", "", true);
+                        await client.database.editGuildSetting(message.guild, "aoc_leaderboard", "", true);
+                        await client.database.editGuildSetting(message.guild, "aoc_year", "", true);
                         return false;
                     }
                     const j = await res.json();
@@ -166,9 +166,9 @@ export const command: Command = {
                 } catch (error) {
                     xlg.error(error);
                     client.specials?.sendError(message.channel, "Could not retrieve leaderboard information. Wrong details may have been entered.");
-                    await client.database?.editGuildSetting(message.guild, "aoc_session", "", true);
-                    await client.database?.editGuildSetting(message.guild, "aoc_leaderboard", "", true);
-                    await client.database?.editGuildSetting(message.guild, "aoc_year", "", true);
+                    await client.database.editGuildSetting(message.guild, "aoc_session", "", true);
+                    await client.database.editGuildSetting(message.guild, "aoc_leaderboard", "", true);
+                    await client.database.editGuildSetting(message.guild, "aoc_year", "", true);
                     return false;
                 }
             }

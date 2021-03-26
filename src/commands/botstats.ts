@@ -67,7 +67,7 @@ export const command: Command = {
             if (args.length && !isNaN(parseInt(a, 10)) && parseInt(a, 10) > 3 && parseInt(a, 10) < 1000) {
                 limiter = parseInt(a, 10);
             }
-            const rows = await client.database?.getGMStats(limiter);
+            const rows = await client.database.getGMStats(limiter);
             if (!rows) {
                 client.specials?.sendError(message.channel, "Could not get statistical data from database");
                 return;
@@ -135,7 +135,7 @@ export const command: Command = {
                         },
                         {
                             name: "Commands Executed",
-                            value: ((await client.database?.getTotalCmdUsage()) || [{ used: 0 }])[0].used,
+                            value: ((await client.database.getTotalCmdUsage()) || [{ used: 0 }])[0].used,
                             inline: true
                         }
                     ],

@@ -19,7 +19,7 @@ export const command: Command = {
             if (!args.length) {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail_embed_color"),
                         title: "error 422",
                         description: "(lack of arguments)"
                     }
@@ -38,7 +38,7 @@ export const command: Command = {
             }
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("darkgreen_embed_color"),
+                    color: await client.database.getColor("darkgreen_embed_color"),
                     title: `${code.code}`,
                     description: `${code.description}`
                 }

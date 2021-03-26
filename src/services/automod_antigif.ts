@@ -11,9 +11,9 @@ export const service: MessageService = {
     async execute(client, message: XMessage) {
         try {
             if (!message.guild || !message.member) return;
-            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antigif", message.channel.id, undefined, message.member);
+            const modResult = await Bot.client.database.getAutoModuleEnabled(message.guild.id, "antigif", message.channel.id, undefined, message.member);
             if (!modResult) return;
-            //const modResult = await Bot.client.database?.getGuildSetting(message.guild, "automod_antigif");
+            //const modResult = await Bot.client.database.getGuildSetting(message.guild, "automod_antigif");
             //if (!modResult || modResult.value !== "enabled") return;
             let hasGif = false;
 

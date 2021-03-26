@@ -11,7 +11,7 @@ export const service: MessageService = {
 
         const now = Date.now();
         if (!xpcooldowns.has(message.author.id)) {
-            client.database?.updateXP(message.member);
+            client.database.updateXP(message.member);
             xpcooldowns.set(message.author.id, now);
             setTimeout(() => xpcooldowns.delete(message.author.id), 60000);
         }

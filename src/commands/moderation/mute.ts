@@ -37,7 +37,7 @@ export const command: Command = {
                 message.channel.send("Please don't mute me");
                 return;
             }
-            const dbmr = await client.database?.getGuildSetting(message.guild, "mutedrole");
+            const dbmr = await client.database.getGuildSetting(message.guild, "mutedrole");
             const mutedRoleID = dbmr ? dbmr.value : "";
             if ((toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
                 message.channel.send('You cannot mute a member that is equal to or higher than yourself');
@@ -62,7 +62,7 @@ export const command: Command = {
                     }
                 });
 
-                client.database?.editGuildSetting(message.guild, "mutedrole", mutedRole.id);
+                client.database.editGuildSetting(message.guild, "mutedrole", mutedRole.id);
 
                 // Prevent the user from sending messages or reacting to messages
                 message.guild.channels.cache.each(async (channel) => {
@@ -104,7 +104,7 @@ export const command: Command = {
             try {
                 await toMute.send({
                     embed: {
-                        color: await client.database?.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail_embed_color"),
                         title: `Mute Notice`,
                         description: `Muted in ${message.guild.name}.${time ? `\nThis is a temporary mute, it will end in ${dur}` : ""}.`,
                         fields: [
@@ -143,7 +143,7 @@ export const command: Command = {
                     roleid: mutedRole.id,
                     duration: dur
                 }
-                await client.database?.setAction(uniqid("ta$"), t, "unmute", data);
+                await client.database.setAction(uniqid("ta$"), t, "unmute", data);
             }
         } catch (e) {
             xlg.error(e);

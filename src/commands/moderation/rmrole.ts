@@ -19,7 +19,7 @@ export const command: Command = {
             if (!stringToRole(message.guild, args.join(" "), false, false)) {
                 message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail_embed_color"),
                         description: `Invalid role`
                     }
                 });
@@ -38,7 +38,7 @@ export const command: Command = {
             await target.delete();
             message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("success_embed_color"),
+                    color: await client.database.getColor("success_embed_color"),
                     description: `Role removed successfully`
                 }
             });

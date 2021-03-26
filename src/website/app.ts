@@ -37,7 +37,7 @@ export default class MesaWebsite {
             },
             resave: false,
             saveUninitialized: false,
-            store: new MySQLStore({}, client.database?.db)
+            store: new MySQLStore({}, client.database.db)
         }));
         this.app.use(passport.initialize());
         this.app.use(passport.session());

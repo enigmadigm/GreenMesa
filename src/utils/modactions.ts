@@ -67,7 +67,7 @@ import xlg from "../xlogger";
 //     }
 
 //     public async setup(): Promise<void> {
-//         const dbmr = await this.client.database?.getGuildSetting(this.target.guild, "mutedrole");
+//         const dbmr = await this.client.database.getGuildSetting(this.target.guild, "mutedrole");
 //         const mutedRoleID = dbmr ? dbmr.value : "";
 //         // Check if the guild has the mutedRole
 //         this.mutedRole = this.target.guild.roles.cache.find(r => r.id === mutedRoleID || r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
@@ -84,7 +84,7 @@ import xlg from "../xlogger";
 //                 }
 //             });
 
-//             this.client.database?.editGuildSetting(this.target.guild, "mutedrole", this.mutedRole.id);
+//             this.client.database.editGuildSetting(this.target.guild, "mutedrole", this.mutedRole.id);
 
 //             // Prevent the user from sending messages or reacting to messages
 //             this.target.guild.channels.cache.each(async (channel) => {
@@ -139,7 +139,7 @@ import xlg from "../xlogger";
  */
 export async function mute(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel): Promise<void> {
     const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
-    const dbmr = await client.database?.getGuildSetting(target.guild, "mutedrole");
+    const dbmr = await client.database.getGuildSetting(target.guild, "mutedrole");
     const mutedRoleID = dbmr ? dbmr.value : "";
     // Check if the guild has the mutedRole
     let mutedRole = target.guild.roles.cache.find(r => r.id === mutedRoleID || r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
@@ -156,7 +156,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
             }
         });
 
-        client.database?.editGuildSetting(target.guild, "mutedrole", mutedRole.id);
+        client.database.editGuildSetting(target.guild, "mutedrole", mutedRole.id);
 
         // Prevent the user from sending messages or reacting to messages
         target.guild.channels.cache.each(async (channel) => {
@@ -169,7 +169,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
         });
     } else {
         if (mutedRole.id !== mutedRoleID) {
-            client.database?.editGuildSetting(target.guild, "mutedrole", mutedRole.id);
+            client.database.editGuildSetting(target.guild, "mutedrole", mutedRole.id);
         }
     }
     if (mutedRole.position < target.roles.highest.position) {
@@ -287,7 +287,7 @@ export async function checkWarnings(client: XClient, target: GuildMember): Promi
     try {
         if (!client.database || !target.bannable || !target.kickable) return;
         const ud = await client.database.getGuildUserData(target.guild.id, target.id);
-        const warnConfig = await client.database?.getGuildSetting(target.guild, "warnconfig");
+        const warnConfig = await client.database.getGuildSetting(target.guild, "warnconfig");
         if (!warnConfig) return;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let conf: WarnConf = {};

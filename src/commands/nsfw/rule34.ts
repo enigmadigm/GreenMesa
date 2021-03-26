@@ -50,7 +50,7 @@ export const command: Command = {
             }
 
             const embed = {
-                color: await client.database?.getColor("info_embed_color"),
+                color: await client.database.getColor("info_embed_color"),
                 title: 'have some r34',
                 url: post.source,
                 image: {

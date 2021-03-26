@@ -48,15 +48,42 @@ export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase
     menu: (styles) => ({ ...styles, backgroundColor: '#292e33', zIndex: 10000 }),
     multiValue: (styles, { data }) => {
         const color = chroma(data.color);
+        const lum = color.luminance() > 0.1;
+        const con = chroma.contrast(color, '#3A4149') < 4.5;
+        const bg = con && lum ? color.alpha(0.6).hex() :
+            data.color === "#000000" ? "transparent" : data.color;
         return {
             ...styles,
-            backgroundColor: 
-                chroma.contrast(color, '#3A4149') < 4.5 ? color.darken() : data.color,
-            borderColor: '#424242'
+            backgroundColor: bg,
+            borderColor: lum ? '#424242' : undefined,
+            border: !lum && bg === "transparent" ? "#b0b0b0 1px solid" : `${bg} 1px solid`,
+            borderRadius: "5px",
+            overflow: "hidden",
         }
     },
-    multiValueLabel: (styles) => ({ ...styles, color: '#9c9c9c' }),
-    multiValueRemove: (styles) => ({ ...styles, color: '#8a70ff' }),
+    multiValueLabel: (styles, { data }) => {
+        const color = chroma(data.color);
+        const lum = color.luminance() > 0.1;
+        const con = chroma.contrast(color, '#3A4149') < 4.5;
+        return {
+            ...styles,
+            color: con && lum ? color.brighten(2).hex() :
+                data.color === "#000000" ? '#b0b0b0' : color.brighten(3).hex()
+        }
+    },
+    multiValueRemove: (styles, { data }) => {
+        const color = chroma(data.color);
+        const lum = color.luminance() > 0.1;
+        const con = chroma.contrast(color, '#3A4149') < 4.5;
+        return {
+            ...styles,
+            color: con && lum ? color.brighten(2).hex() :
+                data.color === "#000000" ? '#b0b0b0' : color.darken(2).hex(),
+            ":hover": {
+                backgroundColor: "#861a00"
+            }
+        }
+    },
     option: (styles, { data, isDisabled, isFocused, isSelected }) => {
         const color = chroma(data.color);
         return {
@@ -76,9 +103,30 @@ export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase
             },
         }
     },
-    dropdownIndicator: (styles, state) => ({ ...styles, color: state.isDisabled ? "#343B41" : styles.color }),
+    dropdownIndicator: (styles, state) => {
+        return {
+            ...styles,
+            color: state.isDisabled ? "#343B41" : styles.color,
+            ":hover": {
+                // color: "#890000",
+                color: chroma("hsl(0, 0%, 80%)").alpha(0.6).hex(),
+                cursor: "pointer",
+            }
+        }
+    },
     indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor }),
     input: (styles) => ({ ...styles, color: "#8a70ff" }),
+    clearIndicator: (styles, state) => {
+        return {
+            ...styles,
+            color: state.isDisabled ? "#343B41" : styles.color,
+            // color: '#b0b0b0',
+            ":hover": {
+                color: "#890000",
+                cursor: "pointer",
+            }
+        }
+    },
 };
 
 function CollapseIndicator(props: {collapsed: boolean}) {

@@ -12,7 +12,7 @@ passport.serializeUser((user, done) => {// "these take care of getting the sessi
 passport.deserializeUser<any>(async (obj, done) => {// this needs to search the database for the actual user
     try {
         //console.log(obj);
-        const user = await Bot.client.database?.getDashUser(obj.id);
+        const user = await Bot.client.database.getDashUser(obj.id);
         return user ? done(null, user) : done(null, undefined);
     } catch (error) {
         console.error(error);
@@ -32,9 +32,9 @@ passport.use(new DiscordStrategy({
         const { id, username, discriminator, avatar, guilds } = profile;
         try {
             //console.log(`Access: ${accessToken} Refresh: ${refreshToken}`)
-            const updateUser = await Bot.client.database?.updateDashUser(id, username, discriminator, avatar, <PartialGuildObject[]>guilds);
+            const updateUser = await Bot.client.database.updateDashUser(id, username, discriminator, avatar, <PartialGuildObject[]>guilds);
             if (updateUser && updateUser.affectedRows) {
-                const newUser = await Bot.client.database?.getDashUser(id);
+                const newUser = await Bot.client.database.getDashUser(id);
                 if (newUser && newUser.id) {
                     //console.log("user was processed")
                     //console.log("user found")

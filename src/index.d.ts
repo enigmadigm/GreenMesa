@@ -26,6 +26,7 @@ declare namespace NodeJS {
         DASHBOARD_STATIC_LOC?: string;
         DASHBOARD_COOKIE_SECRET?: string;
         TRIVIA_SESSION?: string;
+        DASHBOARD_HOST?: string;
         NODE_ENV?: string;
     }
 }

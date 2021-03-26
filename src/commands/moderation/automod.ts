@@ -21,7 +21,7 @@ export const command: Command = {
         try {
             if (!message.guild) return;
 
-            const allMods = await client.database?.getAllAutoModules(message.guild.id) || [];
+            const allMods = await client.database.getAllAutoModules(message.guild.id) || [];
 
             let argIndex = 0;
             switch (args[argIndex]) {
@@ -61,7 +61,7 @@ export const command: Command = {
                                 break;
                             }
                             mod.enableAll = true;
-                            await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                            await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                             message.channel.send(`Enabled ${mod.name}.`);
                         } else {
                             if (!mod.enableAll) {
@@ -69,7 +69,7 @@ export const command: Command = {
                                 break;
                             }
                             mod.enableAll = false;
-                            await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                            await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                             message.channel.send(`Disabled ${mod.name}.`);
                         }
                         break;
@@ -88,7 +88,7 @@ export const command: Command = {
                             mod.enableAll = true;
                             mod.channels = [];
                             mod.channelEffect = "enable";
-                            await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                            await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                             message.channel.send(`Enabled \`${mod.name}\` in all channels. **WARNING:** Further configuration may be required in the dashboard.`);
                             break;
                         }
@@ -96,7 +96,7 @@ export const command: Command = {
                         if (mod.channels?.includes(channel.id)) {
                             if (mod.channelEffect === "disable") {
                                 mod.channels?.splice(mod.channels.indexOf(channel.id), 1);
-                                const addResult = await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                                const addResult = await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                                 if (!addResult || !addResult.affectedRows) {
                                     client.specials?.sendError(message.channel, "Failed to update config", true);
                                 } else {
@@ -118,7 +118,7 @@ export const command: Command = {
                             fmsg = `Enabled \`${mod.name}\` in ${channel} and disabled in all other channels.`;
                         }
                         mod.channels?.push(channel.id);
-                        const addResult = await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                        const addResult = await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                         if (!addResult || !addResult.affectedRows) {
                             client.specials?.sendError(message.channel, "Failed to update config", true);
                         } else {
@@ -133,7 +133,7 @@ export const command: Command = {
                             mod.enableAll = false;
                             mod.channels = [];
                             mod.channelEffect = "enable";
-                            await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                            await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                             message.channel.send(`Disabled \`${mod.name}\` in all channels`);
                             break;
                         }
@@ -143,11 +143,11 @@ export const command: Command = {
                                 mod.channels.push(channel.id);
                                 if (mod.channelEffect !== "disable") {
                                     mod.channelEffect = "disable";
-                                    await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                                    await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                                     message.channel.send(`Disabled \`${mod.name}\` in ${channel} and enabled in all other channels.`);
                                     break;
                                 }
-                                await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                                await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                                 message.channel.send(`Disabled \`${mod.name}\` in ${channel}`);
                                 break;
                             }
@@ -155,7 +155,7 @@ export const command: Command = {
                             break;
                         }
                         mod.channels.splice(mod.channels.indexOf(channel.id), 1);
-                        const dResult = await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
+                        const dResult = await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                         if (!dResult || !dResult.affectedRows) {
                             client.specials?.sendError(message.channel, "Failed to update config", true);
                         } else {
@@ -175,10 +175,10 @@ export const command: Command = {
                         client.specials?.sendError(message.channel, "That is not a valid module. See modules by sending this command with no arguments.");
                         break;
                     }
-                    await client.database?.editGuildSetting(message.guild, `automod_${mod.name}`, undefined, true);
+                    await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, undefined, true);
                     message.channel.send({
                         embed: {
-                            color: await client.database?.getColor("info_embed_color"),
+                            color: await client.database.getColor("info_embed_color"),
                             description: `The configuration for ${mod.name} has been reset.`
                         }
                     });
@@ -192,7 +192,7 @@ export const command: Command = {
                             client.specials?.sendError(message.channel, `To enable a module, you must send \`${message.gprefix} am enable ${mod.name || "{module}"}\`.`)
                             break;
                         }
-                        const enabled = await client.database?.getAutoModuleEnabled(message.guild.id, mod.name, undefined, true) || false;
+                        const enabled = await client.database.getAutoModuleEnabled(message.guild.id, mod.name, undefined, true) || false;
                         /*if (!enabled) {
                             client.specials?.sendError(message.channel, "Module not enabled anywhere");
                             break;
@@ -203,7 +203,7 @@ export const command: Command = {
                                 const channelList = mod.channels.map(x => message.guild?.channels.cache.get(x) || "#deleted-channel");
                                 message.channel.send({
                                     embed: {
-                                        color: await client.database?.getColor("info_embed_color"),
+                                        color: await client.database.getColor("info_embed_color"),
                                         title: "Automod Config",
                                         description: `Information about the \`${mod.name}\` module.${info ? `\n\n${info}` : ""}
 
@@ -216,7 +216,7 @@ ${!enabled ? "Module not enabled anywhere" : (mod.enableAll ? "all channels" : (
                         } else {
                             message.channel.send({
                                 embed: {
-                                    color: await client.database?.getColor("info_embed_color"),
+                                    color: await client.database.getColor("info_embed_color"),
                                     title: "Automod Config",
                                     description: `Information about the \`${mod.name}\` module.${info ? `\n\n${info}` : ""}
 
@@ -234,7 +234,7 @@ ${!enabled ? "Disabled" : "Enabled"}
 
                     message.channel.send({
                         embed: {
-                            color: await client.database?.getColor("info_embed_color"),
+                            color: await client.database.getColor("info_embed_color"),
                             title: "Automod Config",
                             description: `The automod service is split into various modules. The automod modules are responsible for performing the various automod tasks. They are enabled individually and are all off by default.
 

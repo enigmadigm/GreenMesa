@@ -30,7 +30,7 @@ export const command: Command = {
             if (found.name === "enable" || found.name === "disable") {
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail_embed_color"),
                         description: `Debossing \` enable \` or \` disable \` is prohibited`,
                         footer: {
                             text: `module debosser`
@@ -40,13 +40,13 @@ export const command: Command = {
                 return;
             }
 
-            const result = await client.database?.getGuildSetting(message.guild, `${found.name}_toggle`);
+            const result = await client.database.getGuildSetting(message.guild, `${found.name}_toggle`);
             if (!result || (result.value && result.value === "enable")) {
-                const result = await client.database?.editGuildSetting(message.guild, `${found.name}_toggle`, "disable");
+                const result = await client.database.editGuildSetting(message.guild, `${found.name}_toggle`, "disable");
                 if (!result || result.affectedRows < 1) {
                     await message.channel.send({
                         embed: {
-                            color: await client.database?.getColor("fail_embed_color"),
+                            color: await client.database.getColor("fail_embed_color"),
                             description: `Failed to disable ${catMatch ? "group" : "command"}`,
                             footer: {
                                 text: `module debosser`
@@ -57,7 +57,7 @@ export const command: Command = {
                 }
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("success_embed_color"),
+                        color: await client.database.getColor("success_embed_color"),
                         description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` toggled to **disabled**`,
                         footer: {
                             text: `module debosser`
@@ -69,7 +69,7 @@ export const command: Command = {
             if (result.value && result.value == "disable") {
                 await message.channel.send({
                     embed: {
-                        color: await client.database?.getColor("warn_embed_color"),
+                        color: await client.database.getColor("warn_embed_color"),
                         description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` already disabled`,
                         footer: {
                             text: `module debosser`

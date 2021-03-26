@@ -11,7 +11,7 @@ export const service: MessageService = {
     async execute(client, message) {
         try {
             if (!message.guild || !(message instanceof Message) || !message.member) return;
-            const modResult = await Bot.client.database?.getAutoModuleEnabled(message.guild.id, "antiembed", message.channel.id, undefined, message.member);
+            const modResult = await Bot.client.database.getAutoModuleEnabled(message.guild.id, "antiembed", message.channel.id, undefined, message.member);
             if (!modResult) return;
             let flag = false;
 

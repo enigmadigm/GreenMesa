@@ -27,7 +27,7 @@ export const command: Command = {
                 // I moved this up here to save some execution time
                 if (target.id !== message.member.id) {// if the found target is not the author
                     // now checking for moderation here because this means that someone elses name from the sender is being changed
-                    const moderationEnabled = await client.database?.getGuildSetting(message.guild, 'all_moderation');
+                    const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
                     if (!moderationEnabled || moderationEnabled.value === 'disabled') {
                         return client.specials?.sendModerationDisabled(message.channel);
                     }

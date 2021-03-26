@@ -34,7 +34,7 @@ const LoggingFlags = {
 async function getLogChannel(guild: Guild, address: number, category: 'log_channel' | 'member_channel' | 'server_channel' | 'voice_channel' | 'messages_channel' | 'movement_channel', channel?: GuildChannel): Promise<TextChannel | false> {
     try {
         if (!guild) return false;
-        const logValue = await Bot.client.database?.getGuildSetting(guild, 'serverlog');
+        const logValue = await Bot.client.database.getGuildSetting(guild, 'serverlog');
         if (!logValue) {
             return false;
         }
@@ -55,7 +55,7 @@ async function getLogChannel(guild: Guild, address: number, category: 'log_chann
         return false;
         // const logChannel = logValue && logValue.value ? stringToChannel(guild, logValue.value, false, false) : null;
         // if (logValue && (!logChannel || !(logChannel instanceof TextChannel))) {
-        //     Bot.client.database?.editGuildSetting(guild, 'server_log', undefined, true);
+        //     Bot.client.database.editGuildSetting(guild, 'server_log', undefined, true);
         //     return false;
         // }
         // if (!logChannel || !(logChannel instanceof TextChannel)) {
@@ -70,7 +70,7 @@ async function getLogChannel(guild: Guild, address: number, category: 'log_chann
 export async function logMember(member: GuildMember, joining: boolean): Promise<void> {
     try {
         if (!joining) {
-            await Bot.client.database?.updateGuildUserData({
+            await Bot.client.database.updateGuildUserData({
                 roles: member.roles.cache.map(r => r.id).join(",")
             });
         }
@@ -94,7 +94,7 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
                         inline: false
                     }
                 ],
-                "color": joining ? await Bot.client.database?.getColor("success_embed_color") : await Bot.client.database?.getColor("fail_embed_color"),
+                "color": joining ? await Bot.client.database.getColor("success_embed_color") : await Bot.client.database.getColor("fail_embed_color"),
                 "timestamp": joining ? member.joinedAt?.getTime() || new Date().getTime() : new Date().getTime(),
                 "footer": {
                     "text": `ID: ${member.id}`
@@ -123,7 +123,7 @@ export async function logMessageDelete(message: Message): Promise<void> {
 
         logChannel.send({
             embed: {
-                "color": await Bot.client.database?.getColor("fail_embed_color") || 0xff0000,
+                "color": await Bot.client.database.getColor("fail_embed_color") || 0xff0000,
                 "author": {
                     "name": "Message Deleted",
                     "icon_url": message.author.displayAvatarURL()
@@ -169,7 +169,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
         const logMessage = await logChannel.send(attachment);
         logMessage.edit({
             embed: {
-                "color": await Bot.client.database?.getColor("warn_embed_color") || 0xff0000,
+                "color": await Bot.client.database.getColor("warn_embed_color") || 0xff0000,
                 "author": {
                     "name": `${first?.channel.name}`,
                     "icon_url": first?.guild?.iconURL() || ""
@@ -255,7 +255,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
                         iconURL: role.guild.iconURL() || ""
                     },
                     description: `${deletion ? `@${role.name} (${role.hexColor})` : `${role}\nName: ${role.name}\nColor: ${role.hexColor}`}${deletion ? "\n created " + moment(role.createdAt).utc().fromNow() : ''}`,
-                    color: deletion ? await Bot.client.database?.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database?.getColor("success_embed_color"),
+                    color: deletion ? await Bot.client.database.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database.getColor("success_embed_color"),
                     timestamp: deletion ? role.createdAt : new Date(),
                     footer: {
                         text: "Role ID: " + role.id
@@ -284,7 +284,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
                     iconURL: channel.guild.iconURL() || ""
                 },
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
-                color: deletion ? await Bot.client.database?.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database?.getColor("success_embed_color"),
+                color: deletion ? await Bot.client.database.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database.getColor("success_embed_color"),
                 timestamp: deletion ? channel.createdAt : new Date(),
                 footer: {
                     text: "Channel ID: " + channel.id
@@ -305,7 +305,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
         if (oc.name !== nc.name) {//change of channel name
             await logChannel.send({
                 embed: {
-                    color: await Bot.client.database?.getColor("warn_embed_color"),
+                    color: await Bot.client.database.getColor("warn_embed_color"),
                     timestamp: new Date(),
                     author: {
                         name: `Channel Name Updated`,
@@ -369,7 +369,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                 const subject = oldPerm.type == 'role' || newPerm.type == 'role' ? nc.guild.roles.cache.get(newPerm.id || oldPerm.id) : await nc.guild.members.fetch(newPerm.id || oldPerm.id);
 
                 const embed = {
-                    color: await Bot.client.database?.getColor("warn_embed_color"),
+                    color: await Bot.client.database.getColor("warn_embed_color"),
                     timestamp: new Date(),
                     author: {
                         name: `Channel Permissions Changed`,
@@ -432,7 +432,7 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
                     name: `Emoji ${deletion ? 'Removed' : 'Added'}`,
                     iconURL: logChannel.guild.iconURL() || ""
                 },
-                color: await Bot.client.database?.getColor("info_embed_color"),
+                color: await Bot.client.database.getColor("info_embed_color"),
                 image: {
                     url: emoji.url,
                 },
@@ -456,8 +456,8 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
         if (oldMember.nickname === newMember.nickname) return;
 
         // This section for the nickname history feature
-        const ud = await Bot.client.database?.getGuildUserData(newMember.guild.id, newMember.user.id);
-        await Bot.client.database?.updateGuildUserData({
+        const ud = await Bot.client.database.getGuildUserData(newMember.guild.id, newMember.user.id);
+        await Bot.client.database.updateGuildUserData({
             guildid: newMember.guild.id,
             userid: newMember.user.id,
             nicknames: ud && ud.nicknames ?
@@ -474,7 +474,7 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
                     name: `Nickname Changed`,
                     iconURL: logChannel.guild.iconURL() || ""
                 },
-                color: await Bot.client.database?.getColor("info_embed_color"),
+                color: await Bot.client.database.getColor("info_embed_color"),
                 description: `Nickname of ${newMember} changed`,
                 fields: [
                     {
@@ -515,7 +515,7 @@ export async function logAutoBan(member: GuildMember): Promise<void> {
                     name: `Member Autobanned`,
                     iconURL: logChannel.guild.iconURL() || ""
                 },
-                color: await Bot.client.database?.getColor("info_embed_color"),
+                color: await Bot.client.database.getColor("info_embed_color"),
                 description: `Autoban has been activated on ${member.user.tag} (${member.id}).\nThey are now banned permanently.`,
                 timestamp: new Date(),
             }

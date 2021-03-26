@@ -24,7 +24,7 @@ export const command: Command = {
             const createdAt = moment(channel.createdAt).utc();
             const type = channel.type;
             const e: MessageEmbedOptions = {
-                color: await client.database?.getColor("info_embed_color"),
+                color: await client.database.getColor("info_embed_color"),
                 title: `Channel Info`,
                 description: `**Channel:** ${channel} (\\#${channel.name})\n**ID:** ${channel.id}\n**Type:** ${type}\n`,
                 footer: {

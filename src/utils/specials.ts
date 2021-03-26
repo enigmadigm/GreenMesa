@@ -8,7 +8,7 @@ import { Bot } from "../bot";
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
     try {
         if (!(channel instanceof TextChannel)) return;
-        const fail_embed_color = await Bot.client.database?.getColor("fail_embed_color");
+        const fail_embed_color = await Bot.client.database.getColor("fail_embed_color");
         channel.send({
             embed: {
                 color: fail_embed_color,
@@ -25,7 +25,7 @@ export async function sendError(channel: Channel, message?: string, errorTitle =
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
         channel.send({
             embed: {
-                color: await Bot.client.database?.getColor("fail_embed_color") || 16711680,
+                color: await Bot.client.database.getColor("fail_embed_color") || 16711680,
                 title: (errorTitle) ? "Error" : undefined,
                 description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
             }
@@ -41,7 +41,7 @@ export async function sendInfo(channel: Channel, message: string): Promise<void>
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
         channel.send({
             embed: {
-                color: 0x337fd5/* await Bot.client.database?.getColor("info_embed_color") */,
+                color: 0x337fd5/* await Bot.client.database.getColor("info_embed_color") */,
                 description: `<:sminfo:818342088088354866> ${message}`
             }
         });
@@ -55,7 +55,7 @@ export async function argsNumRequire(channel: Channel, args: string[], num: numb
     try {
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return false;
         if (args.length == num) return true;
-        const fail_embed_color = await Bot.client.database?.getColor("fail_embed_color");
+        const fail_embed_color = await Bot.client.database.getColor("fail_embed_color");
         channel.send({
             embed: {
                 color: fail_embed_color,
@@ -89,7 +89,7 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
         if (!forResult) {
             channel.send({
                 embed: {
-                    color: await Bot.client.database?.getColor("fail_embed_color"),
+                    color: await Bot.client.database.getColor("fail_embed_color"),
                     title: "Invalid Arguments",
                     description: "All arguments must be numbers (floating or integer)"
                 }
@@ -106,14 +106,14 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
 export function timedMessagesHandler(client: XClient): void {
     setInterval(async () => {
         if (moment().utcOffset(-5).format('M/D HH:mm') == "9/26 21:30") {
-            const pcr = await client.database?.getGlobalSetting('primchan');
+            const pcr = await client.database.getGlobalSetting('primchan');
             const primchan = pcr ? await client.channels.fetch(pcr.value) : false;
             if (primchan instanceof TextChannel) {
                 primchan.send('happy birthday');
             }
         }
         if (moment().utcOffset(-6).format('M/D HH:mm') == "1/1 00:00") {
-            const pcr = await client.database?.getGlobalSetting('primchan');
+            const pcr = await client.database.getGlobalSetting('primchan');
             const primchan = pcr ? await client.channels.fetch(pcr.value) : false;
             if (primchan instanceof TextChannel) {
                 primchan.send("Welcome to the New Year (CST) @everyone");
@@ -186,10 +186,7 @@ export async function getAllChannels(client: XClient): Promise<Channel[] | false
     }
     return channels;
 }
-/*exports.sendModerationDisabled = sendModerationDisabled;
-exports.sendError = sendError;
-exports.timedMessagesHandler = timedMessagesHandler;
-exports.argsNumRequire = argsNumRequire;
-exports.argsMustBeNum = argsMustBeNum;
-exports.memoryUsage = memoryUsage;
-exports.delayedLoop = delayedLoop;*/
+
+export function getDashboardLink(guildid?: string, mod?: string): string {
+    return `${process.env.DASHBOARD_HOST}/dash/${guildid}${guildid && mod ? `/${mod}` : ""}`
+}

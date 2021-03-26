@@ -35,7 +35,7 @@ export const command: Command = {
                 targetId = target.id;
                 targetName = `${target}`;
             }
-            const gud = await client.database?.getGuildUserData(message.guild.id, targetId);
+            const gud = await client.database.getGuildUserData(message.guild.id, targetId);
             if (!gud) {
                 await client.specials?.sendError(message.channel, `Could not retrieve user info`);
                 return;
@@ -46,7 +46,7 @@ export const command: Command = {
                 return;
             }
             const embed: MessageEmbedOptions = {
-                color: await client.database?.getColor("info_embed_color"),
+                color: await client.database.getColor("info_embed_color"),
                 description: `Notes for ${targetName} (${targetId})`,
                 fields: []
             };

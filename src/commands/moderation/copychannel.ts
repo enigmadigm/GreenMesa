@@ -48,7 +48,7 @@ export const command: Command = {
             
             await message.channel.send({
                 embed: {
-                    color: await client.database?.getColor("info_embed_color"),
+                    color: await client.database.getColor("info_embed_color"),
                     description: `Channel copied`
                 }
             });
