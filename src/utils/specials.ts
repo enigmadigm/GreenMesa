@@ -186,10 +186,7 @@ export async function getAllChannels(client: XClient): Promise<Channel[] | false
     }
     return channels;
 }
-/*exports.sendModerationDisabled = sendModerationDisabled;
-exports.sendError = sendError;
-exports.timedMessagesHandler = timedMessagesHandler;
-exports.argsNumRequire = argsNumRequire;
-exports.argsMustBeNum = argsMustBeNum;
-exports.memoryUsage = memoryUsage;
-exports.delayedLoop = delayedLoop;*/
+
+export function getDashboardLink(guildid?: string, mod?: string): string {
+    return `${process.env.DASHBOARD_HOST}/dash/${guildid}${guildid && mod ? `/${mod}` : ""}`
+}
