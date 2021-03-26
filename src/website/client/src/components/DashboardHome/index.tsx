@@ -102,12 +102,12 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                     <div className="x-card">
                         <div className="x-card-header">About This Dashboard</div>
                         <div className="x-card-body">
-                            <p>This site is meant to be a place where server admins can come and configure the behavior of Stratum, and even their server, without having to mess around with commands or other decentralized settings panes.</p>
+                            <p>This dashboard was made so server admins can come and configure the behavior of Stratum without having to mess around with too many scattered commands or decentralized settings panes.</p>
                             <hr style={{ marginTop: 10, marginBottom: 15 }} />
                             <h4 className="cardsubtitle">Dashboard Development</h4>
-                            <p>There obviously isn't much here right now, but this page was launched so that there would be a hint at a future full-featured dashboard. What you see now is probably not what the final product will look like/behave like, but it is the current rough design. This page was also launched so that I could be sure that the dashboard would turn on and be navigable, as well as perform with the backend API of Stratum.</p>
+                            <p>This dashboard is relatively new, and not all of its features have been released. You cannot control every feature of Stratum from here, but this site was made to start in that direction. What you see now may not resemble the final product, but it is the current design.</p>
                             <br/>
-                            <p>The main goal at the moment is coming to a final initial design. This means having a site that has full interactions (no dead buttons) with a mobile friendly UI (which may take a while). After that, the actual settings panes can enter the development phase. The prefix settings pane got to be first because it is special.</p>
+                            <p>One of the purposes of launching this page was too confirm that it would work with the Stratum API. The UI is always being improved, but feel free to expose issues or voice your ideas in the <a href="http://dsc.gg/ro">support server</a>.</p>
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                             <p style={{ marginBottom: "1rem" }}>Set whether moderation features are allowed to be used on Stratum.</p>
                             <FormControl display="flex" alignItems="center">
                                 <FormLabel htmlFor="enable-moderation-all" mb="0">
-                                    Enable moderation?
+                                    Enable Moderation
                                 </FormLabel>
                                 <Switch id="enable-moderation-all" onChange={(e) => setModeration(e.target.checked)} defaultChecked={props.meta.moderation} />
                             </FormControl>
@@ -128,7 +128,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                             <p style={{ marginBottom: "1rem" }}>Toggle the option to notify users that they don't have the required permissions when they use an elevated command.</p>
                             <FormControl display="flex" alignItems="center">
                                 <FormLabel htmlFor="enable-permnotif" mb="0">
-                                        Enable access message?
+                                        Enable Access Message
                                 </FormLabel>
                                 <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={permNotif} />
                             </FormControl>

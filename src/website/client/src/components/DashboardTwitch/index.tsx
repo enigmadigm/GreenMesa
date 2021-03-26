@@ -31,8 +31,8 @@ export function DashboardTwitch(props: HomeProps) {
     const [waiting, setWaiting] = React.useState<boolean>(false);
     const [em, setEm] = React.useState("");
     const [mc, setMc] = React.useState("");
-    //const [typing, setTyping] = React.useState<number>(0);
     const modalWrapper = React.useRef(null);
+    //const [typing, setTyping] = React.useState<number>(0);
 
     React.useEffect(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/twitch`)
@@ -199,7 +199,7 @@ export function DashboardTwitch(props: HomeProps) {
                 const j: TwitchSearchChannelsReturns[] = await r.json();
                 const streamers = j.map(x => {
                     return { label: x.display_name || x.broadcaster_login, value: x.id };
-                }).sort((a,b) => {
+                }).filter(x => !subs.find(x1 => x1.streamer_id === x.value)).sort((a,b) => {
                     return (stringSimilarity(a.label, inputValue) > stringSimilarity(b.label, inputValue) ? -1 : 1);
                 });
                 return streamers;
