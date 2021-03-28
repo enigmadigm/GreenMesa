@@ -128,7 +128,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
 
-    client.specials?.timedMessagesHandler(client);
+    client.specials.timedMessagesHandler(client);
 
     try {
         //Generates invite link to put in console.
@@ -404,7 +404,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (command.moderation && message.guild) {
             const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials?.sendModerationDisabled(message.channel);
+                return client.specials.sendModerationDisabled(message.channel);
             }
         }
 
@@ -432,7 +432,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 }
             });
             return;
-        } else if (command.args && typeof command.args === "number" && args.length !== command.args) {
+        } else if ((command.args || command.args === 0) && typeof command.args === "number" && args.length !== command.args) {
             let reply = "Illegal Arguments";
             if (command.args === 0) {
                 reply = "**No arguments** are allowed for this command.";
@@ -443,7 +443,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
             }
 
-            await client.specials?.sendError(message.channel, reply)
+            await client.specials.sendError(message.channel, reply)
             return;
         }
 
@@ -505,10 +505,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             client.database.logCmdUsage(commandName);
         } catch (error) {
             xlg.error(error);
-            client.specials?.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');
+            client.specials.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');
         }
     } catch (err) {
-        client.specials?.sendError(message.channel, "Error while processing. If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).")
+        client.specials.sendError(message.channel, "Error while processing. If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).")
     }
 });
 
