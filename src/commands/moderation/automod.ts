@@ -30,23 +30,23 @@ export const command: Command = {
                     const option = args[argIndex] === "enable";
                     argIndex++;
                     if (!args[argIndex]) {
-                        client.specials?.sendError(message.channel, "Module not provided. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, "Module not provided. See modules by sending this command with no arguments.");
                         break;
                     }
                     const mod = allMods.find(x => x.name === args[argIndex]);
                     if (!mod) {
-                        client.specials?.sendError(message.channel, "That is not a valid module. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, "That is not a valid module. See modules by sending this command with no arguments.");
                         break;
                     }
                     argIndex++;
                     const channel = stringToChannel(message.guild, args[argIndex], true, true);
                     if (!channel && args[argIndex]) {
-                        client.specials?.sendError(message.channel, "A valid channel was not provided.");
+                        client.specials.sendError(message.channel, "A valid channel was not provided.");
                         break;
                     }
                     if (!mod.text) {
                         if (channel) {
-                            client.specials?.sendError(message.channel, "This module cannot be toggled in a channel. This module does not handle messages. Do not specify a channel. **To configure additional settings for this module, go to the [web dashboard](https://stratum.hauge.rocks).**");
+                            client.specials.sendError(message.channel, "This module cannot be toggled in a channel. This module does not handle messages. Do not specify a channel. **To configure additional settings for this module, go to the [web dashboard](https://stratum.hauge.rocks).**");
                             break;
                         }
                         /*if (mod.channelEffect) {
@@ -57,7 +57,7 @@ export const command: Command = {
                         }*/
                         if (option) {
                             if (mod.enableAll) {
-                                client.specials?.sendError(message.channel, "Module already enabled.");
+                                client.specials.sendError(message.channel, "Module already enabled.");
                                 break;
                             }
                             mod.enableAll = true;
@@ -65,7 +65,7 @@ export const command: Command = {
                             message.channel.send(`Enabled ${mod.name}.`);
                         } else {
                             if (!mod.enableAll) {
-                                client.specials?.sendError(message.channel, "Module already disabled.");
+                                client.specials.sendError(message.channel, "Module already disabled.");
                                 break;
                             }
                             mod.enableAll = false;
@@ -75,14 +75,14 @@ export const command: Command = {
                         break;
                     }
                     if (!mod.channels || !mod.channelEffect) {
-                        client.specials?.sendError(message.channel, `AutoModule data for \`${mod.name}\` is corrupted, please call \`${message.gprefix} ${this.name} reset ${mod.name}\`.`);
+                        client.specials.sendError(message.channel, `AutoModule data for \`${mod.name}\` is corrupted, please call \`${message.gprefix} ${this.name} reset ${mod.name}\`.`);
                         break;
                     }
                     // the 'enable' and 'disable' options obviously have different logic, this was unintentional
                     if (option) {
                         if (!channel) {
                             if (mod.enableAll) {
-                                client.specials?.sendError(message.channel, `Module \`${mod.name}\` is already enabled in all channels`);
+                                client.specials.sendError(message.channel, `Module \`${mod.name}\` is already enabled in all channels`);
                                 break;
                             }
                             mod.enableAll = true;
@@ -98,36 +98,36 @@ export const command: Command = {
                                 mod.channels?.splice(mod.channels.indexOf(channel.id), 1);
                                 const addResult = await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                                 if (!addResult || !addResult.affectedRows) {
-                                    client.specials?.sendError(message.channel, "Failed to update config", true);
+                                    client.specials.sendError(message.channel, "Failed to update config", true);
                                 } else {
                                     message.channel.send(`Enabled \`${mod.name}\` in ${channel}`);
                                 }
                                 break;
                             }
-                            client.specials?.sendError(message.channel, `Module \`${mod.name}\` is already enabled in ${channel}`);
+                            client.specials.sendError(message.channel, `Module \`${mod.name}\` is already enabled in ${channel}`);
                             break;
                         }
                         // // the error occurs when the channeleffect is to disable channels and the channel array is empty but a channel to enable is requested
                         let fmsg = `Successfully enabled \`${mod.name}\` in ${channel}`;
                         if (mod.channelEffect === "disable") {
                             if (mod.channels.length) {
-                                client.specials?.sendError(message.channel, `The module \`${mod.name}\` is not disabled in ${channel}. If you want this module to be disabled everywhere but in ${channel}, first make sure it isn't disabled in any specific channels.`);
+                                client.specials.sendError(message.channel, `The module \`${mod.name}\` is not disabled in ${channel}. If you want this module to be disabled everywhere but in ${channel}, first make sure it isn't disabled in any specific channels.`);
                                 break;
                             }
                             mod.channelEffect = "enable";
                             fmsg = `Enabled \`${mod.name}\` in ${channel} and disabled in all other channels.`;
                         }
-                        mod.channels?.push(channel.id);
+                        mod.channels.push(channel.id);
                         const addResult = await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                         if (!addResult || !addResult.affectedRows) {
-                            client.specials?.sendError(message.channel, "Failed to update config", true);
+                            client.specials.sendError(message.channel, "Failed to update config", true);
                         } else {
                             message.channel.send(fmsg);
                         }
                     } else {
                         if (!channel) {
                             if ((!mod.channels.length && mod.channelEffect === "enable") && !mod.enableAll) {
-                                client.specials?.sendError(message.channel, `Module \`${mod.name}\` is already disabled in all channels. Send that command again with a channel to enable in all channels except that channel.`);
+                                client.specials.sendError(message.channel, `Module \`${mod.name}\` is already disabled in all channels. Send that command again with a channel to enable in all channels except that channel.`);
                                 break;
                             }
                             mod.enableAll = false;
@@ -151,13 +151,13 @@ export const command: Command = {
                                 message.channel.send(`Disabled \`${mod.name}\` in ${channel}`);
                                 break;
                             }
-                            client.specials?.sendError(message.channel, `Module \`${mod.name}\` is already disabled in ${channel}. If you want this module to be enabled everywhere but in ${channel}, make sure it isn't enabled in any specific channels first.`);
+                            client.specials.sendError(message.channel, `Module \`${mod.name}\` is already disabled in ${channel}. If you want this module to be enabled everywhere but in ${channel}, make sure it isn't enabled in any specific channels first.`);
                             break;
                         }
                         mod.channels.splice(mod.channels.indexOf(channel.id), 1);
                         const dResult = await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                         if (!dResult || !dResult.affectedRows) {
-                            client.specials?.sendError(message.channel, "Failed to update config", true);
+                            client.specials.sendError(message.channel, "Failed to update config", true);
                         } else {
                             message.channel.send(`Disabled \`${mod.name}\` in ${channel}`);
                         }
@@ -167,12 +167,12 @@ export const command: Command = {
                 case "reset": {
                     argIndex++;
                     if (!args[argIndex]) {
-                        client.specials?.sendError(message.channel, "Module not provided. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, "Module not provided. See modules by sending this command with no arguments.");
                         break;
                     }
                     const mod = allMods.find(x => x.name === args[argIndex]);
                     if (!mod) {
-                        client.specials?.sendError(message.channel, "That is not a valid module. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, "That is not a valid module. See modules by sending this command with no arguments.");
                         break;
                     }
                     await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, undefined, true);
@@ -189,12 +189,12 @@ export const command: Command = {
                     if (args[argIndex] && mod) {
                         argIndex++;
                         if (args[argIndex] && args[argIndex] === "enable" || args[argIndex] === "disable") {
-                            client.specials?.sendError(message.channel, `To enable a module, you must send \`${message.gprefix} am enable ${mod.name || "{module}"}\`.`)
+                            client.specials.sendError(message.channel, `To enable a module, you must send \`${message.gprefix} am enable ${mod.name || "{module}"}\`.`)
                             break;
                         }
                         const enabled = await client.database.getAutoModuleEnabled(message.guild.id, mod.name, undefined, true) || false;
                         /*if (!enabled) {
-                            client.specials?.sendError(message.channel, "Module not enabled anywhere");
+                            client.specials.sendError(message.channel, "Module not enabled anywhere");
                             break;
                         }*/
                         const info = await client.services?.getInfo(client, message.guild.id, `automod_${mod.name}`);
@@ -228,7 +228,7 @@ ${!enabled ? "Disabled" : "Enabled"}
                         }
                         break;
                     } else if (args[argIndex]) {
-                        client.specials?.sendError(message.channel, `\`${args[argIndex]}\` is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`)
+                        client.specials.sendError(message.channel, `\`${args[argIndex]}\` is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`)
                         break;
                     }
 
@@ -264,7 +264,7 @@ Get more details with \`${message.gprefix}${this.name} {mod}\`.
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
