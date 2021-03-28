@@ -40,7 +40,7 @@ export const command: Command = {
                 return;
             }
             if (!toMute.manageable) {
-                message.channel.send(`I don't have a high enough role to manage ${toMute || 'that user'}.`);
+                message.channel.send(`I don't have a high enough role to manage ${toMute}.`);
                 return;
             }
 

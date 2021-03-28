@@ -32,7 +32,7 @@ export const command: Command = {
                     if (storedBans) {
                         const bans: string[] = JSON.parse(storedBans.value);
                         if (bans.includes(args[0])) {
-                            client.specials?.sendError(message.channel, `A member with that ID could not be found, but that ID already exists in the autoban list.`);
+                            client.specials.sendError(message.channel, `A member with that ID could not be found, but that ID already exists in the autoban list.`);
                             return;
                         }
                         bans.push(args[0]);
@@ -41,11 +41,11 @@ export const command: Command = {
                         return;
                     }
                 }
-                await client.specials?.sendError(message.channel, "That target could not be found, it may not be a member.\nTo ban a member that has left, send their ID.");
+                await client.specials.sendError(message.channel, "That target could not be found, it may not be a member.\nTo ban a member that has left, send their ID.");
                 return;
             }
             if (!target.bannable) {
-                await client.specials?.sendError(message.channel, `I can't ban ${target}`);
+                await client.specials.sendError(message.channel, `I can't ban ${target}`);
                 return;
             }
             if (target.id === message.author.id) {
@@ -102,7 +102,7 @@ export const command: Command = {
                     //
                 }
                 await target.ban({
-                    reason: reason || `by ${message.author.tag}${reason ? ` | ${reason}` : ""}`
+                    reason: `by ${message.author.tag}${reason ? ` | ${reason}` : ""}`
                 });
                 if (permsActual >= permLevels.botMaster) {
                     message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}\nhttps://i.imgur.com/wdmSvX6.gif`);
@@ -135,7 +135,7 @@ export const command: Command = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

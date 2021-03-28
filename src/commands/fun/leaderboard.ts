@@ -1,6 +1,5 @@
 import { Command } from "src/gm";
 import xlg from "../../xlogger";
-//import { getTop10, getGlobalSetting } from '../dbmanager';
 
 export const command: Command = {
     name: "leaderboard",
@@ -30,7 +29,7 @@ export const command: Command = {
                     },
                     description: joinedLb.join("\n"),
                     footer: {
-                        text: (rowobj.personal.rank > 10) ? `${message.member?.displayName}'s rank: ${rowobj.personal.rank || "none"}` : `top ten for this server`
+                        text: (rowobj.personal.rank > 10) ? `${message.member?.displayName}'s rank: ${rowobj.personal.rank}` : `top ten for this server`
                     }
                 }
             });
