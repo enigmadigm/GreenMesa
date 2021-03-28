@@ -28,6 +28,9 @@
   </a>&nbsp;
   <a href="https://www.repostatus.org/#active">
     <img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status: Active – The project has reached a stable, usable state and is being actively developed." />
+  </a>&nbsp;
+  <a href="https://deepscan.io/dashboard#view=project&tid=13451&pid=16444&bid=352890">
+    <img src="https://deepscan.io/api/teams/13451/projects/16444/branches/352890/badge/grade.svg" alt="DeepScan grade">
   </a>
 </p>
 
