@@ -60,7 +60,7 @@ export const command: Command = {
 
                 const pages: MessageEmbedOptions[] = [];
 
-                const cmdcount = commands?.size; // commands.filter(co => co.category !== "owner").size;
+                const cmdcount = commands.size; // commands.filter(co => co.category !== "owner").size;
                 const e: MessageEmbedOptions = {
                     title: `Help: Categories`,
                     color: await client.database.getColor("darkred_embed_color"),
@@ -93,7 +93,7 @@ export const command: Command = {
                     }).join('\n'));
                     data.push('')
                     data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
-                    const cmdcount = commands?.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
+                    const cmdcount = commands.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
                     const e: MessageEmbedOptions = {
                         title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
                         color: await client.database.getColor("darkred_embed_color"),
@@ -108,7 +108,7 @@ export const command: Command = {
                 return;
             }
             const name = args[0].toLowerCase();
-            const command = commands.get(name) || commands?.find(c => !!(c.aliases && c.aliases.includes(name)));
+            const command = commands.get(name) || commands.find(c => !!(c.aliases && c.aliases.includes(name)));
             const category = categories.get(name);
 
             if (command) {
@@ -151,7 +151,7 @@ export const command: Command = {
                         inline: true
                     })
                 }
-        
+
                 message.channel.send({ embed });
             } else if (category) {
                 if (category.name === "owner") {
@@ -162,7 +162,7 @@ export const command: Command = {
                 //data.push(`**My public commands: (${commands.array().length})**`);
                 // for some reason if you don't separate \` ${command.name} \` with a space it flips out
                 //                                         ^               ^
-                data.push(commands?.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).map(command => {
+                data.push(commands.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).map(command => {
                     let availableDesc = "";
                     if (!command.description) {
                         availableDesc = "*no description*";
