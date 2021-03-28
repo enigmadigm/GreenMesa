@@ -18,22 +18,22 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (args.length > 1) {
-                await client.specials?.sendError(message.channel, "A valid URL should not contain whitespace");
+                await client.specials.sendError(message.channel, "A valid URL should not contain whitespace");
                 return;
             }
             const url = args[0].slice(0, 1024);
             const r = await fetch(`https://is.gd/create.php?format=json&url=${args[0]}`);
             if (r.status !== 200) {
-                await client.specials?.sendError(message.channel, "Received a non-ok response code from is.gd", true);
+                await client.specials.sendError(message.channel, "Received a non-ok response code from is.gd", true);
                 return;
             }
             const j = await r.json();
             if (!j || j.errorcode || !j.shorturl) {
-                if (j.errorcode === 1 && j.errormessage) {
-                    await client.specials?.sendError(message.channel, `Could not shorten URL:\n${j.errormessage}`, true);
+                if (j && j.errorcode === 1 && j.errormessage) {
+                    await client.specials.sendError(message.channel, `Could not shorten URL:\n${j.errormessage}`, true);
                     return;
                 } else {
-                    await client.specials?.sendError(message.channel, `Could not shorten URL`, true);
+                    await client.specials.sendError(message.channel, `Could not shorten URL`, true);
                     return;
                 }
             }
@@ -57,7 +57,7 @@ export const command: Command = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

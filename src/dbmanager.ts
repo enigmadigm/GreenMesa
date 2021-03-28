@@ -473,10 +473,9 @@ export class DBManager {
      * @param guildid id of guild to look up
      * @param memberid id of member in guild to look up
      */
-    async getTop10(guildid = "", memberid = ""): Promise<{ rows: ExpRow[], personal: PersonalExpRow } | false> {
+    async getTop10(guildid = "", memberid = ""): Promise<{ rows: ExpRow[], personal: PersonalExpRow }> {
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 10`);
         const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
-        if (!rows.length) return false;
         return {
             rows: rows || [],
             personal: personalrows[0] || false
@@ -791,14 +790,7 @@ export class DBManager {
             }
             username = username.replace(/'/g, "\\'");
             avatar = avatar.replace(/'/g, "\\'");
-            const guildString = JSON.stringify(guilds).replace(/\\n/g, "\\n")
-                .replace(/\\'/g, "\\'")
-                .replace(/\\"/g, '\\"')
-                .replace(/\\&/g, "\\&")
-                .replace(/\\r/g, "\\r")
-                .replace(/\\t/g, "\\t")
-                .replace(/\\b/g, "\\b")
-                .replace(/\\f/g, "\\f");
+            const guildString = JSON.stringify(guilds).escapeSpecialChars();
             const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES (${escape(id)}, ${escape(`${username}#${discriminator}`)} , ${escape(avatar)}, ${escape(guildString)}) ON DUPLICATE KEY UPDATE tag = ${escape(`${username}#${discriminator}`)}, avatar = ${escape(avatar)}, guilds = ${escape(guildString)}`);
             if (!result || !result.affectedRows) {
                 return false;

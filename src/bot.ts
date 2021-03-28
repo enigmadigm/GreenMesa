@@ -26,13 +26,13 @@ process.on('unhandledRejection', async (reason, promise) => {
 
 String.prototype.escapeSpecialChars = function () {
     return this.replace(/\\n/g, "\\n")
-        .replace(/\\'/g, "\\'")
-        .replace(/\\"/g, '\\"')
-        .replace(/\\&/g, "\\&")
-        .replace(/\\r/g, "\\r")
-        .replace(/\\t/g, "\\t")
-        .replace(/\\b/g, "\\b")
-        .replace(/\\f/g, "\\f");
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/&/g, "\\&")
+        .replace(/r/g, "\\r")
+        .replace(/t/g, "\\t")
+        .replace(/b/g, "\\b")
+        .replace(/f/g, "\\f");
 };
 
 String.prototype.escapeDiscord = function () {
@@ -48,11 +48,7 @@ import config from "../auth.json"; // Loading app config file
 import { permLevels, getPermLevel } from "./permissions";
 import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logAutoBan } from './serverlogger';
 import MesaWebsite from "./website/app";
-import { Commands } from './commands';
 import { Command, XClient, XMessage } from "./gm";
-import { DBManager } from "./dbmanager";
-import * as specials from './utils/specials';
-import { MessageServices } from "./services";
 import { TimedActionsSubsystem } from "./tactions";
 import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";

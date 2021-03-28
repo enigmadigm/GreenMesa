@@ -29,7 +29,6 @@ export const command: Command = {
         try {
             const { commands } = client;
             const { categories } = client;
-            if (!commands || !categories) return;
             //const cats = categories.map(c => c.name);
 
             // kind of an unnecessary and stupid part, this will rename any categories with the key being the original and the value being the new name
@@ -45,7 +44,7 @@ export const command: Command = {
             if (!args.length) {
                 const data = [];
                 //const helpfields = [];
-                const helpfields = categories?.filter(ca => ca.name !== "owner").map(ca => {
+                const helpfields = categories.filter(ca => ca.name !== "owner").map(ca => {
                     return {
                         name: `${titleCase(ca.name)}${ca.emoji ? ` ${ca.emoji} ` : ''}`,
                         value: `\`\`\` ${message.gprefix}help ${ca.name.toLowerCase()} \`\`\``,
@@ -81,7 +80,7 @@ export const command: Command = {
                     //data.push(`**My public commands: (${commands.array().length})**`);
                     // for some reason if you don't separate \` ${command.name} \` with a space it flips out
                     //                                         ^               ^
-                    data.push(commands?.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).map(command => {
+                    data.push(commands.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).map(command => {
                         let availableDesc = "";
                         if (!command.description) {
                             availableDesc = "*no description*";
@@ -176,7 +175,7 @@ export const command: Command = {
                 }).join('\n'));
                 data.push('')
                 data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
-                const cmdcount = commands?.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
+                const cmdcount = commands.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
                 await message.channel.send({
                     embed: {
                         title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
@@ -188,7 +187,7 @@ export const command: Command = {
                     }
                 });
             } else {
-                message.channel.send({
+                await message.channel.send({
                     embed: {
                         color: await client.database.getColor("fail_embed_color"),
                         description: `that is not a valid command or category`,
