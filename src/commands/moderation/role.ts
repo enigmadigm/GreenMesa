@@ -132,7 +132,7 @@ export const command: Command = {
                 await message.channel.send({
                     embed: {
                         color: await client.database.getColor("success_embed_color"),
-                        description: `${targetRole || "Role"} ${target === "all" ? "toggled on" : target === "allon" ? "given to" : "removed from"} ${affected} member(s)`
+                        description: `${targetRole} ${target === "all" ? "toggled on" : target === "allon" ? "given to" : "removed from"} ${affected} member(s)`
                     }
                 });
             } else if (target instanceof Role) {
@@ -171,7 +171,7 @@ export const command: Command = {
                 await message.channel.send({
                     embed: {
                         color: await client.database.getColor("success_embed_color"),
-                        description: `${targetRole || "Role"} toggled on ${targets.length} member(s)`
+                        description: `${targetRole} toggled on ${targets.length} member(s)`
                     }
                 });
             } else if (target instanceof GuildMember) {
@@ -181,7 +181,7 @@ export const command: Command = {
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("success_embed_color"),
-                            description: `${targetRole || "Role"} removed from ${target}`
+                            description: `${targetRole} removed from ${target}`
                         }
                     });
                 } else {
@@ -190,7 +190,7 @@ export const command: Command = {
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("success_embed_color"),
-                            description: `${targetRole || "Role"} given to ${target}`
+                            description: `${targetRole} given to ${target}`
                         }
                     });
                 }
