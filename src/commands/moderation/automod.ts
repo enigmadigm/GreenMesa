@@ -93,9 +93,9 @@ export const command: Command = {
                             break;
                         }
                         mod.enableAll = false;
-                        if (mod.channels?.includes(channel.id)) {
+                        if (mod.channels.includes(channel.id)) {
                             if (mod.channelEffect === "disable") {
-                                mod.channels?.splice(mod.channels.indexOf(channel.id), 1);
+                                mod.channels.splice(mod.channels.indexOf(channel.id), 1);
                                 const addResult = await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
                                 if (!addResult || !addResult.affectedRows) {
                                     client.specials.sendError(message.channel, "Failed to update config", true);
