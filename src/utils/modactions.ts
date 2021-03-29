@@ -299,14 +299,14 @@ export async function checkWarnings(client: XClient, target: GuildMember): Promi
         if (!warnConfig) {
             return;
         }
-        if (!conf.threshold || typeof conf.threshold !== "number" || !conf.punishment || typeof conf.punishment !== "string") {
+        if (typeof conf.threshold !== "number" || typeof conf.punishment !== "string" || !conf.punishment) {
             await client.database.editGuildSetting(target.guild, "warnconfig", undefined, true);
             return;
         }
         if (conf.threshold === -1) {
             return;
         }
-        const overWarnLimit = 0 < (conf.threshold ? conf.threshold : -1) && (ud.warnings || 0) > (conf.threshold ? conf.threshold : -1);
+        const overWarnLimit = (ud.warnings || 0) > (conf.threshold);
         let ptime = 0;
         if (conf.time && typeof conf.time === "number") {
             ptime = conf.time;
