@@ -210,7 +210,7 @@ export default class Leeter {
         if (this.transtype == 2) {
             this.textin = this.textin.replace(/(can|should|would|could|have|did) (?:are|is|am) good/g, "$1 defeat");
             this.textin = this.textin.replace(/(can|should|would|could|have|did|do|will|shall) (?:are|is|am) (good|better than)/g, "$1 defeat");
-            this.textin = this.textin.replace(/(?:are|is|am) good (me|you|him|her|them|y'all|my|your|his|her|their|our)/g, "defeat $1");
+            this.textin = this.textin.replace(/(?:are|is|am) good (me|your|you|him|her|them|y'all|my|his|her|their|our)/g, "defeat $1");
         }
     }
 
