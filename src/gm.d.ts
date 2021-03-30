@@ -410,6 +410,7 @@ export interface WarnConfEndpointData extends GuildsEndpointBase {
 
 export interface ModActionData {
     id?: number;
+    superid?: string;
     guildid: string;
     casenumber?: number;
     userid: string;
@@ -444,16 +445,7 @@ export interface UserNote {
     updated: string;
 }
 
-/*export interface LogChannelData {
-    log_channel: string;
-    member_channel: string;
-    server_channel: string;
-    voice_channel: string;
-    messages_channel: string;
-    movement_channel: string;
-    ignored_channels: string[];
-}
-
+/*
 export type LogObject = Record<LogString, boolean>;
 export type LogFlags = Record<LogString, number>;
 
