@@ -55,12 +55,18 @@ export default class MesaWebsite {
         });
         this.app.get("/invite/:id", async (req, res) => {
             const { id } = req.params;
-            const url = await this.client.generateInvite(2147483639);
-            res.redirect(301, `${url}&guild_id=${id}&response_type=code&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000/embark' : `https://stratum.hauge.rocks/embark`)}`);
+            const url = await this.client.generateInvite({
+                permissions: 2147483639,
+                guild: id,
+                disableGuildSelect: true
+            });
+            res.redirect(301, `${url}&response_type=code&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000/embark' : `https://stratum.hauge.rocks/embark`)}`);
         });
         this.app.get("/invite", async (req, res) => {
-            const url = await this.client.generateInvite(2147483639);
-            res.redirect(301, url);
+            const url = await this.client.generateInvite({
+                permissions: 2147483639
+            });
+            res.redirect(301, `${url}&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000/embark' : `https://stratum.hauge.rocks/embark`)}`);
         });
         /*this.app.get("/embark", (req, res) => {
             const id = req.query.guild_id;
@@ -73,6 +79,16 @@ export default class MesaWebsite {
         this.app.get("/logout", (req, res) => {
             req.logout();
             res.redirect("/");
+        });
+        this.app.get("/login", (req, res, next) => {
+            if (!req.user) {
+                return passport.authenticate('discord')(req, res, next);
+            }
+            if (process.env.NODE_ENV === "production") {
+                res.redirect('/menu');
+            } else {
+                res.redirect('http://localhost:3000/menu');
+            }
         });
 
         if (process.env.NODE_ENV === "production") {
