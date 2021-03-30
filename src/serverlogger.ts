@@ -375,7 +375,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                         name: `Channel Permissions Changed`,
                         iconURL: logChannel.guild.iconURL() || ""
                     },
-                    description: `In channel: ${nc}\nPermissions updated for: \`${(subject instanceof Role ? subject?.name.escapeDiscord() : subject?.user.tag.escapeDiscord())}\``,
+                    description: `In channel: ${nc}\nPermissions updated for: \`${(subject instanceof Role ? subject.name.escapeDiscord() : subject instanceof GuildMember ? subject.user.tag.escapeDiscord() : "unknown")}\``,
                     footer: {
                         text: `Channel ID: ${nc.id}`
                     },
