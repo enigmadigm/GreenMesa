@@ -1,6 +1,6 @@
 {
   "name": "greenmesa",
-  "version": "3.5.4",
+  "version": "3.5.5",
   "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
   "main": "dist/main.js",
   "scripts": {

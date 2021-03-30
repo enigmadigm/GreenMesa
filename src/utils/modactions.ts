@@ -296,9 +296,6 @@ export async function checkWarnings(client: XClient, target: GuildMember): Promi
         } catch (error) {
             //
         }
-        if (!warnConfig) {
-            return;
-        }
         if (typeof conf.threshold !== "number" || typeof conf.punishment !== "string" || !conf.punishment) {
             await client.database.editGuildSetting(target.guild, "warnconfig", undefined, true);
             return;
