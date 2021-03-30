@@ -88,7 +88,7 @@ export function DashboardLeveling(props: HomeProps) {
                                 {levels.filter(x => x.name !== "deleted-role").length ? (
                                     <div className="levelcards">
                                         {levels.map(x => (
-                                            <LevelCard level={x} />
+                                            <LevelCard key={`${x.id}-${x.level}`} level={x} />
                                         ))}
                                     </div>
                                 ) : (
