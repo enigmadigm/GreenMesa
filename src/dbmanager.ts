@@ -106,7 +106,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `bans` int(11) DEFAULT 0, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `roles` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `duration` int(11) NOT NULL DEFAULT -1, `mod` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `duration` int(11) NOT NULL DEFAULT -1, `mod` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
 
             return this;
@@ -788,8 +788,6 @@ export class DBManager {
             if (!(typeof guilds === "object")) {
                 return false;
             }
-            username = username.replace(/'/g, "\\'");
-            avatar = avatar.replace(/'/g, "\\'");
             const guildString = JSON.stringify(guilds).escapeSpecialChars();
             const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES (${escape(id)}, ${escape(`${username}#${discriminator}`)} , ${escape(avatar)}, ${escape(guildString)}) ON DUPLICATE KEY UPDATE tag = ${escape(`${username}#${discriminator}`)}, avatar = ${escape(avatar)}, guilds = ${escape(guildString)}`);
             if (!result || !result.affectedRows) {
@@ -808,8 +806,7 @@ export class DBManager {
     async getDashUser(id: string): Promise<false | DashUserObject> {
         try {
             if (!id) return false;
-            id = id.replace(/'/g, "\\'");
-            const result = await <Promise<{ userid: string, tag: string, avatar: string, guilds: string }[]>>this.query(`SELECT * FROM dashusers WHERE userid = '${id}'`);
+            const result = await <Promise<{ userid: string, tag: string, avatar: string, guilds: string }[]>>this.query(`SELECT * FROM dashusers WHERE userid = ${escape(id)}`);
             if (!result || !result[0] || !result[0].userid) {
                 return false;
             }
@@ -1152,14 +1149,14 @@ export class DBManager {
      */
     async editModAction(data: ModActionData): Promise<InsertionResult | false> {
         try {
-            const { guildid, userid, casenumber, type, duration, mod, summary } = data;
+            const { superid, guildid, userid, casenumber, type, duration, mod, summary } = data;
             if (!guildid || !userid || !casenumber) return false;
             const e = await this.getModActionByGuildCase(guildid, casenumber);
             let sql = ``;
             if (e && e.casenumber === casenumber) {
-                sql = `UPDATE modactions SET type = COALESCE(${escape(type)}, type), duration = COALESCE(${duration}, duration), mod = COALESCE(${escape(mod)}, mod), summary = COALESCE(${escape(summary)}, summary) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+                sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), duration = COALESCE(${duration}, duration), mod = COALESCE(${escape(mod)}, mod), summary = COALESCE(${escape(summary)}, summary) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
             } else {
-                sql = `INSERT INTO modactions (guildid, userid, casenumber, type, duration, mod, summary) VALUES (${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(duration)}, ${escape(mod)}, ${escape(summary)})`;
+                sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, duration, mod, summary) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(duration)}, ${escape(mod)}, ${escape(summary)})`;
             }
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {

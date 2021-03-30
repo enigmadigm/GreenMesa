@@ -242,7 +242,7 @@ export function DashboardServerlog(props: HomeProps) {
                                         {Object.keys(LoggingFlags).map((f: any) => {
                                             const name: keyof typeof LoggingFlags = f;
                                             return (
-                                                <FormControlLabel
+                                                <FormControlLabel key={name}
                                                     control={<Checkbox checked={(data.events & LoggingFlags[name]) === LoggingFlags[name]} onChange={handleCheck} name={f} />}
                                                     label={titleCase(f.toLowerCase().split("_").join(" "))}
                                                     style={{ flex: "1 1 40%" }}
