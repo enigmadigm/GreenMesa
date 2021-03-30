@@ -171,11 +171,11 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
             embed: {
                 "color": await Bot.client.database.getColor("warn_embed_color") || 0xff0000,
                 "author": {
-                    "name": `${first?.channel.name}`,
-                    "icon_url": first?.guild?.iconURL() || ""
+                    "name": `${first.channel.name}`,
+                    "icon_url": first.guild.iconURL() || ""
                 },
                 "timestamp": new Date(),
-                "description": `**Bulk deleted messages in ${first?.channel.toString()}**`,
+                "description": `**Bulk deleted messages in ${first.channel.toString()}**`,
                 fields: [
                     {
                         name: 'Message Count',
