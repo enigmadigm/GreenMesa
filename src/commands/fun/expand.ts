@@ -23,7 +23,7 @@ export const command: Command = {
             //}
             //const a = args[0];
             const a = args.join("");
-            if (!/^[A-z]+$/.test(a)) {
+            if (!/^[A-Za-z]+$/.test(a)) {
                 client.specials?.sendError(message.channel, "Only (A-z) letters allowed", true);
                 return;
             }
