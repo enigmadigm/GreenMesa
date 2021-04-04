@@ -171,11 +171,11 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
             embed: {
                 "color": await Bot.client.database.getColor("warn_embed_color") || 0xff0000,
                 "author": {
-                    "name": `${first?.channel.name}`,
-                    "icon_url": first?.guild?.iconURL() || ""
+                    "name": `${first.channel.name}`,
+                    "icon_url": first.guild.iconURL() || ""
                 },
                 "timestamp": new Date(),
-                "description": `**Bulk deleted messages in ${first?.channel.toString()}**`,
+                "description": `**Bulk deleted messages in ${first.channel.toString()}**`,
                 fields: [
                     {
                         name: 'Message Count',
@@ -276,11 +276,11 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
         if (!logChannel || logChannel.type !== 'text') return;
         const nameref = channel.name ? ` (${channel.name})` : "";
         const titletyperef = channel.type !== "category" ? `${capitalizeFirstLetter(channel.type)} ` : "";
-        
+
         await logChannel.send({
             embed: {
                 author: {
-                    name: `${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
+                    name: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type === "voice" ? "<:voice_channel:828153551154315275>" : (channel.type === "text" ? "<:text_channel:828153514315612230>" : ""))} ${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                     iconURL: channel.guild.iconURL() || ""
                 },
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
@@ -375,7 +375,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                         name: `Channel Permissions Changed`,
                         iconURL: logChannel.guild.iconURL() || ""
                     },
-                    description: `In channel: ${nc}\nPermissions updated for: \`${(subject instanceof Role ? subject?.name.escapeDiscord() : subject?.user.tag.escapeDiscord())}\``,
+                    description: `In channel: ${nc}\nPermissions updated for: \`${(subject instanceof Role ? subject.name.escapeDiscord() : subject instanceof GuildMember ? subject.user.tag.escapeDiscord() : "unknown")}\``,
                     footer: {
                         text: `Channel ID: ${nc.id}`
                     },

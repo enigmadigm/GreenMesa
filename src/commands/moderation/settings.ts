@@ -1,9 +1,9 @@
 import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
-import { stringToChannel, stringToRole } from '../../utils/parsers';
+import { stringToRole } from '../../utils/parsers';
 import { Role } from "discord.js";
 import { Command } from "src/gm";
-//import { getGlobalSetting, getGuildSetting, editGuildSetting, checkForLevelRoles, setLevelRole, deleteAllLevelRoles } from "../dbmanager";
+import { getDashboardLink } from "../../utils/specials";
 
 export const command: Command = {
     name: "settings",
@@ -261,7 +261,7 @@ export const command: Command = {
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("info_embed_color"),
-                            description: `Now you can go to the [dashboard](https://stratum.hauge.rocks/dash) to configure the serverlog.`,
+                            description: `Now you can go to the [dashboard](${getDashboardLink(message.guild.id, "serverlog")}) to configure the serverlog.`,
                         }
                     });
                     /*argIndex++;

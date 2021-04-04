@@ -90,6 +90,9 @@ export default class MesaWebsite {
                 res.redirect('http://localhost:3000/menu');
             }
         });
+        this.app.get("/privacy", (re, res) => {
+            res.redirect("https://www.iubenda.com/privacy-policy/42750438/full-legal");
+        })
 
         if (process.env.NODE_ENV === "production") {
             this.app.use(express.static(path.join(__dirname, "../../src/website", 'client/build')));

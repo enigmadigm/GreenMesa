@@ -10,7 +10,7 @@ import words from "../words.json";
 export function wi(msg: XMessage): false | undefined {
     if (!msg || !msg.content || typeof msg.content !== "string") return false;
     const mws = msg.content.replace(/[.,]/, "").replace("/", " ").split(/\s/).filter(x => {
-        if (/^[A-z]+$/.test(x)) {
+        if (/^[A-Za-z]+$/.test(x)) {
             return x;
         }
     });
