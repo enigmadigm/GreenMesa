@@ -276,11 +276,11 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
         if (!logChannel || logChannel.type !== 'text') return;
         const nameref = channel.name ? ` (${channel.name})` : "";
         const titletyperef = channel.type !== "category" ? `${capitalizeFirstLetter(channel.type)} ` : "";
-        
+
         await logChannel.send({
             embed: {
                 author: {
-                    name: `${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
+                    name: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type === "voice" ? "<:voice_channel:828153551154315275>" : (channel.type === "text" ? "<:text_channel:828153514315612230>" : "<:text_channel:828153514315612230>"))} ${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                     iconURL: channel.guild.iconURL() || ""
                 },
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
