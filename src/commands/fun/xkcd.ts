@@ -38,15 +38,15 @@ async function sendById(client: XClient, channel: TextChannel | DMChannel | News
 
         const attach = new MessageAttachment(`${c.img}`);
         // await channel.send(`**${c.title || c.safe_title}**`, [attach, new MessageEmbed().setDescription(`${c.alt ? `||${c.alt}||` : "*no caption*"}`).setColor("#2f3136")]);
-        await sendComic(channel, c.title || c.safe_title, attach, c.alt)
+        await sendComic(channel, c.title || c.safe_title, attach, c.alt, c.num)
     } catch (error) {
         client.specials?.sendError(channel, "Comic could not be retrieved. Try again later.", true);
         return;
     }
 }
 
-async function sendComic(channel: TextChannel | DMChannel | NewsChannel, title: string, att: MessageAttachment, desc = "") {
-    await channel.send(`**${title}**`, [
+async function sendComic(channel: TextChannel | DMChannel | NewsChannel, title: string, att: MessageAttachment, desc = "", issue: number) {
+    await channel.send(`**${title}** - #${issue}`, [
         att,
         new MessageEmbed().setDescription(`${desc ? `||${desc}||` : "*no caption*"}`).setColor("#2f3136")
     ]);
@@ -100,7 +100,7 @@ random
                         const attach = new MessageAttachment(`${j.img}`);
                         // await message.channel.send(`**${j.title || j.safe_title}**${j.alt ? `\n${j.alt}` : ""}`, attach);
                         // await message.channel.send(`**${j.title || j.safe_title}**`, [attach, new MessageEmbed().setDescription(`${j.alt ? `||${j.alt}||` : "*no caption*"}`).setColor("#2f3136")]);
-                        await sendComic(message.channel, j.title || j.safe_title, attach, j.alt);
+                        await sendComic(message.channel, j.title || j.safe_title, attach, j.alt, j.num);
                     } catch (error) {
                         client.specials?.sendError(message.channel, "Comic could not be retrieved. Try again later.", true);
                     }
