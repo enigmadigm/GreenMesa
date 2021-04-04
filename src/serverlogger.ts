@@ -279,10 +279,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
 
         await logChannel.send({
             embed: {
-                author: {
-                    name: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type === "voice" ? "<:voice_channel:828153551154315275>" : (channel.type === "text" ? "<:text_channel:828153514315612230>" : ""))} ${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
-                    iconURL: channel.guild.iconURL() || ""
-                },
+                title: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type === "voice" ? "<:voice_channel:828153551154315275>" : (channel.type === "text" ? "<:text_channel:828153514315612230>" : ""))} ${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
                 color: deletion ? await Bot.client.database.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database.getColor("success_embed_color"),
                 timestamp: deletion ? channel.createdAt : new Date(),
