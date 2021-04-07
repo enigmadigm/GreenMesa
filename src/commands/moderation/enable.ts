@@ -30,7 +30,7 @@ export const command: Command = {
             if (found.name === "enable" || found.name === "disable") {
                 await message.channel.send({
                     embed: {
-                        color: await client.database.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail"),
                         description: `Sanctioning \` enable \` or \` disable \` is prohibited`,
                     }
                 });
@@ -43,7 +43,7 @@ export const command: Command = {
                 if (!result || result.affectedRows < 1) {
                     await message.channel.send({
                         embed: {
-                            color: await client.database.getColor("fail_embed_color"),
+                            color: await client.database.getColor("fail"),
                             description: `Failed to enable ${catMatch ? "group" : "command"}`,
                             footer: {
                                 text: `command sanctioner`
@@ -54,7 +54,7 @@ export const command: Command = {
                 }
                 await message.channel.send({
                     embed: {
-                        color: await client.database.getColor("success_embed_color"),
+                        color: await client.database.getColor("success"),
                         description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` toggled to **enabled**`,
                         footer: {
                             text: `command sanctioner`

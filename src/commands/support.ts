@@ -7,7 +7,7 @@ export const command: Command = {
     description: 'get invite to (new) support server',
     async execute(client, message) {
         try {
-            const info_embed_color = await client.database.getColor("info_embed_color");
+            const info_embed_color = await client.database.getColor("info");
             message.channel.send({
                 embed: {
                     color: info_embed_color,

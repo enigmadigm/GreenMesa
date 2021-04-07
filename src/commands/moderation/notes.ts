@@ -46,7 +46,7 @@ export const command: Command = {
                 return;
             }
             const embed: MessageEmbedOptions = {
-                color: await client.database.getColor("info_embed_color"),
+                color: await client.database.getColor("info"),
                 description: `Notes for ${targetName} (${targetId})`,
                 fields: []
             };

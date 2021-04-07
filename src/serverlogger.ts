@@ -94,7 +94,7 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
                         inline: false
                     }
                 ],
-                "color": joining ? await Bot.client.database.getColor("success_embed_color") : await Bot.client.database.getColor("fail_embed_color"),
+                "color": joining ? await Bot.client.database.getColor("success") : await Bot.client.database.getColor("fail"),
                 "timestamp": joining ? member.joinedAt?.getTime() || new Date().getTime() : new Date().getTime(),
                 "footer": {
                     "text": `ID: ${member.id}`
@@ -123,7 +123,7 @@ export async function logMessageDelete(message: Message): Promise<void> {
 
         logChannel.send({
             embed: {
-                "color": await Bot.client.database.getColor("fail_embed_color") || 0xff0000,
+                "color": await Bot.client.database.getColor("fail") || 0xff0000,
                 "author": {
                     "name": "Message Deleted",
                     "icon_url": message.author.displayAvatarURL()
@@ -255,7 +255,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
                         iconURL: role.guild.iconURL() || ""
                     },
                     description: `${deletion ? `@${role.name} (${role.hexColor})` : `${role}\nName: ${role.name}\nColor: ${role.hexColor}`}${deletion ? "\n created " + moment(role.createdAt).utc().fromNow() : ''}`,
-                    color: deletion ? await Bot.client.database.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database.getColor("success_embed_color"),
+                    color: deletion ? await Bot.client.database.getColor("fail") || 0xff0000 : await Bot.client.database.getColor("success"),
                     timestamp: deletion ? role.createdAt : new Date(),
                     footer: {
                         text: "Role ID: " + role.id
@@ -281,7 +281,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
             embed: {
                 title: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type === "voice" ? "<:voice_channel:828153551154315275>" : (channel.type === "text" ? "<:text_channel:828153514315612230>" : ""))} ${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
-                color: deletion ? await Bot.client.database.getColor("fail_embed_color") || 0xff0000 : await Bot.client.database.getColor("success_embed_color"),
+                color: deletion ? await Bot.client.database.getColor("fail") || 0xff0000 : await Bot.client.database.getColor("success"),
                 timestamp: deletion ? channel.createdAt : new Date(),
                 footer: {
                     text: "Channel ID: " + channel.id
@@ -429,7 +429,7 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
                     name: `Emoji ${deletion ? 'Removed' : 'Added'}`,
                     iconURL: logChannel.guild.iconURL() || ""
                 },
-                color: await Bot.client.database.getColor("info_embed_color"),
+                color: await Bot.client.database.getColor("info"),
                 image: {
                     url: emoji.url,
                 },
@@ -471,7 +471,7 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
                     name: `Nickname Changed`,
                     iconURL: logChannel.guild.iconURL() || ""
                 },
-                color: await Bot.client.database.getColor("info_embed_color"),
+                color: await Bot.client.database.getColor("info"),
                 description: `Nickname of ${newMember} changed`,
                 fields: [
                     {
@@ -512,7 +512,7 @@ export async function logAutoBan(member: GuildMember): Promise<void> {
                     name: `Member Autobanned`,
                     iconURL: logChannel.guild.iconURL() || ""
                 },
-                color: await Bot.client.database.getColor("info_embed_color"),
+                color: await Bot.client.database.getColor("info"),
                 description: `Autoban has been activated on ${member.user.tag} (${member.id}).\nThey are now banned permanently.`,
                 timestamp: new Date(),
             }

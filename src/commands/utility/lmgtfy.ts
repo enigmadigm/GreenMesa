@@ -145,7 +145,7 @@ export const command: Command = {
                 if (sc) {
                     const embed: MessageEmbedOptions = {
                         description: `[Let Me Google That For You](https://${sengine}?q=${sterms}${iie})`,
-                        color: 0x2F3136,
+                        color: await client.database.getColor("embed"),
                         image: {
                             url: 'attachment://screenshot.png'
                         },

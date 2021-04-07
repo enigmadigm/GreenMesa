@@ -45,7 +45,7 @@ export const command: Command = {
             } catch (error) {
                 message.channel.send({
                     embed: {
-                        color: await client.database.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail"),
                         title: 'Error Rolling',
                         description: `${error.message}`
                     }

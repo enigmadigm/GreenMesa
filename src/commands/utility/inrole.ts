@@ -89,7 +89,7 @@ export const command: Command = {
             const pages: MessageEmbedOptions[] = [];
             for (const page of overflowArray) {
                 const e: MessageEmbedOptions = {
-                    color: await client.database.getColor("info_embed_color"),
+                    color: await client.database.getColor("info"),
                     title: `List of users with role \`${target.name}\``,
                     description: `${page.join("\n")}`
                 }

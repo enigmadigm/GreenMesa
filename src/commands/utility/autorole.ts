@@ -16,7 +16,7 @@ export const command: Command = {
         try {
             message.channel.send({
                 embed: {
-                    color: await client.database.getColor("info_embed_color"),
+                    color: await client.database.getColor("info"),
                     description: `Please go to [the dashboard](https://stratum.hauge.rocks/dash/${message.guild ? `${message.guild.id}/autorole` : ""}) to configure the autorole features of Stratum.`
                 }
             })

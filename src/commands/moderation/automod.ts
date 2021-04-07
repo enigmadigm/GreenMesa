@@ -178,7 +178,7 @@ export const command: Command = {
                     await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, undefined, true);
                     message.channel.send({
                         embed: {
-                            color: await client.database.getColor("info_embed_color"),
+                            color: await client.database.getColor("info"),
                             description: `The configuration for ${mod.name} has been reset.`
                         }
                     });
@@ -203,7 +203,7 @@ export const command: Command = {
                                 const channelList = mod.channels.map(x => message.guild?.channels.cache.get(x) || "#deleted-channel");
                                 message.channel.send({
                                     embed: {
-                                        color: await client.database.getColor("info_embed_color"),
+                                        color: await client.database.getColor("info"),
                                         title: "Automod Config",
                                         description: `Information about the \`${mod.name}\` module.${info ? `\n\n${info}` : ""}
 
@@ -216,7 +216,7 @@ ${!enabled ? "Module not enabled anywhere" : (mod.enableAll ? "all channels" : (
                         } else {
                             message.channel.send({
                                 embed: {
-                                    color: await client.database.getColor("info_embed_color"),
+                                    color: await client.database.getColor("info"),
                                     title: "Automod Config",
                                     description: `Information about the \`${mod.name}\` module.${info ? `\n\n${info}` : ""}
 
@@ -234,7 +234,7 @@ ${!enabled ? "Disabled" : "Enabled"}
 
                     message.channel.send({
                         embed: {
-                            color: await client.database.getColor("info_embed_color"),
+                            color: await client.database.getColor("info"),
                             title: "Automod Config",
                             description: `The automod service is split into various modules. The automod modules are responsible for performing the various automod tasks. They are enabled individually and are all off by default.
 

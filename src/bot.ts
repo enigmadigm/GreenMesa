@@ -312,7 +312,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
     
         if (message.mentions && message.mentions.has(client.user)) {
             if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
-                const iec_gs = await client.database.getColor("info_embed_color");
+                const iec_gs = await client.database.getColor("info");
                 message.channel.send({
                     embed: {
                         "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
@@ -409,7 +409,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         if (command.args && (typeof command.args === "boolean" || command.args > 0) && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
-            const fec_gs = await client.database.getColor("fail_embed_color");
+            const fec_gs = await client.database.getColor("fail");
 
             let reply = `Arguments are needed to make that work!`;
             if (command.usage) {

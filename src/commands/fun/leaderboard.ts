@@ -22,7 +22,7 @@ export const command: Command = {
             const joinedLb = rowobj.rows.map((row, i) => `${(row.userid == message.author.id) ? `[\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\` ⫸](https://stratum.hauge.rocks "Your Rank")` : `**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸` } ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
             message.channel.send({
                 embed: {
-                    color: await client.database.getColor("info_embed_color") || 6969,
+                    color: await client.database.getColor("info") || 6969,
                     author: {
                         name: 'Leaderboard',
                         icon_url: message.guild.iconURL() || client.user?.displayAvatarURL()

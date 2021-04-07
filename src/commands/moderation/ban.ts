@@ -83,7 +83,7 @@ export const command: Command = {
                 try {
                     await target.send({
                         embed: {
-                            color: await client.database.getColor("fail_embed_color"),
+                            color: await client.database.getColor("fail"),
                             title: `Ban Notice`,
                             description: `Banned from ${message.guild.name}.${time ? `\nThis is a temporary ban, it will end in ${dur}` : ""}.`,
                             fields: [

@@ -83,7 +83,7 @@ export const command: Command = {
     usage: '[acronym]',
     async execute(client, message, args) {
         try {
-            const fail_embed_color = await client.database.getColor("fail_embed_color");
+            const fail_embed_color = await client.database.getColor("fail");
             const darkred_embed_color = await client.database.getColor("darkred_embed_color");
 
             const acronymNames = acronyms.map((acro: {acronym: string, description: string}) => acro.acronym);

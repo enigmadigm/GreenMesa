@@ -30,7 +30,7 @@ export const command: Command = {
             if (found.name === "enable" || found.name === "disable") {
                 await message.channel.send({
                     embed: {
-                        color: await client.database.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail"),
                         description: `Debossing \` enable \` or \` disable \` is prohibited`,
                         footer: {
                             text: `module debosser`
@@ -46,7 +46,7 @@ export const command: Command = {
                 if (!result || result.affectedRows < 1) {
                     await message.channel.send({
                         embed: {
-                            color: await client.database.getColor("fail_embed_color"),
+                            color: await client.database.getColor("fail"),
                             description: `Failed to disable ${catMatch ? "group" : "command"}`,
                             footer: {
                                 text: `module debosser`
@@ -57,7 +57,7 @@ export const command: Command = {
                 }
                 await message.channel.send({
                     embed: {
-                        color: await client.database.getColor("success_embed_color"),
+                        color: await client.database.getColor("success"),
                         description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` toggled to **disabled**`,
                         footer: {
                             text: `module debosser`

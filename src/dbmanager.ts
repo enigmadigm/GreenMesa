@@ -138,7 +138,12 @@ export class DBManager {
      * @param name name of the color
      */
     async getColor(name: string): Promise<number> {
-        if (!name.endsWith("_embed_color")) return 0;
+        if (name === "embed") {
+            return 0x2F3136;
+        }
+        if (!name.endsWith("_embed_color")) {
+            name += "_embed_color";
+        }
         // color cache lookup and management should go here
         const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
         if (!rows || rows.length == 0) {

@@ -21,7 +21,7 @@ export const command: Command = {
 
             const rows = await client.database.getXP(target);
             const warn_embed_color = await client.database.getColor("warn_embed_color");
-            const info_embed_color = await client.database.getColor("info_embed_color");
+            const info_embed_color = await client.database.getColor("info");
             const xpTypeGlobal = await client.database.getGlobalSetting('xp_type');
 
             if (!rows) {

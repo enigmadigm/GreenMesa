@@ -46,7 +46,7 @@ export const command: Command = {
                 return `${curr ? '🔸' : '🔹'}**${lvl.level}**: ${message.guild?.roles.cache.find(ro => ro.id === lvl.roleid) || 'no role found'}${curr ? ' < you' : ''}`
             });
 
-            const info_embed_color = await client.database.getColor("info_embed_color");
+            const info_embed_color = await client.database.getColor("info");
             message.channel.send({
                 embed: {
                     color: info_embed_color,
