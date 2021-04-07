@@ -9,7 +9,7 @@ export const command: Command = {
     name: "settings",
     description: {
         short: "manage the server settings for the bot",
-        long: 'Use to manage many of the server config settings. You can send this command without arguments to see the various options available. Send most options without arguments to see them in even more detail. **In development**.'
+        long: 'Use to manage many of the server config settings. You can send this command without arguments to see the various options available. Send most options without arguments to see them in even more detail.'
     },
     aliases: ['set'],
     usage: "[send nothing for detailed help]",
