@@ -450,10 +450,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (!cooldowns.has(command.name)) {
             cooldowns.set(command.name, new Discord.Collection());
         }
-    
+
         const timestamps = cooldowns.get(command.name);
         const cooldownAmount = (command.cooldown || 2) * 1000;
-    
+
         if (timestamps) {
             if (timestamps.has(message.author.id)) {
                 const usertimestamp = timestamps.get(message.author.id);
@@ -484,7 +484,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 return;
             }
         }
-    
+
         try {
             command.execute(client, message, args);
             
@@ -494,11 +494,11 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
                 if (err) return console.log(err);
             });*/
-    
+
             if (config.msgLogging) {
                 const logChannel = client.channels.cache.get('661614128204480522');
                 if (logChannel && logChannel instanceof TextChannel) {
-                    logChannel.send(`${message.author.tag.escapeDiscord()} sent command \`${command.name}\` at \`${message.id}\` ${message.url}`).catch(console.error);
+                    logChannel.send(`${message.author.tag.escapeDiscord()} sent command \`${command.name}\` at \`${message.id}\` in \`${message.channel.id}\` @${message.url}`).catch(console.error);
                 }
             }
 
