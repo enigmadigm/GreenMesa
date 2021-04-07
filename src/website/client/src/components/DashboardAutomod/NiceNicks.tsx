@@ -22,7 +22,7 @@ export function NiceNicks(props: AMCustomOptionsProps) {
                 <Switch id={`amnndm`} onChange={handleDMToggle} defaultChecked={mod.sendDM} checked={mod.sendDM} style={{ marginRight: 10 }} />
                 <span style={{ fontWeight: 700, paddingBottom: 5 }}>{mod.sendDM ? "on" : "off"}</span>
             </FormControl>
-            <p style={{ marginBottom: "1rem" }}>Enabling the Send DM option will prompt the bot to send private messages to anybody with a bad nickname reminding them to change it from the placeholder.</p>
+            <p style={{ marginBottom: "1rem" }}>Enabling the Send DM option will prompt the bot to send private messages to anybody with a bad nickname reminding them to change it from the placeholder. <strong>If you enable the Courtesy Message action, the user will get two messages about their infraction.</strong></p>
         </div>
     )
 }
