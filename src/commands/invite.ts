@@ -11,14 +11,8 @@ export const command: Command = {
         }
         message.channel.send({
             embed: {
-                color: 3447003,
-                description: `[Invite to get me on your server](https://discordapp.com/api/oauth2/authorize?client_id=${client.user?.id}&permissions=2147483639&scope=bot&${guildIdParam})`,
-                fields: [
-                    {
-                        name: `\u200b`,
-                        value: `**IMPORTANT:** Make sure all moderation commands work by confirming that the bot's role is above every role it should be able to manage, like @everyone.\n\n[Steps to get bot (low effort)](https://git.io/fjmEX).`
-                    }
-                ],
+                color: await client.database.getColor("info"),
+                description: `Add ${client.user?.username} to your server **[here](https://stratum.hauge.rocks/invite${guildIdParam ? `/${guildIdParam}` : ""})**.\n\n**IMPORTANT:** Initial issues are likely caused by misconfigured permissions.\n\n[Steps to get bot (low effort)](https://git.io/fjmEX).`,
                 timestamp: new Date().getTime(),
                 footer: {
                     icon_url: client.user?.avatarURL() || undefined,
