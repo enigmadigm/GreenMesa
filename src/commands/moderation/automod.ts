@@ -17,7 +17,6 @@ export const command: Command = {
     permLevel: permLevels.admin,
     moderation: true,
     guildOnly: true,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
