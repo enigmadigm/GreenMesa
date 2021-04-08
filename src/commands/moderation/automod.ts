@@ -2,6 +2,7 @@ import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToChannel } from "../../utils/parsers";
+import { getDashboardLink } from "../../utils/specials";
 
 export const command: Command = {
     name: "automod",
@@ -30,12 +31,12 @@ export const command: Command = {
                     const option = args[argIndex] === "enable";
                     argIndex++;
                     if (!args[argIndex]) {
-                        client.specials.sendError(message.channel, "Module not provided. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, `Module not provided.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
                         break;
                     }
                     const mod = allMods.find(x => x.name === args[argIndex]);
                     if (!mod) {
-                        client.specials.sendError(message.channel, "That is not a valid module. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, `That is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
                         break;
                     }
                     argIndex++;
@@ -46,7 +47,7 @@ export const command: Command = {
                     }
                     if (!mod.text) {
                         if (channel) {
-                            client.specials.sendError(message.channel, "This module cannot be toggled in a channel. This module does not handle messages. Do not specify a channel. **To configure additional settings for this module, go to the [web dashboard](https://stratum.hauge.rocks).**");
+                            client.specials.sendError(message.channel, `This module cannot be toggled in an individual channel. This module *does not handle messages*. **To configure additional settings for this module, go to the [dashboard](${getDashboardLink(message.guild.id, "automod")}).**`);
                             break;
                         }
                         /*if (mod.channelEffect) {
@@ -62,7 +63,7 @@ export const command: Command = {
                             }
                             mod.enableAll = true;
                             await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
-                            message.channel.send(`Enabled ${mod.name}.`);
+                            message.channel.send(`Enabled ${mod.name}.\n⚠️ Further configuration may be needed in the dashboard.`);
                         } else {
                             if (!mod.enableAll) {
                                 client.specials.sendError(message.channel, "Module already disabled.");
@@ -82,14 +83,14 @@ export const command: Command = {
                     if (option) {
                         if (!channel) {
                             if (mod.enableAll) {
-                                client.specials.sendError(message.channel, `Module \`${mod.name}\` is already enabled in all channels`);
+                                client.specials.sendError(message.channel, `Module \`${mod.name}\` is already enabled in all channels.`);
                                 break;
                             }
                             mod.enableAll = true;
                             mod.channels = [];
                             mod.channelEffect = "enable";
                             await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
-                            message.channel.send(`Enabled \`${mod.name}\` in all channels. **WARNING:** Further configuration may be required in the dashboard.`);
+                            message.channel.send(`Enabled \`${mod.name}\` in all channels.\n⚠️ Further configuration may be needed in the dashboard.`);
                             break;
                         }
                         mod.enableAll = false;
@@ -104,14 +105,14 @@ export const command: Command = {
                                 }
                                 break;
                             }
-                            client.specials.sendError(message.channel, `Module \`${mod.name}\` is already enabled in ${channel}`);
+                            client.specials.sendError(message.channel, `Module \`${mod.name}\` is already enabled in ${channel}.`);
                             break;
                         }
                         // // the error occurs when the channeleffect is to disable channels and the channel array is empty but a channel to enable is requested
                         let fmsg = `Successfully enabled \`${mod.name}\` in ${channel}`;
                         if (mod.channelEffect === "disable") {
                             if (mod.channels.length) {
-                                client.specials.sendError(message.channel, `The module \`${mod.name}\` is not disabled in ${channel}. If you want this module to be disabled everywhere but in ${channel}, first make sure it isn't disabled in any specific channels.`);
+                                client.specials.sendError(message.channel, `The module \`${mod.name}\` is not disabled in ${channel}.\n\nIf you want this module to be disabled everywhere but in ${channel}, first, send \`${message.gprefix} ${this.name} disable ${mod.name}\`, then, send \`${message.gprefix} ${this.name} enable ${mod.name} ${channel.id}\`.`);
                                 break;
                             }
                             mod.channelEffect = "enable";
@@ -134,7 +135,7 @@ export const command: Command = {
                             mod.channels = [];
                             mod.channelEffect = "enable";
                             await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, JSON.stringify(mod));
-                            message.channel.send(`Disabled \`${mod.name}\` in all channels`);
+                            message.channel.send(`Disabled \`${mod.name}\` in all channels.`);
                             break;
                         }
                         mod.enableAll = false;
@@ -151,7 +152,7 @@ export const command: Command = {
                                 message.channel.send(`Disabled \`${mod.name}\` in ${channel}`);
                                 break;
                             }
-                            client.specials.sendError(message.channel, `Module \`${mod.name}\` is already disabled in ${channel}. If you want this module to be enabled everywhere but in ${channel}, make sure it isn't enabled in any specific channels first.`);
+                            client.specials.sendError(message.channel, `Module \`${mod.name}\` is already disabled in ${channel}.\n\nIf you want this module to be enabled everywhere but in ${channel}, first, send \`${message.gprefix} ${this.name} enable ${mod.name}\`, then, send \`${message.gprefix} ${this.name} disable ${mod.name} ${channel.id}\`.`);
                             break;
                         }
                         mod.channels.splice(mod.channels.indexOf(channel.id), 1);
@@ -167,12 +168,12 @@ export const command: Command = {
                 case "reset": {
                     argIndex++;
                     if (!args[argIndex]) {
-                        client.specials.sendError(message.channel, "Module not provided. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, `Module not provided.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
                         break;
                     }
                     const mod = allMods.find(x => x.name === args[argIndex]);
                     if (!mod) {
-                        client.specials.sendError(message.channel, "That is not a valid module. See modules by sending this command with no arguments.");
+                        client.specials.sendError(message.channel, `That is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
                         break;
                     }
                     await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, undefined, true);
@@ -189,7 +190,7 @@ export const command: Command = {
                     if (args[argIndex] && mod) {
                         argIndex++;
                         if (args[argIndex] && args[argIndex] === "enable" || args[argIndex] === "disable") {
-                            client.specials.sendError(message.channel, `To enable a module, you must send \`${message.gprefix} am enable ${mod.name || "{module}"}\`.`)
+                            client.specials.sendError(message.channel, `To enable/disable a module, you must send \`${message.gprefix} am enable|disable ${mod.name || "{module}"}\`.`)
                             break;
                         }
                         const enabled = await client.database.getAutoModuleEnabled(message.guild.id, mod.name, undefined, true) || false;
@@ -238,7 +239,7 @@ ${!enabled ? "Disabled" : "Enabled"}
                             title: "Automod Config",
                             description: `The automod service is split into various modules. The automod modules are responsible for performing the various automod tasks. They are enabled individually and are all off by default.
 
-Enable or disable mods by sending this command followed by \`enable\` or \`disable\`, then the module name, and then the channel to enable in. **To configure further options, please use the [web dashboard](https://stratum.hauge.rocks).**
+Enable or disable mods by sending this command followed by \`enable\` or \`disable\`, then the module name, and then the channel to enable in. **To configure further options, please use the [web dashboard](${getDashboardLink(message.guild.id, "automod")}).**
 
 **Modules**
 ${allMods.map(m => {
@@ -255,7 +256,7 @@ ${allMods.map(m => {
     }
 }).join("\n")}
 
-Get more details with \`${message.gprefix}${this.name} {mod}\`.
+Get more details with \`${message.gprefix}${this.name} <insert mod here>\`.
 `
                         }
                     });

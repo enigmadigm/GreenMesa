@@ -58,7 +58,7 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                 <div className="x-card-parent">
                     <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
                         displayName="Spam Prevention"
-                        headerTag="ALPHA"
+                        headerTag="IN ALPHA"
                         name="antispam"
                         description="ALPHA: Prevent spam anywhere in your server. The base feature of this module measures the message rate in your channel and at an excessive rate will begin silencing new messages. Feedback for this command is being accepted in the support server for the bot: https://dsc.gg/ro."
                         isTextModule
