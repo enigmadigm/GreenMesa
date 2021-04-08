@@ -1,6 +1,6 @@
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ClientValuesGuild, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
@@ -8,19 +8,19 @@ import { stringToChannel } from '../../utils/parsers';
 //const fetch = require("node-fetch");
 //import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
 
-export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): PartialGuildObject[] {
+export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
         return botGuilds.find(g2 => (g.id === g2.id));
     });
 }
 
-export function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): PartialGuildObject[] {
+export function getMutualGuildsWithPerms(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
         return botGuilds.find(g2 => (g.id === g2.id) && (g.permissions & 0x20) === 0x20);
     });
 }
 
-export function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: PartialGuildObject[]): {
+export function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): {
     excluded: PartialGuildObject[], included: PartialGuildObject[]
 } {
     const validGuilds = userGuilds.filter((guild) => (guild.permissions & 0x20) === 0x20);
@@ -54,7 +54,7 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(500);
             }
 
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.getAllGuilds(client);
             const { excluded, included } = getApplicableGuilds(req.user.guilds, allGuilds || []);
             const guilds: GuildItemSpecial[] = [
                 ...excluded.map((e) => {
