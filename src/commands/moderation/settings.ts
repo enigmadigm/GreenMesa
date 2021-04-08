@@ -9,7 +9,7 @@ export const command: Command = {
     name: "settings",
     description: {
         short: "manage the server settings for the bot",
-        long: 'Use to manage many of the server config settings. You can send this command without arguments to see the various options available. Send most options without arguments to see them in even more detail. **In development**.'
+        long: 'Use to manage many of the server config settings. You can send this command without arguments to see the various options available. Send most options without arguments to see them in even more detail.'
     },
     aliases: ['set'],
     usage: "[send nothing for detailed help]",
@@ -19,9 +19,9 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            // const fail_embed_color = await client.database.getColor("fail_embed_color");
-            const info_embed_color = await client.database.getColor("info_embed_color");
-            const success_embed_color = await client.database.getColor("success_embed_color");
+            // const fail_embed_color = await client.database.getColor("fail");
+            const info_embed_color = await client.database.getColor("info");
+            const success_embed_color = await client.database.getColor("success");
             if (!args.length) {
                 message.channel.send({
                     embed: {
@@ -260,7 +260,7 @@ export const command: Command = {
                 case 'serverlog': {
                     await message.channel.send({
                         embed: {
-                            color: await client.database.getColor("info_embed_color"),
+                            color: await client.database.getColor("info"),
                             description: `Now you can go to the [dashboard](${getDashboardLink(message.guild.id, "serverlog")}) to configure the serverlog.`,
                         }
                     });

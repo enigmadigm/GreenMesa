@@ -41,7 +41,7 @@ export const command: Command = {
                 const nrole = await message.guild.roles.create({ data: roleData, reason: "with mkrole command" });
                 await message.channel.send({
                     embed: {
-                        color: await client.database.getColor("success_embed_color"),
+                        color: await client.database.getColor("success"),
                         description: `Role ${nrole} created successfully`
                     }
                 });

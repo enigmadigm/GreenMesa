@@ -17,8 +17,8 @@ export const command: Command = {
         try {
             if (!message.member) return;
             //let darkred_embed_color = parseInt((await getGlobalSetting('darkred_embed_color'))[0].value);
-            // const fail_embed_color = await client.database.getColor("fail_embed_color");
-            const info_embed_color = await client.database.getColor("info_embed_color");
+            // const fail_embed_color = await client.database.getColor("fail");
+            const info_embed_color = await client.database.getColor("info");
     
             if (!args.length) {
                 client.specials?.sendError(message.channel, 'You must specify something to play.');

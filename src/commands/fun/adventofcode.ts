@@ -44,7 +44,7 @@ export const command: Command = {
             if (tempyear) {
                 year = tempyear.value;
             }
-            const iec = await client.database.getColor("info_embed_color");
+            const iec = await client.database.getColor("info");
             let resetting = "";
             if (args.join(" ").toLowerCase() === "reset" || args.join(" ").toLowerCase() === "reselect") {
                 resetting = args.join(" ");

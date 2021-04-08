@@ -6,19 +6,13 @@ export const command: Command = {
     usage: "[id of a server you can invite on]",
     async execute(client, message, args) {
         let guildIdParam = "";
-        if (args.length && args.length == 1 && !isNaN(parseInt(args[0])) && args[0].toString().length == 18) {
-            guildIdParam = `&guild_id=${args[0]}`;
+        if (args.length && args.length == 1 && /^[0-9]{18}$/.test(args.join(" "))) {
+            guildIdParam = `${args[0]}`;
         }
         message.channel.send({
             embed: {
-                color: 3447003,
-                description: `[Invite to get me on your server](https://discordapp.com/api/oauth2/authorize?client_id=${client.user?.id}&permissions=2147483639&scope=bot&${guildIdParam})`,
-                fields: [
-                    {
-                        name: `\u200b`,
-                        value: `**IMPORTANT:** Make sure all moderation commands work by confirming that the bot's role is above every role it should be able to manage, like @everyone.\n\n[Steps to get bot (low effort)](https://git.io/fjmEX).`
-                    }
-                ],
+                color: await client.database.getColor("info"),
+                description: `Add ${client.user?.username} to your server **[here](${client.specials.getBackendRoot()}/invite${guildIdParam ? `/${guildIdParam}` : ""})**.\n\n**IMPORTANT:** Initial issues are likely caused by misconfigured permissions.\n\n[Steps to get bot (low effort)](https://git.io/fjmEX).`,
                 timestamp: new Date().getTime(),
                 footer: {
                     icon_url: client.user?.avatarURL() || undefined,

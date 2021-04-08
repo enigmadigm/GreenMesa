@@ -192,7 +192,7 @@ export const command: Command = {
             collector.on('end', async (collected, reason) => {
                 game.setRound(game.round + 1);
                 if (reason == 'time' || !collected.last()) {
-                    triviaMessage.embeds[0].color = await client.database.getColor("fail_embed_color") || null;
+                    triviaMessage.embeds[0].color = await client.database.getColor("fail") || null;
                     triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
                         if (i != correctIndex) return `🟥${e}`;
                         return `✅${e}`;
@@ -224,7 +224,7 @@ export const command: Command = {
                 const last = <Discord.Message>collected.last();
                 if (!last.member) return;
                 const collectedLast = last.member.displayName;
-                triviaMessage.embeds[0].color = await client.database.getColor("success_embed_color") || null;
+                triviaMessage.embeds[0].color = await client.database.getColor("success") || null;
                 triviaMessage.embeds[0].description = triviaChoices.map((e, i) => {
                     if (i != correctIndex) return `🟥${e}`;
                     return `✅${e}`;

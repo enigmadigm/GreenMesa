@@ -50,7 +50,7 @@ export const command: Command = {
             const pages: MessageEmbedOptions[] = [];
             for (const page of roleOverflowArray) {
                 const e: MessageEmbedOptions = {
-                    color: await client.database.getColor("info_embed_color"), //7322774
+                    color: await client.database.getColor("info"), //7322774
                     author: {
                         name: `${message.guild.name} Roles`,
                         iconURL: message.guild.iconURL() || undefined

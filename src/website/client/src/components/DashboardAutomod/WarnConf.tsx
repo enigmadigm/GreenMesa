@@ -109,7 +109,7 @@ export function WarnConfInterface(props: HomeProps) {
             ) : <></>}
             <div>
                 <hr style={{ marginTop: 10, marginBottom: 5 }} />
-                <button className="am-save-button" onClick={handleWarnConfSaveClick}>Save</button>
+                <button className="card-footer-button" onClick={handleWarnConfSaveClick}>Save</button>
             </div>
         </>
     ) : (

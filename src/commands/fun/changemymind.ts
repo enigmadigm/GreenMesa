@@ -18,7 +18,7 @@ export const command: Command = {
             if (args.length > 1000) {
                 message.channel.send({
                     embed: {
-                        color: await client.database.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail"),
                         title: "Nope",
                         description: "I will not accept text longer than 1000 characters."
                     }
@@ -33,7 +33,7 @@ export const command: Command = {
                     if (j.status == 200 && j.success && j.message && validURL(j.message)) {
                         message.channel.send({
                             embed: {
-                                color: await client.database.getColor("info_embed_color"),
+                                color: await client.database.getColor("info"),
                                 image: {
                                     url: j.message
                                 },

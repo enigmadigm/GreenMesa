@@ -189,7 +189,7 @@ export const command: Command = {
             } else {
                 await message.channel.send({
                     embed: {
-                        color: await client.database.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail"),
                         description: `that is not a valid command or category`,
                         footer: {
                             text: `an nlp command assistant is in the works`

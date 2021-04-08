@@ -17,7 +17,7 @@ export const command: Command = {
     permLevel: permLevels.botMaster,
     async execute(client, message, args) {
         try {
-            const fail_embed_color = await client.database.getColor("fail_embed_color");
+            const fail_embed_color = await client.database.getColor("fail");
             if (!args.length) {
                 message.channel.send({
                     embed: {
@@ -31,7 +31,7 @@ export const command: Command = {
                 });
                 return;
             }
-            const info_embed_color = await client.database.getColor("info_embed_color");
+            const info_embed_color = await client.database.getColor("info");
             let argIndex = 0;
             switch (args[argIndex]) {
                 case 'view': {

@@ -60,7 +60,7 @@ export const command: Command = {
             if (mappedText.length < 1) {
                 message.channel.send({
                     embed: {
-                        color: await client.database.getColor("fail_embed_color"),
+                        color: await client.database.getColor("fail"),
                         description: "no emojified content"
                     }
                 });

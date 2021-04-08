@@ -9,7 +9,7 @@ export const command: Command = {
         try {
             message.channel.send({
                 embed: {
-                    color: await client.database.getColor("info_embed_color"),
+                    color: await client.database.getColor("info"),
                     description: "ok"
                 }
             });

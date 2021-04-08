@@ -37,7 +37,7 @@ export const service: MessageService = {
                     }
                 }
                 /*if () {
-                    const iec_gs = await client.database.getColor("info_embed_color");
+                    const iec_gs = await client.database.getColor("info");
                     message.channel.send({
                         embed: {
                             "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,

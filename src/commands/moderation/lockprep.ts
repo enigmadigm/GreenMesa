@@ -53,7 +53,7 @@ export const command: Command = {
 
             await message.channel.send({
                 embed: {
-                    color: await client.database.getColor("success_embed_color"),
+                    color: await client.database.getColor("success"),
                     description: `Updated permissions of ${roles.size} roles`
                 }
             });

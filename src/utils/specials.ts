@@ -1,14 +1,14 @@
 //import { getGlobalSetting } from '../dbmanager';
 import xlg from "../xlogger";
 import moment from 'moment';
-import { PartialGuildObject, XClient } from '../gm';
-import { Channel, DMChannel, Guild, TextChannel } from 'discord.js';
+import { ClientValuesGuild, XClient } from '../gm';
+import { Channel, DMChannel, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
     try {
         if (!(channel instanceof TextChannel)) return;
-        const fail_embed_color = await Bot.client.database.getColor("fail_embed_color");
+        const fail_embed_color = await Bot.client.database.getColor("fail");
         channel.send({
             embed: {
                 color: fail_embed_color,
@@ -25,7 +25,7 @@ export async function sendError(channel: Channel, message?: string, errorTitle =
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
         channel.send({
             embed: {
-                color: await Bot.client.database.getColor("fail_embed_color") || 16711680,
+                color: await Bot.client.database.getColor("fail") || 16711680,
                 title: (errorTitle) ? "Error" : undefined,
                 description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
             }
@@ -41,7 +41,7 @@ export async function sendInfo(channel: Channel, message: string): Promise<void>
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
         channel.send({
             embed: {
-                color: 0x337fd5/* await Bot.client.database.getColor("info_embed_color") */,
+                color: 0x337fd5/* await Bot.client.database.getColor("info") */,
                 description: `<:sminfo:818342088088354866> ${message}`
             }
         });
@@ -55,7 +55,7 @@ export async function argsNumRequire(channel: Channel, args: string[], num: numb
     try {
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return false;
         if (args.length == num) return true;
-        const fail_embed_color = await Bot.client.database.getColor("fail_embed_color");
+        const fail_embed_color = await Bot.client.database.getColor("fail");
         channel.send({
             embed: {
                 color: fail_embed_color,
@@ -89,7 +89,7 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
         if (!forResult) {
             channel.send({
                 embed: {
-                    color: await Bot.client.database.getColor("fail_embed_color"),
+                    color: await Bot.client.database.getColor("fail"),
                     title: "Invalid Arguments",
                     description: "All arguments must be numbers (floating or integer)"
                 }
@@ -159,14 +159,26 @@ export function memoryUsage(): string {
     iteration();
 }*/
 
-export async function getAllGuilds(client: XClient): Promise<PartialGuildObject[] | false> {
-    const reductionFunc = (p: Guild[], c: Guild[]) => {
+/**
+ * Retrieves all of the guilds that belonging to a client if the client is sharded. It will asynchronously fetch all guilds from each of the shards and reduce them to one array. The values returned from the shards are not normal guild objects. They are reduced guild object.
+ * @param client the client to retrieve the guilds from
+ * @returns all guilds cached in the client's shards
+ */
+export async function getAllGuilds(client: XClient): Promise<ClientValuesGuild[] | false> {
+    if (!client.shard) {
+        return false;
+    }
+    const reductionFunc = (p: ClientValuesGuild[], c: ClientValuesGuild[]) => {
         for (const bg of c) {
             p.push(bg);
         }
         return p;
     };
-    const guilds = (await client.shard?.fetchClientValues("guilds.cache"))?.reduce(reductionFunc, <Guild[]>[]);
+    const values = await <Promise<ClientValuesGuild[][]>>client.shard.fetchClientValues("guilds.cache");
+    if (!values) {
+        return false;
+    }
+    const guilds = values.reduce(reductionFunc, <ClientValuesGuild[]>[]);
     if (!guilds) {
         return false;
     }
@@ -189,4 +201,8 @@ export async function getAllChannels(client: XClient): Promise<Channel[] | false
 
 export function getDashboardLink(guildid?: string, mod?: string): string {
     return `${process.env.DASHBOARD_HOST}/dash/${guildid}${guildid && mod ? `/${mod}` : ""}`
+}
+
+export function getBackendRoot(): string {
+    return process.env.NODE_ENV === "dev" ? 'http://localhost:3005' : `https://stratum.hauge.rocks`;
 }

@@ -53,7 +53,7 @@ export const command: Command = {
                 return `${emojis[i]} ${w[0].toUpperCase() + w.substring(1)}`;
             });
             const embed: MessageEmbedOptions = {
-                color: await client.database.getColor("info_embed_color"),
+                color: await client.database.getColor("info"),
                 title,
                 description: options.join("\n"),
                 image: {},

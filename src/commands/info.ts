@@ -13,7 +13,7 @@ export const command: Command = {
         try {
             message.channel.send({
                 embed: {
-                    color: await client.database.getColor("info_embed_color"),
+                    color: await client.database.getColor("info"),
                     title: "GreenMesa Info",
                     url: "https://enigmadigm.com/apps/greenmesa/help",
                     description: "[Use the dashboard](https://stratum.hauge.rocks/dash) to intuitively control the bot.\n\nthis is a bot, it does stuff, stuff listed in `help`\nthis bot will be punished if it lets down its masters",

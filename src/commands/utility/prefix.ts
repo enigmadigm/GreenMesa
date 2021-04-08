@@ -12,7 +12,7 @@ export const command: Command = {
             if (!args.length) {
                 message.channel.send({
                     embed: {
-                        color: await client.database.getColor("info_embed_color"),
+                        color: await client.database.getColor("info"),
                         title: `${message.gprefix}`,
                         description: `guild prefix`
                     }
@@ -32,7 +32,7 @@ export const command: Command = {
             await client.database.setPrefix(message.guild.id, a);
             message.channel.send({
                 embed: {
-                    color: await client.database.getColor("success_embed_color"),
+                    color: await client.database.getColor("success"),
                     description: `Prefix changed to ${a}`,
                 }
             });

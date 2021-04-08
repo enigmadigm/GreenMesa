@@ -409,14 +409,25 @@ export interface WarnConfEndpointData extends GuildsEndpointBase {
 }
 
 export interface ModActionData {
-    id?: number;
-    superid?: string;
+    id: number;
+    superid: string;
+    guildid: string;
+    casenumber: number;
+    userid: string;
+    type: string;
+    created: string;
+    updated: string;
+    duration: number;
+    mod: string;
+    summary: string;
+}
+
+export interface ModActionEditData {
+    superid: string;
     guildid: string;
     casenumber?: number;
     userid: string;
-    type: string;
-    created?: string;
-    updated?: string;
+    type?: string;
     duration?: number;
     mod: string;
     summary?: string;
@@ -496,4 +507,57 @@ export interface FullPointsData {
     pointsToGo: number;
     pointsLevelNext: number;
     pointsLevelNow: number;
+}
+
+export interface ClientValuesGuild {
+    members: string[];
+    channels: string[];
+    roles: string[];
+    deleted: boolean;
+    id: string;
+    shardID: number;
+    name: string;
+    icon: string | null;
+    splash: string | null;
+    /** may be wrong */
+    discoverySplash: string | null;
+    region: string;
+    memberCount: number;
+    large: boolean;
+    /** may be wrong */
+    features: string[];
+    applicationID: string | null;
+    afkTimeout: number;
+    afkChannelID: string | null;
+    systemChannelID: string;
+    premiumTier: number;
+    premiumSubscriptionCount: number;
+    verificationLevel: string;
+    explicitContentFilter: string;
+    mfaLevel: number;
+    joinedTimestamp: number;
+    defaultMessageNotifications: string;
+    /** may be wrong */
+    systemChannelFlags: number;
+    maximumMembers: number;
+    maximumPresences: number | null;
+    approximateMemberCount: number | null;
+    approximatePresenceCount: number | null;
+    vanityURLCode: string | null;
+    vanityURLUses: number | null;
+    description: string | null;
+    /** may be wrong */
+    banner: string | null;
+    rulesChannelID: string | null;
+    publicUpdatesChannelID: string | null;
+    preferredLocale: string;
+    ownerID: string;
+    /** may be wrong */
+    emojis: string[];
+    createdTimestamp: number;
+    nameAcronym: string;
+    iconURL: string | null;
+    splashURL: string | null;
+    discoverySplashURL: string | null;
+    bannerURL: string | null;
 }

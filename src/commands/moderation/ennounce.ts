@@ -57,7 +57,7 @@ export const command: Command = {
                 args.shift();
             } else {
                 //seacolor = 0x3498db;
-                seacolor = await client.database.getColor("info_embed_color");
+                seacolor = await client.database.getColor("info");
                 sclength = 0;
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

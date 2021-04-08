@@ -76,7 +76,7 @@ export const command: Command = {
 
             message.channel.send({
                 embed: {
-                    color: target.roles.hoist ? target.roles.hoist.color : await client.database.getColor("info_embed_color") || 0,
+                    color: target.roles.hoist ? target.roles.hoist.color : await client.database.getColor("info") || 0,
                     author: {
                         name: `Info for ${target.user.tag} ${rank && xp ? `${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}` : ""}`,
                         icon_url: target.user.displayAvatarURL()

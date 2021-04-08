@@ -31,7 +31,7 @@ export const command: Command = {
                 }
             })
 
-            const iec = await client.database.getColor("info_embed_color");
+            const iec = await client.database.getColor("info");
             message.channel.send({
                 embed: {
                     color: iec,

@@ -8,8 +8,8 @@ export const command: Command = {
     permLevel: permLevels.botMaster,
     args: true,
     async execute(client, message, args) {
-        const fail_embed_color = await client.database.getColor("fail_embed_color");
-        const success_embed_color = await client.database.getColor("success_embed_color");
+        const fail_embed_color = await client.database.getColor("fail");
+        const success_embed_color = await client.database.getColor("success");
         if (['online', 'idle', 'dnd', 'invisible'].includes(args.join(" "))) {
             const result = await client.database.getGlobalSetting('game_status');
             if (result && result.value === args.join(" ")) {

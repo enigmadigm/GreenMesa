@@ -28,7 +28,7 @@ export const command: Command = {
                                     embed: {
                                         "title": "Error!",
                                         "description": `${j.Error}`,
-                                        "color": await client.database.getColor("fail_embed_color"),
+                                        "color": await client.database.getColor("fail"),
                                         "footer": {
                                             "text": "Movies"
                                         }
@@ -110,13 +110,13 @@ export const command: Command = {
                                 }
                                 if (j.Poster && j.Poster.toLowerCase() !== "n/a") {
                                     const cres = await getColors(j.Poster);
-                                    const pcol = cres[0] ? cres[0].num() : await client.database.getColor("info_embed_color");
+                                    const pcol = cres[0] ? cres[0].num() : await client.database.getColor("info");
                                     embed.image = {
                                         url: j.Poster
                                     }
                                     embed.color = pcol;
                                 } else {
-                                    embed.color = await client.database.getColor("info_embed_color");
+                                    embed.color = await client.database.getColor("info");
                                 }
 
                                 message.channel.send({ embed }).catch(xlg.error);

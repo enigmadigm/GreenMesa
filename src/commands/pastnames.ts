@@ -58,7 +58,7 @@ export const command: Command = {
             const pages: MessageEmbedOptions[] = [];
             for (const page of overflowArray) {
                 const e: MessageEmbedOptions = {
-                    color: await client.database.getColor("info_embed_color"),
+                    color: await client.database.getColor("info"),
                     title: `Nicknames of ${target.user.tag.escapeDiscord()}`,
                     description: `\`\`\`\n${page.join("\n")}\n\`\`\``
                 }

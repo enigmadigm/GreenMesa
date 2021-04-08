@@ -31,7 +31,7 @@ export const command: Command = {
                         if (j.code && j.code == 400) {
                             message.channel.send({
                                 embed: {
-                                    color: await client.database.getColor("fail_embed_color"),
+                                    color: await client.database.getColor("fail"),
                                     title: "Error",
                                     description: "Invalid Date"
                                 }
@@ -41,7 +41,7 @@ export const command: Command = {
                         if (j.code && j.code == 404) {
                             message.channel.send({
                                 embed: {
-                                    color: await client.database.getColor("fail_embed_color"),
+                                    color: await client.database.getColor("fail"),
                                     title: "Sorry",
                                     description: `**At this date there is no image data from NASA.**\nIf you are searching for today's data you may find that this changes later. You may also search for an APOD at a different date. I have no control over this.`
                                 }
@@ -50,7 +50,7 @@ export const command: Command = {
                         }
                         message.channel.send({
                             embed: {
-                                color: await client.database.getColor("fail_embed_color"),
+                                color: await client.database.getColor("fail"),
                                 title: "Sorry",
                                 description: "The APOD could not be retrieved."
                             }
@@ -60,7 +60,7 @@ export const command: Command = {
                     message.channel.send({
                         embed: {
                             timestamp: j.date ? new Date(j.date).getTime() : new Date().getTime(),
-                            color: await client.database.getColor("info_embed_color"),
+                            color: await client.database.getColor("info"),
                             title: `${(j.title) ? j.title : 'NASA APOD'}`,
                             description: j.explanation && j.explanation.length < 2048 ? j.explanation : null,
                             image: {
