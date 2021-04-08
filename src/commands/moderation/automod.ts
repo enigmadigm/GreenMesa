@@ -204,7 +204,7 @@ export const command: Command = {
                                 message.channel.send({
                                     embed: {
                                         color: await client.database.getColor("info"),
-                                        title: "Automod Config",
+                                        title: `Automod Config - \`${mod.name}\``,
                                         description: `Information about the \`${mod.name}\` module.${info ? `\n\n${info}` : ""}
 
 **${(mod.channelEffect === "enable" || (mod.channelEffect === "disable" && !channelList.length)) || mod.enableAll ? "Enabled": "Disabled"} In**
@@ -242,17 +242,19 @@ Enable or disable mods by sending this command followed by \`enable\` or \`disab
 
 **Modules**
 ${allMods.map(m => {
+    let txt = `${m.enableAll || ((m.channelEffect === "enable" || m.channelEffect === "disable") && m.channels && m.channels.length) ? "<:check_sm:775144057050759179>" : "<:cross_sm:775144091062894612>"} `;
     if (m.text && m.channels) {
         if (m.enableAll) {
-            return `\`${m.name}\` (enabled everywhere)`
+            txt += `\`${m.name}\` (enabled everywhere)`
         } else if (m.channels.length) {
-            return `\`${m.name}\` (${m.channelEffect === "enable" ? "enabled in" : "disabled in"} ${m.channels.map((c) => message.guild?.channels.cache.get(c) || "#unknown")})`
+            txt += `\`${m.name}\` (${m.channelEffect === "enable" ? "enabled in" : "disabled in"} ${m.channels.map((c) => message.guild?.channels.cache.get(c) || "#unknown")})`
         } else {
-            return `\`${m.name}\` (${m.channelEffect === "enable" ? "disabled" : "enabled everywhere"})`
+            txt += `\`${m.name}\` (${m.channelEffect === "enable" ? "disabled" : "enabled everywhere"})`
         }
     } else {
-        return `\`${m.name}\` ${m.enableAll ? "(enabled)" : "(disabled)"}`
+        txt += `\`${m.name}\` ${m.enableAll ? "(enabled)" : "(disabled)"}`
     }
+    return txt;
 }).join("\n")}
 
 Get more details with \`${message.gprefix}${this.name} <insert mod here>\`.
