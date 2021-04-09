@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction } from 'react';
-//import { RouteComponentProps } from 'react-router-dom';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
 import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashboardServerlog, DashboardTwitch, DashHeader } from '../../components';
@@ -9,6 +8,7 @@ import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontaw
 import { faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller } from '@fortawesome/pro-solid-svg-icons';
 import { faBadgeSheriff, faThList } from '@fortawesome/pro-duotone-svg-icons';
 import { faTwitch } from '@fortawesome/free-brands-svg-icons';
+//import { RouteComponentProps } from 'react-router-dom';
 
 export interface IUser {
     guilds?: RESTAPIPartialCurrentUserGuild[];
