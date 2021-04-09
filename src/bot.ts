@@ -370,15 +370,15 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         const commandEnabledGlobal = await client.database.getGlobalSetting(`${command.name}_enabled`);
         const commandEnabledGuild = message.guild ? await client.database.getGuildSetting(message.guild, `${command.name}_toggle`) : false;
-        const commandDisabled = (commandEnabledGlobal && commandEnabledGlobal.value == 'false') || (commandEnabledGuild && commandEnabledGuild.value === 'disable');
+        const commandDisabled = (commandEnabledGlobal && commandEnabledGlobal.value !== 'true') || (commandEnabledGuild && commandEnabledGuild.value !== 'enable');
         if (commandDisabled) {
             if (command.name === "h") return;
             message.channel.send({
                 embed: {
                     title: `Command Disabled`,
-                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? "**globally**" : "**in this server**"}.`,
+                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal && commandEnabledGlobal.value !== 'true') ? "**globally**" : "**in this server**"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
                     footer: {
-                        text: `${(commandEnabledGlobal && commandEnabledGlobal.value == 'false') ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
+                        text: `${(commandEnabledGlobal && commandEnabledGlobal.value === 'false') ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
                     }
                 }
             });
@@ -498,7 +498,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             if (config.msgLogging) {
                 const logChannel = client.channels.cache.get('661614128204480522');
                 if (logChannel && logChannel instanceof TextChannel) {
-                    logChannel.send(`${message.author.tag.escapeDiscord()} sent command \`${command.name}\` at \`${message.id}\` in \`${message.channel.id}\` @${message.url}`).catch(console.error);
+                    logChannel.send(`${message.author.tag.escapeDiscord()} sent command \`${command.name}\` at \`${message.id}\` in \`${message.channel.id}\` ${message.url}`).catch(console.error);
                 }
             }
 
