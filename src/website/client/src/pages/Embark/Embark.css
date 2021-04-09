@@ -1,3 +1,9 @@
+.embark-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
 .embark-wrapper {
     height: 100%;
     width: 100%;
@@ -8,5 +14,25 @@
 }
 
 .embark-wrapper > *:first-child {
-    transform: translateY(-100%);
+    /* position: absolute; */
+    /* display: block; */
+    transform: translate(-155%, -150%);
+    /* top: -50px; */
+}
+
+.embark-tron {
+    position: fixed;
+    top: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+}
+
+.embark-tron button {
+    background-color: transparent;
+    border: none;
+    color: #ffffff;
 }
