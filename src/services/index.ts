@@ -121,7 +121,7 @@ export class MessageServices {
                                     embed: {
                                         color: await Bot.client.database.getColor("warn_embed_color"),
                                         title: `Automod Alert`,
-                                        description: `${target} has been caught by the ${mod.name} module.${!ud.offenses ? "\nThis is their **first** offense" : `\nThis is their **${ordinalSuffixOf(ud.offenses)}** offense`}`
+                                        description: `${target} has been caught by the **${mod.name}** module.${!ud.offenses ? "\nThis is their **first** offense" : `\nThis is their **${ordinalSuffixOf(ud.offenses)}** offense`}`
                                     }
                                 });
                             }
