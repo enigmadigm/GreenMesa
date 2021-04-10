@@ -13,6 +13,15 @@ body, html {
   height: 100%;
 }
 
+#root a {
+  color: #c790dd;
+  transition: opacity 0.15s ease-out;
+}
+
+#root a:hover {
+  opacity: 0.7;
+}
+
 .lspinner {
   position: absolute;
   left: 50%;
@@ -148,11 +157,15 @@ body, html {
   transition: opacity 0.15s;
 }
 
-.rnav-nav li:hover {
+/* .rnav-nav li:hover {
   opacity: 0.7;
+} */
+
+#root .rnav-nav a {
+  color: #ffffff;
 }
 
-.rnav-logout a {
+#root .rnav-logout a {
   color: rgb(255, 116, 116);
 }
 
@@ -228,15 +241,16 @@ body, html {
   position: relative;
 }
 
-.lanav-link {
+#root .lanav-link {
   display: block;
   padding: .75rem 1rem;
   text-decoration: none;
   position: relative;
   white-space: nowrap;
+  color: #b8c0c8;
 }
 
-.lanav-icon {
+#root .lanav-link .lanav-icon {
   display: inline-block;
   width: 1.09375rem;
   margin: 0 .5rem 0 0;
@@ -577,6 +591,18 @@ code {
   border-radius: 7px;
 }
 
+hr {
+  border-color: initial;
+}
+
+.opaque {
+  opacity: 1 !important;
+}
+
+.clear {
+  opacity: 0 !important;
+}
+
 @media screen and (max-width: 800px) {
   .app .x-sidebar, .field-alert {
     width: 50px;
@@ -603,18 +629,6 @@ code {
   .save-notice {
     left: 0;
   }
-}
-
-hr {
-  border-color: initial;
-}
-
-.opaque {
-  opacity: 1 !important;
-}
-
-.clear {
-  opacity: 0 !important;
 }
 
 @media screen and (max-width: 700px) {
