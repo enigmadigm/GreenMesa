@@ -123,7 +123,7 @@ export const command: Command = {
                 //
             }
 
-            message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${toMute.user.tag}\`${mendm}${time ? `Edit with ID: ${message.id}` : ""}`);
+            message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${toMute.user.tag}\`${mendm}`);//${time ? `Edit with ID: ${"*private*"}` : ""}
 
             if (time) {
                 /*setTimeout(async () => {
@@ -143,7 +143,11 @@ export const command: Command = {
                     roleid: mutedRole.id,
                     duration: dur
                 }
-                await client.database.setAction(uniqid("ta$"), t, "unmute", data);
+                const mtr = await client.database.setAction(uniqid( "ta$"), t, "unmute", data);
+                if (!mtr) {
+                    xlg.error("couldn't start mute timer with mute command");
+                    message.channel.send("The timed mute could not be established. The mute will remain permanent.");
+                }
             }
         } catch (e) {
             xlg.error(e);

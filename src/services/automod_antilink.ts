@@ -37,7 +37,7 @@ function containsLink(str: string, strict?: boolean, notNested?: boolean): boole
 export const service: MessageService = {
     text: true,
     async getInformation() {
-        return "Suppresses (deletes) any messages containing links. This will scan message content for many types of links, like workarounds for this automod. This mod is not for links in embeds.";
+        return "Detects any messages containing links. This will scan message content for many types of links, including links using common workarounds for this module. This module ignores links in embeds by default.";
     },
     async execute(client, message: XMessage) {
         try {

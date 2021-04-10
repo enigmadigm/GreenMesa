@@ -833,12 +833,12 @@ export class DBManager {
      * Set an action to be executed automatically at a given time
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>, casenumber?: number): Promise<boolean> {
+    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>, casenumber = 0): Promise<boolean> {
         try {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).escapeSpecialChars();
 
-            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata, casenumber) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)}, ${escape(casenumber || 0)}) ON DUPLICATE KEY UPDATE exectime = ${escape(mtime)}, actiontype = ${escape(actionType)}, actiondata = ${escape(actionData)}, casenumber = ${escape(casenumber || 0)} WHERE actionid = ${escape(id)}`);
+            const r = await <Promise<InsertionResult>>this.query(`INSERT INTO timedactions (actionid, exectime, actiontype, actiondata, casenumber) VALUES (${escape(id)}, ${escape(mtime)}, ${escape(actionType)}, ${escape(actionData)}, ${escape(casenumber)}) ON DUPLICATE KEY UPDATE exectime = ${escape(mtime)}, actiontype = ${escape(actionType)}, actiondata = ${escape(actionData)}, casenumber = ${escape(casenumber)}`);
 
             if (!r || !r.affectedRows) {
                 return false;

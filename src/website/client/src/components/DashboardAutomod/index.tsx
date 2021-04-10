@@ -10,6 +10,7 @@ import { NiceNicks } from './NiceNicks';
 import { Profanity } from './Profanity';
 import { ChannelData, ChannelEndpointData, RoleData, RoleEndpointData } from '../../../../../gm';
 import { WarnConfInterface } from './WarnConf';
+import { Invites } from './Invites';
 
 export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
     const { setStatus } = props;
@@ -84,11 +85,11 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                 </div>
                 <div className="x-card-parent">
                     <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
-                        displayName="Anti Embed"
-                        name="antiembed"
-                        description="This module will suppress all embeds that appear in a channel. This includes embeds from bots and links. Soon there will be an option to toggle for bots or roles."
+                        displayName="Discord Invite Detection"
+                        name="invites"
+                        description="Detects any messages containing properly formed invites for Discord servers. This module ignores links in embeds by default."
                         isTextModule
-                        CustomOptions={AntiEmbed}
+                        CustomOptions={Invites}
                     />
                 </div>
                 <div className="x-card-parent">
@@ -97,6 +98,15 @@ export function DashboardAutomod(props: HomeProps/* {match}: RouteComponentProps
                         name="nicenicks"
                         description="This module will watch the nicknames of new users or any changes in existing users to make sure at least the first five letters exist on the printable ASCII table. If a user has an unfriendly username, it will automatically be changed to a placeholder and they will receive a message from the bot."
                         CustomOptions={NiceNicks}
+                    />
+                </div>
+                <div className="x-card-parent">
+                    <AutomoduleCard {...props} channels={channels.filter(c => c.type === "text")} roles={roles}
+                        displayName="Anti Embed"
+                        name="antiembed"
+                        description="This module will suppress all embeds that appear in a channel. This includes embeds from bots and links. Soon there will be an option to toggle for bots or roles."
+                        isTextModule
+                        CustomOptions={AntiEmbed}
                     />
                 </div>
                 <div className="x-card-parent">
