@@ -3,7 +3,7 @@ import { permLevels } from '../../permissions';
 import { Command, XClient, XKCDEndpointResponse } from "src/gm";
 import fetch from 'node-fetch';
 import { randomIntFromInterval } from "../../utils/parsers";
-import { DMChannel, MessageAttachment, MessageEmbed, NewsChannel, TextChannel } from "discord.js";
+import { CollectorFilter, DMChannel, MessageAttachment, MessageEmbed, NewsChannel, TextChannel } from "discord.js";
 
 const HOST = "http://xkcd.com/";
 
@@ -24,7 +24,7 @@ function checkFilePerms(c: TextChannel | NewsChannel) {
     return true;
 }
 
-async function sendById(client: XClient, channel: TextChannel | DMChannel | NewsChannel, num: number) {
+async function sendById(client: XClient, channel: TextChannel | DMChannel | NewsChannel, num: number, wid = "") {
     try {
         const c = await getComic(num);
         if (c === 404) {
@@ -38,18 +38,31 @@ async function sendById(client: XClient, channel: TextChannel | DMChannel | News
 
         const attach = new MessageAttachment(`${c.img}`);
         // await channel.send(`**${c.title || c.safe_title}**`, [attach, new MessageEmbed().setDescription(`${c.alt ? `||${c.alt}||` : "*no caption*"}`).setColor("#2f3136")]);
-        await sendComic(channel, c.title || c.safe_title, attach, c.alt, c.num)
+        await sendComic(channel, c.safe_title || c.title, attach, c.alt, c.num, wid)
     } catch (error) {
         client.specials?.sendError(channel, "Comic could not be retrieved. Try again later.", true);
         return;
     }
 }
 
-async function sendComic(channel: TextChannel | DMChannel | NewsChannel, title: string, att: MessageAttachment, desc = "", issue: number) {
-    await channel.send(`**${title}** - #${issue}`, [
-        att,
-        new MessageEmbed().setDescription(`${desc ? `||${desc}||` : "*no caption*"}`).setColor("#2f3136")
-    ]);
+async function sendComic(channel: TextChannel | DMChannel | NewsChannel, title: string, att: MessageAttachment, desc = "", issue: number, wid = "") {
+    const s = await channel.send({
+        embed: new MessageEmbed().setTitle(`${title}`).setImage(`${att.attachment}`).setColor("#2f3136").setFooter(`#${issue} ● caption hidden`)
+    });
+    await s.react("<:eye_2:830536828884221992>").catch(xlg.error);
+
+    const filter: CollectorFilter = (r, u) => r.emoji.id === '830536828884221992' && u.id === wid;
+    const collected = await s.awaitReactions(filter, {
+        max: 1,
+        time: 60000
+    });
+    if (collected && collected.size) {
+        s.embeds[0].description = `${desc ? `${desc}` : "*no caption*"}`;
+        if (s.embeds[0].footer) {
+            s.embeds[0].footer.text = `#${issue}`;
+        }
+        await s.edit(new MessageEmbed(s.embeds[0]));
+    }
 }
 
 export const command: Command = {
@@ -65,6 +78,7 @@ export const command: Command = {
     moderation: undefined,
     guildOnly: true,
     ownerOnly: false,
+    permissions: ["ADD_REACTIONS", "ATTACH_FILES", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
     async execute(client, message, args) {
         try {
             if (!(message.channel instanceof TextChannel || message.channel instanceof NewsChannel) || !message.guild?.me) return;
@@ -100,7 +114,7 @@ random
                         const attach = new MessageAttachment(`${j.img}`);
                         // await message.channel.send(`**${j.title || j.safe_title}**${j.alt ? `\n${j.alt}` : ""}`, attach);
                         // await message.channel.send(`**${j.title || j.safe_title}**`, [attach, new MessageEmbed().setDescription(`${j.alt ? `||${j.alt}||` : "*no caption*"}`).setColor("#2f3136")]);
-                        await sendComic(message.channel, j.title || j.safe_title, attach, j.alt, j.num);
+                        sendComic(message.channel, j.safe_title || j.title, attach, j.alt, j.num, message.author.id);
                     } catch (error) {
                         client.specials?.sendError(message.channel, "Comic could not be retrieved. Try again later.", true);
                     }
@@ -123,7 +137,7 @@ random
                         break;
                     }
                     const pi = parseInt(o, 10);
-                    await sendById(client, message.channel, pi);
+                    sendById(client, message.channel, pi, message.author.id);
                     break;
                 }
                 case "random": {
@@ -138,7 +152,7 @@ random
                     const j: XKCDEndpointResponse = await r.json();
                     const currentNumber = j.num;
 
-                    await sendById(client, message.channel, randomIntFromInterval(1, currentNumber));
+                    sendById(client, message.channel, randomIntFromInterval(1, currentNumber), message.author.id);
                     break;
                 }
                 default: {
@@ -147,7 +161,7 @@ random
                     if (o && /^[0-9]+$/.test(o)) {
                         if (!checkFilePerms(message.channel)) break;
                         const pi = parseInt(o, 10);
-                        await sendById(client, message.channel, pi);
+                        sendById(client, message.channel, pi, message.author.id);
                         break;
                     }
                     client.specials?.sendError(message.channel, "No valid option was sent", true);
