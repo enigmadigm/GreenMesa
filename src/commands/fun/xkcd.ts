@@ -71,11 +71,15 @@ export const command: Command = {
         short: "get xkcd comics",
         long: "Get xkcd comics or info about them. Send `xkcd latest` for the latest comic."
     },
-    usage: "[latest|byid|random] ...options]",
+    usage: "[latest|byid|random|search] ...options]",
+    examples: [
+        "sm xkcd 1000",
+        "sm xkcd random",
+        "sm xkcd search house of pancakes",
+    ],
     args: false,
     cooldown: 1,
     permLevel: permLevels.member,
-    moderation: undefined,
     guildOnly: true,
     ownerOnly: false,
     permissions: ["ADD_REACTIONS", "ATTACH_FILES", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
@@ -153,6 +157,23 @@ random
                     const currentNumber = j.num;
 
                     sendById(client, message.channel, randomIntFromInterval(1, currentNumber), message.author.id);
+                    break;
+                }
+                case "search": {
+                    if (!checkFilePerms(message.channel)) break;
+                    ai++;
+                    const o = args.slice(1, args.length).join("+");
+                    if (!o) {
+                        client.specials?.sendError(message.channel, `A strip ID is required for this subcommand`);
+                        break;
+                    }
+                    const sr = await fetch(`https://search-xkcd.mfwowocringe.repl.co/search/${o}`)
+                    const j = await sr.json();
+                    if (!j || sr.status !== 200 || j.status !== "Success" || typeof j.id !== "number") {
+                        await client.specials.sendError(message.channel, "No search results found.\n\nThere may be a problem with the search service.", true);
+                        break;
+                    }
+                    sendById(client, message.channel, j.id, message.author.id);
                     break;
                 }
                 default: {
