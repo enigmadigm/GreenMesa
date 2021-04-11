@@ -2,8 +2,7 @@ import xlg from "../xlogger";
 import { permLevels } from '../permissions';
 import { Command } from "src/gm";
 import fetch from "node-fetch";
-import { MessageEmbed } from "discord.js";
-import { PaginationExecutor } from "../utils/pagination";
+import { MessageAttachment } from "discord.js";
 
 export const command: Command = {
     name: "cheat",
@@ -24,7 +23,7 @@ export const command: Command = {
     guildOnly: false,
     async execute(client, message, args) {
         try {
-            const a = args.join("+");
+            const a = args.join(" ");
             const parts = a.split("/");
             if (parts[0] === "" || parts[0] === "/") {
                 parts.shift();
@@ -33,32 +32,35 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, "You must specify actual arguments.");
                 return;
             }
-            const r = await fetch(`https://cheat.sh/${a}\\?T`);
+            const r = await fetch(`https://cheat.sh/${a}?T`);
             const t = await r.text();
 
             const lang = parts.length > 1 ? parts[0] : "";
-            const lines = t.split("\n");
-            const groups: string[][] = [[]];
-            for (const line of lines) {
-                const currGroup = groups[groups.length - 1];
-                const joined = (currGroup.length ? `${currGroup.join("\n")}\n` : "") + line;
-                if (joined.length < 2000 && currGroup.length < 18) {
-                    currGroup.push(line);
-                } else {
-                    if (line.startsWith(" *") || line.startsWith("*")) {
-                        groups.push([line.replace(/ *\*/, "/*")]);
-                    } else {
-                        groups.push([line]);
-                    }
-                }
-            }
-            const pages: MessageEmbed[] = [];
-            for (const group of groups) {
-                const joined = group.join("\n");
-                const e = new MessageEmbed().setColor(await client.database.getColor("info")).setDescription(`\`\`\`${lang || "prolog"}\n${joined}\n\`\`\``);
-                pages.push(e);
-            }
-            PaginationExecutor.createEmbed(message, pages, undefined, true);
+            await message.channel.send({
+                files: [new MessageAttachment(Buffer.from(t, 'utf-8'), `cheat_sheet.${lang && lang.length < 20 ? lang : "txt"}`)],
+            });
+            // const lines = t.split("\n");
+            // const groups: string[][] = [[]];
+            // for (const line of lines) {
+            //     const currGroup = groups[groups.length - 1];
+            //     const joined = (currGroup.length ? `${currGroup.join("\n")}\n` : "") + line;
+            //     if (joined.length < 2000 && currGroup.length < 18) {
+            //         currGroup.push(line);
+            //     } else {
+            //         if (line.startsWith(" *") || line.startsWith("*")) {
+            //             groups.push([line.replace(/ *\*/, "/*")]);
+            //         } else {
+            //             groups.push([line]);
+            //         }
+            //     }
+            // }
+            // const pages: MessageEmbed[] = [];
+            // for (const group of groups) {
+            //     const joined = group.join("\n");
+            //     const e = new MessageEmbed().setColor(await client.database.getColor("info")).setDescription(`\`\`\`${lang || "prolog"}\n${joined}\n\`\`\``);
+            //     pages.push(e);
+            // }
+            // PaginationExecutor.createEmbed(message, pages, undefined, true);
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
