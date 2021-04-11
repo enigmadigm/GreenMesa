@@ -31,11 +31,10 @@ export const command: Command = {
             if (!j || j.errorcode || !j.shorturl) {
                 if (j.errorcode === 1 && j.errormessage) {
                     await client.specials?.sendError(message.channel, `Could not shorten URL:\n${j.errormessage}`, true);
-                    return;
                 } else {
                     await client.specials?.sendError(message.channel, `Could not shorten URL`, true);
-                    return;
                 }
+                return;
             }
             message.channel.send({
                 embed: {
