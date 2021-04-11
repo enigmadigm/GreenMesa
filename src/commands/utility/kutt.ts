@@ -34,7 +34,6 @@ export const command: Command = {
                     "content-type": `application/json   `,
                 },
             });
-            console.log(r.status)
             if (r.status !== 200 && r.status !== 201) {
                 await client.specials.sendError(message.channel, "Received a non-ok response code from kutt.it", true);
                 return;
