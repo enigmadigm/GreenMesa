@@ -1,12 +1,17 @@
 import Discord, { CollectorFilter, GuildMember, Message, User } from "discord.js";
 import fetch from 'node-fetch';
-import { Command } from "src/gm";
+import { Command, TriviaResponse } from "src/gm";
 import xlg from '../../xlogger';
 //import { getGlobalSetting } from "../dbmanager";
 
 interface TriviaScoreboard {
     user: GuildMember;
     score: number;
+}
+
+interface TriviaCategory {
+    id: number;
+    name: string;
 }
 
 const deftime = 15;
@@ -67,6 +72,8 @@ class TGame {
     }
 }
 
+const categories: TriviaCategory[] = [];
+
 /*async function aResponded(message) {
     const alreadyRespondedCallout = await message.channel.send('You already responded!');
     setTimeout(function () {
@@ -94,12 +101,44 @@ export const command: Command = {
     name: 'trivia',
     description: {
         short: 'starts a trivia game to play solo or with friends',
-        long: 'Starts a trivia game that can be played alone or with any number of people. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer!\nThis command has been well used, more features to come! Beware: sometimes questions pop up again, do not get angry, it is something about how the trivia pool is pulled from.'
+        long: 'Starts a trivia game that can be played alone or with any number of people. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer while it keeps track of the score for you!\n\nYou can start the game with a specified category and/or difficulty, if you wish. View all categories and their ids by adding "cats" to this command. The available difficulties are easy, medium, and hard.\n\nThis command has been well used, more features to come!'
     },
+    usage: "[cats]",
+    examples: [
+        "sm tr cats",
+        "sm tr c:9",
+        "sm tr d:easy",
+        "sm tr c:9 d:easy",
+    ],
     aliases:['tr'],
     cooldown: 3,
     async execute(client, message, args) {
         try {
+            const a = args.join(" ");
+            if (a === "cats") {
+                const r = await fetch(`https://opentdb.com/api_category.php`);
+                if (!r.ok) {
+                    client.specials.sendError(message.channel, `Categories cannot be retrieved at the moment.`, true);
+                    return;
+                }
+                const j: { trivia_categories: TriviaCategory[] } = await r.json();
+                await message.channel.send({
+                    embed: {
+                        color: await client.database.getColor("info"),
+                        title: `Trivia Categories (${j.trivia_categories.length})`,
+                        description: `To use a category, use the option format: \`c:n\`. \`n\` is the category number.\n\n${j.trivia_categories.map((c) => `\`${c.id}\` - ${c.name}`).join("\n")}`,
+                        footer: {
+                            text: `Trivia`,
+                        },
+                    }
+                });
+                for (const cat of j.trivia_categories) {
+                    if (typeof cat.id === "number" && typeof cat.name === "string" && !categories.find(x => x.id === cat.id)) {
+                        categories.push(cat);
+                    }
+                }
+                return;
+            }
             const triviaCommand = client.commands.get(this.name);
             if (!triviaCommand) {
                 client.specials.sendError(message.channel, "Apparently this command no longer exists in the bot, sorry.");
@@ -113,15 +152,61 @@ export const command: Command = {
                     process.env.TRIVIA_SESSION = j.token;
                 }
             }
-            const r = await fetch(`https://opentdb.com/api.php?amount=1&difficulty=easy&type=multiple&encode=url3986&token=${process.env.TRIVIA_SESSION}`);
-            const j = await r.json();
+
+            /* Option parsing */
+            let category: number | null = null;
+            let difficulty = "easy";
+            if (args.length) {
+                if (!categories.length) {
+                    const r = await fetch(`https://opentdb.com/api_category.php`);
+                    if (!r.ok) {
+                        client.specials.sendError(message.channel, `Categories cannot be retrieved at the moment.`, true);
+                        return;
+                    }
+                    const j: { trivia_categories: TriviaCategory[] } = await r.json();
+                    for (const cat of j.trivia_categories) {
+                        if (typeof cat.id === "number" && typeof cat.name === "string" && !categories.find(x => x.id === cat.id)) {
+                            categories.push(cat);
+                        }
+                    }
+                }
+                for (const arg of args.map(x => x.toLowerCase())) {
+                    const e = /c:([0-9]{1,3})/g.exec(arg);
+                    if (e && e[1].length) {
+                        const cid = parseInt(e[1], 10);
+                        if (!isNaN(cid) && categories.find(x => x.id === cid)) {
+                            category = cid;
+                        } else {
+                            client.specials.sendError(message.channel, `\`${cid}\` is not an available category. See all categories with \`${message.gprefix} ${this.name} cats\``);
+                            break;
+                        }
+                        continue;
+                    }
+                    const d = /d:([a-z]{1,10})/g.exec(arg);
+                    if (d && d[1].length) {
+                        if (!["easy", "medium", "hard"].includes(d[1])) {
+                            client.specials.sendError(message.channel, `\`${d[1]}\` is not one of easy, medium, or hard.`);
+                            break;
+                        }
+                        difficulty = d[1];
+                        continue;
+                    }
+                }
+            }
+
+            const r = await fetch(`https://opentdb.com/api.php?amount=1&difficulty=${difficulty}${category ? `&category=${category}` : ""}&type=multiple&encode=url3986&token=${process.env.TRIVIA_SESSION}`);
+            const j = <TriviaResponse>await r.json();
             if (j.response_code !== 0) {
                 if (j.response_code === 3 || j.response_code === 4) {
                     process.env.TRIVIA_SESSION = undefined;
                     triviaCommand.execute(client, message, args);
                     return;
                 }
-                client.specials.sendError(message.channel, 'There\'s been an error, we will address this issue as soon as possible. Until we do, you will continue to receive this message upon execution.');
+                if (j.response_code === 1) {
+                    client.specials.sendError(message.channel, `No results available. Try another category.`);
+                } else {
+                    client.specials.sendError(message.channel, 'There\'s been an error, we will address this issue as soon as possible. Until we do, you will continue to receive this message upon execution.');
+                }
                 return;
             }
             //Setting up for message
