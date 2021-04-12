@@ -7,9 +7,10 @@ import { PaginationExecutor } from "../utils/pagination";
 
 export const command: Command = {
     name: "pastnames",
+    aliases: ["pn"],
     description: {
-        short: "get past nicknames",
-        long: "Get a list of past nicknames of a member in a server."
+        short: "show past nicknames",
+        long: "Get a list of past nicknames of a member in a server. Not *all* nicknames you know you have had may be shown due to the age of this feature."
     },
     usage: "[member]",
     cooldown: 3,
