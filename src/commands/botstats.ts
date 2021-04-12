@@ -101,16 +101,12 @@ export const command: Command = {
             message.channel.send({
                 files: [fileToAttach],
                 embed: {
+                    description: `**Caching:** Due to caching, data may show drops in counts`,
                     title: `${client.user?.username} Stats`,
                     fields: [
                         {
                             name: 'Servers',
                             value: rows[0].numGuilds,
-                            inline: true
-                        },
-                        {
-                            name: "Caching",
-                            value: "Due to caching, data may show drops in counts",
                             inline: true
                         },
                         {
