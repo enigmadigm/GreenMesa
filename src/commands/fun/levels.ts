@@ -35,7 +35,7 @@ export const command: Command = {
                 client.specials?.sendError(message.channel);
                 return;
             }
-            const targetLevel = targetRow ? targetRow.level : 0;
+            const targetLevel = targetRow.level;
             let alreadyAbove = false;
             const joinedLevels = levelRows.map((lvl) => {
                 let curr = false;

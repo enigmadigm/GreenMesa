@@ -32,8 +32,9 @@ export const command: Command = {
             const url = `https://gelbooru.com/index.php?page=dapi&s=post&q=index&pid=${Math.floor(Math.random() * 100)}&json=1&api_key=${config.GELBOORU.key}&user_id=${config.GELBOORU.user}`;
             let j;
             if (args.length) {
-                const res = await fetch(url);
-                j = await res.json();
+                message.channel.send("categories have not been implemented yet")
+                // const res = await fetch(url);
+                // j = await res.json();
             } else {
                 const res = await fetch(url);
                 j = await res.json();

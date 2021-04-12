@@ -100,9 +100,9 @@ export const command: Command = {
     cooldown: 3,
     async execute(client, message, args) {
         try {
-            const triviaCommand = client.commands?.get('trivia');
+            const triviaCommand = client.commands.get(this.name);
             if (!triviaCommand) {
-                client.specials?.sendError(message.channel, "Apparently this command no longer exists in the bot, sorry.");
+                client.specials.sendError(message.channel, "Apparently this command no longer exists in the bot, sorry.");
                 return;
             }
             if (!process.env.TRIVIA_SESSION) {
@@ -121,7 +121,7 @@ export const command: Command = {
                     triviaCommand.execute(client, message, args);
                     return;
                 }
-                client.specials?.sendError(message.channel, 'There\'s been an error, we will address this issue as soon as possible. Until we do, you will continue to receive this message upon execution.');
+                client.specials.sendError(message.channel, 'There\'s been an error, we will address this issue as soon as possible. Until we do, you will continue to receive this message upon execution.');
                 return;
             }
             //Setting up for message
@@ -140,7 +140,7 @@ export const command: Command = {
                 games.push(game);
             } else {
                 if (game.msg !== message.id) {
-                    return client.specials?.sendError(message.channel, "A game is already in progress");
+                    return client.specials.sendError(message.channel, "A game is already in progress");
                 }
             }
 
@@ -257,7 +257,7 @@ export const command: Command = {
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
