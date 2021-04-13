@@ -1,6 +1,6 @@
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ClientValuesGuild, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
@@ -206,16 +206,6 @@ export default function routerBuild (client: XClient): express.Router {
         }
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
-
-        interface ChannelData {
-            id: string;
-            name: string;
-            type: string;
-            position: number;
-            parentID: string;
-            nsfw?: boolean;
-            topic?: string;
-        }
 
         const channels = g.channels.cache.map((c) => {
             const data: ChannelData = {
@@ -528,6 +518,99 @@ export default function routerBuild (client: XClient): express.Router {
             }
         } catch (error) {
             xlg.error(error);
+            return res.sendStatus(500);
+        }
+    });
+
+    router.get("/guilds/:id/twitch", async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            try {
+                const subs = await client.database.getTwitchSubsGuild(id);
+                if (!subs || !subs.length) {
+                    const payload: TwitchEndpointData = [];
+                    return res.send(payload);
+                }
+
+                const payload: TwitchEndpointData = [];
+                for (const sub of subs) {
+                    payload.push({
+                        channel_id: sub.channelid,
+                        streamer_login: sub.streamerlogin,
+                        streamer_id: sub.streamerid,
+                        message: sub.message || "",
+                        delete_after: sub.delafter,
+                        notified: sub.notified
+                    });
+                }
+
+                res.send(payload);
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.get("/guilds/:id/movement", async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            try {
+                const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
+                if (!g) return res.sendStatus(404);
+                const channels = g.channels.cache.map((c) => {
+                    const data: ChannelData = {
+                        id: c.id,
+                        name: c.name,
+                        type: c.type,
+                        position: c.position,
+                        parentID: c.parentID || ""
+                        //parent: c.parent
+                    }
+                    if (c.isText()) {
+                        data.nsfw = c.nsfw;
+                        data.topic = c.topic || "";
+                    }
+                    return data;
+                }).filter(c => c.type === "text").sort((a, b) => a.position - b.position);
+
+                const mvm = await client.database.getMovementData(id);
+
+                const toSend: MovementEndpointData = { channels, data: mvm };
+                res.send(toSend);
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
             return res.sendStatus(500);
         }
     });
@@ -890,55 +973,13 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
-    router.get("/guilds/:id/twitch", async (req, res) => {
-        try {
-            const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
-                return res.status(400).send("Bad id");
-            }
-            if (!req.user) {
-                return res.sendStatus(401);
-            }
-            const allGuilds = await client.specials?.getAllGuilds(client);
-            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-            if (!mg.find(x => x.id && x.id === id)) {
-                return res.sendStatus(401);
-            }
-
-            try {
-                const subs = await client.database.getTwitchSubsGuild(id);
-                if (!subs || !subs.length) {
-                    const payload: TwitchEndpointData = [];
-                    return res.send(payload);
-                }
-
-                const payload: TwitchEndpointData = [];
-                for (const sub of subs) {
-                    payload.push({
-                        channel_id: sub.channelid,
-                        streamer_login: sub.streamerlogin,
-                        streamer_id: sub.streamerid,
-                        message: sub.message || "",
-                    });
-                }
-
-                res.send(payload);
-            } catch (e) {
-                xlg.error(e);
-                res.sendStatus(500);
-            }
-        } catch (error) {
-            xlg.error(error)
-            return res.sendStatus(500);
-        }
-    });
-
     router.put("/guilds/:id/twitch", async (req, res) => {
         try {
-            const { sid, login, cid, message } = req.body;
-            if (typeof sid !== "string" || typeof login !== "string" || typeof cid !== "string") {
+            const { sid, login, cid, message, delafter } = req.body;
+            if (typeof sid !== "string" || typeof login !== "string" || typeof cid !== "string" || typeof delafter !== "string" || !/^(-|+)?[0-9]+$/g.test(delafter)) {
                 return res.sendStatus(400);
             }
+            const da = parseInt(delafter, 10);
             const msg = typeof message !== "string" ? undefined : message;
             const { id } = req.params;
             if (!/^[0-9]{18}$/g.test(id)) {
@@ -960,7 +1001,7 @@ export default function routerBuild (client: XClient): express.Router {
                         error: 'BAD_ID',
                     });
                 }
-                const result = await addTwitchWebhook(sid, true, id, c, msg, true);
+                const result = await addTwitchWebhook(sid, true, id, c, msg, true, isNaN(da) ? undefined : da);
                 if (result === true) {
                     return res.send({
                         success: true
@@ -974,6 +1015,42 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.status(400).send({
                     error: result,
                 });
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.put("/guilds/:id/movement", async (req, res) => {
+        try {
+            const { data } = req.body;
+            if (typeof data !== "string") {
+                return res.sendStatus(400);
+            }
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            //TODO: parse the data object here and type verify it
+            const parsed: MovementData = JSON.parse(data);
+
+            try {
+                // store the data hoever it will be stored
+
+                return res.sendStatus(400);
             } catch (e) {
                 xlg.error(e);
                 res.sendStatus(500);

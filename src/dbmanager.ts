@@ -4,8 +4,9 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Role, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 import { Bot } from "./bot";
+import uniquid from 'uniqid';
 
 const levelRoles = [{
         level: 70,
@@ -705,23 +706,23 @@ export class DBManager {
      * @param expiredate a parseable date to be used to sort by timestamps for renewal
      * @param message (optional) the message that will be sent with the discord notification
      */
-    async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string): Promise<boolean> {
+    async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string, delafter = -1, notified = 0): Promise<boolean> {
         try {
             if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
             const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
             const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
             if (!result || !result[0]) {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin, delafter, notified) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)})`);
                 } else {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin, delafter, notified) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)})`);
                 }
                 return true;
             } else {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)}, delafter = ${escape(delafter)}, notified = ${escape(notified)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 } else {
-                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)}, delafter = ${escape(delafter)}, notified = ${escape(notified)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 }
                 return true;
             }
@@ -1123,6 +1124,9 @@ export class DBManager {
         }
     }
 
+    /**
+     * Search for a case by its case number
+     */
     async getModActionByGuildCase(guildid: string, num: number): Promise<ModActionData | false> {
         try {
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${num}`);
@@ -1136,6 +1140,25 @@ export class DBManager {
         }
     }
 
+    /**
+     * Search for a case by its super id
+     */
+    async getModActionBySuperId(id: string): Promise<ModActionData | false> {
+        try {
+            const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE superid = ${escape(id)}`);
+            if (rows && rows.length > 0) {
+                return rows[0];
+            }
+            return false;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Get all of the recorded cases for a given user (in which they were the subject)
+     */
     async getModActionsByUser(guildid: string, userid: string): Promise<ModActionData[] | false> {
         try {
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND userid = ${escape(userid)}`);
@@ -1152,15 +1175,20 @@ export class DBManager {
     /**
      * Update a user's data. This is global data (opposed to guild data).
      */
-    async editModAction(data: ModActionData): Promise<InsertionResult | false> {
+    async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
         try {
-            const { superid, guildid, userid, casenumber, type, duration, mod, summary } = data;
-            if (!guildid || !userid || !casenumber) return false;
-            const e = await this.getModActionByGuildCase(guildid, casenumber);
+            const { guildid, userid, casenumber, type, duration, mod, summary } = data;// get provided data to log
+            let { superid } = data;// make superid mutable
+            if (!guildid || !userid || typeof casenumber !== "number") return false;
+            const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid || "");// see if there is a preexisting case with sid or casenumber
+            if (!superid) {
+                superid = uniquid();// generate sid if none is provided
+            }
+
             let sql = ``;
-            if (e && e.casenumber === casenumber) {
+            if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
                 sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), duration = COALESCE(${duration}, duration), mod = COALESCE(${escape(mod)}, mod), summary = COALESCE(${escape(summary)}, summary) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
-            } else {
+            } else {// else create a new case
                 sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, duration, mod, summary) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(duration)}, ${escape(mod)}, ${escape(summary)})`;
             }
             const result = await <Promise<InsertionResult>>this.query(sql);
@@ -1183,12 +1211,32 @@ export class DBManager {
             if (!guildid) return 0;
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT \`casenumber\` FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber > 0 ORDER BY \`casenumber\` DESC LIMIT 1`);
             if (rows && rows.length > 0) {
-                return rows[0].casenumber || 1;
+                return rows[0].casenumber || 0;
             }
             return 0;
         } catch (error) {
             xlog.error(error);
             return 0;
+        }
+    }
+
+    async getMovementData(guildid: string): Promise<MovementData> {
+        try {
+            const mvmGS = await this.getGuildSetting(guildid, "movement");
+            if (!mvmGS || !mvmGS.value) {
+                return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+            }
+            const mvm = JSON.parse(mvmGS.value);
+            const movement: MovementData = { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} } };
+            if (mvm.add_channel) movement.add_channel = mvm.add_channel;
+            if (mvm.dm_channel) movement.dm_channel = mvm.dm_channel;
+            if (mvm.depart_channel) movement.depart_channel = mvm.depart_channel;
+            if (mvm.depart_message) movement.depart_channel = mvm.depart_message;
+            if (mvm.dm_message) movement.depart_channel = mvm.dm_message;
+            if (mvm.add_message) movement.depart_channel = mvm.add_message;
+            return movement;
+        } catch (error) {
+            return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
         }
     }
 }
