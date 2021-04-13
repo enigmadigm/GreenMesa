@@ -1,4 +1,4 @@
-import { Client, Collection, Message, PermissionString } from "discord.js";
+import { Client, Collection, Message, MessageEmbedOptions, PermissionString } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -160,6 +160,8 @@ export interface TwitchHookRow {
     streamerlogin: string;
     message: string;
     expires: string;
+    delafter: number;
+    notified: number;
 }
 
 export interface PartialGuildObject extends DiscordStrategy.GuildInfo {
@@ -296,6 +298,8 @@ export interface AutomoduleData {
     notNested?: boolean;
     customList?: string[];
     option1?: boolean;
+    threshold?: number;
+    frequency?: number;
 }
 
 export interface GuildUserDataRow {
@@ -423,7 +427,7 @@ export interface ModActionData {
 }
 
 export interface ModActionEditData {
-    superid: string;
+    superid?: string;
     guildid: string;
     casenumber?: number;
     userid: string;
@@ -480,6 +484,8 @@ export interface TwitchSub {
     streamer_id: string;
     streamer_login: string;
     message: string;
+    delete_after: number;
+    notified: number;
 }
 
 type TwitchEndpointData = TwitchSub[];
@@ -560,4 +566,60 @@ export interface ClientValuesGuild {
     splashURL: string | null;
     discoverySplashURL: string | null;
     bannerURL: string | null;
+}
+
+export interface TriviaResponse {
+    response_code: 0 | 1 | 2 | 3 | 4;
+    results: {
+        category: string;
+        type: string;
+        difficulty: string;
+        question: string;
+        correct_answer: string;
+        incorrect_answers: string[];
+    }[];
+}
+
+export interface DashboardMessage {
+    outside: string;
+    embed: MessageEmbedOptions;
+}
+
+export interface MovementData {
+    add_channel: string;
+    depart_channel: string;
+    dm_channel: string;
+    add_message: DashboardMessage;
+    depart_message: DashboardMessage;
+    dm_message: DashboardMessage;
+}
+
+export interface MovementEndpointData {
+    channels: ChannelData[];
+    data: MovementData;
+}
+
+export interface CommandConf {
+    enabled: boolean;
+    /**
+     * channels allowing the command
+     */
+    channels_y: string[];
+    /**
+     * channels not allowing the command
+     */
+    channels_n: string[];
+    /**
+     * roles allowing the command
+     */
+    roles_y: string[];
+    /**
+     * roles not allowing the command
+     */
+    roles_n: string[];
+    /**
+     * admin, moderator, member, etc
+     */
+    default_level: string;
+    confined: boolean;
 }
