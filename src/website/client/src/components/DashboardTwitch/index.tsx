@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
-import { Center, Spinner } from '@chakra-ui/react';
+import { Center, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Spinner } from '@chakra-ui/react';
 import { ChannelData, ChannelEndpointData, TwitchEndpointData, TwitchSearchChannelsReturns, TwitchSub } from '../../../../../gm';
 import { HomeProps } from '../../pages/DashboardPage';
 import { selectStylesMK1 } from '../DashboardAutomod/AutomoduleCard';
@@ -25,7 +25,7 @@ export function DashboardTwitch(props: HomeProps) {
     const [loaded, setLoaded] = React.useState(false);
     const [channels, setChannels] = React.useState<ChannelData[]>([]);
     const [subs, setSubs] = React.useState<TwitchSub[]>([]);
-    const [pending, setPending] = React.useState<TwitchSub>({ channel_id: "", streamer_id: "", streamer_login: "", message: "" });
+    const [pending, setPending] = React.useState<TwitchSub>({ channel_id: "", streamer_id: "", streamer_login: "", message: "", delete_after: -1, notified: 0 });
     const [showing, setShowing] = React.useState<boolean>(false);
     const [editing, setEditing] = React.useState<boolean>(false);
     const [waiting, setWaiting] = React.useState<boolean>(false);
@@ -107,6 +107,7 @@ export function DashboardTwitch(props: HomeProps) {
         fd.append("sid", pending.streamer_id);
         fd.append("login", pending.streamer_login);
         fd.append("message", pending.message);
+        fd.append("delafter", `${pending.delete_after}`);
         const obj = {
             method: 'PUT',
             headers: hdrs,
@@ -119,7 +120,7 @@ export function DashboardTwitch(props: HomeProps) {
                     if (d.success) {
                         setStatus({ msg: "Saved.", success: true });
                         setShowing(false);
-                        setPending({ channel_id: "", streamer_id: "", streamer_login: "", message: "" });
+                        setPending({ channel_id: "", streamer_id: "", streamer_login: "", message: "", delete_after: -1, notified: 0 });
                         setEm("");
                     } else {
                         setStatus({ msg: "Failed save", success: false });
@@ -164,7 +165,7 @@ export function DashboardTwitch(props: HomeProps) {
 
     const handleCancelClick = () => {
         setShowing(false);
-        setPending({ channel_id: "", streamer_id: "", streamer_login: "", message: "" });
+        setPending({ channel_id: "", streamer_id: "", streamer_login: "", message: "", delete_after: -1, notified: 0 });
         setEm("");
     }
 
@@ -218,6 +219,12 @@ export function DashboardTwitch(props: HomeProps) {
         setPending(m);
     }
 
+    const onThresholdChange = (valueAsString: string, valueAsNumber: number) => {
+        const m = Object.assign({}, pending);
+        m.delete_after = valueAsNumber;
+        setPending(m);
+    }
+
     return loaded ? (
         <>
             <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
@@ -233,14 +240,14 @@ export function DashboardTwitch(props: HomeProps) {
                                             <div className="twitchcard" key={x.streamer_id}>
                                                 <div className="tc-left" onClick={() => {
                                                     setEditing(true);
-                                                    setPending({ channel_id: x.channel_id, streamer_id: x.streamer_id, streamer_login: x.streamer_login, message: x.message });
+                                                    setPending({ channel_id: x.channel_id, streamer_id: x.streamer_id, streamer_login: x.streamer_login, message: x.message, delete_after: x.delete_after, notified: x.notified });
                                                     setShowing(true);
                                                 }}>
                                                     <div>{x.streamer_login}</div>
                                                 </div>
                                                 <div className="tc-center" onClick={() => {
                                                     setEditing(true);
-                                                    setPending({ channel_id: x.channel_id, streamer_id: x.streamer_id, streamer_login: x.streamer_login, message: x.message });
+                                                    setPending({ channel_id: x.channel_id, streamer_id: x.streamer_id, streamer_login: x.streamer_login, message: x.message, delete_after: x.delete_after, notified: x.notified });
                                                     setShowing(true);
                                                 }}>
                                                     <div>#{channels.find(c => c.id === x.channel_id)?.name || "deleted-channel"}</div>
@@ -252,7 +259,7 @@ export function DashboardTwitch(props: HomeProps) {
                                                         }}><FontAwesomeIcon icon={faTrashAlt} /></button>
                                                         <button onClick={() => {
                                                             setEditing(true);
-                                                            setPending({ channel_id: x.channel_id, streamer_id: x.streamer_id, streamer_login: x.streamer_login, message: x.message });
+                                                            setPending({ channel_id: x.channel_id, streamer_id: x.streamer_id, streamer_login: x.streamer_login, message: x.message, delete_after: x.delete_after, notified: x.notified });
                                                             setShowing(true);
                                                         }}><FontAwesomeIcon icon={faEdit} /></button>
                                                     </div>
@@ -324,6 +331,16 @@ export function DashboardTwitch(props: HomeProps) {
                                             onChange={handleMessageChange}
                                             value={pending.message}
                                         ></textarea>
+                                        <br style={{ height: 5 }} />
+                                        <p style={{ fontWeight: 700 }}>Delete Notifier After:</p>
+                                        <NumberInput id="ae-punishtime" defaultValue={0} value={pending.delete_after} onChange={onThresholdChange}>
+                                            <NumberInputField />
+                                            notifications
+                                            <NumberInputStepper>
+                                                <NumberIncrementStepper />
+                                                <NumberDecrementStepper />
+                                            </NumberInputStepper>
+                                        </NumberInput>
                                     </div>
                                     <div className="tpu-buttons">
                                         <hr/>

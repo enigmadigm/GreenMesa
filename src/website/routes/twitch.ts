@@ -190,6 +190,11 @@ export function twitchRouter(client: XClient): Router {
                                             `);
                                             // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
                                             //channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
+                                            if (sub.delafter <= sub.notified) {
+                                                Bot.client.database.removeTwitchSubscription(sub.streamerid, sub.guildid);
+                                            } else {
+                                                Bot.client.database.incrementTwitchNotified(sub.guildid);
+                                            }
                                         }
                                     }
                                 }
@@ -218,7 +223,7 @@ export function twitchRouter(client: XClient): Router {
     return router;
 }
 
-export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string, editing = false): Promise<boolean | 'ID_NOT_FOUND' | 'ALREADY_EXISTS'> {
+export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string, editing = false, delafter = -1): Promise<boolean | 'ID_NOT_FOUND' | 'ALREADY_EXISTS'> {
     //if (!token) token = (await getOAuth()).access_token;
     //if (!token) return false;
     await getOAuth();
@@ -266,7 +271,7 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
     }
 
     if (guildid && targetChannel && targetChannel instanceof TextChannel) {
-        const subRes = await Bot.client.database.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login);
+        const subRes = await Bot.client.database.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login, delafter);
         if (!subRes) return false;
         if (uid.data[0].display_name || uid.data[0].login) {
             targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
