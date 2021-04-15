@@ -4,9 +4,10 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Role, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
+import { permLevels } from "./permissions";
 
 const levelRoles = [{
         level: 70,
@@ -173,8 +174,16 @@ export class DBManager {
         return false;
     }
 
-    getPointsForLevel(lvl: number): number {
-        return (5 * (lvl ^ 2)) + (50 * lvl) + 100;
+    getPointsForLevel(l: number): number {// as it turns out, stupid as shit me wrote "^" intending to write "**", fucking hilariously dumb
+        return (5 * (l ** 2)) + (50 * l) + 100;
+    }
+
+    getCumulativePointsForLevel(lvl: number): number {
+        let t = 0;
+        for (let i = 1; i < lvl; i++) {
+            t += this.getPointsForLevel(i);
+        }
+        return t;
     }
 
     /**
@@ -213,7 +222,7 @@ export class DBManager {
      * @param mode the point set mode, specify less than 0 to subtract, 0 to set exactly, and greater than 0 to add
      * @returns the updated points and new level
      */
-    async setXP(guildid: string, userid: string, amount: number, mode = 0): Promise<{points: number, level: number}> {
+    async setXP(guildid: string, userid: string, amount: number, mode = 0): Promise<{ points: number, level: number }> {
         try {
             if (!guildid || !userid || typeof guildid !== "string" || typeof userid !== "string") return { points: -1, level: -1 };
             let l = 0;
@@ -232,28 +241,28 @@ export class DBManager {
                 const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = ${escape(userid + guildid)}`);
                 let sql;
                 if (rows.length < 1) {
-                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${amount}, 0)`;
+                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${mode > 0 ? amount : 0 - amount}, 0)`;
                 } else {
                     // SENSITIVE AREA
                     // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
                     const xp = mode > 0 ? rows[0].xp + amount : rows[0].xp - amount;
-                    let levelNow = rows[0].level;
                     // let totalNeeded = 0;
                     // for (let x = 0; x < rows[0].level + 1; x++) {
                     //     totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
                     // }
                     // if (xp > totalNeeded) levelNow++;
+                    let level = 0;
                     let totalNeeded = 0;
                     while (xp > totalNeeded) {
-                        totalNeeded += this.getPointsForLevel(levelNow);
-                        if (amount > totalNeeded) levelNow++;
+                        totalNeeded += this.getPointsForLevel(level);
+                        if (xp > totalNeeded) level++;
                     }
                     // SENSITIVE AREA
                     /*let levelNow = Math.floor(0.1 * Math.sqrt(xp));
                     if (rows[0].level !== levelNow) {
                         rows[0].level = levelNow;
                     }*/
-                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = ${escape(userid + guildid)}`;
+                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${level} WHERE id = ${escape(userid + guildid)}`;
                 }
                 await <Promise<InsertionResult>>this.query(sql);
                 return { points: p, level: l };
@@ -280,7 +289,7 @@ export class DBManager {
         const level = xpData.level;
         const pointsLevelNow = this.getPointsForLevel(xpData.level);
         const pointsLevelNext = this.getPointsForLevel(xpData.level + 1);
-        const toGo = pointsLevelNext - xp;
+        const toGo = this.getCumulativePointsForLevel(xpData.level + 1) - xp;
         const last = new Date(xpData.timeUpdated);
         const first = new Date(xpData.timeAdded);
         return {
@@ -516,11 +525,12 @@ export class DBManager {
      * @param value value to set for the property
      * @param deleting whether to delete the setting
      */
-    async editGuildSetting(guild: Guild | PartialGuildObject, name = "", value = "", deleting = false): Promise<InsertionResult> {
+    async editGuildSetting(guild: Guild | PartialGuildObject | string, name = "", value = "", deleting = false): Promise<InsertionResult> {
         return new Promise((resolve, reject) => {
-            if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
+            if (!guild || !name) return reject("MISSING_VALUES");
+            const id = typeof guild === "string" ? guild : guild.id;
             if (deleting) {
-                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = ${escape(guild.id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
+                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = ${escape(id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
                     if (err) throw err;
                     if (result.affectedRows > 0) {
                         return resolve(result);
@@ -530,12 +540,12 @@ export class DBManager {
                 });
             }
             if (!value) return reject("MISSING_VALUES");
-            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`=${escape(value)} WHERE guildid = ${escape(guild.id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
+            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`=${escape(value)} WHERE guildid = ${escape(id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
                 if (err) throw err;
                 if (result.affectedRows > 0) {
                     return resolve(result);
                 } else {
-                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES (${escape(guild.id)}, ${escape(name)}, ${escape(value)})`, (err, result: InsertionResult) => {
+                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES (${escape(id)}, ${escape(name)}, ${escape(value)})`, (err, result: InsertionResult) => {
                         if (err) throw err;
                         resolve(result);
                     });
@@ -742,7 +752,7 @@ export class DBManager {
     async removeTwitchSubscription(streamerid: string, guildid: string): Promise<number | false> {
         try {
             if (!streamerid || !guildid) return false;
-            const delresult = await <Promise<InsertionResult>>this.query(`DELETE FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
+            const delresult = await <Promise<InsertionResult>>this.query(`DELETE FROM twitchhooks WHERE streamerid = ${escape(streamerid)} AND guildid = ${escape(guildid)}`);
             return delresult.affectedRows;
         } catch (error) {
             xlog.error(error);
@@ -757,7 +767,7 @@ export class DBManager {
     async getTwitchSubsForID(streamerid: string): Promise<false | TwitchHookRow[]> {
         try {
             if (!streamerid) return false;
-            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}'`);
+            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = ${escape(streamerid)}`);
             if (!result.length) return false;
             return result;
         } catch (error) {
@@ -773,8 +783,19 @@ export class DBManager {
     async getTwitchSubsGuild(guildid: string): Promise<false | TwitchHookRow[]> {
         try {
             if (!guildid) return false;
-            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE guildid = '${guildid}'`);
+            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE guildid = ${escape(guildid)}`);
             if (!result.length) return false;
+            return result;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    async incrementTwitchNotified(guildid: string): Promise<InsertionResult | false> {
+        try {
+            if (!guildid) return false;
+            const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1 WHERE guildid = ${escape(guildid)}`);
             return result;
         } catch (error) {
             xlog.error(error);
@@ -1237,6 +1258,53 @@ export class DBManager {
             return movement;
         } catch (error) {
             return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+        }
+    }
+
+    public defaultCommandConf: CommandConf = {
+        name: "",
+        enabled: true,
+        channel_mode: false,
+        channels: [],
+        role_mode: false,
+        roles: [],
+        default_level: permLevels.member,
+        confined: false,
+    }
+
+    async getCommands(guildid: string): Promise<CmdConfEntry | false> {
+        try {
+            const ccd = await this.getGuildSetting(guildid, 'commands');
+            let tp = "";
+            if (!ccd || !ccd.value) {
+                if (ccd && !ccd.value) {
+                    this.editGuildSetting(guildid, "commandconf", undefined, true);
+                }
+                tp = "{commands: [], conf: {}}";
+            } else {
+                tp = ccd.value;
+            }
+            const cc = JSON.parse(tp);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const isCmdConf = (o: any): o is CmdConfEntry => {
+                return 'commands' in o && 'conf' in o;
+            }
+            if (!isCmdConf(cc)) {
+                this.editGuildSetting(guildid, "commandconf", undefined, true);
+                return false;
+            }
+            const commands = cc.commands;
+            Bot.client.commands.filter((c) => !cc.commands.find(x => x.name === c.name)).forEach((c) => {
+                const s = Object.assign({}, this.defaultCommandConf);
+                if (c.permLevel && c.permLevel > 0) {
+                    s.default_level
+                }
+                commands.push(s);
+            })
+            return cc;
+        } catch (error) {
+            this.editGuildSetting(guildid, "commandconf", undefined, true);
+            return false;
         }
     }
 }
