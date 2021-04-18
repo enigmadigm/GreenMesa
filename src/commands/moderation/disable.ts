@@ -63,7 +63,7 @@ export const command: Command = {
             const unchanged: string[] = [];
 
             if (applyTo.some(x => x.enabled || !x.channel_mode || x.channels.length || !x.role_mode || x.roles.length)) {
-                const already: CommandConf[] = [];
+                let already = 0;
                 for (const c of applyTo) {
                     if (!spec || spec === "@everyone" || spec === "@here") {
                         c.enabled = false;
@@ -75,7 +75,7 @@ export const command: Command = {
                     } else {
                         if (spec instanceof GuildChannel) {
                             if ((c.channel_mode === false && c.channels.includes(spec.id))) {
-                                already.push(c);
+                                already += 1;
                                 continue;
                             }
                             if (c.channel_mode === true && !c.channels.includes(spec.id)) {
@@ -89,7 +89,7 @@ export const command: Command = {
                             c.channels.splice(c.channels.indexOf(spec.id), 1);
                         } else {
                             if ((c.role_mode === false && c.roles.includes(spec.id))) {
-                                already.push(c);
+                                already += 1;
                                 continue;
                             }
                             if (c.role_mode === true && !c.roles.includes(spec.id)) {
@@ -105,7 +105,7 @@ export const command: Command = {
                         continue;
                     }
                 }
-                if (already.length === applyTo.length) {
+                if (already === applyTo.length) {
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("warn_embed_color"),
