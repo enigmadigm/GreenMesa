@@ -53,7 +53,7 @@ export const command: Command = {
                  */
                 try {
                     await target.kick(`by ${message.author.tag}${reason ? ` | ${reason}` : ""}`)
-                    message.channel.send(`<a:spinning_light00:680291499904073739>✅ Kicked ${target.user.tag}`);
+                    message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Kicked ${target.user.tag}`);
                     /*logChannel.send({
                         embed: {
                             "title": `User Kicked`,
@@ -70,7 +70,7 @@ export const command: Command = {
                     xlg.error(err);
                     // This is generally due to the bot not being able to kick the member,
                     // either due to missing permissions or role hierarchy
-                    message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Could not kick ${target.user.tag}`);
+                    message.channel.send(`\\🆘 Could not kick ${target.user.tag}`);
                 }
             } else {
                 message.channel.send(`🟥 Invalid member to kick`);
