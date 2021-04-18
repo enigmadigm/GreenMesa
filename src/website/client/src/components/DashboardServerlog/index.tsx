@@ -10,6 +10,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import { titleCase } from '../../utils/parsers';
 
 const LoggingFlags = {
     ALL_EVENTS: 1 << 14,
@@ -54,20 +55,6 @@ export function LogChannelSelect(props: LogChannelSelectProps) {
             />
         </>
     )
-}
-
-function titleCase(str: string) {
-    if (str === "nsfw") {
-        return "NSFW";
-    }
-    const splitStr = str.toLowerCase().split(' ');
-    for (let i = 0; i < splitStr.length; i++) {
-        // You do not need to check if i is larger than splitStr length, as your for does that for you
-        // Assign it back to the array
-        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
-    }
-    // Directly return the joined string
-    return splitStr.join(' ');
 }
 
 export function DashboardServerlog(props: HomeProps) {
