@@ -1,0 +1,61 @@
+.c-cats {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.c-cat {
+    margin: 0 10px;
+}
+
+.c-cat input:checked {
+    background-color: #292e33;
+}
+
+.ccards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+    position: relative;
+}
+
+.ccard {
+    margin: 10px;
+    background-color: #343B41;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    width: 30%;
+}
+
+.ccard .cheader {
+    background-color: #292e33;
+    width: 100%;
+    padding: 7px 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ccard .cbody {
+    margin: 8px 15px;
+    margin-bottom: 15px;
+}
+
+.cedit {
+    color: #00ace6;
+    transition: opacity 0.3s;
+    cursor: pointer;
+}
+
+.cedit:hover {
+    opacity: 0.7;
+}
+
+.ctitle {
+    padding-right: 12px;
+}
+
+.point-cb label {
+    cursor: pointer;
+}
