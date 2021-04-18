@@ -332,6 +332,22 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
         const commandName = args.shift()?.toLowerCase() || "";
 
+        const command = client.commands.get(commandName || "")
+            || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
+
+        if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
+        const cs = message.guild ? await client.database.getCommand(message.guild.id, command.name) : false;
+        const disabled = cs ? !!(!cs.enabled || (!cs.channel_mode && cs.channels.includes(message.channel.id)) || (cs.channel_mode && !cs.channels.includes(message.channel.id)) || (message.member && ((cs.role_mode && !message.member.roles.cache.find(x => cs.roles.includes(x.id))) || (!cs.role_mode && message.member.roles.cache.find(x => cs.roles.includes(x.id)))))) : false;
+
+        if (command.guildOnly && dm) {// command is configured to only execute outside of dms
+            message.channel.send(`That is not a DM executable command.`);
+            return;
+        }
+        if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only, THIS IS AN OUTDATED PROPERTY BUT IS STILL USED
+            xlg.log(`${message.author.tag} attempted ownerOnly`);
+            return;
+        }
+
         let permLevel = permLevels.member;
         const bmr = await client.database.getGlobalSetting("botmasters").catch(xlg.error);
         let botmasters: string[];
@@ -345,21 +361,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         } else if (botmasters.includes(message.author.id)) { // bot masters
             permLevel = permLevels.botMaster;
         }
+        const pl = cs ? cs.level || permLevels.member : command.permLevel || permLevels.member;
 
-        const command = client.commands.get(commandName || "")
-            || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
-
-        if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
-    
-        if (command.guildOnly && dm) {// command is configured to only execute outside of dms
-            message.channel.send(`That is not a DM executable command.`);
-            return;
-        }
-        if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only, THIS IS AN OUTDATED PROPERTY BUT IS STILL USED
-            xlg.log(`${message.author.tag} attempted ownerOnly`);
-            return;
-        }
-        if (command.permLevel && permLevel < command.permLevel) {// insufficient bot permissions
+        if (permLevel < pl) {// insufficient bot permissions
             // TODO: add admin option to make it notify users that they don't have permissions
             const accessMessage = await client.database.getGuildSetting(message.guild || "", "access_message");
             if (accessMessage && accessMessage.value === "enabled") {
@@ -369,36 +373,18 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const commandEnabledGlobal = await client.database.getGlobalSetting(`${command.name}_enabled`);
-        const commandEnabledGuild = message.guild ? await client.database.getGuildSetting(message.guild, `${command.name}_toggle`) : false;
-        const commandDisabled = (commandEnabledGlobal && commandEnabledGlobal.value !== 'true') || (commandEnabledGuild && commandEnabledGuild.value !== 'enable');
-        if (commandDisabled) {
+        if ((commandEnabledGlobal && commandEnabledGlobal.value !== 'true') || disabled) {
             if (command.name === "h") return;
             message.channel.send({
                 embed: {
                     title: `Command Disabled`,
-                    description: `\`${commandName}\` has been disabled ${(commandEnabledGlobal && commandEnabledGlobal.value !== 'true') ? "**globally**" : "**in this server**"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
+                    description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "**in this server**"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
                     footer: {
-                        text: `${(commandEnabledGlobal && commandEnabledGlobal.value === 'false') ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
+                        text: `${!disabled ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
                     }
                 }
             });
             return;
-        } else if (command.category) {
-            const groupGlobal = await client.database.getGlobalSetting(`${command.category}_enabled`);
-            const groupGuild = message.guild ? await client.database.getGuildSetting(message.guild, `${command.category}_toggle`) : false;
-            const groupDisabled = (groupGlobal && groupGlobal.value == 'false') || (groupGuild && groupGuild.value === 'disable');
-            if (groupDisabled) {
-                message.channel.send({
-                    embed: {
-                        title: `Category Disabled`,
-                        description: `Command group \`${command.category}\` has been disabled ${(groupGlobal && groupGlobal.value == 'false') ? "**globally**" : "**in this server**"}.`,
-                        footer: {
-                            text: `${(groupGlobal && groupGlobal.value == 'false') ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
-                        }
-                    }
-                });
-                return;
-            }
         }
 
         if (command.moderation && message.guild) {
@@ -452,13 +438,13 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const timestamps = cooldowns.get(command.name);
-        const cooldownAmount = (command.cooldown || 0) * 1000;
+        const cd = (cs ? typeof cs.cooldown === "number" ? cs.cooldown : command.cooldown || 0 : command.cooldown || 0) * 1000;
 
         if (timestamps) {
             if (timestamps.has(message.author.id)) {
                 const usertimestamp = timestamps.get(message.author.id);
                 if (usertimestamp) {
-                    const expirationTime = usertimestamp + cooldownAmount;
+                    const expirationTime = usertimestamp + cd;
             
                     if (now < expirationTime) {
                         const timeLeft = (expirationTime - now) / 1000;
@@ -467,7 +453,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 }
             }
             timestamps.set(message.author.id, now);
-            setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+            setTimeout(() => timestamps.delete(message.author.id), cd);
         }
 
         if (command.permissions && command.permissions.length) {
