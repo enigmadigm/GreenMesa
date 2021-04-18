@@ -1,11 +1,12 @@
 import { Command } from 'src/gm';
+import { permLevels } from '../../permissions';
 import xlg from '../../xlogger';
 
 export const command: Command = {
     name: 'botkill',
     description: 'oopsie doopsie dropped the bot',
     cooldown: 60,
-    ownerOnly: true,
+    permLevel: permLevels.botMaster,
     async execute(client, message, args) {
         try {
             await message.channel.send('Shutting down...');
