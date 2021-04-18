@@ -1178,8 +1178,7 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(500);
             }
             if (apply.length) {
-                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner");
-                applyTo.map(c => {
+                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner").map(c => {
                     // enabled
                     if (enabled) {
                         c.enabled = true;
@@ -1264,7 +1263,6 @@ export default function routerBuild (client: XClient): express.Router {
                     glob.overwites_ignore = overwites_ignore;
                 }
 
-                //TODO: store the data however it will be stored
                 const r = await client.database.editGuildSetting(id, "commandconf", JSON.stringify(conf));
                 if (r.affectedRows) {
                     return res.sendStatus(200);
