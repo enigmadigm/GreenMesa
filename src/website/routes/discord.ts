@@ -637,6 +637,7 @@ export default function routerBuild (client: XClient): express.Router {
 
             const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
             if (!g) return res.sendStatus(404);
+
             const channels = g.channels.cache.map((c) => {
                 const data: ChannelData = {
                     id: c.id,
@@ -653,15 +654,26 @@ export default function routerBuild (client: XClient): express.Router {
                 return data;
             }).filter(c => c.type === "text").sort((a, b) => a.position - b.position);
 
+            const roles = g.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map((c) => {
+                const data: RoleData = {
+                    id: c.id,
+                    name: c.name,
+                    position: c.position,
+                    hexColor: c.hexColor
+                }
+                return data;
+            }).sort((a, b) => b.position - a.position);
+
             const cmdconf = await client.database.getCommands(id, true);
             if (!cmdconf || !cmdconf.commands.length) {
                 return res.sendStatus(500);
             }
 
             const toSend: CommandsEndpointData = {
-                channels,
                 commands: cmdconf.commands,
-                global: cmdconf.conf
+                global: cmdconf.conf,
+                channels,
+                roles
             };
             res.send(toSend);
         } catch (error) {
@@ -1124,6 +1136,7 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.patch("/guilds/:id/commands", async (req, res) => {
         try {
+            //TODO: add a property that specifies that the command override should be reset (deleted) so that the overrides can be used
             const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore} = req.body;
             // these type checks used to be one big if block, but it was harder to read
             if ((!Array.isArray(apply) || !isStringArray(apply)) ||

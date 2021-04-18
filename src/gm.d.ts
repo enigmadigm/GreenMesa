@@ -604,8 +604,9 @@ export interface MovementEndpointData {
 
 export interface CommandsEndpointData {
     commands: CommandConf[];
-    channels: ChannelData[];
     global: CommandsGlobalConf;
+    channels: ChannelData[];
+    roles: RoleData[];
 }
 
 export interface CmdConfEntry {
