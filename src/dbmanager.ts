@@ -1325,8 +1325,14 @@ export class DBManager {
                             conf.description_short = c.description.short;
                         }
                     }
-                    if (typeof conf.cooldown === "number" && conf.cooldown < (c.cooldown || 0)) {
-                        conf.cooldown = c.cooldown;
+                    conf.default_cooldown = c.cooldown || 0;
+                    conf.category = c.category;
+                    if (typeof conf.cooldown === "number") {
+                        if (conf.cooldown < (c.cooldown || 0)) {
+                            conf.cooldown = c.cooldown;
+                        }
+                    } else {
+                        conf.cooldown = conf.default_cooldown;
                     }
                     if (conf.category === "owner") {
                         conf.level = permLevels.botMaster;
@@ -1343,6 +1349,23 @@ export class DBManager {
         }
     }
 
+    async getCommand(guildid: string, cmd: string): Promise<CommandConf | false> {
+        try {
+            const conf = await this.getCommands(guildid, undefined, false);
+            if (!conf) {
+                return false;
+            }
+            const command = conf.commands.find(x => x.name === cmd);
+            if (command) {
+                return command;
+            }
+            return false;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
     async editCommands(guildid: string, commands: CommandConf[]): Promise<boolean> {
         try {
             const conf = await this.getCommands(guildid, undefined, false);
@@ -1351,6 +1374,8 @@ export class DBManager {
             }
             const cmds = conf.commands;
             commands.forEach(c => {
+                delete c.description;
+                delete c.description_short;
                 const curr = cmds.find(x => x.name === c.name);
                 if (!curr) {
                     cmds.push(c);

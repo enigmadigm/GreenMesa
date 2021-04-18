@@ -43,6 +43,9 @@ export interface Command {
     permLevel?: number;
     moderation?: boolean;
     guildOnly?: boolean;
+    /**
+     * @deprecated
+     */
     ownerOnly?: boolean;
     permissions?: PermissionString[];
     execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean>;
@@ -666,8 +669,8 @@ export interface CommandConf {
      */
     level?: number;
     confined?: boolean;
-    description: string;
-    description_short: string;
+    description?: string;
+    description_short?: string;
     description_edited?: string;
     /**
      * the official cooldown

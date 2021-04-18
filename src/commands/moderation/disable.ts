@@ -1,16 +1,20 @@
 import xlg from "../../xlogger";
-//import { getGuildSetting, editGuildSetting, getGlobalSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, CommandConf } from "src/gm";
+import { stringToChannel, stringToRole } from "../../utils/parsers";
+import { GuildChannel } from "discord.js";
+import { getDashboardLink } from "../../utils/specials";
+
+// TODO: for commands that were not able to be changed, it should provide a link to change them in the dashboard
 
 export const command: Command = {
     name: 'disable',
-    aliases: ['disablecmd'],
+    aliases: ['dis'],
     description: {
         short: 'disable a command',
-        long: 'Use to disable a command in the current server.'
+        long: 'Use to disable a command.'
     },
-    usage: "[command name]",
+    usage: "<command name> [@role|#channel]",
     args: true,
     guildOnly: true,
     permLevel: permLevels.admin,
@@ -19,35 +23,93 @@ export const command: Command = {
             if (!message.guild) return;
 
             const searchName = args[0].toLowerCase();
-            const catMatch = client.categories?.get(searchName);
-            const found = client.commands?.get(searchName) || client.commands?.find(cmd => !!(cmd.aliases && cmd.aliases.includes(searchName))) || catMatch;
-
-            if (!found) {
+            const conf = await client.database.getCommands(message.guild.id, true);
+            if (!conf) {
+                client.specials.sendError(message.channel, "Something ate sh*t", true);
+                return;
+            }
+            const commands = conf.commands;
+            const catMatch = client.categories.get(searchName);
+            const cmdMatch = client.commands.get(searchName) || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(searchName)));
+            let name = "";
+            const applyTo: CommandConf[] = [];
+            if (catMatch) {
+                catMatch.commands.filter(x => x.name !== "enable" && x.name !== "disable").forEach(c => {
+                    const c2 = commands.find(x => x.name === c.name);
+                    if (c2) {
+                        applyTo.push(c2);
+                    }
+                });
+                name = catMatch.name;
+            } else if (cmdMatch) {
+                if (cmdMatch.name === "enable" || cmdMatch.name === "disable") {
+                    await message.channel.send(`Debossing \` enable \` or \` disable \` is prohibited`);
+                }
+                const c = commands.find(x => x.name === cmdMatch.name);
+                if (c) applyTo.push(c);
+                name = cmdMatch.name;
+            } else {
                 await message.channel.send(`No command or group with name or alias \`${searchName}\``);
                 return;
             }
-
-            if (found.name === "enable" || found.name === "disable") {
-                await message.channel.send({
-                    embed: {
-                        color: await client.database.getColor("fail"),
-                        description: `Debossing \` enable \` or \` disable \` is prohibited`,
-                        footer: {
-                            text: `module debosser`
-                        }
-                    }
-                });
+            if (!applyTo.length) {
+                await message.channel.send("No commands selected for configuration");
                 return;
             }
 
-            const result = await client.database.getGuildSetting(message.guild, `${found.name}_toggle`);
-            if (!result || (result.value && result.value === "enable")) {
-                const result = await client.database.editGuildSetting(message.guild, `${found.name}_toggle`, "disable");
-                if (!result || result.affectedRows < 1) {
+            args.shift();
+            const a = args.join(" ");
+            const spec = stringToRole(message.guild, a, true, true, false) || stringToChannel(message.guild, a, true, true);
+            const unchanged: string[] = [];
+
+            if (applyTo.some(x => x.enabled || !x.channel_mode || x.channels.length || !x.role_mode || x.roles.length)) {
+                const already: CommandConf[] = [];
+                for (const c of applyTo) {
+                    if (!spec || spec === "@everyone" || spec === "@here") {
+                        c.enabled = false;
+                        c.channel_mode = false;
+                        c.channels = [];
+                        c.role_mode = false;
+                        c.roles = [];
+                        continue;
+                    } else {
+                        if (spec instanceof GuildChannel) {
+                            if ((c.channel_mode === false && c.channels.includes(spec.id))) {
+                                already.push(c);
+                                continue;
+                            }
+                            if (c.channel_mode === true && !c.channels.includes(spec.id)) {
+                                unchanged.push(c.name);
+                                continue;
+                            }
+                            if (c.channel_mode === false) {
+                                c.channels.push(spec.id);
+                                continue;
+                            }
+                            c.channels.splice(c.channels.indexOf(spec.id), 1);
+                        } else {
+                            if ((c.role_mode === false && c.roles.includes(spec.id))) {
+                                already.push(c);
+                                continue;
+                            }
+                            if (c.role_mode === true && !c.roles.includes(spec.id)) {
+                                unchanged.push(c.name);
+                                continue;
+                            }
+                            if (c.role_mode === false) {
+                                c.roles.push(spec.id);
+                                continue;
+                            }
+                            c.roles.splice(c.roles.indexOf(spec.id), 1);
+                        }
+                        continue;
+                    }
+                }
+                if (already.length === applyTo.length) {
                     await message.channel.send({
                         embed: {
-                            color: await client.database.getColor("fail"),
-                            description: `Failed to disable ${catMatch ? "group" : "command"}`,
+                            color: await client.database.getColor("warn_embed_color"),
+                            description: `${catMatch ? "Category" : "Command"} \` ${name} \` already disabled for ${spec}`,
                             footer: {
                                 text: `module debosser`
                             }
@@ -55,10 +117,25 @@ export const command: Command = {
                     });
                     return;
                 }
+                
+            } else {
                 await message.channel.send({
                     embed: {
-                        color: await client.database.getColor("success"),
-                        description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` toggled to **disabled**`,
+                        color: await client.database.getColor("warn_embed_color"),
+                        description: `${catMatch ? "Category" : "Command"} \` ${name} \` already disabled`,
+                        footer: {
+                            text: `module debosser`
+                        }
+                    }
+                });
+            }
+
+            const r = await client.database.editCommands(message.guild.id, applyTo);
+            if (!r) {
+                await message.channel.send({
+                    embed: {
+                        color: await client.database.getColor("fail"),
+                        description: `Failed to disable ${catMatch ? "group" : "command"}`,
                         footer: {
                             text: `module debosser`
                         }
@@ -66,17 +143,16 @@ export const command: Command = {
                 });
                 return;
             }
-            if (result.value && result.value == "disable") {
-                await message.channel.send({
-                    embed: {
-                        color: await client.database.getColor("warn_embed_color"),
-                        description: `${catMatch ? "Category" : "Command"} \` ${found.name} \` already disabled`,
-                        footer: {
-                            text: `module debosser`
-                        }
+
+            await message.channel.send({
+                embed: {
+                    color: await client.database.getColor("success"),
+                    description: `${catMatch ? "Category" : "Command"} \` ${name} \` **disabled**${unchanged.length ? `\n\n[One or more commands](${getDashboardLink(message.guild.id, "commands")}?select=${unchanged.join(",")}) may not have changed how you wanted because of conflicting options. Go to the dashboard to confirm and fix.` : ""}`,
+                    footer: {
+                        text: `module debosser`
                     }
-                });
-            }
+                }
+            });
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
