@@ -1378,6 +1378,7 @@ export class DBManager {
             commands.forEach(c => {
                 delete c.description;
                 delete c.description_short;
+                delete c.category;
                 const curr = cmds.find(x => x.name === c.name);
                 if (!curr) {
                     cmds.push(c);

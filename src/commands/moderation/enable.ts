@@ -58,10 +58,10 @@ export const command: Command = {
 
             args.shift();
             const a = args.join(" ");
-            const spec = stringToRole(message.guild, a, true, true, false) || stringToChannel(message.guild, a, true, true);
+            const spec = stringToChannel(message.guild, a, true, true) || stringToRole(message.guild, a, true, true, false);
             const unchanged: string[] = [];
 
-            if (applyTo.some(x => !x.enabled || x.channel_mode || x.channels.length || x.role_mode || x.roles.length)) {
+            if (applyTo.some(x => !x.enabled || x.channel_mode || x.channels.length || x.role_mode || x.roles.length) || spec) {
                 let already = 0;
                 for (const c of applyTo) {
                     if (!spec || spec === "@everyone" || spec === "@here") {
@@ -72,16 +72,20 @@ export const command: Command = {
                         c.roles = [];
                         continue;
                     } else {
+                        c.enabled = true;
                         if (spec instanceof GuildChannel) {
                             if ((c.channel_mode === true && c.channels.includes(spec.id))) {
                                 already += 1;
                                 continue;
                             }
                             if (c.channel_mode === false && !c.channels.includes(spec.id)) {
-                                unchanged.push(c.name);
-                                continue;
+                                if (c.channels.length) {
+                                    unchanged.push(c.name);
+                                    continue;
+                                }
+                                c.channel_mode = true;
                             }
-                            if (c.channel_mode === false) {
+                            if (c.channel_mode === true) {
                                 c.channels.push(spec.id);
                                 continue;
                             }
@@ -92,10 +96,13 @@ export const command: Command = {
                                 continue;
                             }
                             if (c.role_mode === false && !c.roles.includes(spec.id)) {
-                                unchanged.push(c.name);
-                                continue;
+                                if (c.roles.length) {
+                                    unchanged.push(c.name);
+                                    continue;
+                                }
+                                c.role_mode = true;
                             }
-                            if (c.role_mode === false) {
+                            if (c.role_mode === true) {
                                 c.roles.push(spec.id);
                                 continue;
                             }
@@ -108,7 +115,7 @@ export const command: Command = {
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("warn_embed_color"),
-                            description: `${catMatch ? "Category" : "Command"} \` ${name} \` already enabled for ${spec}`,
+                            description: `${catMatch ? "Category" : "Command"} \` ${name} \` is already enabled ${spec instanceof GuildChannel ? "in" : "for"} ${spec}`,
                             footer: {
                                 text: `module sanctioner`
                             }
@@ -120,12 +127,13 @@ export const command: Command = {
                 await message.channel.send({
                     embed: {
                         color: await client.database.getColor("warn_embed_color"),
-                        description: `${catMatch ? "Category" : "Command"} \` ${name} \` already enabled`,
+                        description: `${catMatch ? "Category" : "Command"} \` ${name} \` is already enabled`,
                         footer: {
                             text: `module sanctioner`
                         }
                     }
                 });
+                return;
             }
 
             const r = await client.database.editCommands(message.guild.id, applyTo);
@@ -145,7 +153,7 @@ export const command: Command = {
             await message.channel.send({
                 embed: {
                     color: await client.database.getColor("success"),
-                    description: `${catMatch ? "Category" : "Command"} \` ${name} \` **enabled**${unchanged.length ? `\n\n[One or more commands](${getDashboardLink(message.guild.id, "commands")}?select=${unchanged.join(",")}) may not have changed how you wanted because of conflicting options. Go to the dashboard to confirm and fix.` : ""}`,
+                    description: `${catMatch ? "Category" : "Command"} \` ${name} \` **enabled**${spec ? ` ${spec instanceof GuildChannel ? "in" : "for"} ${spec}` : ""}${unchanged.length ? `\n\n[One or more commands](${getDashboardLink(message.guild.id, "commands")}?select=${unchanged.join(",")}) may not have changed how you wanted because of conflicting options. Go to the dashboard to confirm and fix.` : ""}`,
                     footer: {
                         text: `module sanctioner`
                     }
