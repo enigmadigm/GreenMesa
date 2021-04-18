@@ -1339,11 +1339,13 @@ export class DBManager {
                     }
                 }
             });
+            cc.commands = commands;
             if (noOwner) {
                 cc.commands = cc.commands.filter((x) => x.category !== "owner");
             }
             return cc;
         } catch (error) {
+            xlog.error(error)
             this.editGuildSetting(guildid, "commandconf", undefined, true);
             return false;
         }
@@ -1382,7 +1384,8 @@ export class DBManager {
                 } else {
                     cmds.splice(cmds.indexOf(curr), 1, c);
                 }
-            })
+            });
+            conf.commands = cmds;
             const r = await this.editGuildSetting(guildid, "commandconf", JSON.stringify(conf));
             if (!r.affectedRows) {
                 return false;

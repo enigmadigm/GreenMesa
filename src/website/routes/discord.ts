@@ -1,6 +1,6 @@
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandConfCategory, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
@@ -635,54 +635,35 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(401);
             }
 
-            try {
-                const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
-                if (!g) return res.sendStatus(404);
-                const channels = g.channels.cache.map((c) => {
-                    const data: ChannelData = {
-                        id: c.id,
-                        name: c.name,
-                        type: c.type,
-                        position: c.position,
-                        parentID: c.parentID || ""
-                        //parent: c.parent
-                    }
-                    if (c.isText()) {
-                        data.nsfw = c.nsfw;
-                        data.topic = c.topic || "";
-                    }
-                    return data;
-                }).filter(c => c.type === "text").sort((a, b) => a.position - b.position);
-
-                const cmdconf = await client.database.getCommands(id, true);
-                if (!cmdconf || !cmdconf.commands.length) {
-                    return res.sendStatus(500);
+            const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
+            if (!g) return res.sendStatus(404);
+            const channels = g.channels.cache.map((c) => {
+                const data: ChannelData = {
+                    id: c.id,
+                    name: c.name,
+                    type: c.type,
+                    position: c.position,
+                    parentID: c.parentID || ""
+                    //parent: c.parent
                 }
+                if (c.isText()) {
+                    data.nsfw = c.nsfw;
+                    data.topic = c.topic || "";
+                }
+                return data;
+            }).filter(c => c.type === "text").sort((a, b) => a.position - b.position);
 
-                const categories: CommandConfCategory[] = [];
-                cmdconf.commands.forEach(c => {
-                    const cat = categories.find(x => x.name === c.category);
-                    if (!cat) {
-                        categories.push({
-                            name: c.category || "",
-                            count: cmdconf.commands.reduce((p, curr) => curr.category === c.category ? p + 1 : p, 0),
-                            commands: [c],
-                        });
-                    } else {
-                        cat.commands.push(c);
-                    }
-                })
-
-                const toSend: CommandsEndpointData = {
-                    channels,
-                    commands: categories,
-                    global: cmdconf.conf
-                };
-                res.send(toSend);
-            } catch (e) {
-                xlg.error(e);
-                res.sendStatus(500);
+            const cmdconf = await client.database.getCommands(id, true);
+            if (!cmdconf || !cmdconf.commands.length) {
+                return res.sendStatus(500);
             }
+
+            const toSend: CommandsEndpointData = {
+                channels,
+                commands: cmdconf.commands,
+                global: cmdconf.conf
+            };
+            res.send(toSend);
         } catch (error) {
             xlg.error(error)
             return res.sendStatus(500);

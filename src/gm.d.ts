@@ -603,15 +603,9 @@ export interface MovementEndpointData {
 }
 
 export interface CommandsEndpointData {
-    commands: CommandConfCategory[];
+    commands: CommandConf[];
     channels: ChannelData[];
     global: CommandsGlobalConf;
-}
-
-export interface CommandConfCategory {
-    name: string;
-    count: number;
-    commands: CommandConf[];
 }
 
 export interface CmdConfEntry {
