@@ -1,6 +1,6 @@
 import xlg from '../../xlogger';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandConfCategory, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
@@ -36,6 +36,11 @@ export function getApplicableGuilds(userGuilds: PartialGuildObject[], botGuilds:
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const conformsToWarnConf = (o: any): o is WarnConf => {
     return typeof o.threshold === "number" && typeof o.punishment === "string" && typeof o.time === "number";
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isStringArray = (o: any[]): o is string[] => {
+    return o.every(x => typeof x === "string");
 }
 
 export default function routerBuild (client: XClient): express.Router {
@@ -615,6 +620,75 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
+    router.get("/guilds/:id/commands", async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            if (!mg.find(x => x.id && x.id === id)) {
+                return res.sendStatus(401);
+            }
+
+            try {
+                const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
+                if (!g) return res.sendStatus(404);
+                const channels = g.channels.cache.map((c) => {
+                    const data: ChannelData = {
+                        id: c.id,
+                        name: c.name,
+                        type: c.type,
+                        position: c.position,
+                        parentID: c.parentID || ""
+                        //parent: c.parent
+                    }
+                    if (c.isText()) {
+                        data.nsfw = c.nsfw;
+                        data.topic = c.topic || "";
+                    }
+                    return data;
+                }).filter(c => c.type === "text").sort((a, b) => a.position - b.position);
+
+                const cmdconf = await client.database.getCommands(id, true);
+                if (!cmdconf || !cmdconf.commands.length) {
+                    return res.sendStatus(500);
+                }
+
+                const categories: CommandConfCategory[] = [];
+                cmdconf.commands.forEach(c => {
+                    const cat = categories.find(x => x.name === c.category);
+                    if (!cat) {
+                        categories.push({
+                            name: c.category || "",
+                            count: cmdconf.commands.reduce((p, curr) => curr.category === c.category ? p + 1 : p, 0),
+                            commands: [c],
+                        });
+                    } else {
+                        cat.commands.push(c);
+                    }
+                })
+
+                const toSend: CommandsEndpointData = {
+                    channels,
+                    commands: categories,
+                    global: cmdconf.conf
+                };
+                res.send(toSend);
+            } catch (e) {
+                xlg.error(e);
+                res.sendStatus(500);
+            }
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
     // PUTters
 
     router.put("/guilds/:id/prefix", async (req, res) => {
@@ -976,7 +1050,7 @@ export default function routerBuild (client: XClient): express.Router {
     router.put("/guilds/:id/twitch", async (req, res) => {
         try {
             const { sid, login, cid, message, delafter } = req.body;
-            if (typeof sid !== "string" || typeof login !== "string" || typeof cid !== "string" || typeof delafter !== "string" || !/^(-|+)?[0-9]+$/g.test(delafter)) {
+            if (typeof sid !== "string" || typeof login !== "string" || typeof cid !== "string" || typeof delafter !== "string" || !/^(-|\+)?[0-9]+$/g.test(delafter)) {
                 return res.sendStatus(400);
             }
             const da = parseInt(delafter, 10);
@@ -993,32 +1067,28 @@ export default function routerBuild (client: XClient): express.Router {
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
             }
-            try {
-                const g = await client.guilds.fetch(id);
-                const c = stringToChannel(g, cid, false, false);
-                if (!c) {
-                    return res.status(400).send({
-                        error: 'BAD_ID',
-                    });
-                }
-                const result = await addTwitchWebhook(sid, true, id, c, msg, true, isNaN(da) ? undefined : da);
-                if (result === true) {
-                    return res.send({
-                        success: true
-                    });
-                }
-                if (!result) {
-                    return res.status(400).send({
-                        error: 'UNKNOWN',
-                    });
-                }
+
+            const g = await client.guilds.fetch(id);
+            const c = stringToChannel(g, cid, false, false);
+            if (!c) {
                 return res.status(400).send({
-                    error: result,
+                    error: 'BAD_ID',
                 });
-            } catch (e) {
-                xlg.error(e);
-                res.sendStatus(500);
             }
+            const result = await addTwitchWebhook(sid, true, id, c, msg, true, isNaN(da) ? undefined : da);
+            if (result === true) {
+                return res.send({
+                    success: true
+                });
+            }
+            if (!result) {
+                return res.status(400).send({
+                    error: 'UNKNOWN',
+                });
+            }
+            return res.status(400).send({
+                error: result,
+            });
         } catch (error) {
             xlg.error(error)
             return res.sendStatus(500);
@@ -1040,21 +1110,168 @@ export default function routerBuild (client: XClient): express.Router {
             }
             const allGuilds = await client.specials?.getAllGuilds(client);
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-            if (!mg.find(x => x.id && x.id === id)) {
+            const g = mg.find(x => x.id && x.id === id);
+            if (!g) {
                 return res.sendStatus(401);
             }
 
             //TODO: parse the data object here and type verify it
-            const parsed: MovementData = JSON.parse(data);
+            const parsed = JSON.parse(data);
 
-            try {
-                // store the data hoever it will be stored
-
-                return res.sendStatus(400);
-            } catch (e) {
-                xlg.error(e);
-                res.sendStatus(500);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const conformsToMvm = (o: any): o is MovementData => {
+                return typeof o === "object" && !!o && typeof o.dm_channel === "string" && typeof o.add_channel === "string" && typeof o.depart_channel === "string" && 'add_message' in o && 'dm_message' in o && 'depart_message' in o;
             }
+
+            if (!conformsToMvm(parsed)) {
+                return res.sendStatus(400);
+            }
+
+            // store the data however it will be stored
+            const r = await client.database.editGuildSetting(g, "movement", JSON.stringify(parsed));
+
+            if (r && r.affectedRows) {
+                return res.sendStatus(200);
+            }
+
+            return res.sendStatus(400);
+        } catch (error) {
+            xlg.error(error)
+            return res.sendStatus(500);
+        }
+    });
+
+    router.patch("/guilds/:id/commands", async (req, res) => {
+        try {
+            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore} = req.body;
+            // these type checks used to be one big if block, but it was harder to read
+            if ((!Array.isArray(apply) || !isStringArray(apply)) ||
+                (typeof enabled !== "boolean") ||
+                (typeof level !== "undefined" && typeof level !== "number") ||
+                (typeof channel_mode !== "undefined" && typeof channel_mode !== "boolean") || 
+                (typeof role_mode !== "undefined" && typeof role_mode !== "boolean") ||
+                (typeof channels !== "undefined" && (!Array.isArray(channels) || !isStringArray(channels))) ||
+                (typeof roles !== "undefined" && (!Array.isArray(roles) || !isStringArray(roles))) ||
+                (typeof description_edited !== "undefined" && typeof description_edited !== "string") ||
+                (typeof cooldown !== "undefined" && typeof cooldown !== "number") ||
+                (typeof exp_level !== "undefined" && typeof exp_level !== "number") ||
+                (typeof overwites_ignore !== "undefined" && (!Array.isArray(overwites_ignore) || !isStringArray(overwites_ignore)))) {
+                return res.sendStatus(400);
+            }
+
+            const { id } = req.params;
+            if (!/^[0-9]{18}$/g.test(id)) {
+                return res.status(400).send("Bad id");
+            }
+            if (!req.user) {
+                return res.sendStatus(401);
+            }
+            const allGuilds = await client.specials?.getAllGuilds(client);
+            const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
+            const g = mg.find(x => x.id && x.id === id);
+            if (!g) {
+                return res.sendStatus(401);
+            }
+
+            const conf = apply.length ? await client.database.getCommands(id, true) : await client.database.getCommands(id, true, false);
+            if (!conf) {// if the command settings could not be retrieved
+                return res.sendStatus(500);
+            }
+            if (apply.length) {
+                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner");
+                applyTo.map(c => {
+                    // enabled
+                    if (enabled) {
+                        c.enabled = true;
+                    } else {
+                        c.enabled = false;
+                    }
+                    // c mode
+                    if (typeof channel_mode === "boolean") {
+                        if (channel_mode) {
+                            c.channel_mode = true;
+                        } else {
+                            c.channel_mode = false;
+                        }
+                    }
+                    // c
+                    if (channels) {
+                        c.channels = channels;
+                    }
+                    // r mode
+                    if (typeof role_mode === "boolean") {
+                        if (channel_mode) {
+                            c.role_mode = true;
+                        } else {
+                            c.role_mode = false;
+                        }
+                    }
+                    // r
+                    if (roles) {
+                        c.roles = roles;
+                    }
+                    // desc
+                    if (typeof description_edited === "string") {
+                        c.description_edited = description_edited;
+                    }
+                    // cooldown
+                    if (typeof cooldown === "number" && cooldown >= c.default_cooldown) {
+                        c.cooldown = cooldown;
+                    }
+                    // exp_level
+                    if (exp_level) {
+                        c.exp_level = exp_level;
+                    }
+                    // level
+                    if (typeof level === "number" && level >= 0) {
+                        c.level = level;
+                    }
+                    return c;
+                });
+
+                const r = await client.database.editCommands(id, applyTo);
+                if (r) {
+                    return res.sendStatus(200);
+                }
+            } else {
+                const glob = conf.conf;
+                // c mode
+                if (typeof channel_mode === "boolean") {
+                    if (channel_mode) {
+                        glob.channel_mode = true;
+                    } else {
+                        glob.channel_mode = false;
+                    }
+                }
+                // c
+                if (channels) {
+                    glob.channels = channels;
+                }
+                // r mode
+                if (typeof role_mode === "boolean") {
+                    if (channel_mode) {
+                        glob.role_mode = true;
+                    } else {
+                        glob.role_mode = false;
+                    }
+                }
+                // r
+                if (roles) {
+                    glob.roles = roles;
+                }
+                // overwrites_ignore
+                if (overwites_ignore) {
+                    glob.overwites_ignore = overwites_ignore;
+                }
+
+                //TODO: store the data however it will be stored
+                const r = await client.database.editGuildSetting(id, "commandconf", JSON.stringify(conf));
+                if (r.affectedRows) {
+                    return res.sendStatus(200);
+                }
+            }
+
+            return res.sendStatus(500);
         } catch (error) {
             xlg.error(error)
             return res.sendStatus(500);

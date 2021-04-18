@@ -452,7 +452,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const timestamps = cooldowns.get(command.name);
-        const cooldownAmount = (command.cooldown || 2) * 1000;
+        const cooldownAmount = (command.cooldown || 0) * 1000;
 
         if (timestamps) {
             if (timestamps.has(message.author.id)) {

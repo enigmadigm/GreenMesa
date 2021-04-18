@@ -4,7 +4,7 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Role, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -1268,19 +1268,22 @@ export class DBManager {
         channels: [],
         role_mode: false,
         roles: [],
-        default_level: permLevels.member,
+        level: permLevels.member,
         confined: false,
+        description: "",
+        description_short: "",
+        default_cooldown: 0,
     }
 
-    async getCommands(guildid: string): Promise<CmdConfEntry | false> {
+    async getCommands(guildid: string, noOwner = false, all = true): Promise<CmdConfEntry | false> {
         try {
-            const ccd = await this.getGuildSetting(guildid, 'commands');
+            const ccd = await this.getGuildSetting(guildid, 'commandconf');
             let tp = "";
             if (!ccd || !ccd.value) {
                 if (ccd && !ccd.value) {
                     this.editGuildSetting(guildid, "commandconf", undefined, true);
                 }
-                tp = "{commands: [], conf: {}}";
+                tp = `{"commands": [], "conf": {}}`;
             } else {
                 tp = ccd.value;
             }
@@ -1293,17 +1296,75 @@ export class DBManager {
                 this.editGuildSetting(guildid, "commandconf", undefined, true);
                 return false;
             }
-            const commands = cc.commands;
-            Bot.client.commands.filter((c) => !cc.commands.find(x => x.name === c.name)).forEach((c) => {
-                const s = Object.assign({}, this.defaultCommandConf);
-                if (c.permLevel && c.permLevel > 0) {
-                    s.default_level
+            const commands = cc.commands.filter(x => Bot.client.commands.get(x.name));
+            Bot.client.commands.forEach((c) => {
+                if (all) {
+                    if (!cc.commands.find(x => x.name === c.name)) {
+                        const s = Object.assign({}, this.defaultCommandConf);
+                        s.name = c.name;
+                        if (typeof c.permLevel === "number") {
+                            s.level = c.permLevel;
+                        }
+                        if (typeof c.cooldown === "number") {
+                            s.default_cooldown = c.cooldown;
+                        }
+                        if (c.category) {
+                            s.category = c.category;
+                        }
+                        commands.push(s);
+                    }
                 }
-                commands.push(s);
-            })
+                const conf = commands.find(x => x.name === c.name);
+                if (conf) {
+                    if (c.description) {
+                        if (typeof c.description === "string") {
+                            conf.description = c.description;
+                            conf.description_short = c.description;
+                        } else {
+                            conf.description = c.description.long;
+                            conf.description_short = c.description.short;
+                        }
+                    }
+                    if (typeof conf.cooldown === "number" && conf.cooldown < (c.cooldown || 0)) {
+                        conf.cooldown = c.cooldown;
+                    }
+                    if (conf.category === "owner") {
+                        conf.level = permLevels.botMaster;
+                    }
+                }
+            });
+            if (noOwner) {
+                cc.commands = cc.commands.filter((x) => x.category !== "owner");
+            }
             return cc;
         } catch (error) {
             this.editGuildSetting(guildid, "commandconf", undefined, true);
+            return false;
+        }
+    }
+
+    async editCommands(guildid: string, commands: CommandConf[]): Promise<boolean> {
+        try {
+            const conf = await this.getCommands(guildid, undefined, false);
+            if (!conf) {
+                return false;
+            }
+            const cmds = conf.commands;
+            commands.forEach(c => {
+                const curr = cmds.find(x => x.name === c.name);
+                if (!curr) {
+                    cmds.push(c);
+                } else {
+                    cmds.splice(cmds.indexOf(curr), 1, c);
+                }
+            })
+            const r = await this.editGuildSetting(guildid, "commandconf", JSON.stringify(conf));
+            if (!r.affectedRows) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            xlog.error(error);
             return false;
         }
     }

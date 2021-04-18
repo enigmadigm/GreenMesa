@@ -599,27 +599,87 @@ export interface MovementEndpointData {
     data: MovementData;
 }
 
+export interface CommandsEndpointData {
+    commands: CommandConfCategory[];
+    channels: ChannelData[];
+    global: CommandsGlobalConf;
+}
+
+export interface CommandConfCategory {
+    name: string;
+    count: number;
+    commands: CommandConf[];
+}
+
+export interface CmdConfEntry {
+    conf: CommandsGlobalConf;
+    commands: CommandConf[];
+}
+
+export interface CommandsGlobalConf {
+    overwites_ignore?: string[];
+    /**
+     * channels allow or disallow
+     */
+    channel_mode?: boolean;
+    /**
+     * channels applying the effect
+     */
+    channels?: string[];
+    /**
+     * roles allow or disallow
+     */
+    role_mode?: boolean;
+    /**
+     * roles applying the effect
+     */
+    roles?: string[];
+}
+
 export interface CommandConf {
+    /**
+     * name of the command
+     */
+    name: string;
+    /**
+     * whether the command can be interacted with at all
+     */
     enabled: boolean;
     /**
-     * channels allowing the command
+     * channels allow or disallow
      */
-    channels_y: string[];
+    channel_mode: boolean;
     /**
-     * channels not allowing the command
+     * channels applying the effect
      */
-    channels_n: string[];
+    channels: string[];
     /**
-     * roles allowing the command
+     * roles allow or disallow
      */
-    roles_y: string[];
+    role_mode: boolean;
     /**
-     * roles not allowing the command
+     * roles applying the effect
      */
-    roles_n: string[];
+    roles: string[];
     /**
      * admin, moderator, member, etc
      */
-    default_level: string;
-    confined: boolean;
+    level?: number;
+    confined?: boolean;
+    description: string;
+    description_short: string;
+    description_edited?: string;
+    /**
+     * the official cooldown
+     */
+    default_cooldown: number;
+    /**
+     * the edited cooldown
+     */
+    cooldown?: number;
+    category?: string;
+    /**
+     * access at a certain experience level
+     */
+    exp_level?: number;
 }
