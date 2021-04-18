@@ -1296,7 +1296,7 @@ export class DBManager {
                 this.editGuildSetting(guildid, "commandconf", undefined, true);
                 return false;
             }
-            const commands = cc.commands.filter(x => Bot.client.commands.get(x.name));
+            const commands = cc.commands.filter(x => Bot.client.commands.get(x.name));// there is not an assignment reference here because the .filter() usage creates a new object
             Bot.client.commands.forEach((c) => {
                 if (all) {
                     if (!cc.commands.find(x => x.name === c.name)) {
@@ -1386,7 +1386,6 @@ export class DBManager {
                     cmds.splice(cmds.indexOf(curr), 1, c);
                 }
             });
-            conf.commands = cmds;
             const r = await this.editGuildSetting(guildid, "commandconf", JSON.stringify(conf));
             if (!r.affectedRows) {
                 return false;
