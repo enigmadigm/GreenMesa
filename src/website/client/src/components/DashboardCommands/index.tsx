@@ -36,8 +36,6 @@ interface PatchRequest {
 }
 
 function isEnabled(c: CommandConf) {
-    if (c.name === "ping") {
-    }
     return !!(c.enabled && (!c.channel_mode || (c.channel_mode && c.channels.length)));
 }
 
