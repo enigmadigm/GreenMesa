@@ -1137,11 +1137,12 @@ export default function routerBuild (client: XClient): express.Router {
     router.patch("/guilds/:id/commands", async (req, res) => {
         try {
             //TODO: add a property that specifies that the command override should be reset (deleted) so that the overrides can be used
-            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore} = req.body;
+            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore, delete_overwrites} = req.body;
             // these type checks used to be one big if block, but it was harder to read
             if ((!Array.isArray(apply) || !isStringArray(apply)) ||
                 (typeof enabled !== "boolean") ||
                 (typeof level !== "undefined" && typeof level !== "number") ||
+                (typeof delete_overwrites !== "undefined" && typeof delete_overwrites !== "boolean") || 
                 (typeof channel_mode !== "undefined" && typeof channel_mode !== "boolean") || 
                 (typeof role_mode !== "undefined" && typeof role_mode !== "boolean") ||
                 (typeof channels !== "undefined" && (!Array.isArray(channels) || !isStringArray(channels))) ||
@@ -1172,59 +1173,68 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(500);
             }
             if (apply.length) {
-                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner").map(c => {
-                    // enabled
-                    if (enabled) {
-                        c.enabled = true;
-                    } else {
-                        c.enabled = false;
-                    }
-                    // c mode
-                    if (typeof channel_mode === "boolean") {
-                        if (channel_mode) {
-                            c.channel_mode = true;
-                        } else {
-                            c.channel_mode = false;
-                        }
-                    }
-                    // c
-                    if (channels) {
-                        c.channels = channels;
-                    }
-                    // r mode
-                    if (typeof role_mode === "boolean") {
-                        if (channel_mode) {
-                            c.role_mode = true;
-                        } else {
-                            c.role_mode = false;
-                        }
-                    }
-                    // r
-                    if (roles) {
-                        c.roles = roles;
-                    }
-                    // desc
-                    if (typeof description_edited === "string") {
-                        c.description_edited = description_edited;
-                    }
-                    // cooldown
-                    if (typeof cooldown === "number" && cooldown >= c.default_cooldown) {
-                        c.cooldown = cooldown;
-                    }
-                    // exp_level
-                    if (exp_level) {
-                        c.exp_level = exp_level;
-                    }
-                    // level
-                    if (typeof level === "number" && level >= 0) {
-                        c.level = level;
-                    }
-                    return c;
-                });
+                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner")
 
-                const r = await client.database.editCommands(id, applyTo);
-                if (r) {
-                    return res.sendStatus(200);
+                if (delete_overwrites) {
+                    const r = await client.database.editCommands(id, applyTo, true);
+                    if (r) {
+                        return res.sendStatus(200);
+                    }
+                } else {
+                    const changes = applyTo.map(c => {
+                        // enabled
+                        if (enabled) {
+                            c.enabled = true;
+                        } else {
+                            c.enabled = false;
+                        }
+                        // c mode
+                        if (typeof channel_mode === "boolean") {
+                            if (channel_mode) {
+                                c.channel_mode = true;
+                            } else {
+                                c.channel_mode = false;
+                            }
+                        }
+                        // c
+                        if (channels) {
+                            c.channels = channels;
+                        }
+                        // r mode
+                        if (typeof role_mode === "boolean") {
+                            if (role_mode) {
+                                c.role_mode = true;
+                            } else {
+                                c.role_mode = false;
+                            }
+                        }
+                        // r
+                        if (roles) {
+                            c.roles = roles;
+                        }
+                        // desc
+                        if (typeof description_edited === "string") {
+                            c.description_edited = description_edited;
+                        }
+                        // cooldown
+                        if (typeof cooldown === "number" && cooldown >= c.default_cooldown) {
+                            c.cooldown = cooldown;
+                        }
+                        // exp_level
+                        if (exp_level) {
+                            c.exp_level = exp_level;
+                        }
+                        // level
+                        if (typeof level === "number" && level >= 0) {
+                            c.level = level;
+                        }
+                        return c;
+                    });
+
+                    const r = await client.database.editCommands(id, changes);
+                    if (r) {
+                        return res.sendStatus(200);
+                    }
                 }
             } else {
                 const glob = conf.conf;

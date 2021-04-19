@@ -78,10 +78,12 @@ export class DBManager {
             });
             conn.on('error', (err) => {
                 //console.log('db error', err);
-                if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
+                if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET' || err.code === 'ER_DATA_TOO_LONG') {
                     this.handleDisconnect();
                 } else {
-                    throw err;
+                    // throw err;// throwing an error in this error event handler will crash the application
+                    xlog.error("FATAL DB ERROR:", err);
+                    this.handleDisconnect();
                 }
             });
 
@@ -99,7 +101,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `cmdtracking` (`cmdname` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`used` int(11) NOT NULL DEFAULT 0,`iscmd` tinyint(1) NOT NULL DEFAULT 1,PRIMARY KEY (`cmdname`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `dgmxp` ( `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `userid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `guildid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `timeAdded` timestamp NOT NULL DEFAULT current_timestamp(), `timeUpdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `xp` int(11) NOT NULL, `level` int(11) NOT NULL DEFAULT 0, `spideySaved` timestamp NULL DEFAULT NULL, `warnings` int(11) NOT NULL DEFAULT 0, `thinice` int(1) NOT NULL DEFAULT 0, UNIQUE KEY `id` (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `globalsettings` (`name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`value` varchar(5000) COLLATE utf8mb4_unicode_ci NOT NULL,`previousvalue` varchar(5000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,`description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`lastupdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),`updatedby` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '745780460034195536',`category` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',PRIMARY KEY (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `guildsettings` (`id` int(11) NOT NULL AUTO_INCREMENT,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`value` varchar(5000) COLLATE utf8mb4_unicode_ci NOT NULL,`previousvalue` varchar(5000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            this.query("CREATE TABLE IF NOT EXISTS `guildsettings` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `value` longtext COLLATE utf8mb4_unicode_ci NOT NULL, `previousvalue` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `levelroles` (`id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`roleid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`level` int(11) NOT NULL DEFAULT 1,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
@@ -180,7 +182,7 @@ export class DBManager {
 
     getCumulativePointsForLevel(lvl: number): number {
         let t = 0;
-        for (let i = 1; i < lvl; i++) {
+        for (let i = 0; i < lvl; i++) {
             t += this.getPointsForLevel(i);
         }
         return t;
@@ -1273,6 +1275,7 @@ export class DBManager {
         description: "",
         description_short: "",
         default_cooldown: 0,
+        overwrite: false,
     }
 
     async getCommands(guildid: string, noOwner = false, all = true): Promise<CmdConfEntry | false> {
@@ -1297,6 +1300,7 @@ export class DBManager {
                 return false;
             }
             const commands = cc.commands.filter(x => Bot.client.commands.get(x.name));// there is not an assignment reference here because the .filter() usage creates a new object
+            const gc = cc.conf;
             Bot.client.commands.forEach((c) => {
                 if (all) {
                     if (!cc.commands.find(x => x.name === c.name)) {
@@ -1310,6 +1314,19 @@ export class DBManager {
                         }
                         if (c.category) {
                             s.category = c.category;
+                        }
+
+                        if (gc.channel_mode) {
+                            s.channel_mode = true;
+                        }
+                        if (gc.channels) {
+                            s.channels = gc.channels;
+                        }
+                        if (gc.role_mode) {
+                            s.role_mode = gc.role_mode;
+                        }
+                        if (gc.roles) {
+                            s.roles = gc.roles;
                         }
                         commands.push(s);
                     }
@@ -1368,24 +1385,34 @@ export class DBManager {
         }
     }
 
-    async editCommands(guildid: string, commands: CommandConf[]): Promise<boolean> {
+    async editCommands(guildid: string, commands: CommandConf[], deleting = false): Promise<boolean> {
         try {
             const conf = await this.getCommands(guildid, undefined, false);
             if (!conf) {
                 return false;
             }
             const cmds = conf.commands;
-            commands.forEach(c => {
-                delete c.description;
-                delete c.description_short;
-                delete c.category;
-                const curr = cmds.find(x => x.name === c.name);
-                if (!curr) {
-                    cmds.push(c);
-                } else {
-                    cmds.splice(cmds.indexOf(curr), 1, c);
+            if (deleting) {
+                for (const command of commands) {
+                    const existingCommand = cmds.findIndex(x => x.name === command.name);
+                    if (existingCommand > -1) {
+                        cmds.splice(existingCommand, 1);
+                    }
                 }
-            });
+            } else {
+                commands.forEach(c => {
+                    delete c.description;
+                    delete c.description_short;
+                    delete c.category;
+                    c.overwrite = true;
+                    const curr = cmds.find(x => x.name === c.name);
+                    if (!curr) {
+                        cmds.push(c);
+                    } else {
+                        cmds.splice(cmds.indexOf(curr), 1, c);
+                    }
+                });
+            }
             const r = await this.editGuildSetting(guildid, "commandconf", JSON.stringify(conf));
             if (!r.affectedRows) {
                 return false;

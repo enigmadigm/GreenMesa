@@ -67,3 +67,11 @@ export function titleCase(str: string) {
     // Directly return the joined string
     return splitStr.join(' ');
 }
+
+export function capitalize(str: string | undefined) {
+    const s = str || "";
+    if (!s[0]) {
+        return s;
+    }
+    return s[0].toUpperCase() + s.substring(1);
+}

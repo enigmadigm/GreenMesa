@@ -312,6 +312,18 @@ body, html {
   }
 }
 
+.x-card input[type=text] {
+  background-color: #343B41;
+  padding: 0 10px;
+  border-radius: 3px;
+}
+
+.x-card input[type=text]:focus {
+  outline: 1px solid #23282c;
+  /* outline: none; */
+  /* border: 1px solid #23282c; */
+}
+
 .cardtag {
   position: absolute;
   right: 10px;

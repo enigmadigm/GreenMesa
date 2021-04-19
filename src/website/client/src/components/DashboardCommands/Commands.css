@@ -1,6 +1,12 @@
 .c-cats {
     display: flex;
-    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.c-cats-label {
+    font-size: 1.1em;
+    margin-left: 15px;
+    cursor: pointer;
 }
 
 .c-cat {
@@ -11,11 +17,42 @@
     background-color: #292e33;
 }
 
+.c-btnrow {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+}
+
+.c-btnrow button {
+    padding: 5px 15px;
+    border-radius: 3px;
+    background-color: #1d2125;
+    color: #fff;
+    /* margin: 0 8px; */
+    transition: opacity 0.3s;
+}
+
+.c-btnrow button:disabled {
+    opacity: 0.5;
+}
+
+.c-btnrow button:enabled:hover {
+    opacity: 0.7;
+}
+
+.c-btnrow input[type=text] {
+    min-height: 34px;
+}
+
+.c-btnrow > * {
+    margin: 5px 8px;
+}
+
 .ccards {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: center;
     width: 100%;
     position: relative;
 }
@@ -27,14 +64,22 @@
     flex-direction: column;
     text-align: center;
     width: 30%;
+    min-width: 250px;
 }
 
 .ccard .cheader {
     background-color: #292e33;
     width: 100%;
-    padding: 7px 10px;
+    position: relative;
+    min-height: 42px;
+    padding: 0 10px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+}
+
+.ccard .cheader.cselected {
+    background-color: #092e53;
 }
 
 .ccard .cbody {
@@ -43,9 +88,10 @@
 }
 
 .cedit {
-    color: #00ace6;
+    color: #0086b3;
     transition: opacity 0.3s;
     cursor: pointer;
+    margin-left: 0px;
 }
 
 .cedit:hover {
@@ -54,8 +100,111 @@
 
 .ctitle {
     padding-right: 12px;
+    flex-grow: 1;
+    height: 100%;
+    line-height: 2.6;
+}
+
+.cowindicator {
+    /* margin-right: 5px; */
+    cursor: pointer;
+}
+
+.cindicator {
+    padding-left: 8px;
+    cursor: pointer;
+}
+
+.ccheck label {
+    padding: 8px 0px;
+    padding-right: 15px;
 }
 
 .point-cb label {
     cursor: pointer;
 }
+
+/* MODAL CSS BELOW HERE */
+
+.cm-wrapper {
+    position: fixed;
+    z-index: 2000;
+    background-color: rgba(0, 0, 0, 0.25);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    overflow-y: auto;
+    /* padding-bottom: 20px; */
+}
+
+.cm-wrapper .cm-container {
+    position: absolute;
+    top: 100px;
+    width: 450px;
+    background-color: #1d2125;
+    left: 50%;
+    transform: translateX(-50%);
+    min-height: 500px;
+    border-radius: 5px;
+    transition: opacity 0.3s;
+    opacity: 0;
+    /* margin-bottom: 20px; */
+}
+
+.cm-wrapper .cm-form-container {
+    padding: 1.25rem;
+    position: relative;
+}
+
+.cm-txt {
+    margin-bottom: 90px;
+    background-color: #3A4149;
+    width: 100%;
+    padding: 3px 5px;
+}
+
+.cm-container select {
+    background-color: #343B41;
+    margin-right: 5px;
+}
+
+.cm-buttons {
+    position: absolute;
+    width: 100%;
+    padding: 1.25em;
+    bottom: 0;
+    left: 0;
+}
+
+.cm-buttons button.primary-button {
+    background-color: rgb(0, 75, 148);
+    transition: opacity 0.3s;
+}
+
+.cm-buttons button.primary-button:hover {
+    opacity: 0.7;
+}
+
+.cm-buttons button.primary-button:disabled {
+    color: rgb(122, 122, 122);
+    cursor: not-allowed;
+    /* background-image: linear-gradient(63deg, #230063 38.89%, #610000 38.89%, #610000 50%, #230063 50%, #230063 88.89%, #610000 88.89%, #610000 100%); */
+    /* background-size: 10.10px 19.82px; */
+    /* background-color: rgba(35, 0, 99, 0.8); */
+    opacity: 0.5;
+}
+
+.cm-buttons button.primary-button+.cm-cancel-bottom {
+    margin-left: 15px;
+    position: absolute;
+    right: 1.25em;
+}
+
+/* .cm-cancel-bottom {
+} */
+
+.cm-buttons hr:first-child {
+    margin-bottom: 10px;
+}
+
+/* MODAL CSS ABOVE HERE */

@@ -680,4 +680,8 @@ export interface CommandConf {
      * access at a certain experience level
      */
     exp_level?: number;
+    /**
+     * whether the conf is not a default and has been created as an overwrite
+     */
+    overwrite: boolean;
 }
