@@ -73,7 +73,7 @@ export function DashboardTwitch(props: HomeProps) {
         } else {
             setTimeout(() => setMc(""), 100)
         }
-    }, [showing])
+    }, [showing]);
 
     const useOutsideClicker = (ref: React.MutableRefObject<any>) => {// https://stackoverflow.com/questions/32553158/detect-click-outside-react-component
         React.useEffect(() => {
@@ -219,9 +219,12 @@ export function DashboardTwitch(props: HomeProps) {
         setPending(m);
     }
 
+    const formatThreshold = (val: number) => `${isNaN(val) || val < -1 ? -1 : val} notifications`
+    const parseThreshold = (val: string) => parseInt(val.replace(/[\sA-Za-z]/g, ""), 10);
     const onThresholdChange = (valueAsString: string, valueAsNumber: number) => {
+        const val = parseThreshold(valueAsString);
         const m = Object.assign({}, pending);
-        m.delete_after = valueAsNumber;
+        m.delete_after = isNaN(val) || val < -1 ? -1 : val;
         setPending(m);
     }
 
@@ -333,14 +336,15 @@ export function DashboardTwitch(props: HomeProps) {
                                         ></textarea>
                                         <br style={{ height: 5 }} />
                                         <p style={{ fontWeight: 700 }}>Delete Notifier After:</p>
-                                        <NumberInput id="ae-punishtime" defaultValue={0} value={pending.delete_after} onChange={onThresholdChange}>
-                                            <NumberInputField />
-                                            notifications
-                                            <NumberInputStepper>
-                                                <NumberIncrementStepper />
-                                                <NumberDecrementStepper />
-                                            </NumberInputStepper>
-                                        </NumberInput>
+                                        <div className="tc-delafter">
+                                            <NumberInput defaultValue={-1} value={formatThreshold(pending.delete_after)} onChange={onThresholdChange}>
+                                                <NumberInputField />
+                                                <NumberInputStepper>
+                                                    <NumberIncrementStepper />
+                                                    <NumberDecrementStepper />
+                                                </NumberInputStepper>
+                                            </NumberInput>
+                                        </div>
                                     </div>
                                     <div className="tpu-buttons">
                                         <hr/>
