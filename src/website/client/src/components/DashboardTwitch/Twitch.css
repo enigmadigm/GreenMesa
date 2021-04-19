@@ -185,10 +185,13 @@
 }
 
 .tc-ta {
-    margin-bottom: 90px;
     background-color: #3A4149;
     width: 100%;
     padding: 3px 5px;
+}
+
+.tc-delafter {
+    margin-bottom: 90px;
 }
 
 .tpu-buttons {

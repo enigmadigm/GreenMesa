@@ -2,13 +2,22 @@
 import { Command } from "src/gm";
 import xlg from "../../xlogger";
 
+const verbs = [
+    "procured",
+    "obtained",
+    "earned",
+    "collected",
+    "bagged",
+    "banked",
+]
+
 export const command: Command = {
     name: 'xp',
     description: {
         short: "get someone's xp stats",
         long: 'Get the amount of xp someone has. Earn xp by sending any message in a guild with this bot. Points can only be generated once per minute for spam protection.'
     },
-    aliases: ['exp', 'orbs', 'level', 'points'],
+    aliases: ['rank', 'level'],
     usage: "[other user]",
     guildOnly: true,
     async execute(client, message, args) {
@@ -19,20 +28,16 @@ export const command: Command = {
                 return;
             }
 
-            const rows = await client.database.getXP(target);
-            const warn_embed_color = await client.database.getColor("warn_embed_color");
-            const info_embed_color = await client.database.getColor("info");
+            const xp = await client.database.getFullPointsData(target);
             const xpTypeGlobal = await client.database.getGlobalSetting('xp_type');
+            const sym = (xpTypeGlobal) ? xpTypeGlobal.value : 'exp';
 
-            if (!rows) {
+            if (!xp) {
                 message.channel.send({
                     embed: {
-                        "title": "This user has no XP on record.",
-                        "description": "To gain XP send messages in chat.",
-                        "color": warn_embed_color || 16750899,
-                        "footer": {
-                            "text": this.name
-                        }
+                        title: "This user has no XP on record.",
+                        description: "To gain XP send messages in chat.",
+                        color: await client.database.getColor("warn"),
                     }
                 });
                 return;
@@ -40,8 +45,11 @@ export const command: Command = {
 
             message.channel.send({
                 embed: {
-                    description: `${target} currently has ${rows.xp} ${(xpTypeGlobal) ? xpTypeGlobal.value : 'xp'} **⁛** level ${rows.level}`,
-                    color: info_embed_color || 0
+                    color: await client.database.getColor("info"),
+                    description: `**${target.displayName}** has ${verbs[Math.floor(Math.random() * verbs.length)]} **${sym} ${xp.points}** total at level **${xp.level}**.\n**${sym} ${xp.pointsToGo}** more is needed for level **${xp.level + 1}**.\n\n${xp.pointsLevelNext - xp.pointsToGo}/${xp.pointsLevelNext} (${Math.round(((xp.pointsLevelNext - xp.pointsToGo) / xp.pointsLevelNext) * 100)}%)`,
+                    footer: {
+                        text: ``
+                    }
                 }
             });
         } catch (error) {

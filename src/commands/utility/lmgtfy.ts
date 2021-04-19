@@ -5,6 +5,8 @@ import { Command } from 'src/gm';
 import { parseOptions } from '../../utils/parsers';
 import { PaginationExecutor } from '../../utils/pagination';
 
+//TODO: provide the first few links that result from the search
+
 const preload = `
 // overwrite the \`languages\` property to use a custom getter
 Object.defineProperty(navigator, "languages", {
@@ -84,10 +86,10 @@ export const command: Command = {
     name: 'lmgtfy',
     description: {
         short: "teach the uninformed how to google",
-        long: "Teach the uninformed how to google, or just get a search link.\n\nOptions:\n`-t` get a plaintext link\n`-e` get an explainer link (lmgtfy.app)\n`-i` search google images"
+        long: "Teach the uninformed how to google, or just get a search link.\n\nOptions:\n`-t` get a plaintext link\n`-e` get an explainer link (lmgtfy.app)\n`-i` search google images\n`-l` light mode (with capture search mode)"
     },
     aliases:['search', 'google', 'iie'],
-    usage:"[explainer: -e] [plain text link: -t] <search terms>",
+    usage:"[explainer: -e] [plain text link: -t] [google images: -i] [light mode: -l] <search terms>",
     args: true,
     guildOnly: true,
     async execute(client, message, args) {
@@ -96,6 +98,7 @@ export const command: Command = {
 
             const useArgs = parseOptions(args);
 
+            let dark = true;
             let sengine = "google.com/search";
             let iie = "";
             let plainText = false;
@@ -114,6 +117,9 @@ export const command: Command = {
             }
             if (useArgs.includes('-t')) {
                 plainText = true;
+            }
+            if (useArgs.includes('-l')) {
+                dark = false;
             }
 
             if (!useArgs.length || (!useArgs.includes("-e") && !useArgs.includes("-t"))) {
@@ -134,6 +140,9 @@ export const command: Command = {
                     miniappsElement.forEach((e) => {
                         e.evaluate(node => node.style.display = 'none');
                     });
+                }
+                if (dark) {
+                    // await page.addStyleTag({ url: `${client.specials.getBackendRoot()}/css/dr-google.css` });
                 }
                 sc = await page.screenshot();
                 await browser.close();

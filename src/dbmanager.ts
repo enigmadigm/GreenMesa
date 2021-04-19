@@ -4,8 +4,10 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Role, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdTrackingRow, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
 import { Bot } from "./bot";
+import uniquid from 'uniqid';
+import { permLevels } from "./permissions";
 
 const levelRoles = [{
         level: 70,
@@ -76,10 +78,12 @@ export class DBManager {
             });
             conn.on('error', (err) => {
                 //console.log('db error', err);
-                if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
+                if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET' || err.code === 'ER_DATA_TOO_LONG') {
                     this.handleDisconnect();
                 } else {
-                    throw err;
+                    // throw err;// throwing an error in this error event handler will crash the application
+                    xlog.error("FATAL DB ERROR:", err);
+                    this.handleDisconnect();
                 }
             });
 
@@ -97,7 +101,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `cmdtracking` (`cmdname` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`used` int(11) NOT NULL DEFAULT 0,`iscmd` tinyint(1) NOT NULL DEFAULT 1,PRIMARY KEY (`cmdname`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `dgmxp` ( `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `userid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `guildid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `timeAdded` timestamp NOT NULL DEFAULT current_timestamp(), `timeUpdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `xp` int(11) NOT NULL, `level` int(11) NOT NULL DEFAULT 0, `spideySaved` timestamp NULL DEFAULT NULL, `warnings` int(11) NOT NULL DEFAULT 0, `thinice` int(1) NOT NULL DEFAULT 0, UNIQUE KEY `id` (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `globalsettings` (`name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`value` varchar(5000) COLLATE utf8mb4_unicode_ci NOT NULL,`previousvalue` varchar(5000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,`description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`lastupdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),`updatedby` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '745780460034195536',`category` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',PRIMARY KEY (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `guildsettings` (`id` int(11) NOT NULL AUTO_INCREMENT,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`value` varchar(5000) COLLATE utf8mb4_unicode_ci NOT NULL,`previousvalue` varchar(5000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            this.query("CREATE TABLE IF NOT EXISTS `guildsettings` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `value` longtext COLLATE utf8mb4_unicode_ci NOT NULL, `previousvalue` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `levelroles` (`id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`roleid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`level` int(11) NOT NULL DEFAULT 1,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
@@ -172,8 +176,16 @@ export class DBManager {
         return false;
     }
 
-    getPointsForLevel(lvl: number): number {
-        return (5 * (lvl ^ 2)) + (50 * lvl) + 100;
+    getPointsForLevel(l: number): number {// as it turns out, stupid as shit me wrote "^" intending to write "**", fucking hilariously dumb
+        return (5 * (l ** 2)) + (50 * l) + 100;
+    }
+
+    getCumulativePointsForLevel(lvl: number): number {
+        let t = 0;
+        for (let i = 0; i < lvl; i++) {
+            t += this.getPointsForLevel(i);
+        }
+        return t;
     }
 
     /**
@@ -212,7 +224,7 @@ export class DBManager {
      * @param mode the point set mode, specify less than 0 to subtract, 0 to set exactly, and greater than 0 to add
      * @returns the updated points and new level
      */
-    async setXP(guildid: string, userid: string, amount: number, mode = 0): Promise<{points: number, level: number}> {
+    async setXP(guildid: string, userid: string, amount: number, mode = 0): Promise<{ points: number, level: number }> {
         try {
             if (!guildid || !userid || typeof guildid !== "string" || typeof userid !== "string") return { points: -1, level: -1 };
             let l = 0;
@@ -231,28 +243,28 @@ export class DBManager {
                 const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = ${escape(userid + guildid)}`);
                 let sql;
                 if (rows.length < 1) {
-                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${amount}, 0)`;
+                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${mode > 0 ? amount : 0 - amount}, 0)`;
                 } else {
                     // SENSITIVE AREA
                     // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
                     const xp = mode > 0 ? rows[0].xp + amount : rows[0].xp - amount;
-                    let levelNow = rows[0].level;
                     // let totalNeeded = 0;
                     // for (let x = 0; x < rows[0].level + 1; x++) {
                     //     totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
                     // }
                     // if (xp > totalNeeded) levelNow++;
+                    let level = 0;
                     let totalNeeded = 0;
                     while (xp > totalNeeded) {
-                        totalNeeded += this.getPointsForLevel(levelNow);
-                        if (amount > totalNeeded) levelNow++;
+                        totalNeeded += this.getPointsForLevel(level);
+                        if (xp > totalNeeded) level++;
                     }
                     // SENSITIVE AREA
                     /*let levelNow = Math.floor(0.1 * Math.sqrt(xp));
                     if (rows[0].level !== levelNow) {
                         rows[0].level = levelNow;
                     }*/
-                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${levelNow} WHERE id = ${escape(userid + guildid)}`;
+                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${level} WHERE id = ${escape(userid + guildid)}`;
                 }
                 await <Promise<InsertionResult>>this.query(sql);
                 return { points: p, level: l };
@@ -279,7 +291,7 @@ export class DBManager {
         const level = xpData.level;
         const pointsLevelNow = this.getPointsForLevel(xpData.level);
         const pointsLevelNext = this.getPointsForLevel(xpData.level + 1);
-        const toGo = pointsLevelNext - xp;
+        const toGo = this.getCumulativePointsForLevel(xpData.level + 1) - xp;
         const last = new Date(xpData.timeUpdated);
         const first = new Date(xpData.timeAdded);
         return {
@@ -515,11 +527,12 @@ export class DBManager {
      * @param value value to set for the property
      * @param deleting whether to delete the setting
      */
-    async editGuildSetting(guild: Guild | PartialGuildObject, name = "", value = "", deleting = false): Promise<InsertionResult> {
+    async editGuildSetting(guild: Guild | PartialGuildObject | string, name = "", value = "", deleting = false): Promise<InsertionResult> {
         return new Promise((resolve, reject) => {
-            if (!guild || !guild.id || !name) return reject("MISSING_VALUES");
+            if (!guild || !name) return reject("MISSING_VALUES");
+            const id = typeof guild === "string" ? guild : guild.id;
             if (deleting) {
-                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = ${escape(guild.id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
+                return this.db.query(`DELETE FROM \`guildsettings\` WHERE guildid = ${escape(id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
                     if (err) throw err;
                     if (result.affectedRows > 0) {
                         return resolve(result);
@@ -529,12 +542,12 @@ export class DBManager {
                 });
             }
             if (!value) return reject("MISSING_VALUES");
-            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`=${escape(value)} WHERE guildid = ${escape(guild.id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
+            this.db.query(`UPDATE \`guildsettings\` SET \`previousvalue\`=\`value\`,\`value\`=${escape(value)} WHERE guildid = ${escape(id)} AND property = ${escape(name)}`, (err, result: InsertionResult) => {
                 if (err) throw err;
                 if (result.affectedRows > 0) {
                     return resolve(result);
                 } else {
-                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES (${escape(guild.id)}, ${escape(name)}, ${escape(value)})`, (err, result: InsertionResult) => {
+                    this.db.query(`INSERT INTO \`guildsettings\`(\`guildid\`, \`property\`, \`value\`) VALUES (${escape(id)}, ${escape(name)}, ${escape(value)})`, (err, result: InsertionResult) => {
                         if (err) throw err;
                         resolve(result);
                     });
@@ -705,23 +718,23 @@ export class DBManager {
      * @param expiredate a parseable date to be used to sort by timestamps for renewal
      * @param message (optional) the message that will be sent with the discord notification
      */
-    async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string): Promise<boolean> {
+    async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string, delafter = -1, notified = 0): Promise<boolean> {
         try {
             if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
             const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
             const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
             if (!result || !result[0]) {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin, delafter, notified) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)})`);
                 } else {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)})`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin, delafter, notified) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)})`);
                 }
                 return true;
             } else {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)}, delafter = ${escape(delafter)}, notified = ${escape(notified)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 } else {
-                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)}, delafter = ${escape(delafter)}, notified = ${escape(notified)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 }
                 return true;
             }
@@ -741,7 +754,7 @@ export class DBManager {
     async removeTwitchSubscription(streamerid: string, guildid: string): Promise<number | false> {
         try {
             if (!streamerid || !guildid) return false;
-            const delresult = await <Promise<InsertionResult>>this.query(`DELETE FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
+            const delresult = await <Promise<InsertionResult>>this.query(`DELETE FROM twitchhooks WHERE streamerid = ${escape(streamerid)} AND guildid = ${escape(guildid)}`);
             return delresult.affectedRows;
         } catch (error) {
             xlog.error(error);
@@ -756,7 +769,7 @@ export class DBManager {
     async getTwitchSubsForID(streamerid: string): Promise<false | TwitchHookRow[]> {
         try {
             if (!streamerid) return false;
-            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}'`);
+            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = ${escape(streamerid)}`);
             if (!result.length) return false;
             return result;
         } catch (error) {
@@ -772,8 +785,19 @@ export class DBManager {
     async getTwitchSubsGuild(guildid: string): Promise<false | TwitchHookRow[]> {
         try {
             if (!guildid) return false;
-            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE guildid = '${guildid}'`);
+            const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE guildid = ${escape(guildid)}`);
             if (!result.length) return false;
+            return result;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    async incrementTwitchNotified(guildid: string): Promise<InsertionResult | false> {
+        try {
+            if (!guildid) return false;
+            const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1 WHERE guildid = ${escape(guildid)}`);
             return result;
         } catch (error) {
             xlog.error(error);
@@ -1123,6 +1147,9 @@ export class DBManager {
         }
     }
 
+    /**
+     * Search for a case by its case number
+     */
     async getModActionByGuildCase(guildid: string, num: number): Promise<ModActionData | false> {
         try {
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${num}`);
@@ -1136,6 +1163,25 @@ export class DBManager {
         }
     }
 
+    /**
+     * Search for a case by its super id
+     */
+    async getModActionBySuperId(id: string): Promise<ModActionData | false> {
+        try {
+            const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE superid = ${escape(id)}`);
+            if (rows && rows.length > 0) {
+                return rows[0];
+            }
+            return false;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Get all of the recorded cases for a given user (in which they were the subject)
+     */
     async getModActionsByUser(guildid: string, userid: string): Promise<ModActionData[] | false> {
         try {
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND userid = ${escape(userid)}`);
@@ -1152,15 +1198,20 @@ export class DBManager {
     /**
      * Update a user's data. This is global data (opposed to guild data).
      */
-    async editModAction(data: ModActionData): Promise<InsertionResult | false> {
+    async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
         try {
-            const { superid, guildid, userid, casenumber, type, duration, mod, summary } = data;
-            if (!guildid || !userid || !casenumber) return false;
-            const e = await this.getModActionByGuildCase(guildid, casenumber);
+            const { guildid, userid, casenumber, type, duration, mod, summary } = data;// get provided data to log
+            let { superid } = data;// make superid mutable
+            if (!guildid || !userid || typeof casenumber !== "number") return false;
+            const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid || "");// see if there is a preexisting case with sid or casenumber
+            if (!superid) {
+                superid = uniquid();// generate sid if none is provided
+            }
+
             let sql = ``;
-            if (e && e.casenumber === casenumber) {
+            if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
                 sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), duration = COALESCE(${duration}, duration), mod = COALESCE(${escape(mod)}, mod), summary = COALESCE(${escape(summary)}, summary) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
-            } else {
+            } else {// else create a new case
                 sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, duration, mod, summary) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(duration)}, ${escape(mod)}, ${escape(summary)})`;
             }
             const result = await <Promise<InsertionResult>>this.query(sql);
@@ -1183,12 +1234,193 @@ export class DBManager {
             if (!guildid) return 0;
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT \`casenumber\` FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber > 0 ORDER BY \`casenumber\` DESC LIMIT 1`);
             if (rows && rows.length > 0) {
-                return rows[0].casenumber || 1;
+                return rows[0].casenumber || 0;
             }
             return 0;
         } catch (error) {
             xlog.error(error);
             return 0;
+        }
+    }
+
+    async getMovementData(guildid: string): Promise<MovementData> {
+        try {
+            const mvmGS = await this.getGuildSetting(guildid, "movement");
+            if (!mvmGS || !mvmGS.value) {
+                return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+            }
+            const mvm = JSON.parse(mvmGS.value);
+            const movement: MovementData = { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} } };
+            if (mvm.add_channel) movement.add_channel = mvm.add_channel;
+            if (mvm.dm_channel) movement.dm_channel = mvm.dm_channel;
+            if (mvm.depart_channel) movement.depart_channel = mvm.depart_channel;
+            if (mvm.depart_message) movement.depart_channel = mvm.depart_message;
+            if (mvm.dm_message) movement.depart_channel = mvm.dm_message;
+            if (mvm.add_message) movement.depart_channel = mvm.add_message;
+            return movement;
+        } catch (error) {
+            return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+        }
+    }
+
+    public defaultCommandConf: CommandConf = {
+        name: "",
+        enabled: true,
+        channel_mode: false,
+        channels: [],
+        role_mode: false,
+        roles: [],
+        level: permLevels.member,
+        confined: false,
+        description: "",
+        description_short: "",
+        default_cooldown: 0,
+        overwrite: false,
+    }
+
+    async getCommands(guildid: string, noOwner = false, all = true): Promise<CmdConfEntry | false> {
+        try {
+            const ccd = await this.getGuildSetting(guildid, 'commandconf');
+            let tp = "";
+            if (!ccd || !ccd.value) {
+                if (ccd && !ccd.value) {
+                    this.editGuildSetting(guildid, "commandconf", undefined, true);
+                }
+                tp = `{"commands": [], "conf": {}}`;
+            } else {
+                tp = ccd.value;
+            }
+            const cc = JSON.parse(tp);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const isCmdConf = (o: any): o is CmdConfEntry => {
+                return 'commands' in o && 'conf' in o;
+            }
+            if (!isCmdConf(cc)) {
+                this.editGuildSetting(guildid, "commandconf", undefined, true);
+                return false;
+            }
+            const commands = cc.commands.filter(x => Bot.client.commands.get(x.name));// there is not an assignment reference here because the .filter() usage creates a new object
+            const gc = cc.conf;
+            Bot.client.commands.forEach((c) => {
+                if (all) {
+                    if (!cc.commands.find(x => x.name === c.name)) {
+                        const s = Object.assign({}, this.defaultCommandConf);
+                        s.name = c.name;
+                        if (typeof c.permLevel === "number") {
+                            s.level = c.permLevel;
+                        }
+                        if (typeof c.cooldown === "number") {
+                            s.default_cooldown = c.cooldown;
+                        }
+                        if (c.category) {
+                            s.category = c.category;
+                        }
+
+                        if (gc.channel_mode) {
+                            s.channel_mode = true;
+                        }
+                        if (gc.channels) {
+                            s.channels = gc.channels;
+                        }
+                        if (gc.role_mode) {
+                            s.role_mode = gc.role_mode;
+                        }
+                        if (gc.roles) {
+                            s.roles = gc.roles;
+                        }
+                        commands.push(s);
+                    }
+                }
+                const conf = commands.find(x => x.name === c.name);
+                if (conf) {
+                    if (c.description) {
+                        if (typeof c.description === "string") {
+                            conf.description = c.description;
+                            conf.description_short = c.description;
+                        } else {
+                            conf.description = c.description.long;
+                            conf.description_short = c.description.short;
+                        }
+                    }
+                    conf.default_cooldown = c.cooldown || 0;
+                    conf.category = c.category;
+                    if (typeof conf.cooldown === "number") {
+                        if (conf.cooldown < (c.cooldown || 0)) {
+                            conf.cooldown = c.cooldown;
+                        }
+                    } else {
+                        conf.cooldown = conf.default_cooldown;
+                    }
+                    if (conf.category === "owner") {
+                        conf.level = permLevels.botMaster;
+                    }
+                }
+            });
+            cc.commands = commands;
+            if (noOwner) {
+                cc.commands = cc.commands.filter((x) => x.category !== "owner");
+            }
+            return cc;
+        } catch (error) {
+            xlog.error(error)
+            this.editGuildSetting(guildid, "commandconf", undefined, true);
+            return false;
+        }
+    }
+
+    async getCommand(guildid: string, cmd: string): Promise<CommandConf | false> {
+        try {
+            const conf = await this.getCommands(guildid, undefined, false);
+            if (!conf) {
+                return false;
+            }
+            const command = conf.commands.find(x => x.name === cmd);
+            if (command) {
+                return command;
+            }
+            return false;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    async editCommands(guildid: string, commands: CommandConf[], deleting = false): Promise<boolean> {
+        try {
+            const conf = await this.getCommands(guildid, undefined, false);
+            if (!conf) {
+                return false;
+            }
+            const cmds = conf.commands;
+            if (deleting) {
+                for (const command of commands) {
+                    const existingCommand = cmds.findIndex(x => x.name === command.name);
+                    if (existingCommand > -1) {
+                        cmds.splice(existingCommand, 1);
+                    }
+                }
+            } else {
+                commands.forEach(c => {
+                    delete c.description;
+                    delete c.description_short;
+                    delete c.category;
+                    c.overwrite = true;
+                    const curr = cmds.find(x => x.name === c.name);
+                    if (!curr) {
+                        cmds.push(c);
+                    } else {
+                        cmds.splice(cmds.indexOf(curr), 1, c);
+                    }
+                });
+            }
+            const r = await this.editGuildSetting(guildid, "commandconf", JSON.stringify(conf));
+            if (!r.affectedRows) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            xlog.error(error);
+            return false;
         }
     }
 }

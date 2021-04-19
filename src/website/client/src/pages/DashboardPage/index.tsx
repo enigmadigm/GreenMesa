@@ -138,6 +138,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                 <li className="lanav-item">
                                     <CustomNavItem to="home" text="Home" active={ page === "home" } oc={setPage} ico={{ icon: faHomeLgAlt }} />
                                 </li>
+                                <li>
+                                    <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
+                                </li>
                                 <li className="lanav-item">
                                     <CustomNavItem to="automod" text="Automod" active={page === "automod"} oc={setPage} ico={{ icon: faBadgeSheriff }} />
                                 </li>
@@ -152,9 +155,6 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                 </li>
                                 <li>
                                     <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
-                                </li>
-                                <li>
-                                    <CustomNavItem to="commands" text="Commands" active={page === "commands"} oc={setPage} ico={{ icon: faLayerPlus }} />
                                 </li>
                             </ul>
                         </nav>

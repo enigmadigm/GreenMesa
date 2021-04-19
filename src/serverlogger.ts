@@ -155,7 +155,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
         if (!logChannel || logChannel.type !== 'text') return;
         if (logChannel.id === messageCollection.first()?.channel.id) return;
     
-        let humanLog = `**Deleted Messages from #${first?.channel.name} (${first?.channel.id}) in ${first?.guild?.name} (${first?.guild?.id})**`;
+        let humanLog = `**Deleted Messages from #${first.channel.name} (${first.channel.id}) in ${first.guild.name} (${first.guild.id})**`;
         for (const message of messageCollection.array().reverse()) {
             humanLog += `\r\n\r\n[${moment(message.createdAt).format()}] ${message.author?.tag.replace("*", "⁎").replace("_", "\\_").replace("`", "\\`")} (${message.id})`;
             humanLog += ' : ' + message.content;

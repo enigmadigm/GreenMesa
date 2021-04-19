@@ -129,6 +129,10 @@ export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase
     },
 };
 
+function checkEnabled(d: AutomoduleData) {
+    return !!(d.enableAll || d.channels?.length || d.channelEffect === "disable");
+}
+
 function CollapseIndicator(props: {collapsed: boolean}) {
     return props.collapsed ? <FontAwesomeIcon icon={faChevronDown} style={{ width: 16 }} /> : <FontAwesomeIcon icon={faChevronRight} style={{ width: 16 }} />;
 }
@@ -277,7 +281,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
     return loaded ? (
         <div className="x-card">
             <div className={`cardtag ${unsaved ? "cardtag-y" : (mod.enableAll || mod.channels?.length || mod.channelEffect === "disable" ? "cardtag-g" : "cardtag-r")}`}>
-                {unsaved ? "Unsaved" : (mod.enableAll || mod.channels?.length || mod.channelEffect === "disable" ? "Enabled" : "Disabled")}
+                {unsaved ? "Unsaved" : (checkEnabled(mod) ? "Enabled" : "Disabled")}
             </div>
             <div className="x-card-header">
                 <FontAwesomeIcon icon={faBadgeSheriff} style={{ marginRight: 5 }} />
@@ -287,12 +291,17 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                 ) : <></>}
             </div>
             <div className="x-card-body">
+                {(!mod.punishment || !mod.actions) && !checkEnabled(mod) ? (
+                    <div className="inline-error">
+                        A punishment or action is not set for this module. It will do nothing.
+                    </div>
+                ) : null}
                 <h5 className="cardsubtitle" style={{fontSize: "1.2em"}}>Module Configuration</h5>
                 <p style={{ marginBottom: "1rem" }}>{ props.description }</p>
                 <hr style={{ marginTop: 10, marginBottom: 10 }} />
                 <FormControl display="flex" alignItems="center" mb="8px" mt="12px">
                     <FormLabel htmlFor={`enable-${props.name}`} mb="0" pb="5px">
-                        {props.isTextModule ? "Enable everywhere? (overrides channel selection)" : "Enable?"}
+                        {props.isTextModule ? "Enable everywhere: (overrides channel selection)" : "Enable?"}
                     </FormLabel>
                     <Switch id={`enable-${props.name}`} onChange={(e) => handleEnableAllToggle(e)} defaultChecked={mod.enableAll} checked={mod.enableAll} style={{ marginRight: 10 }} />
                     <span style={{ fontWeight: 700, paddingBottom: 5 }}>{props.isTextModule ? (mod.enableAll ? "overriding" : "not overriding") : (mod.enableAll ? "enabled" : "disabled")}</span>

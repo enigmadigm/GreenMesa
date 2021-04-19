@@ -16,6 +16,7 @@ export const command: Command = {
     moderation: undefined,
     guildOnly: true,
     ownerOnly: false,
+    permissions: [],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(client, message, args) {
         try {

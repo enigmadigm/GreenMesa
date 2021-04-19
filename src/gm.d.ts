@@ -1,4 +1,4 @@
-import { Client, Collection, Message, PermissionString } from "discord.js";
+import { Client, Collection, Message, MessageEmbedOptions, PermissionString } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -43,6 +43,9 @@ export interface Command {
     permLevel?: number;
     moderation?: boolean;
     guildOnly?: boolean;
+    /**
+     * @deprecated
+     */
     ownerOnly?: boolean;
     permissions?: PermissionString[];
     execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean>;
@@ -160,6 +163,8 @@ export interface TwitchHookRow {
     streamerlogin: string;
     message: string;
     expires: string;
+    delafter: number;
+    notified: number;
 }
 
 export interface PartialGuildObject extends DiscordStrategy.GuildInfo {
@@ -296,6 +301,8 @@ export interface AutomoduleData {
     notNested?: boolean;
     customList?: string[];
     option1?: boolean;
+    threshold?: number;
+    frequency?: number;
 }
 
 export interface GuildUserDataRow {
@@ -423,7 +430,7 @@ export interface ModActionData {
 }
 
 export interface ModActionEditData {
-    superid: string;
+    superid?: string;
     guildid: string;
     casenumber?: number;
     userid: string;
@@ -480,6 +487,8 @@ export interface TwitchSub {
     streamer_id: string;
     streamer_login: string;
     message: string;
+    delete_after: number;
+    notified: number;
 }
 
 type TwitchEndpointData = TwitchSub[];
@@ -560,4 +569,119 @@ export interface ClientValuesGuild {
     splashURL: string | null;
     discoverySplashURL: string | null;
     bannerURL: string | null;
+}
+
+export interface TriviaResponse {
+    response_code: 0 | 1 | 2 | 3 | 4;
+    results: {
+        category: string;
+        type: string;
+        difficulty: string;
+        question: string;
+        correct_answer: string;
+        incorrect_answers: string[];
+    }[];
+}
+
+export interface DashboardMessage {
+    outside: string;
+    embed: MessageEmbedOptions;
+}
+
+export interface MovementData {
+    add_channel: string;
+    depart_channel: string;
+    dm_channel: string;
+    add_message: DashboardMessage;
+    depart_message: DashboardMessage;
+    dm_message: DashboardMessage;
+}
+
+export interface MovementEndpointData {
+    channels: ChannelData[];
+    data: MovementData;
+}
+
+export interface CommandsEndpointData {
+    commands: CommandConf[];
+    global: CommandsGlobalConf;
+    channels: ChannelData[];
+    roles: RoleData[];
+}
+
+export interface CmdConfEntry {
+    conf: CommandsGlobalConf;
+    commands: CommandConf[];
+}
+
+export interface CommandsGlobalConf {
+    overwites_ignore?: string[];
+    /**
+     * channels allow or disallow
+     */
+    channel_mode?: boolean;
+    /**
+     * channels applying the effect
+     */
+    channels?: string[];
+    /**
+     * roles allow or disallow
+     */
+    role_mode?: boolean;
+    /**
+     * roles applying the effect
+     */
+    roles?: string[];
+}
+
+export interface CommandConf {
+    /**
+     * name of the command
+     */
+    name: string;
+    /**
+     * whether the command can be interacted with at all
+     */
+    enabled: boolean;
+    /**
+     * channels allow or disallow
+     */
+    channel_mode: boolean;
+    /**
+     * channels applying the effect
+     */
+    channels: string[];
+    /**
+     * roles allow or disallow
+     */
+    role_mode: boolean;
+    /**
+     * roles applying the effect
+     */
+    roles: string[];
+    /**
+     * admin, moderator, member, etc
+     */
+    level?: number;
+    confined?: boolean;
+    description?: string;
+    description_short?: string;
+    description_edited?: string;
+    /**
+     * the official cooldown
+     */
+    default_cooldown: number;
+    /**
+     * the edited cooldown
+     */
+    cooldown?: number;
+    category?: string;
+    /**
+     * access at a certain experience level
+     */
+    exp_level?: number;
+    /**
+     * whether the conf is not a default and has been created as an overwrite
+     */
+    overwrite: boolean;
 }

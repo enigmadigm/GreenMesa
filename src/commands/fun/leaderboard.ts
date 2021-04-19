@@ -19,7 +19,7 @@ export const command: Command = {
             if (typeres) {
                 xptype = typeres.value;
             }
-            const joinedLb = rowobj.rows.map((row, i) => `${(row.userid == message.author.id) ? `[\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\` ⫸](https://stratum.hauge.rocks "Your Rank")` : `**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸` } ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} ❖ ${row.xp} ${xptype}`);
+            const joinedLb = rowobj.rows.map((row, i) => `${(row.userid == message.author.id) ? `[\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\` ⫸](https://stratum.hauge.rocks "Your Rank")` : `**\`${(i + 1 < 10) ? (i + 1 + " ") : (i + 1)}\`** ⫸`} ${(message.guild && message.guild.available && message.guild.members.cache.get(row.userid)) ? message.guild.members.cache.get(row.userid) : 'user'} → ${row.xp} ${xptype}`);
             message.channel.send({
                 embed: {
                     color: await client.database.getColor("info") || 6969,

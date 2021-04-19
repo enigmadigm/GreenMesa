@@ -36,8 +36,8 @@ export const command: Command = {
             } else {
                 gud.warnings++;
             }
-            checkWarnings(client, target);
             await client.database.updateGuildUserData(gud);
+            await checkWarnings(client, target);
             try {
                 await target.send({
                     embed: {
