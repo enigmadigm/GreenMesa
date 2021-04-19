@@ -46,7 +46,7 @@ export const command: Command = {
             message.channel.send({
                 embed: {
                     color: await client.database.getColor("info"),
-                    description: `**${target.displayName}** has ${verbs[Math.floor(Math.random() * verbs.length)]} **${sym} ${xp.points}** at level **${xp.level}**\n**${sym} ${xp.pointsToGo}** more is needed for level **${xp.level + 1}**\n\n${xp.pointsLevelNow}/${xp.pointsLevelNext} (${Math.round((xp.pointsLevelNow / xp.pointsLevelNext) * 100)}%)`,
+                    description: `**${target.displayName}** has ${verbs[Math.floor(Math.random() * verbs.length)]} **${sym} ${xp.points}** total at level **${xp.level}**.\n**${sym} ${xp.pointsToGo}** more is needed for level **${xp.level + 1}**.\n\n${xp.pointsLevelNext - xp.pointsToGo}/${xp.pointsLevelNext} (${Math.round(((xp.pointsLevelNext - xp.pointsToGo) / xp.pointsLevelNext) * 100)}%)`,
                     footer: {
                         text: ``
                     }
