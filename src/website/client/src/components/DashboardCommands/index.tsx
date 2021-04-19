@@ -237,7 +237,7 @@ export function DashboardCommands(props: HomeProps) {
         if (target.type !== "checkbox") {
             if (!e.currentTarget.attributes["data-target"]) return;
             name = e.currentTarget.attributes["data-target"].value;
-            ck = !!!selectedCmds.includes(name);
+            ck = !selectedCmds.includes(name);
         } else {
             ck = !!target.checked;
             name = target.name;
@@ -427,11 +427,11 @@ export function DashboardCommands(props: HomeProps) {
                                 <hr style={{ marginBottom: 0, marginTop: 10 }} />
                                 <div className="c-btnrow">
                                     <button disabled={selectedCmds.length === getShowing().length} onClick={selectAll}>Select All{selectedCmds.length !== getShowing().length ? ` (${getShowing().length - selectedCmds.length})` : null}</button>
-                                    <button disabled={!!!selectedCmds.length} onClick={deselectAll}>Deselect All{selectedCmds.length ? ` (${selectedCmds.length})` : null}</button>
-                                    <button disabled={!!!getSelected().some(x => x.overwrite)} onClick={removeSelectedOverwrites}>Remove Selected Overwrites{getSelected().some(x => x.overwrite) ? ` (${getSelected().filter(x => x.overwrite).length})` : null}</button>
-                                    <button disabled={!!!selectedCmds.length} onClick={editSelected}>Edit Selected{selectedCmds.length ? ` (${selectedCmds.length})` : null}</button>
+                                    <button disabled={!selectedCmds.length} onClick={deselectAll}>Deselect All{selectedCmds.length ? ` (${selectedCmds.length})` : null}</button>
+                                    <button disabled={!getSelected().some(x => x.overwrite)} onClick={removeSelectedOverwrites}>Remove Selected Overwrites{getSelected().some(x => x.overwrite) ? ` (${getSelected().filter(x => x.overwrite).length})` : null}</button>
+                                    <button disabled={!selectedCmds.length} onClick={editSelected}>Edit Selected{selectedCmds.length ? ` (${selectedCmds.length})` : null}</button>
                                     <button disabled={getSelected().filter(x => x.enabled).length === getShowing().length || !getSelected().length} onClick={enableSelected}>Enable Selected{getSelected().filter(x => x.enabled).length !== getShowing().length && getSelected().length ? ` (${getSelected().filter(x => !x.enabled).length})` : null}</button>
-                                    <button disabled={!!!getSelected().filter(x => x.enabled).length} onClick={disableSelected}>Disable Selected{getSelected().filter(x => x.enabled).length ? ` (${getSelected().filter(x => x.enabled).length})` : null}</button>
+                                    <button disabled={!getSelected().filter(x => x.enabled).length} onClick={disableSelected}>Disable Selected{getSelected().filter(x => x.enabled).length ? ` (${getSelected().filter(x => x.enabled).length})` : null}</button>
                                     <input type="text" name="cmdsearch" id="cmdsearch" placeholder="Command search" value={searchFor} onChange={updateSearch} />
                                 </div>
                                 <hr style={{ marginBottom: 10, marginTop: 0 }} />
