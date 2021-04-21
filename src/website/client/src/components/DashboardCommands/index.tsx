@@ -415,6 +415,7 @@ export function DashboardCommands(props: HomeProps) {
                             <div className="x-card-body" style={{paddingTop: "0.5em"}}>
                                 <div className="c-btnrow">
                                     <button disabled>Set Global Defaults</button>
+                                    <button disabled>Set Mod Role</button>
                                     <button onClick={showIconKey}>Icon Key</button>
                                 </div>
                                 <hr style={{ marginBottom: 10, marginTop: 0 }} />
