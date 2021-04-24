@@ -31,7 +31,7 @@ export const command: Command = {
                     const c = ba[i];
                     message.guild.members.unban(c.user);
                 }
-                message.channel.send(`<a:spinning_light00:680291499904073739>✅ ${bc} users unbanned`);
+                message.channel.send(`\\✅ ${bc} users unbanned`);
                 return;
             }
 

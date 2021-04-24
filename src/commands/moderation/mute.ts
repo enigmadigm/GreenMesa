@@ -123,7 +123,7 @@ export const command: Command = {
                 //
             }
 
-            message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${toMute.user.tag}\`${mendm}`);//${time ? `Edit with ID: ${"*private*"}` : ""}
+            message.channel.send(`\\✅ Muted \`${toMute.user.tag}\`${mendm}`);//${time ? `Edit with ID: ${"*private*"}` : ""}
 
             if (time) {
                 /*setTimeout(async () => {

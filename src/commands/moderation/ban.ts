@@ -105,9 +105,9 @@ export const command: Command = {
                     reason: `by ${message.author.tag}${reason ? ` | ${reason}` : ""}`
                 });
                 if (permsActual >= permLevels.botMaster) {
-                    message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}\nhttps://i.imgur.com/wdmSvX6.gif`);
+                    message.channel.send(`\\✅ Banned ${target.user.tag}\nhttps://i.imgur.com/wdmSvX6.gif`);
                 } else {
-                    message.channel.send(`<a:spinning_light00:680291499904073739>✅ Banned ${target.user.tag}${mendm}`);
+                    message.channel.send(`\\✅ Banned ${target.user.tag}${mendm}`);
                 }
                 registerBan(client, target);
 
@@ -131,7 +131,7 @@ export const command: Command = {
                     await client.database.setAction(uniquid("ta$"), t, "unban", data);
                 }
             } catch (e) {
-                message.channel.send(`<a:spinning_light00:680291499904073739>🆘 Could not ban ${target.user.tag}`);
+                message.channel.send(`\\🆘 Could not ban ${target.user.tag}`);
             }
         } catch (error) {
             xlg.error(error);

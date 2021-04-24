@@ -53,7 +53,7 @@ export const command: Command = {
                  */
                 try {
                     await target.kick(`by ${message.author.tag}${reason ? ` | ${reason}` : ""}`)
-                    message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Kicked ${target.user.tag}`);
+                    message.channel.send(`\\✅ Kicked ${target.user.tag}`);
                     /*logChannel.send({
                         embed: {
                             "title": `User Kicked`,

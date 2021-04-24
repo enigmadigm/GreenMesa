@@ -196,7 +196,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
     }
 
     if (channel) {
-        channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${target.user.tag}\`${mendm}`);
+        channel.send(`\\✅ Muted \`${target.user.tag}\`${mendm}`);
     }
 
     if (time) {
@@ -245,7 +245,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
     }
 
     if (channel) {
-        channel.send(`<a:spinning_light00:680291499904073739>\\✅ Banned \`${target.user.tag}\`${mendm}`);
+        channel.send(`\\✅ Banned \`${target.user.tag}\`${mendm}`);
     }
 
     if (time) {
