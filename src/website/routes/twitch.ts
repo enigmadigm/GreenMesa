@@ -174,10 +174,27 @@ export function twitchRouter(client: XClient): Router {
                             if (subs) {
                                 for (let i = 0; i < subs.length; i++) {
                                     const sub = subs[i];
+                                    const diff = Math.abs(moment(req.body.data[0].started_at).diff(sub.laststream, "seconds"));
+                                    if (diff < 100) continue;
                                     const channels = await client.specials?.getAllChannels(client);
                                     if (channels) {
                                         const channel = channels.find(c => c.id === sub.channelid);
                                         if (channel) {
+                                            /*
+                                                "id": "3d141868-46ed-4ef8-cd09-1fbb4f845355",
+                                                "user_id": "56145452",
+                                                "user_login": "testBroadcaster",
+                                                "user_name": "testBroadcaster",
+                                                "game_id": "509658",
+                                                "game_name": "Just Chatting",
+                                                "type": "live",
+                                                "title": "Example title from the CLI!",
+                                                "viewer_count": 9848,
+                                                "started_at": "2021-03-20T03:18:50Z",
+                                                "language": "en",
+                                                "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_twitch_user-{width}x{height}.jpg",
+                                                "tag_ids": []
+                                            */
                                             const name = req.body.data[0].user_name;
                                             const link = `https://twitch.tv/${req.body.data[0].user_name}`;
                                             const msg = sub.message || "";
@@ -185,7 +202,7 @@ export function twitchRouter(client: XClient): Router {
                                             client.shard?.broadcastEval(`
                                             const c = this.channels.cache.get('${sub.channelid}');
                                             if (c && c.send) {
-                                                c.send(\`${message}\`)
+                                                c.send(\`${message}\`);
                                             }
                                             `);
                                             // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
@@ -193,7 +210,7 @@ export function twitchRouter(client: XClient): Router {
                                             if (sub.delafter > -1 && sub.delafter <= sub.notified) {
                                                 Bot.client.database.removeTwitchSubscription(sub.streamerid, sub.guildid);
                                             } else {
-                                                Bot.client.database.incrementTwitchNotified(sub.guildid);
+                                                Bot.client.database.incrementTwitchNotified(sub.guildid, req.body.data[0].started_at);
                                             }
                                         }
                                     }

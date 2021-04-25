@@ -794,10 +794,11 @@ export class DBManager {
         }
     }
 
-    async incrementTwitchNotified(guildid: string): Promise<InsertionResult | false> {
+    async incrementTwitchNotified(guildid: string, started?: string): Promise<InsertionResult | false> {
         try {
             if (!guildid) return false;
-            const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1 WHERE guildid = ${escape(guildid)}`);
+            const t = started || new Date().toISOString();
+            const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE guildid = ${escape(guildid)}`);
             return result;
         } catch (error) {
             xlog.error(error);

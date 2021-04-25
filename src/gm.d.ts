@@ -165,6 +165,7 @@ export interface TwitchHookRow {
     expires: string;
     delafter: number;
     notified: number;
+    laststream: string;
 }
 
 export interface PartialGuildObject extends DiscordStrategy.GuildInfo {
