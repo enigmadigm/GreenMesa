@@ -1201,7 +1201,7 @@ export class DBManager {
      */
     async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
         try {
-            const { guildid, userid, casenumber, type, duration, mod, summary } = data;// get provided data to log
+            const { guildid, userid, casenumber, type, endtime, agent, summary } = data;// get provided data to log
             let { superid } = data;// make superid mutable
             if (!guildid || !userid || typeof casenumber !== "number") return false;
             const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid || "");// see if there is a preexisting case with sid or casenumber
@@ -1211,9 +1211,9 @@ export class DBManager {
 
             let sql = ``;
             if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
-                sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), duration = COALESCE(${duration}, duration), mod = COALESCE(${escape(mod)}, mod), summary = COALESCE(${escape(summary)}, summary) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+                sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), endtime = COALESCE(${escape(endtime)}, endtime), agent = COALESCE(${escape(agent)}, agent), summary = COALESCE(${escape(summary)}, summary) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
             } else {// else create a new case
-                sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, duration, mod, summary) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(duration)}, ${escape(mod)}, ${escape(summary)})`;
+                sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, endtime, agent, summary) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(endtime)}, ${escape(agent)}, ${escape(summary)})`;
             }
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {

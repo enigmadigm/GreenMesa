@@ -56,10 +56,12 @@ import Client from "./struct/Client";
 export class Bot {
     static client: XClient;
     static tas: TimedActionsSubsystem;
+    // static cm: Contraventions;
 
     static init(client: XClient, tas: TimedActionsSubsystem): void {
         this.client = client;
         this.tas = tas;
+        // this.cm = cm;
     }
 }
 

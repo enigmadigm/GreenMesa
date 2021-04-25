@@ -7,6 +7,7 @@ import { stringToDuration } from "../../utils/time";
 import moment from "moment";
 import { registerBan } from "../../utils/modactions";
 import uniquid from 'uniqid';
+import { Contraventions } from "../../utils/contraventions";
 
 export const command: Command = {
     name: "ban",
@@ -104,6 +105,7 @@ export const command: Command = {
                 await target.ban({
                     reason: `by ${message.author.tag}${reason ? ` | ${reason}` : ""}`
                 });
+                Contraventions.logBan(message.guild.id, target.id, message.author.id, reason, time);
                 if (permsActual >= permLevels.botMaster) {
                     message.channel.send(`\\✅ Banned ${target.user.tag}\nhttps://i.imgur.com/wdmSvX6.gif`);
                 } else {

@@ -425,8 +425,8 @@ export interface ModActionData {
     type: string;
     created: string;
     updated: string;
-    duration: number;
-    mod: string;
+    endtime?: string;
+    agent: string;
     summary: string;
 }
 
@@ -436,8 +436,8 @@ export interface ModActionEditData {
     casenumber?: number;
     userid: string;
     type?: string;
-    duration?: number;
-    mod: string;
+    endtime?: string;
+    agent: string;
     summary?: string;
 }
 
