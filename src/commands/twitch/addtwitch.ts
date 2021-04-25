@@ -73,7 +73,7 @@ export const command: Command = {
                 embed: {
                     color: iec,
                     title: "Twitch Notif Setup 3️⃣",
-                    description: `**You may use a custom message to announce your streamer, otherwise type \`no\`.**\nTo edit the message later, use the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`
+                    description: `**You may use a custom message to announce your streamer, otherwise type \`no\`.**\nTo edit the message later, use the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).\n\n**Available placeholders:**\n*{name}\n{link}\n{game}*`,
                 }
             });
             const msgCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 1800, { time: 40000, max: 1 });
