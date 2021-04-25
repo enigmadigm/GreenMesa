@@ -57,7 +57,7 @@ export function DashboardCommands(props: HomeProps) {
     const [selectedCmds, setSelectedCmds] = React.useState<string[]>([]);// the commands that should be shown as selected on the dashboard
     const [selectedCats, setSelectedCats] = React.useState<string[]>([]);// the cats that should be shown as selected on the dashboard
     const [applying, setApplying] = React.useState<string[]>([]);// the commands that the settings will actually be applied to on the dashboard
-    const [pending, setPending] = React.useState<CommandConf>({name: "", enabled: true, channel_mode: false, role_mode: false, channels: [], roles: [], default_cooldown: 0,overwrite: false});// the settings to apply to the 'applying' commands on the next patch, should be cleared after every patch or cancellation
+    const [pending, setPending] = React.useState<CommandConf & CommandsGlobalConf>({name: "", enabled: true, channel_mode: false, role_mode: false, channels: [], roles: [], default_cooldown: 0,overwrite: false});// the settings to apply to the 'applying' commands on the next patch, should be cleared after every patch or cancellation
     // const [delOw, setDelOw] = React.useState(false);// whether the applied commands should be deleted as overwrites on the next patch
     const [searchFor, setSearchFor] = React.useState("");// the search string to be used in sorting, deactivated by default
     const [em, setEm] = React.useState("");// the error message to show in the overwrite conf modal
@@ -153,6 +153,16 @@ export function DashboardCommands(props: HomeProps) {
                 apply: toApply,
                 enabled: state,
             }
+        } else if (mode === 2) {// command multi-toggle
+            if (typeof state !== "boolean") return;
+            bod = {
+                apply: [],
+                enabled: true,
+                channel_mode: pending.channel_mode,
+                channels: pending.channels,
+                role_mode: pending.role_mode,
+                roles: pending.roles,
+            }
         }
         const obj = {
             method: 'PATCH',
@@ -215,6 +225,15 @@ export function DashboardCommands(props: HomeProps) {
 
     useOutsideClicker(modalWrapper);
 
+    const handleCancel = () => {
+        setShowing(false);
+        setApplying(selectedCmds);
+        setPending({ name: "", enabled: true, channel_mode: false, role_mode: false, channels: [], roles: [], default_cooldown: 0, overwrite: false });
+        setEm("");
+        setIk(false);
+        setWaiting(false);
+    }
+
     const handleCatCheck = (e: any) => {
         const target = e.target;
         if (target.type !== "checkbox") return;
@@ -267,15 +286,6 @@ export function DashboardCommands(props: HomeProps) {
 
     const getShowing = () => {
         return commands.filter(x => selectedCats.includes(x.category || "") || selectedCmds.includes(x.name));
-    }
-
-    const handleCancel = () => {
-        setShowing(false);
-        setApplying(selectedCmds);
-        setPending({ name: "", enabled: true, channel_mode: false, role_mode: false, channels: [], roles: [], default_cooldown: 0, overwrite: false });
-        setEm("");
-        setIk(false);
-        setWaiting(false);
     }
 
     const editOne = (e: any) => {
@@ -405,6 +415,7 @@ export function DashboardCommands(props: HomeProps) {
                             <div className="x-card-body" style={{paddingTop: "0.5em"}}>
                                 <div className="c-btnrow">
                                     <button disabled>Set Global Defaults</button>
+                                    <button disabled>Set Mod Role</button>
                                     <button onClick={showIconKey}>Icon Key</button>
                                 </div>
                                 <hr style={{ marginBottom: 10, marginTop: 0 }} />
@@ -426,12 +437,24 @@ export function DashboardCommands(props: HomeProps) {
                                 </div>
                                 <hr style={{ marginBottom: 0, marginTop: 10 }} />
                                 <div className="c-btnrow">
-                                    <button disabled={selectedCmds.length === getShowing().length} onClick={selectAll}>Select All{selectedCmds.length !== getShowing().length ? ` (${getShowing().length - selectedCmds.length})` : null}</button>
-                                    <button disabled={!selectedCmds.length} onClick={deselectAll}>Deselect All{selectedCmds.length ? ` (${selectedCmds.length})` : null}</button>
-                                    <button disabled={!getSelected().some(x => x.overwrite)} onClick={removeSelectedOverwrites}>Remove Selected Overwrites{getSelected().some(x => x.overwrite) ? ` (${getSelected().filter(x => x.overwrite).length})` : null}</button>
-                                    <button disabled={!selectedCmds.length} onClick={editSelected}>Edit Selected{selectedCmds.length ? ` (${selectedCmds.length})` : null}</button>
-                                    <button disabled={getSelected().filter(x => x.enabled).length === getShowing().length || !getSelected().length} onClick={enableSelected}>Enable Selected{getSelected().filter(x => x.enabled).length !== getShowing().length && getSelected().length ? ` (${getSelected().filter(x => !x.enabled).length})` : null}</button>
-                                    <button disabled={!getSelected().filter(x => x.enabled).length} onClick={disableSelected}>Disable Selected{getSelected().filter(x => x.enabled).length ? ` (${getSelected().filter(x => x.enabled).length})` : null}</button>
+                                    <button disabled={selectedCmds.length === getShowing().length} onClick={selectAll}>
+                                        Select All{selectedCmds.length !== getShowing().length ? ` (${getShowing().length - selectedCmds.length})` : null}
+                                    </button>
+                                    <button disabled={!selectedCmds.length} onClick={deselectAll}>
+                                        Deselect All{selectedCmds.length ? ` (${selectedCmds.length})` : null}
+                                    </button>
+                                    <button disabled={!getSelected().some(x => x.overwrite)} onClick={removeSelectedOverwrites}>
+                                        Remove Selected Overwrites{getSelected().some(x => x.overwrite) ? ` (${getSelected().filter(x => x.overwrite).length})` : null}
+                                    </button>
+                                    <button disabled={!selectedCmds.length} onClick={editSelected}>
+                                        Edit Selected{selectedCmds.length ? ` (${selectedCmds.length})` : null}
+                                    </button>
+                                    <button disabled={!getSelected().filter(x => x.enabled).length} onClick={enableSelected}>
+                                        Enable Selected{getSelected().filter(x => x.enabled).length !== getShowing().length && getSelected().length ? ` (${getSelected().filter(x => !x.enabled).length})` : null}
+                                    </button>
+                                    <button disabled={!getSelected().filter(x => x.enabled).length} onClick={disableSelected}>
+                                        Disable Selected{getSelected().filter(x => x.enabled).length ? ` (${getSelected().filter(x => x.enabled).length})` : null}
+                                    </button>
                                     <input type="text" name="cmdsearch" id="cmdsearch" placeholder="Command search" value={searchFor} onChange={updateSearch} />
                                 </div>
                                 <hr style={{ marginBottom: 10, marginTop: 0 }} />
@@ -479,16 +502,21 @@ export function DashboardCommands(props: HomeProps) {
                                                         {em}
                                                     </div>
                                                 )}
-                                                <p>Editing the subscription for <strong>{applying.length > 1 ? "multiple commands" : pending.name}</strong>.</p>
-                                                <div style={{ marginTop: 20 }}>
-                                                    <label htmlFor={`c-enable-toggle`} title="Enable command">
-                                                        <input type="checkbox" id={`c-enable-toggle`} checked={pending.enabled} onChange={handleEnabledToggle} style={{ display: "none" }} />
-                                                        <span style={{ marginRight: 8, color: pending.enabled ? "#4db2aa" : "#ffffff" }}>
-                                                            {pending.enabled ? <FontAwesomeIcon icon={faCheckCircle} /> : <FontAwesomeIcon icon={faTimesCircle} />}
-                                                        </span>
+                                                {applying.length ? <>
+                                                    <p>Editing the config for <strong>{applying.length > 1 ? "multiple commands" : pending.name}</strong>.</p>
+                                                    <div style={{ marginTop: 20 }}>
+                                                        <label htmlFor={`c-enable-toggle`} title="Enable command">
+                                                            <input type="checkbox" id={`c-enable-toggle`} checked={pending.enabled} onChange={handleEnabledToggle} style={{ display: "none" }} />
+                                                            <span style={{ marginRight: 8, color: pending.enabled ? "#4db2aa" : "#ffffff" }}>
+                                                                {pending.enabled ? <FontAwesomeIcon icon={faCheckCircle} /> : <FontAwesomeIcon icon={faTimesCircle} />}
+                                                            </span>
                                                         Enable
                                                     </label>
-                                                </div>
+                                                    </div>
+                                                </> : <>
+                                                    <p>Editing the <strong>global defaults</strong> config.</p>
+                                                    <p>The settings found here that can also be configured individually on commands are applied to commands that are <strong>not active overwrites (<FontAwesomeIcon icon={faFeather} />)</strong></p>
+                                                </>}
                                                 <p style={{ fontWeight: 700, marginTop: 20, marginBottom: 5 }}>
                                                     <select onChange={handleChannelModeChange} value={!pending.channel_mode ? 0 : 1} >
                                                         <option value={0} defaultChecked>Disable</option>

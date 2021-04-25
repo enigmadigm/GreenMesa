@@ -1,5 +1,5 @@
 //import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
-import { stringToChannel, capitalizeFirstLetter } from './utils/parsers';
+import { stringToChannel, capitalize } from './utils/parsers';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
 import xlg from "./xlogger";
@@ -275,7 +275,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
         const logChannel = await getLogChannel(channel.guild, deletion ? LoggingFlags.CHANNEL_DELETION : LoggingFlags.CHANNEL_CREATION, "server_channel", channel);
         if (!logChannel || logChannel.type !== 'text') return;
         const nameref = channel.name ? ` (${channel.name})` : "";
-        const titletyperef = channel.type !== "category" ? `${capitalizeFirstLetter(channel.type)} ` : "";
+        const titletyperef = channel.type !== "category" ? `${capitalize(channel.type)} ` : "";
 
         await logChannel.send({
             embed: {

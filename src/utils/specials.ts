@@ -206,3 +206,13 @@ export function getDashboardLink(guildid?: string, mod?: string): string {
 export function getBackendRoot(): string {
     return process.env.NODE_ENV === "dev" ? 'http://localhost:3005' : `https://stratum.hauge.rocks`;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function sendMessageAll(m: Record<string, any>, cid: string): void {
+    Bot.client.shard?.broadcastEval(`
+    const c = this.channels.cache.get('${cid}');
+    if (c && c.send) {
+        c.send(${JSON.stringify(m)})
+    }
+    `);
+}

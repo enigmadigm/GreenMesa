@@ -2,6 +2,7 @@ import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
 //import { getGuildSetting } from "../dbmanager";
 import { Command } from "src/gm";
+import { Contraventions } from "../../utils/contraventions";
 
 export const command: Command = {
     name: "unban",
@@ -31,7 +32,7 @@ export const command: Command = {
                     const c = ba[i];
                     message.guild.members.unban(c.user);
                 }
-                message.channel.send(`<a:spinning_light00:680291499904073739>✅ ${bc} users unbanned`);
+                message.channel.send(`\\✅ ${bc} users unbanned`);
                 return;
             }
 
@@ -66,12 +67,12 @@ export const command: Command = {
                     throw new Error("Error fetching ban");
                 }
             }
-            
-            
+
             args.shift();
             const reason = args.join(" ");
             try {
                 await message.guild.members.unban(ub.user, reason);
+                Contraventions.logUnban(message.guild.id, ub.user.id, message.author.id, reason);
                 message.channel.send(`\\✅ Unbanned ${ub.user.tag}`);
             } catch (e) {
                 message.channel.send(`\\🆘 Could not unban ${ub.user.tag}`);
@@ -83,4 +84,3 @@ export const command: Command = {
         }
     }
 }
-

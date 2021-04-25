@@ -165,6 +165,7 @@ export interface TwitchHookRow {
     expires: string;
     delafter: number;
     notified: number;
+    laststream: string;
 }
 
 export interface PartialGuildObject extends DiscordStrategy.GuildInfo {
@@ -424,8 +425,8 @@ export interface ModActionData {
     type: string;
     created: string;
     updated: string;
-    duration: number;
-    mod: string;
+    endtime?: string;
+    agent: string;
     summary: string;
 }
 
@@ -435,8 +436,8 @@ export interface ModActionEditData {
     casenumber?: number;
     userid: string;
     type?: string;
-    duration?: number;
-    mod: string;
+    endtime?: string;
+    agent: string;
     summary?: string;
 }
 

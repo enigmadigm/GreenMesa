@@ -1,7 +1,7 @@
 import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
-import { stringToRole } from '../../utils/parsers';
-import { Role } from "discord.js";
+import { stringToChannel, stringToRole } from '../../utils/parsers';
+import { Channel, Role } from "discord.js";
 import { Command } from "src/gm";
 import { getDashboardLink } from "../../utils/specials";
 
@@ -38,8 +38,7 @@ export const command: Command = {
 - \`moderation\` enable or disable (default) all moderation features
 - \`modrole\` set the role that gives mod powers
 - \`accessmsg\` enable or disable (default) the 'lacking perms' message
-\\🔒 \`caselogging\` log moderation events in an organized system
-\\🔒 \`commandchannel\` set a channel to restrict all command usage to
+- \`modlog\` log moderation events in an organized system
 
 \\🔒 = in dev`,
                         color: info_embed_color,
@@ -261,7 +260,7 @@ export const command: Command = {
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("info"),
-                            description: `Now you can go to the [dashboard](${getDashboardLink(message.guild.id, "serverlog")}) to configure the serverlog.`,
+                            description: `Go to the [dashboard](${getDashboardLink(message.guild.id, "serverlog")}) to configure the serverlog.\nThe process was simplified by moving it to the dashboard.`,
                         }
                     });
                     /*argIndex++;
@@ -368,12 +367,50 @@ export const command: Command = {
                     });
                     break;
                 }
-                case 'caselogging': {
-                    await client.specials?.sendError(message.channel, 'This subcommand is currently in development.');
-                    break;
-                }
-                case 'commandchannel': {
-                    await client.specials?.sendError(message.channel, 'This subcommand is currently in development.');
+                case 'modlog': {
+                    // await client.specials?.sendError(message.channel, 'This subcommand is currently in development.');
+                    argIndex++;
+                    if (!args[argIndex]) {
+                        const result = await client.database.getGuildSetting(message.guild, "modlog");
+                        let mrid = "";
+                        if (result && result.value) {
+                            mrid = result.value;
+                        }
+                        const mr = message.guild.channels.cache.get(mrid);
+                        message.channel.send({
+                            embed: {
+                                color: info_embed_color,
+                                description: `${mr ? `Current File Cabinet:\n${mr} (${mr.id})\n\n` : ""}To set/clear the channel please provide:\n\`<#channel | 'reset'>\``
+                            }
+                        });
+                        return;
+                    }
+                    if (args[argIndex] === "reset" && !args[argIndex + 1]) {
+                        await client.database.editGuildSetting(message.guild, "modlog", ``, true);
+                        message.channel.send({
+                            embed: {
+                                color: success_embed_color,
+                                description: `Done. The mod cases channel has been cleared.`
+                            }
+                        });
+                        return;
+                    }
+                    const channel = stringToChannel(message.guild, args[argIndex], true, true);
+                    if (!channel || !(channel instanceof Channel)) {
+                        client.specials?.sendError(message.channel, 'Please send a valid channel.');
+                        return;
+                    }
+                    const result = await client.database.editGuildSetting(message.guild, "modlog", `${channel.id}`);
+                    if (!result) {
+                        client.specials?.sendError(message.channel, 'The channel could not be registered.');
+                        return;
+                    }
+                    message.channel.send({
+                        embed: {
+                            color: success_embed_color,
+                            description: `The mod cases channel has been set to ${channel}. Mod actions will be logged there.`,
+                        }
+                    });
                     break;
                 }
                 case 'pm':

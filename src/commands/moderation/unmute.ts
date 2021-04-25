@@ -3,6 +3,7 @@ import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
 import { Command } from "src/gm";
+import { Contraventions } from "../../utils/contraventions";
 
 export const command: Command = {
     name: 'unmute',
@@ -56,6 +57,8 @@ export const command: Command = {
             // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
             await toMute.roles.remove(mutedRole, `unmuted by ${message.author.tag}`);
             if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
+
+            Contraventions.logUnmute(message.guild.id, toMute.id, message.author.id);
 
             message.channel.send(`\\✅ Unmuted ${toMute.user.tag}`).catch(console.error);
         } catch (error) {

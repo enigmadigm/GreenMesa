@@ -4,6 +4,7 @@ import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
 import xlg from "../xlogger";
+import { Contraventions } from "./contraventions";
 
 // export class BaseModAction<T> {
 //     public client: XClient;
@@ -195,8 +196,10 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
         mendm = ` for ${duration}`
     }
 
+    Contraventions.logMute(target.guild.id, target.id, time, target.client.user?.id || "", `Automatic mute by ${target.client.user?.tag}`);
+
     if (channel) {
-        channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${target.user.tag}\`${mendm}`);
+        channel.send(`\\✅ Muted \`${target.user.tag}\`${mendm}`);
     }
 
     if (time) {
@@ -244,8 +247,10 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
         mendm = ` for ${duration}`
     }
 
+    Contraventions.logBan(target.guild.id, target.id, target.client.user?.id || "", `Automatic ban by ${target.client.user?.tag}`, time);
+
     if (channel) {
-        channel.send(`<a:spinning_light00:680291499904073739>\\✅ Banned \`${target.user.tag}\`${mendm}`);
+        channel.send(`\\✅ Banned \`${target.user.tag}\`${mendm}`);
     }
 
     if (time) {

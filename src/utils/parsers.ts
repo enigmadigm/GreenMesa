@@ -270,13 +270,32 @@ export function durationToString(duration: number): string {
     return durationString.trim();
 }
 
+export function titleCase(str: string): string {
+    if (str === "nsfw") {
+        return "NSFW";
+    }
+    const splitStr = str.toLowerCase().split(' ');
+    for (let i = 0; i < splitStr.length; i++) {
+        // You do not need to check if i is larger than splitStr length, as your for does that for you
+        // Assign it back to the array
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    // Directly return the joined string
+    return splitStr.join(' ');
+}
+
 /**
  * Capitalizes the first letter in a string
  * @param string String to capitalize
  */
-export function capitalizeFirstLetter(string: string): string {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+export function capitalize(str: string | undefined): string {
+    const s = str || "";
+    if (!s[0]) {
+        return s;
+    }
+    return s[0].toUpperCase() + s.substring(1);
 }
+
 
 export function randomIntFromInterval(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1) + min);

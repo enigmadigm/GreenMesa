@@ -4,6 +4,7 @@ import { stringToMember } from '../../utils/parsers';
 import Discord from 'discord.js';
 import xlg from "../../xlogger";
 import { Command } from 'src/gm';
+import { Contraventions } from '../../utils/contraventions';
 
 export const command: Command = {
     name: 'kick',
@@ -53,7 +54,8 @@ export const command: Command = {
                  */
                 try {
                     await target.kick(`by ${message.author.tag}${reason ? ` | ${reason}` : ""}`)
-                    message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Kicked ${target.user.tag}`);
+                    Contraventions.logKick(message.guild.id, target.id, message.author.id, reason);
+                    message.channel.send(`\\✅ Kicked ${target.user.tag}`);
                     /*logChannel.send({
                         embed: {
                             "title": `User Kicked`,

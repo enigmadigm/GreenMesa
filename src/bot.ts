@@ -25,14 +25,14 @@ process.on('unhandledRejection', async (reason, promise) => {
 });
 
 String.prototype.escapeSpecialChars = function () {
-    return this.replace(/\\n/g, "\\\\n")
-        .replace(/\\'/g, "\\\\'")
-        .replace(/\\"/g, '\\\\"')
-        .replace(/\\&/g, "\\\\&")
-        .replace(/\\r/g, "\\\\r")
-        .replace(/\\t/g, "\\\\t")
-        .replace(/\\b/g, "\\\\b")
-        .replace(/\\f/g, "\\\\f");
+    return this.replace(/(?<!\\)\\n/g, "\\n")
+        .replace(/(?<!\\)\\'/g, "\\'")
+        .replace(/(?<!\\)\\"/g, '\\"')
+        .replace(/(?<!\\)\\&/g, "\\&")
+        .replace(/(?<!\\)\\r/g, "\\r")
+        .replace(/(?<!\\)\\t/g, "\\t")
+        .replace(/(?<!\\)\\b/g, "\\b")
+        .replace(/(?<!\\)\\f/g, "\\f");
 };
 
 String.prototype.escapeDiscord = function () {
@@ -56,10 +56,12 @@ import Client from "./struct/Client";
 export class Bot {
     static client: XClient;
     static tas: TimedActionsSubsystem;
+    // static cm: Contraventions;
 
     static init(client: XClient, tas: TimedActionsSubsystem): void {
         this.client = client;
         this.tas = tas;
+        // this.cm = cm;
     }
 }
 
@@ -364,7 +366,6 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const pl = cs ? cs.level || permLevels.member : command.permLevel || permLevels.member;
 
         if (permLevel < pl) {// insufficient bot permissions
-            // TODO: add admin option to make it notify users that they don't have permissions
             const accessMessage = await client.database.getGuildSetting(message.guild || "", "access_message");
             if (accessMessage && accessMessage.value === "enabled") {
                 message.channel.send("You lack the permissions required to use this command.")

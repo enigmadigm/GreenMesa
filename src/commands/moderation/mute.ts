@@ -5,6 +5,7 @@ import { stringToMember, durationToString } from '../../utils/parsers';
 import { stringToDuration } from '../../utils/time';
 import xlg from "../../xlogger";
 import uniqid from 'uniqid';
+import { Contraventions } from "../../utils/contraventions";
 
 export const command: Command = {
     name: 'mute',
@@ -122,8 +123,9 @@ export const command: Command = {
             } catch (error) {
                 //
             }
+            Contraventions.logMute(message.guild.id, toMute.id, time, message.author.id, reason);
 
-            message.channel.send(`<a:spinning_light00:680291499904073739>\\✅ Muted \`${toMute.user.tag}\`${mendm}`);//${time ? `Edit with ID: ${"*private*"}` : ""}
+            message.channel.send(`\\✅ Muted \`${toMute.user.tag}\`${mendm}`);//${time ? `Edit with ID: ${"*private*"}` : ""}
 
             if (time) {
                 /*setTimeout(async () => {
