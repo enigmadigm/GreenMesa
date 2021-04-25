@@ -190,7 +190,7 @@ export function twitchRouter(client: XClient): Router {
                                             `);
                                             // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
                                             //channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
-                                            if (sub.delafter <= sub.notified) {
+                                            if (sub.delafter > -1 && sub.delafter <= sub.notified) {
                                                 Bot.client.database.removeTwitchSubscription(sub.streamerid, sub.guildid);
                                             } else {
                                                 Bot.client.database.incrementTwitchNotified(sub.guildid);
