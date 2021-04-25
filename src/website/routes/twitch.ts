@@ -198,7 +198,7 @@ export function twitchRouter(client: XClient): Router {
                                             const name = req.body.data[0].user_name;
                                             const link = `https://twitch.tv/${req.body.data[0].user_name}`;
                                             const msg = sub.message || "";
-                                            const message = `${msg.replace(/\{name\}/g, name).replace(/\{link\}/g, link) || `${name} just went live!`}${!/\{link\}/g.exec(msg)?.length ? `\n${link}` : ""}`;
+                                            const message = `${msg.replace(/\{name\}/g, name).replace(/\{link\}/g, link).replace(/\{game\}/g, req.body.data[0].game_name) || `${name} just went live!`}${!/\{link\}/g.exec(msg)?.length ? `\n${link}` : ""}`;
                                             client.shard?.broadcastEval(`
                                             const c = this.channels.cache.get('${sub.channelid}');
                                             if (c && c.send) {
