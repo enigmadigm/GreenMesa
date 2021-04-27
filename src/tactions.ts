@@ -1,6 +1,7 @@
 import moment from "moment";
 import { Bot } from "./bot";
 import { TimedAction, UnbanActionData, UnmuteActionData } from "./gm";
+import { Contraventions } from "./utils/contraventions";
 import xlg from "./xlogger";
 
 export class TimedActionsSubsystem {
@@ -68,6 +69,7 @@ export class TimedActionsSubsystem {
                     if (m.voice.connection && m.voice.mute) {
                         m.voice.setMute(false);
                     }
+                    Contraventions.logUnmute(g.id, d.userid, Bot.client.user?.id || "", `Automatic unmute after ${d.duration}`);//Automic
                     break;
                 }
                 case "unban": {
@@ -79,6 +81,7 @@ export class TimedActionsSubsystem {
                         if (!g) break;
     
                         await g.members.unban(d.userid, `unbanning automatically after ${d.duration}`);
+                        Contraventions.logUnban(g.id, d.userid, Bot.client.user?.id || "", `Automatic unban after ${d.duration}`);
                     } catch (error) {
                         //
                     }
