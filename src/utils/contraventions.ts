@@ -105,6 +105,10 @@ export class Contraventions {
             }
         }
         const embed = new MessageEmbed(e);
+        if (reason) {
+            const rt = reason.length < 1500 ? reason : reason.substr(0, 1496) + "...";
+            embed.description += `\n**Reason:** ${rt}`;
+        }
         if (duration) {
             const f = getFriendlyUptime(duration);
             if (duration < 1000) {
@@ -128,10 +132,6 @@ export class Contraventions {
             });
             const joinedtt = tt.join("");
             embed.description += `\n\n**Period:**\n${joinedtt} (ends at ${moment(endat).format('M/D/Y HH:mm:ss')})`;
-        }
-        if (reason) {
-            const rt = reason.length < 1500 ? reason : reason.substr(0, 1496) + "...";
-            embed.description += `\n\n**Reason:**\n${rt}`;
         }
         return embed;
     }
