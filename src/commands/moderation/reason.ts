@@ -9,7 +9,7 @@ export const command: Command = {
     name: "reason",
     description: {
         short: "clear automod offenses",
-        long: "Use to clear the infraction points assigned to users who violate automod policies. These are given to people no matter the automod setting. Use this to clear the offenses in your server."
+        long: "Set the reason/summary given for a mod case. The reason will be recorded in the modlog files and shown in the modlog."
     },
     usage: "<case #> <reason>",
     args: true,
