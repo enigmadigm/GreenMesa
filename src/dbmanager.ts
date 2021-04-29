@@ -243,7 +243,8 @@ export class DBManager {
                 const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = ${escape(userid + guildid)}`);
                 let sql;
                 if (rows.length < 1) {
-                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${mode > 0 ? amount : 0 - amount}, 0)`;
+                    p = mode > 0 ? amount : 0 - amount;
+                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${p}, 0)`;
                 } else {
                     // SENSITIVE AREA
                     // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
@@ -265,6 +266,8 @@ export class DBManager {
                         rows[0].level = levelNow;
                     }*/
                     sql = `UPDATE dgmxp SET xp = ${xp}, level = ${level} WHERE id = ${escape(userid + guildid)}`;
+                    l = level;
+                    p = xp;
                 }
                 await <Promise<InsertionResult>>this.query(sql);
                 return { points: p, level: l };
@@ -313,7 +316,9 @@ export class DBManager {
      * @param level the level of the member to apply
      */
     async updateLevelRole(member: GuildMember, level: number): Promise<boolean> {
-        if (!member || !member.guild || !member.guild.id || !level || !member.guild.me?.hasPermission("MANAGE_ROLES")) return false;
+        if (!member || !member.guild || !level || !member.guild.me?.hasPermission("MANAGE_ROLES")) {
+            return false;
+        }
         let levelsEnabled: false | GuildSettingsRow | string = await this.getGuildSetting(member.guild, 'xp_levels');
         levelsEnabled = levelsEnabled ? levelsEnabled.value : false;
         if (levelsEnabled === "enabled") {
