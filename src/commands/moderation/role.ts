@@ -1,6 +1,6 @@
 import xlg from "../../xlogger";
 import { getPermLevel, permLevels } from '../../permissions';
-import { stringToMember, stringToRole } from "../../utils/parsers";
+import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
 //import { getGlobalSetting, getGuildSetting } from "../dbmanager";
 import { getFriendlyUptime } from "../../utils/time";
 import { Role, GuildMember } from "discord.js";
@@ -13,23 +13,6 @@ async function* delayedLoop(start: number, end: number, increment: number, delay
         yield i
         await sleep(delay)
     }
-}
-
-function parseFriendlyUptime(t: {hours: number, minutes: number, seconds: number, days: number}) {
-    const th = t.hours + (t.days * 24);
-    const tm = t.minutes;
-    const ts = t.seconds;
-    const ttypes = ["hours", "minutes", "seconds"];
-    if (!th)
-        ttypes.splice(ttypes.indexOf("hours"), 1);
-    if (!tm)
-        ttypes.splice(ttypes.indexOf("minutes"), 1);
-    if (!ts)
-        ttypes.splice(ttypes.indexOf("seconds"), 1);
-    const tt = [th, tm, ts].filter(x => x > 0).map((x, i, xt) => {
-        return `${x} ${ttypes[i]}${i !== (xt.length - 1) ? (xt.length > 1 && xt.length - 2 === i ? `${xt.length > 2 ? "," : ""} and ` : ", ") : ""}`;
-    });
-    return tt.join("");
 }
 
 export const command: Command = {
@@ -49,15 +32,16 @@ export const command: Command = {
             const g = await message.guild.fetch();
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let target: any = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true, false);
-            if (!target) {
-                if (args[0] === "all" || args[0] === "everyone" || args[0] === "@everyone") {
-                    target = "all";
-                } else if (args[0] === "allon") {
-                    target = "allon";
-                } else if (args[0] === "alloff") {
-                    target = "alloff";
-                } else {
+            let target: any;
+            if (args[0] === "all" || args[0] === "everyone" || args[0] === "@everyone") {
+                target = "all";
+            } else if (args[0] === "allon") {
+                target = "allon";
+            } else if (args[0] === "alloff") {
+                target = "alloff";
+            } else {
+                target = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true, false);
+                if (!target) {
                     client.specials?.sendError(message.channel, "Member/role target not specified/valid.\n`<target> <role>`");
                     return false;
                 }

@@ -1,7 +1,7 @@
 import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
-import { stringToMember } from "../../utils/parsers";
+import { parseFriendlyUptime, stringToMember } from "../../utils/parsers";
 import { getFriendlyUptime } from "../../utils/time";
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -11,23 +11,6 @@ async function* delayedLoop(start: number, end: number, increment: number, delay
         yield i
         await sleep(delay)
     }
-}
-
-function parseFriendlyUptime(t: { hours: number, minutes: number, seconds: number, days: number }) {
-    const th = t.hours + (t.days * 24);
-    const tm = t.minutes;
-    const ts = t.seconds;
-    const ttypes = ["hours", "minutes", "seconds"];
-    if (!th)
-        ttypes.splice(ttypes.indexOf("hours"), 1);
-    if (!tm)
-        ttypes.splice(ttypes.indexOf("minutes"), 1);
-    if (!ts)
-        ttypes.splice(ttypes.indexOf("seconds"), 1);
-    const tt = [th, tm, ts].filter(x => x > 0).map((x, i, xt) => {
-        return `${x} ${ttypes[i]}${i !== (xt.length - 1) ? (xt.length > 1 && xt.length - 2 === i ? `${xt.length > 2 ? "," : ""} and ` : ", ") : ""}`;
-    });
-    return tt.join("");
 }
 
 export const command: Command = {
