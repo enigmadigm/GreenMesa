@@ -1164,6 +1164,21 @@ export class DBManager {
         }
     }
 
+    // public getModAction = {
+    //     async byGuildCase(): Promise<ModActionData | false> {
+    //         try {
+    //             const rows = await < Promise < ModActionData[] >> this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${num}`);
+    //             if (rows && rows.length > 0) {
+    //                 return rows[0];
+    //             }
+    //             return false;
+    //         } catch (error) {
+    //             xlog.error(error);
+    //             return false;
+    //         }
+    //     }
+    // }
+
     /**
      * Search for a case by its super id
      */

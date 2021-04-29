@@ -27,6 +27,8 @@ export interface AMCustomOptionsProps extends CustomModuleCardProps {
     loaded: boolean;
     setLoaded: React.Dispatch<React.SetStateAction<boolean>>;
     unsaved: boolean;
+    wmessage: string;
+    setWMessage: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
@@ -146,6 +148,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
     const { isOpen: channelCollapse, onToggle: channelCollapseToggle } = useDisclosure();
     const { isOpen: roleCollapse, onToggle: roleCollapseToggle } = useDisclosure();
     const { isOpen: punishCollapse, onToggle: punishCollapseToggle } = useDisclosure();
+    const [wmessage, setWMessage] = React.useState("");
 
     const load = React.useCallback(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/automod/${props.name}`)
@@ -291,9 +294,14 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                 ) : <></>}
             </div>
             <div className="x-card-body">
-                {(!mod.punishment || !mod.actions) && !checkEnabled(mod) ? (
+                {(!mod.punishment || !mod.actions) && checkEnabled(mod) ? (
                     <div className="inline-error">
                         A punishment or action is not set for this module. It will do nothing.
+                    </div>
+                ) : null}
+                {wmessage ? (
+                    <div className="inline-error">
+                        {wmessage}
                     </div>
                 ) : null}
                 <h5 className="cardsubtitle" style={{fontSize: "1.2em"}}>Module Configuration</h5>
@@ -439,7 +447,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
                 </Collapse>
                 {CustomOptions ? (
                     <>
-                        <CustomOptions {...props} {...{mod, setMod, loaded, setLoaded, unsaved}} />
+                        <CustomOptions {...{ mod, setMod, loaded, setLoaded, unsaved, wmessage, setWMessage, ...props }} />
                     </>
                 ) : <></>}
             </div>
