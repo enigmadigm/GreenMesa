@@ -1,9 +1,9 @@
 import xlg from "../../xlogger";
 import { getPermLevel, permLevels } from '../../permissions';
-import { stringToMember, stringToRole } from "../../utils/parsers";
+import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
 //import { getGlobalSetting, getGuildSetting } from "../dbmanager";
 import { getFriendlyUptime } from "../../utils/time";
-import { Role, GuildMember } from "discord.js";
+import { Role, GuildMember, CollectorFilter, MessageEmbed } from "discord.js";
 import { Command } from "src/gm";
 const roleDelay = 1000;
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -13,23 +13,6 @@ async function* delayedLoop(start: number, end: number, increment: number, delay
         yield i
         await sleep(delay)
     }
-}
-
-function parseFriendlyUptime(t: {hours: number, minutes: number, seconds: number, days: number}) {
-    const th = t.hours + (t.days * 24);
-    const tm = t.minutes;
-    const ts = t.seconds;
-    const ttypes = ["hours", "minutes", "seconds"];
-    if (!th)
-        ttypes.splice(ttypes.indexOf("hours"), 1);
-    if (!tm)
-        ttypes.splice(ttypes.indexOf("minutes"), 1);
-    if (!ts)
-        ttypes.splice(ttypes.indexOf("seconds"), 1);
-    const tt = [th, tm, ts].filter(x => x > 0).map((x, i, xt) => {
-        return `${x} ${ttypes[i]}${i !== (xt.length - 1) ? (xt.length > 1 && xt.length - 2 === i ? `${xt.length > 2 ? "," : ""} and ` : ", ") : ""}`;
-    });
-    return tt.join("");
 }
 
 export const command: Command = {
@@ -45,23 +28,29 @@ export const command: Command = {
     moderation: true,
     async execute(client, message, args) {
         try {
-            if (!message || !message.guild || !message.member) return;
+            if (args.join(" ").toLocaleLowerCase() === "cancel") {
+
+                return;
+            }
+            if (!message.guild || !message.member) return;
             const g = await message.guild.fetch();
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let target: any = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true, false);
-            if (!target) {
-                if (args[0] === "all" || args[0] === "everyone" || args[0] === "@everyone") {
-                    target = "all";
-                } else if (args[0] === "allon") {
-                    target = "allon";
-                } else if (args[0] === "alloff") {
-                    target = "alloff";
-                } else {
+            let target: any;
+            if (args[0] === "all" || args[0] === "everyone" || args[0] === "@everyone") {
+                target = "all";
+            } else if (args[0] === "allon") {
+                target = "allon";
+            } else if (args[0] === "alloff") {
+                target = "alloff";
+            } else {
+                target = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true, false);
+                if (!target) {
                     client.specials?.sendError(message.channel, "Member/role target not specified/valid.\n`<target> <role>`");
                     return false;
                 }
             }
+            console.log(target)
             args.shift();
             const targetRole = stringToRole(g, args.join(" "), true, true, false);
             if (!targetRole || !(targetRole instanceof Role)) {
@@ -94,18 +83,43 @@ export const command: Command = {
                 if (!targets.length) return;
 
                 const loop = delayedLoop(0, targets.length, 1, roleDelay);
-                const t = getFriendlyUptime(targets.length * roleDelay + 500);
+                const d = targets.length * roleDelay + 500;
+                const t = getFriendlyUptime(d);
                 const fu = parseFriendlyUptime(t);
-                await message.channel.send({
+                const etaMessage = await message.channel.send({
                     embed: {
                         color: await client.database.getColor("info"),
-                        description: `**ETA:**\n${fu}`
+                        description: `**ETA:**\n${fu ? fu : "*should take no time at all*"}`,
+                        footer: {
+                            text: `React 🔴 to cancel`,
+                        },
                     }
                 });
+
+                // listener for the cancel button
+                const filter: CollectorFilter = (r, u) => u.id !== client.user?.id &&
+                    (r.emoji.name === '🔴') &&
+                    (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
+                const collector = etaMessage.createReactionCollector(filter, {
+                    time: d,
+                    maxUsers: 1,
+                });
+                etaMessage.react("🔴");
+
+                collector.on('collect', () => {
+                    loop.return()
+                });
+
+                collector.on('end', async () => {
+                    const e = new MessageEmbed(etaMessage.embeds[0]).setFooter("");
+                    await etaMessage.edit(e);
+                });
+
                 let affected = 0;
                 let errored = false;
                 for await (const i of loop) {
                     try {
+                        // if (cancel) continue;
                         const m = targets[i];
                         if (m.roles.cache.has(targetRole.id)) {
                             if (target !== "allon") {

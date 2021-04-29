@@ -5,8 +5,12 @@ import { ModActionEditData } from "../gm";
 import { titleCase } from "./parsers";
 import { getFriendlyUptime } from "./time";
 
+// enum colorContraventions {
+//     ban = 0xff8282,
+// }
+
 export class Contraventions {
-    public static logKick(gid: string, uid: string, agent: string, reason = ""): void {
+    public static async logKick(gid: string, uid: string, agent: string, reason = ""): Promise<void> {
         const d: ModActionEditData = {
             guildid: gid,
             userid: uid,
@@ -14,24 +18,24 @@ export class Contraventions {
             summary: reason,
             type: "kick"
         };
-        this.logOne(d);
+        this.logOne(d, await Bot.client.database.getColor("ban"));
     }
 
-    public static logBan(gid: string, uid: string, agent: string, reason = "", duration = 0): void {
+    public static async logBan(gid: string, uid: string, agent: string, reason = "", duration = 0): Promise<void> {// 0xff8282
         const d: ModActionEditData = {
             guildid: gid,
             userid: uid,
             agent,
             summary: reason,
-            type: "ban"
+            type: "ban",
         };
         if (duration) {
             d.endtime = moment().add(duration, "ms").toISOString();
         }
-        this.logOne(d, undefined, duration);
+        this.logOne(d, await Bot.client.database.getColor("ban"), duration);
     }
 
-    public static logUnban(gid: string, uid: string, agent: string, reason = ""): void {
+    public static async logUnban(gid: string, uid: string, agent: string, reason = ""): Promise<void> {
         const d: ModActionEditData = {
             guildid: gid,
             userid: uid,
@@ -42,7 +46,7 @@ export class Contraventions {
         this.logOne(d);
     }
 
-    public static logMute(gid: string, uid: string, duration: number, agent: string, reason = ""): void {
+    public static async logMute(gid: string, uid: string, duration: number, agent: string, reason = ""): Promise<void> {
         const d: ModActionEditData = {
             guildid: gid,
             userid: uid,
@@ -51,10 +55,10 @@ export class Contraventions {
             summary: reason,
             type: "mute"
         };
-        this.logOne(d, undefined, duration);
+        this.logOne(d, await Bot.client.database.getColor("warn"), duration);
     }
 
-    public static logUnmute(gid: string, uid: string, agent: string, reason = ""): void {
+    public static async logUnmute(gid: string, uid: string, agent: string, reason = ""): Promise<void> {
         const d: ModActionEditData = {
             guildid: gid,
             userid: uid,

@@ -270,6 +270,23 @@ export function durationToString(duration: number): string {
     return durationString.trim();
 }
 
+export function parseFriendlyUptime(t: { hours: number, minutes: number, seconds: number, days: number, milliseconds: number }): string {
+    const th = t.hours + (t.days * 24);
+    const tm = t.minutes;
+    const ts = Math.ceil(t.seconds + (t.milliseconds / 1000));
+    const ttypes = ["hours", "minutes", "seconds"];
+    if (!th)
+        ttypes.splice(ttypes.indexOf("hours"), 1);
+    if (!tm)
+        ttypes.splice(ttypes.indexOf("minutes"), 1);
+    if (!ts)
+        ttypes.splice(ttypes.indexOf("seconds"), 1);
+    const tt = [th, tm, ts].filter(x => x > 0).map((x, i, xt) => {
+        return `${x} ${ttypes[i]}${i !== (xt.length - 1) ? (xt.length > 1 && xt.length - 2 === i ? `${xt.length > 2 ? "," : ""} and ` : ", ") : ""}`;
+    });
+    return tt.join("");
+}
+
 export function titleCase(str: string): string {
     if (str === "nsfw") {
         return "NSFW";
