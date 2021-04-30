@@ -687,3 +687,14 @@ export interface CommandConf {
      */
     overwrite: boolean;
 }
+
+export interface CmdHistoryRow {
+    invocation_id: string;
+    command_name: string;
+    message_content: string;
+    guildid: string;
+    userid: string | null;
+    messageid: string;
+    channelid: string;
+    invocation_time: string;
+}

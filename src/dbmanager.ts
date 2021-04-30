@@ -112,6 +112,7 @@ export class DBManager {
             //this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `duration` int(11) NOT NULL DEFAULT -1, `mod` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
+            this.query("CREATE TABLE IF NOT EXISTS `cmdhistory` ( `invocation_id` int(11) NOT NULL AUTO_INCREMENT, `command_name` text COLLATE utf8mb4_unicode_ci NOT NULL, `message_content` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `userid` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL, `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `invocation_time` timestamp NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`invocation_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
             return this;
         } catch (error) {
@@ -657,6 +658,11 @@ export class DBManager {
                 await <Promise<InsertionResult>>this.query(`INSERT INTO cmdtracking (cmdname, used) VALUES ('${name}', 1)`);
             } else {
                 await <Promise<InsertionResult>>this.query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = '${name}'`);
+            }
+
+            //TODO: add cmdhistory logging
+            if (message) {
+                await <Promise<InsertionResult>>this.query(`INSERT INTO cmdhistory (command_name, guildid, userid, messageid, channelid) VALUES (${escape(name)}, ${escape(message.guild?.id || "")}, ${escape(message.author.id)}, ${escape(message.id)}, ${escape(message.channel.id)})`);
             }
         } catch (error) {
             xlog.error(error);
