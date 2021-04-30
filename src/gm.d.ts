@@ -10,6 +10,7 @@ export interface XClient extends Client {
     specials: typeof Specials;
     database: DBManager;
     services: MessageServices;
+    msgLogging: boolean | strin;
 }
 
 export interface Command {
@@ -685,4 +686,15 @@ export interface CommandConf {
      * whether the conf is not a default and has been created as an overwrite
      */
     overwrite: boolean;
+}
+
+export interface CmdHistoryRow {
+    invocation_id: string;
+    command_name: string;
+    message_content: string;
+    guildid: string;
+    userid: string | null;
+    messageid: string;
+    channelid: string;
+    invocation_time: string;
 }

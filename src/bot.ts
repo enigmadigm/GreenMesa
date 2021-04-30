@@ -46,12 +46,13 @@ import Discord, { GuildChannel, PermissionString, TextChannel } from "discord.js
 import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
-import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logAutoBan } from './serverlogger';
+import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname } from './serverlogger';
 import MesaWebsite from "./website/app";
 import { Command, XClient, XMessage } from "./gm";
 import { TimedActionsSubsystem } from "./tactions";
 import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
+import { ban } from "./utils/modactions";
 
 export class Bot {
     static client: XClient;
@@ -184,13 +185,14 @@ client.on('guildMemberAdd', async member => {
                 const bans: string[] = JSON.parse(storedBans.value);
                 if (bans.includes(member.id)) {
                     try {
-                        await member.ban();
+                        //await member.ban();
+                        await ban(client, member, undefined, client.user?.id, undefined, `Autoban initiated on join. Triggered because ${member.user.tag} was on the autoban list.`);
                         bans.splice(bans.indexOf(member.id), 1);
                         await client.database.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
                     } catch (error) {
                         await member.kick().catch((o_O) => o_O);
                     }
-                    await logAutoBan(member);
+                    //await logAutoBan(member);
                     return;
                 }
             } catch (error) {
@@ -482,14 +484,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 if (err) return console.log(err);
             });*/
 
-            if (config.msgLogging) {
-                const logChannel = client.channels.cache.get('661614128204480522');
-                if (logChannel && logChannel instanceof TextChannel) {
-                    logChannel.send(`${message.author.tag.escapeDiscord()} sent command \`${command.name}\` at \`${message.id}\` in \`${message.channel.id}\` ${message.url}`).catch(console.error);
-                }
-            }
-
-            client.database.logCmdUsage(commandName);
+            client.database.logCmdUsage(commandName, message);
         } catch (error) {
             xlg.error(error);
             client.specials.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');

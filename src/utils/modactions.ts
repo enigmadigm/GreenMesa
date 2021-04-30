@@ -233,7 +233,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
 /**
  * Ban a target permanently or for a period.
  */
-export async function ban(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel): Promise<void> {
+export async function ban(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel, summary?: string): Promise<void> {
     if (!client.database) return;
     const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
     await target.ban({
@@ -247,7 +247,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
         mendm = ` for ${duration}`
     }
 
-    Contraventions.logBan(target.guild.id, target.id, target.client.user?.id || "", `Automatic ban by ${target.client.user?.tag}`, time);
+    Contraventions.logBan(target.guild.id, target.id, target.client.user?.id || "", summary ? summary : `Automatic ban by ${target.client.user?.tag}`, time);
 
     if (channel) {
         channel.send(`\\✅ Banned \`${target.user.tag}\`${mendm}`);
@@ -257,7 +257,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
         const data: UnbanActionData = {
             guildid: target.guild.id,
             userid: target.id,
-            duration: duration
+            duration: duration,
         }
 
         if (client.database) {
