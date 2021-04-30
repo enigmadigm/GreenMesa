@@ -484,14 +484,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 if (err) return console.log(err);
             });*/
 
-            if (config.msgLogging) {
-                const logChannel = client.channels.cache.get('661614128204480522');
-                if (logChannel && logChannel instanceof TextChannel) {
-                    logChannel.send(`${message.author.tag.escapeDiscord()} sent command \`${command.name}\` at \`${message.id}\` in \`${message.channel.id}\` ${message.url}`).catch(console.error);
-                }
-            }
-
-            client.database.logCmdUsage(commandName);
+            client.database.logCmdUsage(commandName, message);
         } catch (error) {
             xlg.error(error);
             client.specials.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');

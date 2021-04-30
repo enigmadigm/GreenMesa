@@ -3,8 +3,8 @@ import { db_config } from "../auth.json";
 import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
-import Discord, { Guild, GuildMember, PartialGuildMember, Role, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient } from "./gm";
+import Discord, { Guild, GuildMember, PartialGuildMember, Role, TextChannel, User } from 'discord.js';
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -632,8 +632,19 @@ export class DBManager {
      * Log command usage (after execution)
      * @param name name of command being logged
      */
-    async logCmdUsage(name: string): Promise<void> {
+    async logCmdUsage(name: string, message?: XMessage): Promise<void> {
         try {
+            if (Bot.client.msgLogging) {
+                const logChannel = Bot.client.channels.cache.get(typeof Bot.client.msgLogging === "string" ? Bot.client.msgLogging : '661614128204480522');
+                if (logChannel && logChannel instanceof TextChannel) {
+                    let s = `\`${name}\` sent`;
+                    if (message) {
+                        s += ` at \`${message.id}\` in \`${message.channel.id}\` ${message.url}`;
+                    }
+                    logChannel.send(s).catch(console.error);
+                }
+            }
+
             const oresult = await <Promise<CmdTrackingRow[]>>this.query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
             const result = await <Promise<CmdTrackingRow[]>>this.query(`SELECT * FROM cmdtracking WHERE cmdname = '${name}'`);
             if (!oresult || oresult.length === 0) {

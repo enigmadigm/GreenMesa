@@ -10,6 +10,7 @@ export interface XClient extends Client {
     specials: typeof Specials;
     database: DBManager;
     services: MessageServices;
+    msgLogging: boolean | strin;
 }
 
 export interface Command {
