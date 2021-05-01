@@ -30,7 +30,7 @@ export const command: Command = {
                             iconURL: message.guild.iconURL() || ""
                         },
                         title: "Server Management",
-                        description: `This command acts as the portal to configure the bot's moderation and management features to your needs. *Some settings are not located here and have separate commands.*
+                        description: `This command acts as the portal to configure the bot's moderation and management features to your needs. *Some settings are not located here and have separate commands.* **Please visit the [dashboard](${getDashboardLink()}) for further configuration.**
 
 **Send one of the following sub-commands for further details:**
 - \`levelroles\` set the roles rewarded for levels
