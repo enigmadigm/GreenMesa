@@ -42,7 +42,7 @@ export async function getPermLevel(member: GuildMember | User, relative = false)
         return permLevels.admin;
     }
     const modrole = await Bot.client.database.getGuildSetting(member.guild, "mod_role");
-    if (modrole && modrole) {
+    if (modrole) {
         if (member.roles.cache.has(modrole.value)) {
             return permLevels.mod;
         }

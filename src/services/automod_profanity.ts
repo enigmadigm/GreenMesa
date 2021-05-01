@@ -18,7 +18,7 @@ export const service: MessageService = {
             if (!message.content) return;
             const a = message.content.toLowerCase();
             let hasBadWord = false;
-            if (!hasBadWord && !modResult.option1) {
+            if (!modResult.option1) {// the first check, always goes because hasBadWord is false
                 for (const word of expletiveList) {
                     if (modResult.strict && a.indexOf(word) !== -1) {
                         hasBadWord = true;

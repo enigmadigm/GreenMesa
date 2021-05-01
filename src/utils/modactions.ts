@@ -261,10 +261,8 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
         }
 
         if (client.database) {
-            if (time) {
-                const t = moment().add(time, "ms").toDate();
-                await client.database.setAction(uniqid(), t, "unban", data);
-            }
+            const t = moment().add(time, "ms").toDate();
+            await client.database.setAction(uniqid(), t, "unban", data);
         }
     }
     registerBan(client, target);

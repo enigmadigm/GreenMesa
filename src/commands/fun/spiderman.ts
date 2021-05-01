@@ -17,7 +17,7 @@ export const command: Command = {
         try {
             if (!message.member) return;
             const xpInfo = await client.database.getXP(message.member);
-            if (xpInfo && xpInfo.spideySaved && xpInfo.spideySaved !== null && new Date(xpInfo.spideySaved)) {
+            if (xpInfo && xpInfo.spideySaved) {
                 message.channel.send({
                     embed: {
                         color: await client.database.getColor("darkred_embed_color"),

@@ -224,12 +224,12 @@ export async function logMessageUpdate(omessage: Message, nmessage: Message): Pr
                 description: `**[m.](${nmessage.url})** edited in ${nmessage.channel} by ${nmessage.author}\n**[m.](${nmessage.url})** created ${moment(omessage.createdAt).utc().fromNow()}\n[${moment(omessage.createdAt).utc().format('M/D/Y HH:mm:ss')}]`,
                 fields: [
                     {
-                        name: "Before" + (oldShortened ? ' (shortened)' : ''),
-                        value: `${omessage.content.length > 0 ? omessage.content : '*content unavailable*'}`
+                        name: `Before ${oldShortened ? ' (shortened)' : ''}`,
+                        value: `${omessage.content.length > 0 ? oldContent : '*content unavailable*'}`
                     },
                     {
-                        name: "After" + (newShortened ? ' (shortened)' : ''),
-                        value: `${nmessage.content.length > 0 ? nmessage.content : '*content unavailable*'}`
+                        name: `After ${newShortened ? ' (shortened)' : ''}`,
+                        value: `${nmessage.content.length > 0 ? newContent : '*content unavailable*'}`
                     }
                 ],
                 footer: {

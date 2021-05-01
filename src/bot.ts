@@ -422,7 +422,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             });
             return;
         } else if ((command.args || command.args === 0) && typeof command.args === "number" && args.length !== command.args) {
-            let reply = "Illegal Arguments";
+            let reply: string;
             if (command.args === 0) {
                 reply = "**No arguments** are allowed for this command.";
             } else {
