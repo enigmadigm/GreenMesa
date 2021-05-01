@@ -6,13 +6,14 @@ import { Bot } from "./bot";
 export const permLevels = {
     member: 0,
     trustedMember: 1,
-    immune: 2,
+    immune: 2,//TODO: this does nothing anywhere ATM
     mod: 3,
     admin: 4,
     botMaster: 5,
 }
 
 export async function getPermLevel(member: GuildMember | User, relative = false): Promise<number> {// The relative option determines if the perm level returned will be actual or relative
+    // RELATIVE means that the permissions returned are only relevant to the server, meaning that if a botMaster is present, only their place in the server will be taken into account
     if (member == null || !(member instanceof GuildMember)) {
         if (member instanceof User && !relative) {
             const botmasters = await Bot.client.database.getGlobalSetting("botmasters");
