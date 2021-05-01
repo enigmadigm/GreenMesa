@@ -832,12 +832,9 @@ export class DBManager {
      */
     async updateDashUser(id: string, username: string, discriminator: string, avatar: string, guilds: PartialGuildObject[]): Promise<false | InsertionResult> {
         try {
-            if (!id || !username || !discriminator || !guilds) return false;
+            if (!id || !username || !discriminator) return false;
             if (!avatar) {
                 avatar = "";
-            }
-            if (typeof guilds !== "object") {
-                return false;
             }
             const guildString = JSON.stringify(guilds).escapeSpecialChars();
             const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES (${escape(id)}, ${escape(`${username}#${discriminator}`)} , ${escape(avatar)}, ${escape(guildString)}) ON DUPLICATE KEY UPDATE tag = ${escape(`${username}#${discriminator}`)}, avatar = ${escape(avatar)}, guilds = ${escape(guildString)}`);
