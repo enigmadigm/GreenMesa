@@ -1,7 +1,7 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Guild, GuildChannel, GuildMember, MessageEmbed, Role, User } from "discord.js";
+import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, Role, User } from "discord.js";
 import { XClient } from "src/gm";
 
 /**
@@ -389,3 +389,38 @@ export function ordinalSuffixOf(i: number): string {
 //     const isFooter = typeof o.footer === "undefined" || conformsToFooter(o.footer);
 //     return isTitle && isDescription && isURL && isTimestamp && isColor && isFields;
 // }
+
+export function combineMessageText(m: Message): string {
+    let t = "";
+    if (m.content) {
+        t += m.content;
+    }
+    if (m.embeds && m.embeds.length && m.embeds[0]) {
+        const e = m.embeds[0];
+        if (e.description) {
+            t += e.description;
+        }
+        if (e.footer) {
+            if (e.footer.text) {
+                t += e.footer.text;
+            }
+        }
+        if (e.fields && e.fields.length) {
+            e.fields.forEach(f => {
+                if (f.name) {
+                    t += f.name;
+                }
+                if (f.value) {
+                    t += f.value;
+                }
+            })
+        }
+        if (e.author && e.author.name) {
+            t += e.author.name;
+        }
+        if (e.title) {
+            t += e.title;
+        }
+    }
+    return t;
+}
