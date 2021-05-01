@@ -660,7 +660,6 @@ export class DBManager {
                 await <Promise<InsertionResult>>this.query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = '${name}'`);
             }
 
-            //TODO: add cmdhistory logging
             if (message) {
                 await <Promise<InsertionResult>>this.query(`INSERT INTO cmdhistory (command_name, guildid, userid, messageid, channelid) VALUES (${escape(name)}, ${escape(message.guild?.id || "")}, ${escape(message.author.id)}, ${escape(message.id)}, ${escape(message.channel.id)})`);
             }

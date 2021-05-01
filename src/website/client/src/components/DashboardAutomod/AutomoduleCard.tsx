@@ -45,6 +45,7 @@ export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase
 };
 
 export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
+    ...selectStylesMK1,
     //container: (styles) => ({ ...styles, border: "1px solid #23282c" }),
     control: (styles, state) => ({ ...styles, backgroundColor: '#343B41', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "#23282c" }),
     menu: (styles) => ({ ...styles, backgroundColor: '#292e33', zIndex: 10000 }),

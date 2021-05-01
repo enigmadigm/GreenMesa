@@ -327,7 +327,7 @@ export const command: Command = {
                     if (!args[argIndex]) {
                         const result = await client.database.getGuildSetting(message.guild, "mod_role");
                         let mrid = "";
-                        if (result && result && result.value) {
+                        if (result && result.value) {
                             mrid = result.value;
                         }
                         const mr = message.guild.roles.cache.get(mrid);

@@ -35,6 +35,14 @@ interface PatchRequest {
     overwites_ignore?: string[];
 }
 
+const DISABLED = <FontAwesomeIcon icon={faSkull} />;
+const WARNING = <FontAwesomeIcon icon={faExclamationTriangle} />;
+const CHECKED = <FontAwesomeIcon icon={faCheckCircle} />;
+const UNCHECKED = <FontAwesomeIcon icon={faTimesCircle} />;
+const ENABLED = <FontAwesomeIcon icon={faRabbitFast} />;
+const OVERWRITE = <FontAwesomeIcon icon={faFeather} />;
+const FILTER = <FontAwesomeIcon icon={faFilter} />;
+
 function isEnabled(c: CommandConf) {
     return !!(c.enabled && (!c.channel_mode || (c.channel_mode && c.channels.length)));
 }
@@ -51,6 +59,7 @@ export function DashboardCommands(props: HomeProps) {
     const [loaded, setLoaded] = React.useState(false);// whether to show the module as loading
     const [commands, setCommands] = React.useState<CommandConf[]>([]);// the commands to be used to patch and configure, received from the api
     const [globalConf, setGlobalConf] = React.useState<CommandsGlobalConf>({});// the global defaults for all commands, overriden by overwrites, configured independently
+    const [modRole, setModRole] = React.useState("");
     const [categories, ] = React.useState<CmdCat[]>([]);// the categories to display to help filter commands
     const [channels, setChannels] = React.useState<ChannelData[]>([]);// the channels to use in channel selection when configuring an overwrite
     const [roles, setRoles] = React.useState<RoleData[]>([]);// the roles to use in role selection when configuring an overwrite
@@ -62,7 +71,7 @@ export function DashboardCommands(props: HomeProps) {
     const [searchFor, setSearchFor] = React.useState("");// the search string to be used in sorting, deactivated by default
     const [em, setEm] = React.useState("");// the error message to show in the overwrite conf modal
     const [mc, setMc] = React.useState("");// the modal transition class (handled automatically)
-    const [ik, setIk] = React.useState(false);// whether to show the icon key in the modal (replaces settings);
+    const [mm, setMM] = React.useState(0);// the modal mode, sets what is displayed in the modal
     const [showing, setShowing] = React.useState(false);// whether to show the overwrite conf modal
     const modalWrapper = React.useRef(null);// the reference to the overwrite conf modal wrapper to be used to detect outside clicks
     const [waiting, setWaiting] = React.useState<boolean>(false);
@@ -73,6 +82,7 @@ export function DashboardCommands(props: HomeProps) {
             .then((d: CommandsEndpointData) => {
                 setCommands(d.commands);
                 setGlobalConf(d.global);
+                setModRole(d.mod_role);
                 setChannels(d.channels);
                 setRoles(d.roles);
                 setLoaded(true);
@@ -185,12 +195,45 @@ export function DashboardCommands(props: HomeProps) {
                     setStatus({ msg: "Error", success: false });
                     setWaiting(false);
                 });
-            } catch (error) {
-                console.error(error);
-                setStatus({ msg: "Failed to save.", success: false });
-                setWaiting(false);
-            }
+        } catch (error) {
+            console.error(error);
+            setStatus({ msg: "Failed to save.", success: false });
+            setWaiting(false);
         }
+    }
+
+    const saveModRole = () => {
+        const hdrs = new Headers();
+        hdrs.append("Content-Type", "application/json");
+        const bod = { role: modRole };
+        const obj = {
+            method: 'PUT',
+            headers: hdrs,
+            body: JSON.stringify(bod),
+        };
+        try {
+            fetch(`/api/discord/guilds/${props.meta.id}/modrole`, obj)
+                .then(x => {
+                    if (x.status === 200) {
+                        handleCancel();
+                        setStatus({ msg: "Saved.", success: true });
+                    } else {
+                        setStatus({ msg: "Failed to save.", success: false });
+                    }
+                    load();
+                    setWaiting(false);
+                }).catch(e => {
+                    console.error(e);
+                    setStatus({ msg: "Error", success: false });
+                    setWaiting(false);
+                });
+        } catch (error) {
+            console.error(error);
+            setStatus({ msg: "Failed to save.", success: false });
+            setWaiting(false);
+        }
+    }
+
     React.useEffect(() => {
         if (showing) {
             setTimeout(() => setMc("opaque"), 100)
@@ -230,7 +273,7 @@ export function DashboardCommands(props: HomeProps) {
         setApplying(selectedCmds);
         setPending({ name: "", enabled: true, channel_mode: false, role_mode: false, channels: [], roles: [], default_cooldown: 0, overwrite: false });
         setEm("");
-        setIk(false);
+        setMM(0);
         setWaiting(false);
     }
 
@@ -288,31 +331,10 @@ export function DashboardCommands(props: HomeProps) {
         return commands.filter(x => selectedCats.includes(x.category || "") || selectedCmds.includes(x.name));
     }
 
-    const editOne = (e: any) => {
-        const target = e.currentTarget;
-        const dt = target.attributes["data-target"].value;
-        const c = commands.find(x => x.name === dt);
-        if (c) {
-            setApplying([c.name]);
-            setPending(c);
-            // setEm(c.name);
-            setShowing(true);
-        }
-    }
-
-    const editSelected = () => {
-        setApplying(selectedCmds);
-        if (selectedCmds.length === 1) {
-            const c = getSelected()[0];
-            setPending(c);
-        }
-        setShowing(true);
-    }
-
     const cmdSort = (a: CommandConf, b: CommandConf) => {
         return searchFor.length ?
             (stringSimilarity(a.name, searchFor) > stringSimilarity(b.name, searchFor) ? -1 : 1) :
-            a.enabled && !b.enabled ? 1 : -1// ((b.description_edited || b.description_short || "").length - (a.description_edited || a.description_short || "").length)
+            isEnabled(a) && !isEnabled(b) ? -1 : 1// ((b.description_edited || b.description_short || "").length - (a.description_edited || a.description_short || "").length)
     }
 
     const updateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -350,14 +372,13 @@ export function DashboardCommands(props: HomeProps) {
         }
     }
 
-    const showIconKey = () => {
-        setIk(true);
-        setShowing(true);
-    }
-
     const handleSave = () => {
         setWaiting(true);
-        patchNow(0);
+        if (mm === 2) {
+            saveModRole();
+        } else {
+            patchNow(0);
+        }
     }
 
     const handleEnabledToggle = (e: any) => {
@@ -394,6 +415,10 @@ export function DashboardCommands(props: HomeProps) {
         setPending(m);
     }
 
+    const handleModRoleChange = (v: any) => {
+        setModRole(v.value);
+    }
+
     const enableSelected = () => {
         // setApplying(getSelected().filter(x => x.overwrite).map(x => x.name));
         patchNow(3, getSelected().filter(x => !x.enabled).map(x => x.name), true);
@@ -402,6 +427,39 @@ export function DashboardCommands(props: HomeProps) {
     const disableSelected = () => {
         // setApplying(getSelected().filter(x => x.overwrite).map(x => x.name));
         patchNow(3, getSelected().filter(x => x.enabled).map(x => x.name), false);
+    }
+
+    const editOne = (e: any) => {
+        const target = e.currentTarget;
+        const dt = target.attributes["data-target"].value;
+        const c = commands.find(x => x.name === dt);
+        if (c) {
+            setApplying([c.name]);
+            setPending(c);
+            // setEm(c.name);
+            setMM(0);
+            setShowing(true);
+        }
+    }
+
+    const editSelected = () => {
+        setApplying(selectedCmds);
+        if (selectedCmds.length === 1) {
+            const c = getSelected()[0];
+            setPending(c);
+        }
+        setMM(0);
+        setShowing(true);
+    }
+
+    const showIconKey = () => {
+        setMM(1);
+        setShowing(true);
+    }
+
+    const editModRole = () => {
+        setMM(2);
+        setShowing(true);
     }
 
     return loaded ? (
@@ -415,20 +473,20 @@ export function DashboardCommands(props: HomeProps) {
                             <div className="x-card-body" style={{paddingTop: "0.5em"}}>
                                 <div className="c-btnrow">
                                     <button disabled>Set Global Defaults</button>
-                                    <button disabled>Set Mod Role</button>
+                                    <button onClick={editModRole}>Set Mod Role</button>
                                     <button onClick={showIconKey}>Icon Key</button>
                                 </div>
                                 <hr style={{ marginBottom: 10, marginTop: 0 }} />
                                 <div className="c-cats">
                                     <div className="c-cats-label" onClick={toggleAllCats} title="Toggle all filters">
-                                        <FontAwesomeIcon icon={faFilter} />
+                                        {FILTER}
                                     </div>
                                     {categories.map((cat) => (
                                         <div className="c-cat" key={cat.name} title={`Toggle the filter for ${cat.name}`}>
                                             <label htmlFor={`ccc-${cat.name}`}>
                                                 <input type="checkbox" id={`ccc-${cat.name}`} name={cat.name} value={`${titleCase(cat.name)} (${cat.count})`} checked={selectedCats.includes(cat.name)} onChange={handleCatCheck} style={{visibility: "hidden"}} />
                                                 <span style={{ marginRight: 3, color: selectedCats.includes(cat.name) ? "#4db2aa" : "#e0e0e0", fontSize: "1.1em" }}>
-                                                    {selectedCats.includes(cat.name) ? <FontAwesomeIcon icon={faCheckCircle} style={{ borderRadius: "50em", border: "1px solid white" }} /> : <FontAwesomeIcon icon={faTimesCircle} />}
+                                                    {selectedCats.includes(cat.name) ? <FontAwesomeIcon icon={faCheckCircle} style={{ borderRadius: "50em", border: "1px solid white" }} /> : UNCHECKED}
                                                 </span>
                                                 {titleCase(cat.name)} ({cat.count})
                                             </label>
@@ -443,13 +501,13 @@ export function DashboardCommands(props: HomeProps) {
                                     <button disabled={!selectedCmds.length} onClick={deselectAll}>
                                         Deselect All{selectedCmds.length ? ` (${selectedCmds.length})` : null}
                                     </button>
-                                    <button disabled={!getSelected().some(x => x.overwrite)} onClick={removeSelectedOverwrites}>
-                                        Remove Selected Overwrites{getSelected().some(x => x.overwrite) ? ` (${getSelected().filter(x => x.overwrite).length})` : null}
-                                    </button>
                                     <button disabled={!selectedCmds.length} onClick={editSelected}>
                                         Edit Selected{selectedCmds.length ? ` (${selectedCmds.length})` : null}
                                     </button>
-                                    <button disabled={!getSelected().filter(x => x.enabled).length} onClick={enableSelected}>
+                                    <button disabled={!getSelected().some(x => x.overwrite)} onClick={removeSelectedOverwrites}>
+                                        Remove Selected Overwrites{getSelected().some(x => x.overwrite) ? ` (${getSelected().filter(x => x.overwrite).length})` : null}
+                                    </button>
+                                    <button disabled={!getSelected().filter(x => !x.enabled).length} onClick={enableSelected}>
                                         Enable Selected{getSelected().filter(x => x.enabled).length !== getShowing().length && getSelected().length ? ` (${getSelected().filter(x => !x.enabled).length})` : null}
                                     </button>
                                     <button disabled={!getSelected().filter(x => x.enabled).length} onClick={disableSelected}>
@@ -466,15 +524,15 @@ export function DashboardCommands(props: HomeProps) {
                                                     <label htmlFor={`ccs-${cmd.name}`} title="Select command">
                                                         <input type="checkbox" id={`ccs-${cmd.name}`} name={cmd.name} checked={selectedCmds.includes(cmd.name)} onChange={handleCmdCheck} style={{display: "none"}} />
                                                         <span style={{ color: selectedCmds.includes(cmd.name) ? "#4db2aa" : "#ffffff" }}>
-                                                            {selectedCmds.includes(cmd.name) ? <FontAwesomeIcon icon={faCheckCircle} /> : <FontAwesomeIcon icon={faCircle} />}
+                                                            {selectedCmds.includes(cmd.name) ? CHECKED : <FontAwesomeIcon icon={faCircle} />}
                                                         </span>
                                                     </label>
                                                     <button className="cedit" data-target={cmd.name} onClick={editOne} title="Edit single command"><FontAwesomeIcon icon={faEdit} /></button>
                                                 </span>
                                                 <span className="ctitle" data-target={cmd.name} onClick={handleCmdCheck}>{cmd.name}</span>
                                                 <span>
-                                                    {cmd.overwrite ? <span className="cowindicator" title={`This command is an active overwrite\nClick to delete overwrite`} data-target={cmd.name} onClick={removeOneOverwrite}><FontAwesomeIcon icon={faFeather} /></span> : null}
-                                                    <span className="cindicator" title={isEnabled(cmd) ? "Enabled\nClick to disable" : cmd.enabled ? "Enabled\nCurrent settings prevent this command from running" : "Disabled\nClick to enable"} style={{ color: (isEnabled(cmd) ? "#228b22" : (cmd.enabled ? "#ffba00" : "#ff0000")), fontSize: "1.2em" }} data-target={cmd.name} onClick={toggleOne}>{isEnabled(cmd) ? <FontAwesomeIcon icon={faRabbitFast} /> : (cmd.enabled ? <FontAwesomeIcon icon={faExclamationTriangle} /> : <FontAwesomeIcon icon={faSkull} />)}</span>
+                                                    {cmd.overwrite ? <span className="cowindicator" title={`This command is an active overwrite\nClick to delete overwrite`} data-target={cmd.name} onClick={removeOneOverwrite}>{OVERWRITE}</span> : null}
+                                                    <span className="cindicator" title={isEnabled(cmd) ? "Enabled\nClick to disable" : cmd.enabled ? "Enabled\nCurrent settings prevent this command from running" : "Disabled\nClick to enable"} style={{ color: (isEnabled(cmd) ? "#228b22" : (cmd.enabled ? "#ffba00" : "#ff0000")), fontSize: "1.2em" }} data-target={cmd.name} onClick={toggleOne}>{isEnabled(cmd) ? ENABLED : (cmd.enabled ? WARNING : DISABLED)}</span>
                                                 </span>
                                             </div>
                                             <div className="cbody">
@@ -495,94 +553,113 @@ export function DashboardCommands(props: HomeProps) {
                                 {!waiting ? (
                                     <>
                                         <div className="cm-form-container">
-                                            {!ik ?
+                                            {mm === 0 || mm === 2 ?
                                             <>
                                                 {em && (
                                                     <div className="inline-error">
                                                         {em}
                                                     </div>
                                                 )}
-                                                {applying.length ? <>
-                                                    <p>Editing the config for <strong>{applying.length > 1 ? "multiple commands" : pending.name}</strong>.</p>
-                                                    <div style={{ marginTop: 20 }}>
-                                                        <label htmlFor={`c-enable-toggle`} title="Enable command">
-                                                            <input type="checkbox" id={`c-enable-toggle`} checked={pending.enabled} onChange={handleEnabledToggle} style={{ display: "none" }} />
-                                                            <span style={{ marginRight: 8, color: pending.enabled ? "#4db2aa" : "#ffffff" }}>
-                                                                {pending.enabled ? <FontAwesomeIcon icon={faCheckCircle} /> : <FontAwesomeIcon icon={faTimesCircle} />}
-                                                            </span>
-                                                        Enable
-                                                    </label>
-                                                    </div>
-                                                </> : <>
-                                                    <p>Editing the <strong>global defaults</strong> config.</p>
-                                                    <p>The settings found here that can also be configured individually on commands are applied to commands that are <strong>not active overwrites (<FontAwesomeIcon icon={faFeather} />)</strong></p>
+                                                {mm === 2 ?
+                                                <>
+                                                    <p>Editing the <strong>modrole</strong>. This role determines who is allowed to use commands and actions that are restricted at or above the <strong>mod</strong> permissions level. Admins override this role and are not required to have it.</p>
+                                                    <p style={{ fontWeight: 700, marginTop: 20, marginBottom: 5 }}>
+                                                        Choose the mod role:
+                                                    </p>
+                                                    <Select
+                                                        placeholder="Select role . . ."
+                                                        options={roles.map(c => {
+                                                            return { value: c.id, label: `@${c.name}`, color: c.hexColor };
+                                                        })}
+                                                        menuPlacement="auto"
+                                                        value={modRole && roles.find(x => x.id === modRole) ? {value: modRole, label: roles.find(x => x.id === modRole)?.name, color: roles.find(x => x.id === modRole)?.hexColor } : { label: "None" }}
+                                                        onChange={handleModRoleChange}
+                                                        styles={selectStylesMK2}
+                                                    />
+                                                </>
+                                                : <>
+                                                    {applying.length ? <>
+                                                        <p>Editing the config for <strong>{applying.length > 1 ? "multiple commands" : pending.name}</strong>.</p>
+                                                        <div style={{ marginTop: 20 }}>
+                                                            <label htmlFor={`c-enable-toggle`} title="Enable command">
+                                                                <input type="checkbox" id={`c-enable-toggle`} checked={pending.enabled} onChange={handleEnabledToggle} style={{ display: "none" }} />
+                                                                <span style={{ marginRight: 8, color: pending.enabled ? "#4db2aa" : "#ffffff" }}>
+                                                                    {pending.enabled ? CHECKED : UNCHECKED}
+                                                                </span>
+                                                            Enable
+                                                        </label>
+                                                        </div>
+                                                    </> : <>
+                                                        <p>Editing the <strong>global defaults</strong> config.</p>
+                                                        <p>The settings found here that can also be configured individually on commands are applied to commands that are <strong>not active overwrites (OVERWRITE)</strong></p>
+                                                    </>}
+                                                    <p style={{ fontWeight: 700, marginTop: 20, marginBottom: 5 }}>
+                                                        <select onChange={handleChannelModeChange} value={!pending.channel_mode ? 0 : 1} >
+                                                            <option value={0} defaultChecked>Disable</option>
+                                                            <option value={1}>Enable</option>
+                                                        </select>
+                                                        in these channels:
+                                                    </p>
+                                                    <Select
+                                                        placeholder="Select channels . . ."
+                                                        isMulti
+                                                        options={channels.map(c => {
+                                                            return { value: c.id, label: `#${c.name}` };
+                                                        })}
+                                                        menuPlacement="auto"
+                                                        value={pending.channels.map(c => {
+                                                            const cr = channels.find(x => x.id === c);
+                                                            if (cr) {
+                                                                return { value: cr.id, label: `#${cr.name}` };
+                                                            } else {
+                                                                return {};
+                                                            }
+                                                        })}
+                                                        onChange={handleChannelsValueChange}
+                                                        styles={selectStylesMK1}
+                                                    />
+                                                    <p style={{ fontWeight: 700, marginTop: 20, marginBottom: 5 }}>
+                                                        <select onChange={handleRoleModeChange} value={!pending.role_mode ? 0 : 1} >
+                                                            <option value={0} defaultChecked>Disable</option>
+                                                            <option value={1}>Enable</option>
+                                                        </select>
+                                                        for these roles:
+                                                    </p>
+                                                    <Select
+                                                        placeholder="Select roles . . ."
+                                                        isMulti
+                                                        options={roles.map(c => {
+                                                            return { value: c.id, label: `@${c.name}`, color: c.hexColor };
+                                                        })}
+                                                        menuPlacement="auto"
+                                                        value={pending.roles.map(c => {
+                                                            const cr = roles.find(x => x.id === c);
+                                                            if (cr) {
+                                                                return { value: cr.id, label: `${cr.name}`, color: cr.hexColor };
+                                                            } else {
+                                                                return {};
+                                                            }
+                                                        })}
+                                                        onChange={handleRolesValueChange}
+                                                        styles={selectStylesMK2}
+                                                    />
                                                 </>}
-                                                <p style={{ fontWeight: 700, marginTop: 20, marginBottom: 5 }}>
-                                                    <select onChange={handleChannelModeChange} value={!pending.channel_mode ? 0 : 1} >
-                                                        <option value={0} defaultChecked>Disable</option>
-                                                        <option value={1}>Enable</option>
-                                                    </select>
-                                                    in these channels:
-                                                </p>
-                                                <Select
-                                                    placeholder="Select channels . . ."
-                                                    isMulti
-                                                    options={channels.map(c => {
-                                                        return { value: c.id, label: `#${c.name}` };
-                                                    })}
-                                                    menuPlacement="auto"
-                                                    value={pending.channels.map(c => {
-                                                        const cr = channels.find(x => x.id === c);
-                                                        if (cr) {
-                                                            return { value: cr.id, label: `#${cr.name}` };
-                                                        } else {
-                                                            return {};
-                                                        }
-                                                    })}
-                                                    onChange={handleChannelsValueChange}
-                                                    styles={selectStylesMK1}
-                                                />
-                                                <p style={{ fontWeight: 700, marginTop: 20, marginBottom: 5 }}>
-                                                    <select onChange={handleRoleModeChange} value={!pending.role_mode ? 0 : 1} >
-                                                        <option value={0} defaultChecked>Disable</option>
-                                                        <option value={1}>Enable</option>
-                                                    </select>
-                                                    for these roles:
-                                                </p>
-                                                <Select
-                                                    placeholder="Select roles . . ."
-                                                    isMulti
-                                                    options={roles.map(c => {
-                                                        return { value: c.id, label: `@${c.name}`, color: c.hexColor };
-                                                    })}
-                                                    menuPlacement="auto"
-                                                    value={pending.roles.map(c => {
-                                                        const cr = roles.find(x => x.id === c);
-                                                        if (cr) {
-                                                            return { value: cr.id, label: `${cr.name}`, color: cr.hexColor };
-                                                        } else {
-                                                            return {};
-                                                        }
-                                                    })}
-                                                    onChange={handleRolesValueChange}
-                                                    styles={selectStylesMK2}
-                                                />
                                             </> : <>
                                                 <h4>Icon Key</h4>
                                                 <ul style={{ marginLeft: 15 }}>
-                                                    <li><FontAwesomeIcon icon={faRabbitFast} /><br />Command Enabled</li>
-                                                    <li><FontAwesomeIcon icon={faExclamationTriangle} /><br />Indicates that a command is enabled but won't run</li>
-                                                    <li><FontAwesomeIcon icon={faSkull} /><br />Command Disabled</li>
-                                                    <li><FontAwesomeIcon icon={faFeather} /><br />Indicates a command overwriting its defaults</li>
-                                                    <li><FontAwesomeIcon icon={faCircle} /> or <FontAwesomeIcon icon={faTimesCircle} /><br />Unselected</li>
-                                                    <li><FontAwesomeIcon icon={faCheckCircle} /><br />Selected</li>
-                                                    <li><FontAwesomeIcon icon={faFilter} /><br />Indicates filters (sometimes is a button to toggle filters)</li>
+                                                    <li>{ENABLED}<br />Command Enabled</li>
+                                                    <li>{WARNING}<br />Indicates that a command is enabled but won't run</li>
+                                                    <li>{DISABLED}<br />Command Disabled</li>
+                                                    <li>{OVERWRITE}<br />Indicates a command overwriting its defaults</li>
+                                                    <li><FontAwesomeIcon icon={faCircle} /> or {UNCHECKED}<br />Unselected</li>
+                                                    <li>{CHECKED}<br />Selected</li>
+                                                    <li>{FILTER}<br />Indicates filters (sometimes is a button to toggle filters)</li>
                                                 </ul>
                                             </>}
                                         </div>
                                         <div className="cm-buttons">
                                             <hr />
-                                            {!ik && <button className="card-footer-button primary-button" onClick={handleSave} disabled={false} >Save</button>}
+                                            {mm === 0 || mm === 2 ? <button className="card-footer-button primary-button" onClick={handleSave} disabled={false} >Save</button> : null}
                                             <button className="card-footer-button cm-cancel-bottom" onClick={handleCancel}>Cancel</button>
                                         </div>
                                     </>
