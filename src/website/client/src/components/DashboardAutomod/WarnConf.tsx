@@ -94,7 +94,7 @@ export function WarnConfInterface(props: HomeProps) {
                 onChange={handleWarnPunishmentChange}
                 styles={selectStylesMK1}
             />
-            {warnConf.punishment && ["tempmute", "tempban"].includes(warnConf.punishment || "") ? (
+            {warnConf.punishment && ["tempmute", "tempban"].includes(warnConf.punishment) ? (
                 <>
                     <div style={{ height: 5 }} />
                     <p style={{ fontWeight: 700 }}>Punishment Length (sec):</p>

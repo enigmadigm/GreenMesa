@@ -3,7 +3,6 @@ import { MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
 import { Message, TextChannel } from "discord.js";
 import moment from "moment";
-import { stringSimilarity } from "../utils/parsers";
 
 interface SpamCacheData {
     guildid: string;

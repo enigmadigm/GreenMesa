@@ -37,7 +37,7 @@ export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase
     multiValue: (styles) => ({ ...styles, backgroundColor: '#001e52', borderColor: '#424242' }),
     multiValueLabel: (styles) => ({ ...styles, color: '#9c9c9c' }),
     multiValueRemove: (styles) => ({ ...styles, color: '#8a70ff' }),
-    option: (styles, state) => ({ ...styles, ":hover": { backgroundColor: '#57626C' }, backgroundColor: state.isFocused ? "initial" : "initial" }),
+    option: (styles, state) => ({ ...styles, ":hover": { backgroundColor: '#57626C' }, backgroundColor: "initial" }),
     dropdownIndicator: (styles, state) => ({ ...styles, color: state.isDisabled ? "#343B41" : styles.color }),
     indicatorSeparator: (styles, state) => ({ ...styles, backgroundColor: state.isDisabled ? "#343B41" : styles.backgroundColor }),
     input: (styles) => ({ ...styles, color: "#8a70ff" }),
@@ -45,6 +45,7 @@ export const selectStylesMK1: Partial<Styles<OptionTypeBase, true, GroupTypeBase
 };
 
 export const selectStylesMK2: Partial<Styles<OptionTypeBase, true, GroupTypeBase<OptionTypeBase>>> = {
+    ...selectStylesMK1,
     //container: (styles) => ({ ...styles, border: "1px solid #23282c" }),
     control: (styles, state) => ({ ...styles, backgroundColor: '#343B41', color: '#9c9c9c', borderColor: state.isDisabled ? "#343B41" : "#23282c" }),
     menu: (styles) => ({ ...styles, backgroundColor: '#292e33', zIndex: 10000 }),

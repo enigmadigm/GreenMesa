@@ -98,8 +98,8 @@ export const command: Command = {
                     description: args.join(" ").slice(sclength).trim()
                 }
             }
-    
-            message.delete().catch(O_o => {O_o});
+
+            message.delete().catch(O_o => O_o);
             message.channel.send({ embed });
         } catch (error) {
             xlg.error(error);

@@ -30,7 +30,7 @@ router.get('/discord/redirect', (req, res, next) => {
     if (process.env.NODE_ENV === "production") {
         res.redirect('/menu');
     } else {
-        res.redirect('http://localhost:3000/menu');//TODO: CHANGE THIS
+        res.redirect('http://localhost:3000/menu');//FIXME: here (can't remember why this needs to be changed)
     }
 });
 

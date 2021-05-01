@@ -10,7 +10,7 @@ export const command: Command = {
         long: 'The dumbest things Donald Trump has ever said (not curated by me). Get either a random quote, a list of existing tags, or a quote under one of the tags (case sensitive).'
     },
     aliases: ['td', 'tronald'],
-    usage: "[tags | existing tag]",
+    usage: "[tags | specify a tag]",
     cooldown: 2,
     async execute(client, message, args) {
         try {
@@ -28,7 +28,7 @@ export const command: Command = {
                     };
                 });
     
-            if (!args.length || args.length == 0) {
+            if (!args.length) {
                 const r = await fetch('https://api.tronalddump.io/random/quote')
                 const j = await r.json();
                 message.channel.send({
@@ -45,9 +45,13 @@ export const command: Command = {
                 });
                 return;
             }
-            if (args.length && args.length == 1 && args.toString().length == 22) {
-                const r = await fetch(`https://api.tronalddump.io/quote/${args[0]}`)
+            if (args.length == 1 && args.join(" ").length === 22) {// search for a quote by its id (displayed in the embed)
+                const r = await fetch(`https://api.tronalddump.io/quote/${args[0]}`);
                 const j = await r.json();
+                if (j.status === 404) {
+                    message.channel.send(`Quote not found`);
+                    return;
+                }
                 message.channel.send({
                     embed: {
                         "title": "Donald Trump",

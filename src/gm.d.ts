@@ -609,6 +609,7 @@ export interface CommandsEndpointData {
     global: CommandsGlobalConf;
     channels: ChannelData[];
     roles: RoleData[];
+    mod_role: string;
 }
 
 export interface CmdConfEntry {
@@ -634,6 +635,10 @@ export interface CommandsGlobalConf {
      * roles applying the effect
      */
     roles?: string[];
+    /**
+     * Send that the command is disabled in chat
+     */
+    respond?: boolean;
 }
 
 export interface CommandConf {

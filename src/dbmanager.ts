@@ -271,8 +271,8 @@ export class DBManager {
                     p = xp;
                 }
                 await <Promise<InsertionResult>>this.query(sql);
-                return { points: p, level: l };
             }
+            return { points: p, level: l };
         } catch (error) {
             if (error.code === "ER_DUP_ENTRY") {
                 xlog.error('error: ER_DUP_ENTRY caught and deflected');
@@ -333,7 +333,7 @@ export class DBManager {
                     availableRoles.push(member.guild.roles.cache.find(ro => ro.id === r.roleid) || null);
                 }
             }
-            if (availableRoles && availableRoles.length > 0) {
+            if (availableRoles.length > 0) {
                 for (let i = 0; i < availableRoles.length; i++) {
                     const r = availableRoles[i];
                     if (r) {
@@ -598,7 +598,7 @@ export class DBManager {
             return result.affectedRows || false;
         }
         if (level && role) {
-            if (isNaN(level) || !role.id) return false;
+            if (!role.id) return false;
             result = await <Promise<InsertionResult>>this.query(`UPDATE levelroles SET level = ${level} WHERE guildid = '${guild.id}' AND roleid = '${role.id}'`);
             if (!result) return false;
             if (result.affectedRows === 0) {
@@ -660,7 +660,6 @@ export class DBManager {
                 await <Promise<InsertionResult>>this.query(`UPDATE cmdtracking SET used = used + 1 WHERE cmdname = '${name}'`);
             }
 
-            //TODO: add cmdhistory logging
             if (message) {
                 await <Promise<InsertionResult>>this.query(`INSERT INTO cmdhistory (command_name, guildid, userid, messageid, channelid) VALUES (${escape(name)}, ${escape(message.guild?.id || "")}, ${escape(message.author.id)}, ${escape(message.id)}, ${escape(message.channel.id)})`);
             }
@@ -833,12 +832,9 @@ export class DBManager {
      */
     async updateDashUser(id: string, username: string, discriminator: string, avatar: string, guilds: PartialGuildObject[]): Promise<false | InsertionResult> {
         try {
-            if (!id || !username || !discriminator || !guilds) return false;
+            if (!id || !username || !discriminator) return false;
             if (!avatar) {
                 avatar = "";
-            }
-            if (!(typeof guilds === "object")) {
-                return false;
             }
             const guildString = JSON.stringify(guilds).escapeSpecialChars();
             const result = await <Promise<InsertionResult>>this.query(`INSERT INTO dashusers (userid, tag, avatar, guilds) VALUES (${escape(id)}, ${escape(`${username}#${discriminator}`)} , ${escape(avatar)}, ${escape(guildString)}) ON DUPLICATE KEY UPDATE tag = ${escape(`${username}#${discriminator}`)}, avatar = ${escape(avatar)}, guilds = ${escape(guildString)}`);
