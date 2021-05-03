@@ -328,10 +328,10 @@ export function DashboardTwitch(props: HomeProps) {
                                             styles={selectStylesMK1}
                                         />
                                         <p style={{ fontWeight: 700, marginTop: 10, marginBottom: 5 }}>Message</p>
-                                        <p style={{ opacity: 0.8, marginTop: 5, fontSize: "0.9em" }}>Placeholders: <i>{'{'}name{'}'} {'{'}link{'}'} {'{'}game{'}'}</i></p>
+                                        <p style={{ opacity: 0.8, marginTop: 5, fontSize: "0.9em" }}>Placeholders: <i>{'{name} {link} {game} {title}'}</i></p>
                                         <textarea className="tc-ta"
                                             rows={7}
-                                            placeholder={`${pending.streamer_login || "{name}"} is live! Go check out {name} at {link}`}
+                                            placeholder={`{name} just went live!\n{link}`}
                                             onChange={handleMessageChange}
                                             value={pending.message}
                                         ></textarea>
