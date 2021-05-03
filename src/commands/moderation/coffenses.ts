@@ -4,10 +4,10 @@ import { Command } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
 
 export const command: Command = {
-    name: "clearwarnings",
+    name: "coffenses",
     description: {
-        short: "clear moderator warnings",
-        long: "Use to clear the warnings assigned to a user when warned by either the automod or a server moderator."
+        short: "clear automod offenses",
+        long: "Use to clear the infraction points assigned to users who violate automod policies. These are given to people no matter the automod setting. Use this to clear the offenses in your server."
     },
     usage: "<member>",
     args: true,
@@ -28,13 +28,13 @@ export const command: Command = {
                 await client.specials?.sendError(message.channel, "Unable to retrieve user information.", true);
                 return;
             }
-            if (!gud.warnings) {
-                await client.specials?.sendError(message.channel, `${target} (${target.id}) does not have any recorded warnings.`);
+            if (!gud.offenses) {
+                await client.specials?.sendError(message.channel, `${target} (${target.id}) does not have any recorded automod offenses.`);
                 return;
             }
-            gud.warnings = 0;
+            gud.offenses = 0;
             await client.database.updateGuildUserData(gud);
-            await message.channel.send(`Warnings cleared for ${target}`);
+            await message.channel.send(`Offenses cleared for ${target}`);
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);
