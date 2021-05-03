@@ -73,9 +73,9 @@ export const command: Command = {
     },
     usage: "[latest|byid|random|search] ...options]",
     examples: [
-        "sm xkcd 1000",
-        "sm xkcd random",
-        "sm xkcd search house of pancakes",
+        "1000",
+        "random",
+        "search house of pancakes",
     ],
     args: false,
     cooldown: 1,

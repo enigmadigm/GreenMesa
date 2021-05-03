@@ -11,7 +11,7 @@ export const command: Command = {
     },
     usage: "<member> <id>",
     examples: [
-        "sm rmnote @Darth 6"
+        "@Darth 6"
     ],
     args: true,
     cooldown: 2,

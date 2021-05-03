@@ -407,7 +407,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             if (command.examples && command.examples.length) {
                 reply += `\n**Example${command.examples.length > 1 ? "s" : ""}:**`;
                 for (const example of command.examples) {
-                    reply += `\n\`${example}\``;
+                    reply += `\n\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}\``;
                 }
             }
 

@@ -14,9 +14,12 @@ export const command: Command = {
     aliases: ["atwitch", "twitchadd"],
     description: {
         short: "create a twitch notifier",
-        long: "Create a Twitch Notifier. Using a Twitch username and channel that you provide, this will send notifications to the channel when your streamer goes live. Send the notification channel as an argument, and a wizard will guide you through the rest of the steps."
+        long: "Create a Twitch Notifier. Using a Twitch username and channel that you provide, this will send notifications to the channel when your streamer goes live. Send the streamer channel as an argument, and a wizard will guide you through the rest of the steps."
     },
     usage: "[streamer name]",
+    examples: [
+        "enigmadigm",
+    ],
     args: false,
     permLevel: permLevels.admin,
     guildOnly: true,

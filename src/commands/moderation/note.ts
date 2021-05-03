@@ -12,7 +12,7 @@ export const command: Command = {
     },
     usage: "<member> <note>",
     examples: [
-        "sm note @Darth Pissed off the mods today"
+        "@Darth Pissed off the mods today"
     ],
     args: true,
     cooldown: 2,

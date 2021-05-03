@@ -11,7 +11,7 @@ export const command: Command = {
     },
     usage: "[role] or [set|list|remove] role]",
     examples: [
-        "sm rme @new role",
+        "@new role",
         "sm rme set @new role",
         "sm rme set 0 @new role"
     ],
