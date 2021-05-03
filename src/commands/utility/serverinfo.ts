@@ -8,7 +8,7 @@ export const command: Command = {
     description: 'get info on the current server',
     aliases: ['server', 'si'],
     guildOnly: true,
-    cooldown: 8,
+    cooldown: 4,
     async execute(client, message) {
         try {
             if (!message.guild) return;
