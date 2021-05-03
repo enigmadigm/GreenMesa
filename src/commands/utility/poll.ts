@@ -12,10 +12,10 @@ export const command: Command = {
     },
     usage: "<poll options split by ;>",
     examples: [
-        "sm poll one;two;three",
-        "sm poll -t title;one;two;three",
-        "sm poll -m one;two;three",
-        "sm poll -m -t title;one;two;three"
+        "one;two;three",
+        "-t title;one;two;three",
+        "-m one;two;three",
+        "-m -t title;one;two;three"
     ],
     guildOnly: true,
     args: true,

@@ -8,8 +8,8 @@ export const command: Command = {
     name: "removetwitch",
     aliases: ["rmtwitch"],
     description: {
-        short: "remove the existing twitch notifier",
-        long: "Remove a Twitch Notifier. When you send this command, you will be prompted to destroy the current notifier that exists for your guild."
+        short: "remove an existing twitch notifier",
+        long: "Remove a Twitch Notifier subscription. You will be prompted to destroy the notifier.",
     },
     usage: "<streamer>",
     args: true,

@@ -1,3 +1,4 @@
+import { Invite } from 'discord.js';
 import moment from 'moment';
 import { Command } from 'src/gm';
 import xlg from "../../xlogger";
@@ -7,7 +8,7 @@ export const command: Command = {
     description: 'get info on the current server',
     aliases: ['server', 'si'],
     guildOnly: true,
-    cooldown: 8,
+    cooldown: 4,
     async execute(client, message) {
         try {
             if (!message.guild) return;
@@ -23,7 +24,11 @@ export const command: Command = {
             if (message.guild.channels.cache.filter(x => x.type == 'news').size) channels.push(`News: ${message.guild.channels.cache.filter(x => x.type == 'news').size}`);
             if (message.guild.channels.cache.filter(x => x.type == 'store').size) channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
 
-            const invites = await message.guild.fetchInvites();
+            let invites: boolean | Invite[] = false;
+            if (message.guild.me?.hasPermission("MANAGE_GUILD")) {
+                const invitesCollection = await message.guild.fetchInvites();
+                invites = invitesCollection.array();
+            }
             message.channel.send({
                 embed: {
                     "color": await client.database.getColor("info"),
@@ -62,7 +67,7 @@ export const command: Command = {
                         },
                         {
                             "name": "Open Invites",
-                            "value": `${invites.size}`,
+                            "value": `${invites ? invites.length : "[no invites access]"}`,
                             "inline": true
                         },
                         {

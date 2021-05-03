@@ -381,7 +381,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             message.channel.send({
                 embed: {
                     title: `Command Disabled`,
-                    description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "**here**"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
+                    description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "here"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
                     footer: {
                         text: `${!disabled ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
                     }
@@ -407,7 +407,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             if (command.examples && command.examples.length) {
                 reply += `\n**Example${command.examples.length > 1 ? "s" : ""}:**`;
                 for (const example of command.examples) {
-                    reply += `\n\`${example}\``;
+                    reply += `\n\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}\``;
                 }
             }
 

@@ -30,7 +30,7 @@ export const command: Command = {
     name: 'userinfo',
     description: 'get info on any member',
     aliases: ['ui', 'user'],
-    cooldown: 8,
+    cooldown: 3,
     async execute(client, message, args) {
         try {
             if (!message.guild || !message.member) return;

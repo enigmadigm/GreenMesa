@@ -14,9 +14,12 @@ export const command: Command = {
     aliases: ["atwitch", "twitchadd"],
     description: {
         short: "create a twitch notifier",
-        long: "Create a Twitch Notifier. Using a Twitch username and channel that you provide, this will send notifications to the channel when your streamer goes live. Send the notification channel as an argument, and a wizard will guide you through the rest of the steps."
+        long: "Create a Twitch Notifier. Using a Twitch username and channel that you provide, this will send notifications to the channel when your streamer goes live. Send the streamer channel as an argument, and a wizard will guide you through the rest of the steps."
     },
     usage: "[streamer name]",
+    examples: [
+        "enigmadigm",
+    ],
     args: false,
     permLevel: permLevels.admin,
     guildOnly: true,
@@ -73,7 +76,7 @@ export const command: Command = {
                 embed: {
                     color: iec,
                     title: "Twitch Notif Setup 3️⃣",
-                    description: `**You may use a custom message to announce your streamer, otherwise type \`no\`.**\nTo edit the message later, use the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).\n\n**Available placeholders:**\n*{name}\n{link}\n{game}*`,
+                    description: `**You may use a custom message to announce your streamer, otherwise type \`no\`.**\nTo edit the message later, use the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).\n\n**Available placeholders:**\n*{name}\n{link}\n{game}\n{title}*`,
                 }
             });
             const msgCollected = await message.channel.awaitMessages((response) => response.author.id === message.author.id && response.content.length < 1800, { time: 40000, max: 1 });

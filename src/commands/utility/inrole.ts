@@ -13,8 +13,8 @@ export const command: Command = {
     aliases: ['ir'],
     usage: '<role>',
     examples: [
-        "sm ir new role",
-        "sm inrole @admin"
+        "new role",
+        "@admin"
     ],
     args: true,
     permLevel: permLevels.trustedMember,

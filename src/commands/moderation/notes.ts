@@ -13,7 +13,7 @@ export const command: Command = {
     },
     usage: "<member>",
     examples: [
-        "sm notes @Darth"
+        "@Darth"
     ],
     args: true,
     cooldown: 3,

@@ -12,7 +12,7 @@ export const command: Command = {
     },
     usage: "<role name>,[role color]",
     examples: [
-        "sm mkrole red,0xFF0000"
+        "red,0xFF0000"
     ],
     args: true,
     permLevel: permLevels.admin,
