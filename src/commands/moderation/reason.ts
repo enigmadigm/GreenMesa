@@ -8,7 +8,7 @@ import moment from "moment";
 export const command: Command = {
     name: "reason",
     description: {
-        short: "clear automod offenses",
+        short: "set reason for an infraction",
         long: "Set the reason/summary given for a mod case. The reason will be recorded in the modlog files and shown in the modlog."
     },
     usage: "<case #> <reason>",
