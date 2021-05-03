@@ -42,7 +42,7 @@ export const command: Command = {
                 message.channel.send(`Something went wrong while updating the file. Please join https://dsc.gg/ro if this happens again.`);
                 return;
             }
-            message.channel.send(`Reason added to case ${c}`);
+            const responseMessage = await message.channel.send(`Reason added to case ${c}`);
             if (/^[0-9]{18}$/.test(file.superid)) {
                 const chan = await client.database.getGuildSetting(message.guild.id, "modlog");// get the case channel
                 if (chan && chan.value) {// try to send the message to the channel
@@ -56,6 +56,7 @@ export const command: Command = {
                             const e = Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, await client.database.getColor("info"), file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime);
                             m.embeds[0].description = e.description;
                             await m.edit(new MessageEmbed(m.embeds[0]));
+                            await responseMessage.edit(`${responseMessage.content} and the case message in ${m.channel}`);
                         } catch (error) {
                             //
                         }
