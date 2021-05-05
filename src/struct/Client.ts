@@ -5,6 +5,7 @@ import { XClient } from '../gm';
 import { MessageServices } from '../services';
 import * as Specials from "../utils/specials";
 import config from "../../auth.json"; // Loading app config file
+import Invites from './Invites';
 
 export default class extends Client implements XClient {
     public commands: XClient["commands"];
@@ -13,6 +14,7 @@ export default class extends Client implements XClient {
     public database: DBManager;
     public services: MessageServices;
     public msgLogging = true;
+    public invites: Invites;
 
     constructor(options?: ClientOptions) {
         super(options);
@@ -28,6 +30,7 @@ export default class extends Client implements XClient {
         this.commands = co.commands;
         this.categories = co.categories;
         this.specials = Specials;
+        this.invites = new Invites(this);
         this.services = new MessageServices();
         this.database = new DBManager();
         this.load(co);

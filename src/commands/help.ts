@@ -139,7 +139,7 @@ export const command: Command = {
                     const longest = command.examples.reduce((p, c) => p.length < c.length ? c : p);
                     embed.fields?.push({
                         name: `Example${command.examples.length > 1 ? "s" : ""}`,
-                        value: `${command.examples.map(example => `\`${example}${longest.substring(example.length - 1, longest.length).split("").map(() => " ").join("")}\``).join("\n")}`
+                        value: `${command.examples.map(example => `\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}${longest.substring(example.length - 1, longest.length).split("").map(() => " ").join("")}\``).join("\n")}`
                     });
                 }
                 embed.fields?.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)`, inline: true });

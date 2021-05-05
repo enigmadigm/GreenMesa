@@ -16,19 +16,9 @@ export const command: Command = {
         try {
             if (!message.guild) return;
 
-            if (!stringToRole(message.guild, args.join(" "), false, false)) {
-                message.channel.send({
-                    embed: {
-                        color: await client.database.getColor("fail"),
-                        description: `Invalid role`
-                    }
-                });
-                return false;
-            }
-            const target = stringToRole(message.guild, args.join(" "), false, false, false);
+            const target = stringToRole(message.guild, args.join(" "), true, true, false);
             if (!target) {
                 client.specials?.sendError(message.channel, "That role could not be found.")
-                message.channel.stopTyping();
                 return;
             }
             if (target === "@everyone" || target === "@here") {

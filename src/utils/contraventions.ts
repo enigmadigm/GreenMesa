@@ -10,6 +10,17 @@ import { getFriendlyUptime } from "./time";
 // }
 
 export class Contraventions {
+    public static async logWarn(gid: string, uid: string, agent: string, reason = ""): Promise<void> {
+        const d: ModActionEditData = {
+            guildid: gid,
+            userid: uid,
+            agent,
+            summary: reason,
+            type: "warn"
+        };
+        await this.logOne(d, await Bot.client.database.getColor("warn"));
+    }
+
     public static async logKick(gid: string, uid: string, agent: string, reason = ""): Promise<void> {
         const d: ModActionEditData = {
             guildid: gid,
@@ -18,7 +29,7 @@ export class Contraventions {
             summary: reason,
             type: "kick"
         };
-        this.logOne(d, await Bot.client.database.getColor("ban"));
+        await this.logOne(d, await Bot.client.database.getColor("ban"));
     }
 
     public static async logBan(gid: string, uid: string, agent: string, reason = "", duration = 0): Promise<void> {// 0xff8282
@@ -32,7 +43,7 @@ export class Contraventions {
         if (duration) {
             d.endtime = moment().add(duration, "ms").toISOString();
         }
-        this.logOne(d, await Bot.client.database.getColor("ban"), duration);
+        await this.logOne(d, await Bot.client.database.getColor("ban"), duration);
     }
 
     public static async logUnban(gid: string, uid: string, agent: string, reason = ""): Promise<void> {
@@ -43,7 +54,7 @@ export class Contraventions {
             summary: reason,
             type: "unban"
         };
-        this.logOne(d);
+        await this.logOne(d);
     }
 
     public static async logMute(gid: string, uid: string, duration: number, agent: string, reason = ""): Promise<void> {
@@ -55,7 +66,7 @@ export class Contraventions {
             summary: reason,
             type: "mute"
         };
-        this.logOne(d, await Bot.client.database.getColor("warn"), duration);
+        await this.logOne(d, await Bot.client.database.getColor("warn"), duration);
     }
 
     public static async logUnmute(gid: string, uid: string, agent: string, reason = ""): Promise<void> {
@@ -66,15 +77,15 @@ export class Contraventions {
             summary: reason,
             type: "unmute"
         };
-        this.logOne(d);
+        await this.logOne(d);
     }
 
     public static async logOne(data: ModActionEditData, color = -1, duration = 0): Promise<ModActionEditData | void> {
-        if (!data.guildid || !data.userid) return;
+        if (!data.guildid || !data.userid || !Bot.client.user) return;
         const num = data.casenumber || (await Bot.client.database.getHighestCaseNumber(data.guildid)) + 1;// get the case number to be used for this entry
         data.casenumber = num;
         const u = Bot.client.users.cache.get(data.userid) || await Bot.client.users.fetch(data.userid);// retrieve the user who the case pertains to
-        if (!u) return;
+        if (!u) return;//TODO: finding the user should not be necessary, the last known tag of the user should be stored with the mod action data in the db
         if (color < 0) {// assign default color if no color was given
             color = await Bot.client.database.getColor("info");
         }
@@ -85,7 +96,7 @@ export class Contraventions {
         if (r && r.value) {// try to send the message to the channel
             // Bot.client.specials.sendMessageAll({ embed }, r.value);
             const c = Bot.client.channels.cache.get(r.value);
-            if (c && c instanceof TextChannel) {
+            if (c && c instanceof TextChannel && c.permissionsFor(Bot.client.user)?.has("SEND_MESSAGES")) {
                 const m = await c.send({ embed });
                 data.superid = m.id;
             }
@@ -103,7 +114,7 @@ export class Contraventions {
             color,
             timestamp: new Date(),
             title: `Case ${casenum} ● ${titleCase(action)} ● ${targTag}`,
-            description: `**Perp:** ${targTag} ${target}\n**Marshal:** ${modTag} ${mod instanceof User ? mod : null}`,
+            description: `**Perpetrator:** ${targTag} ${target}\n**Marshal:** ${modTag} ${mod instanceof User ? mod : null}`,
             footer: {
                 text: `User: ${targId} Mod: ${modId}`
             }
@@ -111,7 +122,7 @@ export class Contraventions {
         const embed = new MessageEmbed(e);
         if (reason) {
             const rt = reason.length < 1500 ? reason : reason.substr(0, 1496) + "...";
-            embed.description += `\n**Reason:** ${rt}`;
+            embed.description += `\n**Summary:** ${rt}`;
         }
         if (duration) {
             const f = getFriendlyUptime(duration);

@@ -3,8 +3,8 @@ import { AutomoduleData, MessageService, XClient, XMessage } from "../gm";
 import fs from "fs";
 import { Bot } from "../bot";
 import { ordinalSuffixOf } from "../utils/parsers";
-import { ban, checkWarnings, mute } from "../utils/modactions";
-//import { Mute } from "../utils/modactions";
+import { ban, kick, mute, warn } from "../utils/modactions";
+import xlg from "../xlogger";
 
 export class MessageServices {
     private services: Collection<string, MessageService>;
@@ -23,7 +23,7 @@ export class MessageServices {
             const name = file.split(".")[0];
             service.name = name;
             this.services.set(name, service);
-            console.log(`Loaded service: ${name}`);
+            xlg.log(`Loaded service: ${name}`);
             if (file.startsWith("automod_")) {
                 this.automods.push(name.split("_")[1]);
             }
@@ -39,7 +39,7 @@ export class MessageServices {
                 await serv.execute(client, data);
             }
         } catch (error) {
-            console.log(error);
+            xlg.error(error);
         }
     }
 
@@ -55,7 +55,7 @@ export class MessageServices {
                 }
             });
         } catch (error) {
-            console.log(error);
+            xlg.error(error);
         }
     }
 
@@ -71,7 +71,7 @@ export class MessageServices {
                 }
             });
         } catch (error) {
-            console.log(error);
+            xlg.error(error);
         }
     }
 
@@ -143,18 +143,7 @@ export class MessageServices {
                             break;
                         }
                         case "warn": {
-                            if (!ud.warnings) {
-                                ud.warnings = 1;
-                            } else {
-                                ud.warnings++;
-                            }
-                            const e: MessageEmbedOptions = {
-                                color: await Bot.client.database.getColor("warn_embed_color"),
-                                title: `Warning`,
-                                description: `**Server:** ${target.guild.name}\nYou have received a **warning**.${!ud.warnings ? "\n**First** warning" : `\n**${ordinalSuffixOf(ud.warnings)}** warning`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`
-                            }
-                            await target.send({ embed: e });
-                            await checkWarnings(Bot.client, target);
+                            await warn(Bot.client, target, Bot.client.user?.id, `Automatic warn triggered by automod:${mod.name}`);
                             break;
                         }
                         default:
@@ -165,33 +154,23 @@ export class MessageServices {
             if (pastOffset && target.bannable && target.kickable) {
                 switch (mod.punishment) {
                     case "ban": {
-                        /*if (!pud.bans) {
-                            pud.bans = 1;
-                        } else {
-                            pud.bans++;
-                        }*/
-                        await ban(Bot.client, target, 0, Bot.client.user?.id);
+                        await ban(Bot.client, target, 0, Bot.client.user?.id, `Automatic ban triggered by automod:${mod.name}`);
                         break;
                     }
                     case "kick": {
-                        await target.kick();
+                        await kick(Bot.client, target, Bot.client.user?.id, `Automatic kick triggered by automod:${mod.name}`);
                         break;
                     }
                     case "mute": {
-                        await mute(Bot.client, target, 0, Bot.client.user?.id);
+                        await mute(Bot.client, target, 0, Bot.client.user?.id, `Automatic mute triggered by automod:${mod.name}`);
                         break;
                     }
                     case "tempban": {
-                        /*if (!pud.bans) {
-                            pud.bans = 1;
-                        } else {
-                            pud.bans++;
-                        }*/
-                        await ban(Bot.client, target, ptime * 1000, Bot.client.user?.id);
+                        await ban(Bot.client, target, ptime * 1000, Bot.client.user?.id, `Automatic tempban triggered by automod:${mod.name}`);
                         break;
                     }
                     case "tempmute": {
-                        await mute(Bot.client, target, ptime * 1000, Bot.client.user?.id);
+                        await mute(Bot.client, target, ptime * 1000, Bot.client.user?.id, `Automatic tempmute triggered by automod:${mod.name}`);
                         break;
                     }
                     default:
@@ -211,7 +190,7 @@ export class MessageServices {
                 offenses: pud.offenses
             });
         } catch (error) {
-            console.error(error);
+            xlg.error(error);
         }
     }
 }
