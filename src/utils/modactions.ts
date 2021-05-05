@@ -1,4 +1,4 @@
-import { GuildMember, TextChannel } from "discord.js";
+import { GuildMember } from "discord.js";
 import moment from "moment";
 import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
@@ -138,7 +138,7 @@ import { Contraventions } from "./contraventions";
 /**
  * Auto-mute a target permanently or for a period
  */
-export async function mute(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel): Promise<void> {
+export async function mute(client: XClient, target: GuildMember, time = 0, mod?: string, reason = "Automatic mute"): Promise<void | string> {
     const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
     const dbmr = await client.database.getGuildSetting(target.guild, "mutedrole");
     const mutedRoleID = dbmr ? dbmr.value : "";
@@ -179,10 +179,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
 
     // If the mentioned user already has the "mutedRole" then that can not be muted again
     if (target.roles.cache.has(mutedRole.id)) {
-        if (channel) {
-            channel.send(`\`${target.user.tag}\` is already muted`);
-        }
-        return;
+        return `\`${target.user.tag}\` is already muted`;
     }
 
     await target.roles.add(mutedRole, `muted by ${moderator?.user.tag || "me"}`).catch(e => console.log(e.stack));
@@ -196,11 +193,30 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
         mendm = ` for ${duration}`
     }
 
-    Contraventions.logMute(target.guild.id, target.id, time, target.client.user?.id || "", `Automatic mute by ${target.client.user?.tag}`);
-
-    if (channel) {
-        channel.send(`\\✅ Muted \`${target.user.tag}\`${mendm}`);
+    let noNotify = false;
+    try {
+        await target.send({
+            embed: {
+                color: await client.database.getColor("fail"),
+                title: `Mute Notice`,
+                description: `Muted in ${target.guild.name}.${time ? `\nThis is a temporary mute, it will end in ${duration} at \`${moment().add(time, "ms").format('YYYY-MM-DD HH:mm:ss')}\`.` : ""}`,
+                fields: [
+                    {
+                        name: "Moderator",
+                        value: `${moderator?.user.tag}`,
+                    },
+                    {
+                        name: "Reason",
+                        value: `${reason || "*none*"}`,
+                    }
+                ],
+            }
+        });
+    } catch (error) {
+        noNotify = true;
     }
+
+    await Contraventions.logMute(target.guild.id, target.id, time, mod || target.client.user?.id || "", `${reason}${noNotify ? " - could not notify offender" : ""}`);
 
     if (time) {
         /*setTimeout(async () => {
@@ -228,18 +244,17 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod?:
         }
         //await set(data);
     }
+
+    return `\\✅ Muted \`${target.user.tag}\`${mendm}`;
 }
 
 /**
  * Ban a target permanently or for a period.
  */
-export async function ban(client: XClient, target: GuildMember, time = 0, mod?: string, channel?: TextChannel, summary?: string): Promise<void> {
+export async function ban(client: XClient, target: GuildMember, time = 0, mod?: string, summary?: string): Promise<void | string> {
     if (!client.database) return;
     const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
-    await target.ban({
-        reason: `banned by ${moderator?.user.tag || "me"}`
-    });
-
+    
     let duration = "";
     let mendm = "";
     if (time) {
@@ -247,25 +262,51 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
         mendm = ` for ${duration}`
     }
 
-    Contraventions.logBan(target.guild.id, target.id, target.client.user?.id || "", summary ? summary : `Automatic ban by ${target.client.user?.tag}`, time);
-
-    if (channel) {
-        channel.send(`\\✅ Banned \`${target.user.tag}\`${mendm}`);
+    let noNotify = false;
+    try {
+        await target.send({
+            embed: {
+                color: await client.database.getColor("fail"),
+                title: `Ban Notice`,
+                description: `Banned from ${target.guild.name}.${time ? `\nThis is a temporary ban, it will end in ${duration}` : ""}.`,
+                fields: [
+                    {
+                        name: "Moderator",
+                        value: `${moderator?.user.tag}`,
+                    },
+                    {
+                        name: "Reason",
+                        value: `${summary || "*none*"}`,
+                    }
+                ],
+            }
+        });
+    } catch (error) {
+        noNotify = true;
     }
 
+    // actually ban them
+    await target.ban({
+        reason: `banned by ${moderator?.user.tag || "me"}${summary ? ` for ${summary}` : ``}`
+    });
+
+    await Contraventions.logBan(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : `Automatic ban`}${noNotify ? " - could not notify offender" : ""}`, time);
+    
     if (time) {
         const data: UnbanActionData = {
             guildid: target.guild.id,
             userid: target.id,
             duration: duration,
         }
-
+        
         if (client.database) {
             const t = moment().add(time, "ms").toDate();
             await client.database.setAction(uniqid(), t, "unban", data);
         }
     }
+
     registerBan(client, target);
+    return `\\✅ Banned \`${target.user.tag}\`${mendm}`;
 }
 
 export async function registerBan(client: XClient, target: GuildMember): Promise<void> {
@@ -286,10 +327,87 @@ export async function registerBan(client: XClient, target: GuildMember): Promise
     await client.database.updateGuildUserData(gud);
 }
 
+/**
+ * Kick someone
+ */
+export async function kick(client: XClient, target: GuildMember, mod?: string, summary?: string): Promise<void | string> {
+    if (!client.database) return;
+    const moderator = target.guild.members.cache.get(mod || client.user?.id || "");
+
+    let noNotify = false;
+    try {
+        await target.send({
+            embed: {
+                color: await client.database.getColor("warn_embed_color"),
+                title: `Kick Notice`,
+                description: `Kicked from ${target.guild.name}.`,
+                fields: [
+                    {
+                        name: "Moderator",
+                        value: `${moderator?.user.tag}`,
+                    },
+                    {
+                        name: "Reason",
+                        value: `${summary || "*none*"}`,
+                    }
+                ],
+            }
+        });
+    } catch (error) {
+        noNotify = true;
+    }
+
+    await target.kick(`by ${moderator?.user.tag || "me"}${summary ? ` for ${summary}` : ``}`);
+    await Contraventions.logKick(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : `Automatic kick by ${client.user?.tag}`}${noNotify ? " - could not notify offender" : ""}`);
+    return `\\✅ Kicked ${target.user.tag}`;
+}
+
+/**
+ * Kick someone
+ */
+export async function warn(client: XClient, target: GuildMember, mod?: string, summary?: string): Promise<void | string> {
+    if (!client.database) return;
+    const modtag = mod === client.user?.id || !mod ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag : mod;
+
+    let noNotify = false;
+    try {
+        await target.send({
+            embed: {
+                color: await client.database.getColor("warn_embed_color"),
+                title: `Warn Notice`,
+                description: `Warned in ${target.guild.name}.`,
+                fields: [
+                    {
+                        name: "Moderator",
+                        value: `${modtag}`,
+                    },
+                    {
+                        name: "Reason",
+                        value: `${summary || "*none*"}`,
+                    }
+                ],
+            }
+        });
+    } catch (error) {
+        noNotify = true;
+    }
+
+    await Contraventions.logWarn(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : `Automatic kick by ${client.user?.tag}`}${noNotify ? " - could not notify offender" : ""}`);
+
+    checkWarnings(client, target);
+
+    return `\\✅ ${target} has been warned`;
+}
+
 export async function checkWarnings(client: XClient, target: GuildMember): Promise<void> {
     try {
         if (!client.database || !target.bannable || !target.kickable) return;
-        const ud = await client.database.getGuildUserData(target.guild.id, target.id);
+
+        // const memberCases = await client.database.getModActionsByUser(target.guild.id, target.id);
+        // if (!memberCases || !memberCases.length) return;
+        const warnCases = await client.database.getModActionsByUserAndType(target.guild.id, target.id, "warn");
+        if (!warnCases || !warnCases.length) return;
+
         const warnConfig = await client.database.getGuildSetting(target.guild, "warnconfig");
         if (!warnConfig) return;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -306,7 +424,8 @@ export async function checkWarnings(client: XClient, target: GuildMember): Promi
         if (conf.threshold === -1) {
             return;
         }
-        const overWarnLimit = (ud.warnings || 0) > (conf.threshold);
+
+        const overWarnLimit = warnCases.length > conf.threshold;
         let ptime = 0;
         if (conf.time && typeof conf.time === "number") {
             ptime = conf.time;
@@ -316,43 +435,23 @@ export async function checkWarnings(client: XClient, target: GuildMember): Promi
         if (overWarnLimit && target.bannable && target.kickable) {
             switch (conf.punishment) {
                 case "ban": {
-                    if (ud.bans) {
-                        ud.bans++;
-                    } else {
-                        ud.bans = 1;
-                    }
-                    /*if (!pud.bans) {
-                        pud.bans = 1;
-                    } else {
-                        pud.bans++;
-                    }*/
-                    await ban(client, target, 0, client.user?.id);
+                    await ban(client, target, 0, client.user?.id, `The user's warnings exceeded the configured threshold. They were banned automatically.`);
                     break;
                 }
                 case "kick": {
-                    await target.kick();
+                    await kick(client, target, client.user?.id, `The user's warnings exceeded the configured threshold. They were kicked automatically.`);
                     break;
                 }
                 case "mute": {
-                    await mute(client, target, 0, client.user?.id);
+                    await mute(client, target, 0, client.user?.id, `The user's warnings exceeded the configured threshold. They were muted automatically.`);
                     break;
                 }
                 case "tempban": {
-                    if (ud.bans) {
-                        ud.bans++;
-                    } else {
-                        ud.bans = 1;
-                    }
-                    /*if (!pud.bans) {
-                        pud.bans = 1;
-                    } else {
-                        pud.bans++;
-                    }*/
-                    await ban(client, target, ptime * 1000, client.user?.id);
+                    await ban(client, target, ptime * 1000, client.user?.id, `The user's warnings exceeded the configured threshold. They were banned automatically.`);
                     break;
                 }
                 case "tempmute": {
-                    await mute(client, target, ptime * 1000, client.user?.id);
+                    await mute(client, target, ptime * 1000, client.user?.id, `The user's warnings exceeded the configured threshold. They were muted automatically.`);
                     break;
                 }
                 default:
