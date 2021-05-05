@@ -69,6 +69,12 @@ export class Commands {
 
         for (const cmdfile of cmds) {
             const { command } = await import(`${dir}${cmdfile}`);
+
+            if (!command.permissions) {//TODO: Requiring the SEND_MESSAGES perm by default, I may want to change this in the future
+                command.permissions = ["SEND_MESSAGES"];
+            } else if (!command.permissions.includes("SEND_MESSAGES")) {
+                command.permissions.push("SEND_MESSAGES");
+            }
             
             //const command = require(`./commands/${file}`);
 
