@@ -43,6 +43,7 @@ export const command: Command = {
             } else if (cmdMatch) {
                 if (cmdMatch.name === "enable" || cmdMatch.name === "disable") {
                     await message.channel.send(`Sanctioning \` enable \` or \` disable \` is prohibited`);
+                    return;
                 }
                 const c = commands.find(x => x.name === cmdMatch.name);
                 if (c) applyTo.push(c);
