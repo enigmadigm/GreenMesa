@@ -3,6 +3,7 @@ import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
 import { MessageServices } from "./services";
+import Invites from "./struct/Invites";
 
 export interface XClient extends Client {
     commands: Collection<string, Command>;
@@ -11,6 +12,7 @@ export interface XClient extends Client {
     database: DBManager;
     services: MessageServices;
     msgLogging: boolean | strin;
+    invites: Invites;
 }
 
 export interface Command {
@@ -300,10 +302,25 @@ export interface AutomoduleData {
      * send a warning dm as an option
      */
     sendDM?: boolean;
+    /**
+     * whether nested text should not be used
+     */
     notNested?: boolean;
+    /**
+     * custom user provided list of strings to use
+     */
     customList?: string[];
+    /**
+     * arbitrary option
+     */
     option1?: boolean;
+    /**
+     * number of something to cross
+     */
     threshold?: number;
+    /**
+     * in seconds
+     */
     frequency?: number;
 }
 
@@ -314,6 +331,9 @@ export interface GuildUserDataRow {
     createdat?: string;
     updatedat?: string;
     offenses?: number;
+    /**
+     * @deprecated
+     */
     warnings?: number;
     bans?: number;
     bio?: string;
@@ -702,4 +722,26 @@ export interface CmdHistoryRow {
     messageid: string;
     channelid: string;
     invocation_time: string;
+}
+
+export interface InvitedData {// data for the people that have joined and were tracked by an invite
+    id: number;
+    guildid: string;
+    inviteat: string;
+    invitee: string;
+    inviter: string;
+    invitername: string;
+    code: string;
+}
+
+export interface InviteData {// data for the actual invites that are in use for the guild
+    inviter: string;
+    uses: number;
+    code: string;
+    channel: string;
+}
+
+export interface InviteStateData {
+    guildid: string;
+    invites: InviteData[];
 }

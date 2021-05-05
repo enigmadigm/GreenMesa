@@ -2,7 +2,7 @@ import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
-import { checkWarnings } from "../../utils/modactions";
+import { warn } from "../../utils/modactions";
 
 export const command: Command = {
     name: "warn",
@@ -26,40 +26,12 @@ export const command: Command = {
             }
             args.shift();
             const reason = args.join(" ");
-            const gud = await client.database.getGuildUserData(message.guild.id, target.id);
-            if (!gud || !gud.id) {
-                await client.specials?.sendError(message.channel, "Unable to retrieve user information.", true);
+            const warnResult = await warn(client, target, message.author.id, reason);
+            if (warnResult) {
+                await message.channel.send(`\\✅ ${target} has been warned`);
                 return;
             }
-            if (!gud.warnings) {
-                gud.warnings = 0;
-            } else {
-                gud.warnings++;
-            }
-            await client.database.updateGuildUserData(gud);
-            await checkWarnings(client, target);
-            try {
-                await target.send({
-                    embed: {
-                        color: await client.database.getColor("warn_embed_color"),
-                        title: `Warn Notice`,
-                        description: `Warned in ${message.guild.name}.`,
-                        fields: [
-                            {
-                                name: "Moderator",
-                                value: `${message.author.tag}`,
-                            },
-                            {
-                                name: "Reason",
-                                value: `${reason || "*none*"}`,
-                            }
-                        ],
-                    }
-                });
-            } catch (error) {
-                //
-            }
-            await message.channel.send(`${target} has been warned`);
+            message.channel.send(`It seems that something may have gone wrong`);
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);

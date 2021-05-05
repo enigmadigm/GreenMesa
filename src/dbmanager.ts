@@ -4,7 +4,7 @@ import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Role, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -113,6 +113,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `duration` int(11) NOT NULL DEFAULT -1, `mod` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
             this.query("CREATE TABLE IF NOT EXISTS `cmdhistory` ( `invocation_id` int(11) NOT NULL AUTO_INCREMENT, `command_name` text COLLATE utf8mb4_unicode_ci NOT NULL, `message_content` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `userid` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL, `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `invocation_time` timestamp NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`invocation_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `invitetracking` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `inviteat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `invitee` text COLLATE utf8mb4_unicode_ci NOT NULL, `inviter` text COLLATE utf8mb4_unicode_ci NOT NULL, `invitername` text COLLATE utf8mb4_unicode_ci NOT NULL, `code` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
             return this;
         } catch (error) {
@@ -130,7 +131,7 @@ export class DBManager {
      * @param {string} name name of setting to retrieve
      */
     async getGlobalSetting(name: string): Promise<GlobalSettingRow | false> {
-        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
+        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlog.error);
         if (rows && rows.length > 0) {
             return rows[0];
         } else {
@@ -150,7 +151,7 @@ export class DBManager {
             name += "_embed_color";
         }
         // color cache lookup and management should go here
-        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${mysql.escape(name)}`).catch(xlog.error);
+        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlog.error);
         if (!rows || rows.length == 0) {
             if (name === "info_embed_color") return 279673;
             if (name === "fail_embed_color") return 16711680;
@@ -159,7 +160,7 @@ export class DBManager {
             return 0;
         }
         if (!isNaN(parseInt(rows[0].value, 10))) {
-            return parseInt(rows[0].value, 10);
+            return parseInt(rows[0].value);
         }
         return 0;
     }
@@ -1230,6 +1231,22 @@ export class DBManager {
     }
 
     /**
+     * Get all of the recorded cases for a given user (in which they were the subject)
+     */
+    async getModActionsByUserAndType(guildid: string, userid: string, action: string): Promise<ModActionData[] | false> {
+        try {
+            const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND userid = ${escape(userid)} AND type = ${escape(action)}`);
+            if (rows && rows.length > 0) {
+                return rows;
+            }
+            return false;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    /**
      * Update a user's data. This is global data (opposed to guild data).
      */
     async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
@@ -1452,6 +1469,43 @@ export class DBManager {
                 return false;
             }
             return true;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    async getInvites(query: Partial<InvitedData>): Promise<InvitedData[]> {
+        try {
+            const queryOptions = <(keyof Partial<InvitedData>)[]>Object.keys(query);
+            if (!queryOptions.length) return [];
+            let sql = `SELECT * FROM invitetracking WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : ","} \`${opt}\` = ${escape(val)}`;
+            }
+            console.log(sql);
+            const result = await <Promise<InvitedData[]>>this.query(`${sql}`);
+            if (result.length) {
+                return result;
+            }
+            return [];
+        } catch (error) {
+            xlog.error(error);
+            return [];
+        }
+    }
+
+    async addInvite(guildid: string, user: string, code: string, inviter?: User): Promise<InsertionResult | false> {
+        try {
+            const inviterid = inviter ? inviter.id : guildid;
+            const invitername = inviter ? inviter.tag : "x";
+            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO \`invitetracking\` (guildid, invitee, inviter, invitername, code) VALUES (${escape(guildid)}, ${escape(user)}, ${escape(inviterid)}, ${escape(invitername)}, ${escape(code)})`);
+            if (result.affectedRows) {
+                return result;
+            }
+            return false;
         } catch (error) {
             xlog.error(error);
             return false;

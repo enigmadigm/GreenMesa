@@ -4,7 +4,7 @@ import { stringToMember } from '../../utils/parsers';
 import Discord from 'discord.js';
 import xlg from "../../xlogger";
 import { Command } from 'src/gm';
-import { Contraventions } from '../../utils/contraventions';
+import { kick } from '../../utils/modactions';
 
 export const command: Command = {
     name: 'kick',
@@ -17,6 +17,7 @@ export const command: Command = {
     guildOnly: true,
     permLevel: permLevels.mod,
     moderation: true,
+    permissions: ["KICK_MEMBERS"],
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
@@ -26,54 +27,23 @@ export const command: Command = {
             if (target && target instanceof Discord.GuildMember) {
                 args.shift();
                 const reason = args.join(" ");
-                try {
-                    await target.send({
-                        embed: {
-                            color: await client.database.getColor("warn_embed_color"),
-                            title: `Kick Notice`,
-                            description: `Kicked from ${message.guild.name}.`,
-                            fields: [
-                                {
-                                    name: "Moderator",
-                                    value: `${message.author.tag}`,
-                                },
-                                {
-                                    name: "Reason",
-                                    value: `${reason || "*none*"}`,
-                                }
-                            ],
-                        }
-                    });
-                } catch (error) {
-                    //
-                }
                 /**
                  * Kick the member
                  * Make sure you run this on a member, not a user!
                  * There are big differences between a user and a member
                  */
                 try {
-                    await target.kick(`by ${message.author.tag}${reason ? ` | ${reason}` : ""}`)
-                    Contraventions.logKick(message.guild.id, target.id, message.author.id, reason);
-                    message.channel.send(`\\✅ Kicked ${target.user.tag}`);
-                    /*logChannel.send({
-                        embed: {
-                            "title": `User Kicked`,
-                            "description": `${member} was kicked from the server by ${message.author}`,
-                            "timestamp": new Date(),
-                            "footer": {
-                                "text": `Kicked ID: ${member.id}`
-                            }
-                        }
-                    });*/
+                    // await target.kick(`by ${message.author.tag}${reason ? ` | ${reason}` : ""}`)
+                    // Contraventions.logKick(message.guild.id, target.id, message.author.id, reason);
+                    const kickResult = await kick(client, target, message.author.id, reason);
+                    if (kickResult) {
+                        message.channel.send(kickResult);
+                        return;
+                    }
                 } catch (err) {
-                    // An error happened
-                    // Log the error
                     xlg.error(err);
-                    // This is generally due to the bot not being able to kick the member,
-                    // either due to missing permissions or role hierarchy
-                    message.channel.send(`\\🆘 Could not kick ${target.user.tag}`);
                 }
+                message.channel.send(`\\🆘 Could not kick ${target.user.tag}`);
             } else {
                 message.channel.send(`🟥 Invalid member to kick`);
             }

@@ -290,7 +290,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod?: 
         reason: `banned by ${moderator?.user.tag || "me"}${summary ? ` for ${summary}` : ``}`
     });
 
-    await Contraventions.logBan(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : `Automatic ban`}${noNotify ? " - could not notify offender" : ""}`, time);
+    await Contraventions.logBan(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : ``}${noNotify ? " - could not notify offender" : ""}`, time);
     
     if (time) {
         const data: UnbanActionData = {
@@ -358,7 +358,7 @@ export async function kick(client: XClient, target: GuildMember, mod?: string, s
     }
 
     await target.kick(`by ${moderator?.user.tag || "me"}${summary ? ` for ${summary}` : ``}`);
-    await Contraventions.logKick(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : `Automatic kick by ${client.user?.tag}`}${noNotify ? " - could not notify offender" : ""}`);
+    await Contraventions.logKick(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : ``}${noNotify ? " - could not notify offender" : ""}`);
     return `\\✅ Kicked ${target.user.tag}`;
 }
 
@@ -392,7 +392,7 @@ export async function warn(client: XClient, target: GuildMember, mod?: string, s
         noNotify = true;
     }
 
-    await Contraventions.logWarn(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : `Automatic kick by ${client.user?.tag}`}${noNotify ? " - could not notify offender" : ""}`);
+    await Contraventions.logWarn(target.guild.id, target.id, mod || target.client.user?.id || "", `${summary ? summary : ``}${noNotify ? " - could not notify offender" : ""}`);
 
     checkWarnings(client, target);
 

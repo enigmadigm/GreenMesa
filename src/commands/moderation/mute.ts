@@ -1,11 +1,9 @@
-import moment from "moment";
-import { Command, UnmuteActionData } from "src/gm";
+import { Command } from "src/gm";
 import { permLevels } from '../../permissions';
-import { stringToMember, durationToString } from '../../utils/parsers';
+import { stringToMember } from '../../utils/parsers';
 import { stringToDuration } from '../../utils/time';
 import xlg from "../../xlogger";
-import uniqid from 'uniqid';
-import { Contraventions } from "../../utils/contraventions";
+import { mute } from "../../utils/modactions";
 
 export const command: Command = {
     name: 'mute',
@@ -48,108 +46,20 @@ export const command: Command = {
                 message.channel.send(`I don't have a high enough role to manage ${toMute}`);
                 return;
             }
-            // Check if the guild has the mutedRole
-            let mutedRole = message.guild.roles.cache.find(r => r.id === mutedRoleID || r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
-            // If the guild does not have the muted role execute the following
 
-            if (!mutedRole) {
-                // Create a role called "Muted"
-                mutedRole = await message.guild.roles.create({
-                    data: {
-                        name: 'Muted',
-                        color: '#708090',
-                        permissions: 0,
-                        position: 1
-                    }
-                });
-
-                client.database.editGuildSetting(message.guild, "mutedrole", mutedRole.id);
-
-                // Prevent the user from sending messages or reacting to messages
-                message.guild.channels.cache.each(async (channel) => {
-                    if (mutedRole) {
-                        await channel.updateOverwrite(mutedRole, {
-                            SEND_MESSAGES: false,
-                            ADD_REACTIONS: false
-                        });
-                    }
-                });
-            }
-            if (mutedRole.position < toMute.roles.highest.position) {
-                mutedRole.setPosition(toMute.roles.highest.position);
-            }
-
-            // If the mentioned user already has the "mutedRole" then that can not be muted again
-            if (toMute.roles.cache.has(mutedRole.id)) {
-                message.channel.send(`\`${toMute.user.tag}\` is already muted`);
-                return;
-            }
-
-            await toMute.roles.add(mutedRole, `muted by ${message.author.tag}`).catch(e => console.log(e.stack));
-            if (toMute.voice.connection && !toMute.voice.mute) {
-                await toMute.voice.setMute(true);
-            }
-
-            let mendm = ""
             let time = 0;
-            let dur = "";
             if (args[0]) {
                 time = stringToDuration(args[0])
             }
             if (time) {
-                dur = durationToString(time);
-                mendm = ` for ${dur}`
                 args.shift();
             }
             const reason = args.join(" ");
-            try {
-                await toMute.send({
-                    embed: {
-                        color: await client.database.getColor("fail"),
-                        title: `Mute Notice`,
-                        description: `Muted in ${message.guild.name}.${time ? `\nThis is a temporary mute, it will end in ${dur}` : ""}.`,
-                        fields: [
-                            {
-                                name: "Moderator",
-                                value: `${message.author.tag}`,
-                            },
-                            {
-                                name: "Reason",
-                                value: `${reason || "*none*"}`,
-                            }
-                        ],
-                    }
-                });
-            } catch (error) {
-                //
-            }
-            Contraventions.logMute(message.guild.id, toMute.id, time, message.author.id, reason);
 
-            message.channel.send(`\\✅ Muted \`${toMute.user.tag}\`${mendm}`);//${time ? `Edit with ID: ${"*private*"}` : ""}
+            const muteResult = await mute(client, toMute, time, message.author.id, reason);
 
-            if (time) {
-                /*setTimeout(async () => {
-                    if (mutedRole) {
-                        if (!toMute.roles.cache.has(mutedRole.id)) return;
-                        // Remove the mentioned users role "mutedRole", "muted.json", and notify command sender
-                        await toMute.roles.remove(mutedRole, `unmuting automatically after ${dur}`);
-                        if (toMute.voice.connection && toMute.voice.mute) {
-                            toMute.voice.setMute(false);
-                        }
-                    }
-                }, time)*/
-                const t = moment().add(time, "ms").toDate();
-                const data: UnmuteActionData = {
-                    guildid: message.guild.id,
-                    userid: toMute.id,
-                    roleid: mutedRole.id,
-                    duration: dur
-                }
-                const mtr = await client.database.setAction(uniqid( "ta$"), t, "unmute", data);
-                if (!mtr) {
-                    xlg.error("couldn't start mute timer with mute command");
-                    message.channel.send("The timed mute could not be established. The mute will remain permanent.");
-                }
+            if (muteResult) {
+                message.channel.send(muteResult);//${time ? `Edit with ID: ${"*private*"}` : ""}
             }
         } catch (e) {
             xlg.error(e);

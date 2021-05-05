@@ -186,7 +186,7 @@ client.on('guildMemberAdd', async member => {
                 if (bans.includes(member.id)) {
                     try {
                         //await member.ban();
-                        await ban(client, member, undefined, client.user?.id, undefined, `Autoban initiated on join. Triggered because ${member.user.tag} was on the autoban list.`);
+                        await ban(client, member, undefined, undefined, `Autoban initiated on join. Triggered because ${member.user.tag} was on the autoban list.`);
                         bans.splice(bans.indexOf(member.id), 1);
                         await client.database.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
                     } catch (error) {
@@ -217,16 +217,17 @@ client.on("guildMemberRemove", async member => { //Emitted whenever a member lea
 });
 
 client.on("guildMemberUpdate", async (om, nm) => {
-    if (!om.partial && !nm.partial) {
+    if (!om.partial) {
         logNickname(om, nm);
     }
     client.services?.run(client, "automod_nicenicks", nm)
 });
 
-client.on('messageDelete', message => {
-    if (!message.partial) {
-        logMessageDelete(message);
+client.on('messageDelete', async (message) => {
+    if (message.partial) {
+        message = await message.fetch();
     }
+    logMessageDelete(message);
 });
 
 client.on('messageDeleteBulk', messageCollection => {
