@@ -183,10 +183,10 @@ client.on('guildMemberAdd', async member => {
         if (storedBans) {
             try {
                 const bans: string[] = JSON.parse(storedBans.value);
-                if (bans.includes(member.id)) {
+                if (bans.includes(member.id) && member.guild.me) {
                     try {
                         //await member.ban();
-                        await ban(client, member, undefined, undefined, `Autoban initiated on join. Triggered because ${member.user.tag} was on the autoban list.`);
+                        await ban(client, member, undefined, member.guild.me, `Autoban initiated on join. Triggered because ${member.user.tag} was on the autoban list.`);
                         bans.splice(bans.indexOf(member.id), 1);
                         await client.database.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
                     } catch (error) {

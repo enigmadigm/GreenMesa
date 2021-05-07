@@ -18,7 +18,7 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
+            if (!message.guild || !message.member) return;
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target) {
                 await client.specials?.sendError(message.channel, "Invalid target", true);
@@ -26,7 +26,7 @@ export const command: Command = {
             }
             args.shift();
             const reason = args.join(" ");
-            const warnResult = await warn(client, target, message.author.id, reason);
+            const warnResult = await warn(client, target, message.member, reason);
             if (warnResult) {
                 await message.channel.send(`\\✅ ${target} has been warned`);
                 return;

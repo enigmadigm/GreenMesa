@@ -53,7 +53,7 @@ export const command: Command = {
                             const u = client.users.cache.get(file.userid);
                             const agent = client.users.cache.get(file.agent);
                             const m = await c.messages.fetch(file.superid);
-                            const e = Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, await client.database.getColor("info"), file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime);
+                            const e = Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, await client.database.getColor("info"), file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime, file.usertag);
                             m.embeds[0].description = e.description;
                             await m.edit(new MessageEmbed(m.embeds[0]));
                             await responseMessage.edit(`${responseMessage.content} and the case message in ${m.channel}`);

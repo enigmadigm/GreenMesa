@@ -443,11 +443,13 @@ export interface ModActionData {
     guildid: string;
     casenumber: number;
     userid: string;
+    usertag: string;
     type: string;
     created: string;
     updated: string;
     endtime?: string;
     agent: string;
+    agenttag: string;
     summary: string;
 }
 
@@ -456,9 +458,11 @@ export interface ModActionEditData {
     guildid: string;
     casenumber?: number;
     userid: string;
+    usertag?: string;// maybe make this required
     type?: string;
     endtime?: string;
     agent: string;
+    agenttag?: string;// maybe make this required
     summary?: string;
 }
 

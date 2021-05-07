@@ -96,7 +96,7 @@ export class MessageServices {
 
     async punish<T = unknown>(mod: AutomoduleData, target: GuildMember, data?: T): Promise<void> {
         try {
-            if (!mod || !target || !Bot.client.database) return;
+            if (!mod || !target || !Bot.client.database || !target.guild.me) return;
             const ud = await Bot.client.database.getGuildUserData(target.guild.id, target.id);
             if (!ud.offenses) {
                 ud.offenses = 1;
@@ -143,7 +143,7 @@ export class MessageServices {
                             break;
                         }
                         case "warn": {
-                            await warn(Bot.client, target, Bot.client.user?.id, `Automatic warn triggered by automod:${mod.name}`);
+                            await warn(Bot.client, target, target.guild.me, `Automatic warn triggered by automod:${mod.name}`);
                             break;
                         }
                         default:
@@ -154,23 +154,23 @@ export class MessageServices {
             if (pastOffset && target.bannable && target.kickable) {
                 switch (mod.punishment) {
                     case "ban": {
-                        await ban(Bot.client, target, 0, Bot.client.user?.id, `Automatic ban triggered by automod:${mod.name}`);
+                        await ban(Bot.client, target, 0, target.guild.me, `Automatic ban triggered by automod:${mod.name}`);
                         break;
                     }
                     case "kick": {
-                        await kick(Bot.client, target, Bot.client.user?.id, `Automatic kick triggered by automod:${mod.name}`);
+                        await kick(Bot.client, target, target.guild.me, `Automatic kick triggered by automod:${mod.name}`);
                         break;
                     }
                     case "mute": {
-                        await mute(Bot.client, target, 0, Bot.client.user?.id, `Automatic mute triggered by automod:${mod.name}`);
+                        await mute(Bot.client, target, 0, target.guild.me, `Automatic mute triggered by automod:${mod.name}`);
                         break;
                     }
                     case "tempban": {
-                        await ban(Bot.client, target, ptime * 1000, Bot.client.user?.id, `Automatic tempban triggered by automod:${mod.name}`);
+                        await ban(Bot.client, target, ptime * 1000, target.guild.me, `Automatic tempban triggered by automod:${mod.name}`);
                         break;
                     }
                     case "tempmute": {
-                        await mute(Bot.client, target, ptime * 1000, Bot.client.user?.id, `Automatic tempmute triggered by automod:${mod.name}`);
+                        await mute(Bot.client, target, ptime * 1000, target.guild.me, `Automatic tempmute triggered by automod:${mod.name}`);
                         break;
                     }
                     default:

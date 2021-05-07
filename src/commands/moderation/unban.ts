@@ -18,7 +18,7 @@ export const command: Command = {
     moderation: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
+            if (!message.guild || !message.member) return;
 
             if (args.join(" ") === "all") {
                 const b = await message.guild.fetchBans();
@@ -43,7 +43,7 @@ export const command: Command = {
             const t = args[0];
             let ub;
             try {
-                ub = await message.guild.fetchBan(t);
+                ub = await message.guild.fetchBan(t);//TODO: add function to specials to search all shards for a user and return the userinfo, like the id, if they are found, this could be used to search using tags because with a tag a user in a mutual guild could be found
             } catch (e) {
                 if (e.message === "Unknown Ban") {
                     const storedBans = await client.database.getGuildSetting(message.guild, "toban");
@@ -72,7 +72,7 @@ export const command: Command = {
             const reason = args.join(" ");
             try {
                 await message.guild.members.unban(ub.user, reason);
-                Contraventions.logUnban(message.guild.id, ub.user.id, message.author.id, reason);
+                Contraventions.logUnban(message.guild.id, ub.user.id, message.member, reason, ub.user.tag);
                 message.channel.send(`\\✅ Unbanned ${ub.user.tag}`);
             } catch (e) {
                 message.channel.send(`\\🆘 Could not unban ${ub.user.tag}`);
