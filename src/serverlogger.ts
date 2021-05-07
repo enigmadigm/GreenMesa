@@ -1,6 +1,6 @@
 //import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
 import { stringToChannel, capitalize } from './utils/parsers';
-import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, Role, TextChannel } from 'discord.js';
+import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
 import xlg from "./xlogger";
 import { Bot } from './bot';
@@ -121,26 +121,45 @@ export async function logMessageDelete(message: Message): Promise<void> {
             shortened = true;
         }
 
-        logChannel.send({
-            embed: {
-                "color": await Bot.client.database.getColor("fail") || 0xff0000,
-                "author": {
-                    "name": "Message Deleted",
-                    "icon_url": message.author.displayAvatarURL()
-                },
-                "description": `message by ${message.author} deleted in ${message.channel}\nmessage created ${moment(message.createdAt).utc().fromNow()}`,
-                "fields": [
-                    {
-                        name: 'Content' + (shortened ? ' (shortened)' : ''),
-                        value: message.content.length > 0 ? content : '*content unavailable*'
-                    }
-                ],
-                "timestamp": new Date(message.createdAt),
-                "footer": {
-                    "text": `Message ID: ${message.id} | Author ID: ${message.author.id}`
-                }
+        const embed: MessageEmbedOptions = {
+            // "color": await Bot.client.database.getColor("fail") || 0xff0000,
+            author: {
+                name: "Message Deleted",
+                icon_url: message.author.displayAvatarURL()
+            },
+            description: `by ${message.author} in ${message.channel}\ncreated ${moment(message.createdAt).utc().fromNow()}`,
+            fields: [],
+            timestamp: new Date(message.createdAt),
+            footer: {
+                text: `Message ID: ${message.id} | Author ID: ${message.author.id}`
             }
-        });
+        };
+
+        if (message.attachments.size) {
+            let images = 0;
+            let other = 0;
+            embed.fields?.push({
+                name: `Attachments [${message.attachments.size}]`,
+                value: `${message.attachments.sort((p) => p.height || p.attachment ? -1 : 1).map((a) => {
+                    if (a.height || a.width) {
+                        images += 1;
+                    } else {
+                        other += 1;
+                    }
+                    const name = a.name?.split(".");
+                    return `[${a.height || a.width ? "Image" : "Attachment"} ${a.height || a.width ? images : other}](${a.url})${name ? ` (${name[name.length - 1]})` : ""}`;
+                })}`
+            })
+        }
+
+        if (!embed.fields?.length || content) {
+            embed.fields?.push({
+                name: 'Content' + (shortened ? ' (shortened)' : ''),
+                value: message.content.length > 0 ? content : '*content unavailable*'
+            })
+        }
+
+        logChannel.send({ embed });
     } catch (err) {
         xlg.error(err);
     }

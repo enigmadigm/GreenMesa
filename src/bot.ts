@@ -225,6 +225,9 @@ client.on("guildMemberUpdate", async (om, nm) => {
 
 client.on('messageDelete', async (message) => {
     if (message.partial) {
+        if (message.deleted) {
+            return;
+        }
         message = await message.fetch();
     }
     logMessageDelete(message);
