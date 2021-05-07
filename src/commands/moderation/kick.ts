@@ -20,8 +20,8 @@ export const command: Command = {
     permissions: ["KICK_MEMBERS"],
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-            
+            if (!message.guild || !message.member) return;
+
             const target = await stringToMember(message.guild, args[0], false, false, false);
             // If we have a user mentioned
             if (target && target instanceof Discord.GuildMember) {
@@ -35,7 +35,7 @@ export const command: Command = {
                 try {
                     // await target.kick(`by ${message.author.tag}${reason ? ` | ${reason}` : ""}`)
                     // Contraventions.logKick(message.guild.id, target.id, message.author.id, reason);
-                    const kickResult = await kick(client, target, message.author.id, reason);
+                    const kickResult = await kick(client, target, message.member, reason);
                     if (kickResult) {
                         message.channel.send(kickResult);
                         return;

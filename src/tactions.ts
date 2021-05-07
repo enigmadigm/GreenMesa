@@ -69,7 +69,7 @@ export class TimedActionsSubsystem {
                     if (m.voice.connection && m.voice.mute) {
                         m.voice.setMute(false);
                     }
-                    Contraventions.logUnmute(g.id, d.userid, Bot.client.user?.id || "", `Automatic unmute after ${d.duration}`);//Automic
+                    Contraventions.logUnmute(m, m.guild.me || "", `Automatic unmute after ${d.duration}`);//Automic
                     break;
                 }
                 case "unban": {

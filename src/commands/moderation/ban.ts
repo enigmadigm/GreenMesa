@@ -70,7 +70,7 @@ export const command: Command = {
 
             const reason = args.join(" ");
             try {
-                const banResult = await ban(client, target, time, message.author.id, reason);
+                const banResult = await ban(client, target, time, message.member, reason);
                 if (banResult) {
                     message.channel.send(banResult);
                     return;

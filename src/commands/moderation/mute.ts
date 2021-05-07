@@ -56,7 +56,7 @@ export const command: Command = {
             }
             const reason = args.join(" ");
 
-            const muteResult = await mute(client, toMute, time, message.author.id, reason);
+            const muteResult = await mute(client, toMute, time, message.member, reason);
 
             if (muteResult) {
                 message.channel.send(muteResult);//${time ? `Edit with ID: ${"*private*"}` : ""}
