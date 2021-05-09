@@ -51,11 +51,16 @@ export interface Command {
      */
     ownerOnly?: boolean;
     permissions?: PermissionString[];
-    execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean>;
+    execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean | CommandReturnData>;
 }
 
-export interface RCommand extends Command {
-    category: string;
+export interface CommandReturnData {
+    content: string;
+    result?: boolean;
+    embedded?: boolean;
+    error?: boolean;
+    color?: number;
+    emoji?: string;
 }
 
 export interface Category {
@@ -733,6 +738,7 @@ export interface InvitedData {// data for the people that have joined and were t
     guildid: string;
     inviteat: string;
     invitee: string;
+    inviteename: string;
     inviter: string;
     invitername: string;
     code: string;
@@ -743,6 +749,7 @@ export interface InviteData {// data for the actual invites that are in use for 
     uses: number;
     code: string;
     channel: string;
+    members: number;
 }
 
 export interface InviteStateData {

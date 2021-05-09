@@ -118,7 +118,7 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
     let member = guild.members.cache.get(text);
     if (!member && byUsername)
     // by username
-    member = guild.members.cache.find(x => x.user.username == text);
+    member = guild.members.cache.find(x => x.user.username == text || x.user.tag == text);
     if (!member && byNickname)
     // by nickname
     member = guild.members.cache.find(x => x.nickname == text);

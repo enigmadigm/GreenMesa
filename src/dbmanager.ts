@@ -113,7 +113,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `usertag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `endtime` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `agent` text COLLATE utf8mb4_unicode_ci NOT NULL, `agenttag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
             this.query("CREATE TABLE IF NOT EXISTS `cmdhistory` ( `invocation_id` int(11) NOT NULL AUTO_INCREMENT, `command_name` text COLLATE utf8mb4_unicode_ci NOT NULL, `message_content` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `userid` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL, `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `invocation_time` timestamp NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`invocation_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            this.query("CREATE TABLE IF NOT EXISTS `invitetracking` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `inviteat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `invitee` text COLLATE utf8mb4_unicode_ci NOT NULL, `inviter` text COLLATE utf8mb4_unicode_ci NOT NULL, `invitername` text COLLATE utf8mb4_unicode_ci NOT NULL, `code` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `invitetracking` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `inviteat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `invitee` text COLLATE utf8mb4_unicode_ci NOT NULL, `inviteename` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `inviter` text COLLATE utf8mb4_unicode_ci NOT NULL, `invitername` text COLLATE utf8mb4_unicode_ci NOT NULL, `code` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
             return this;
         } catch (error) {
@@ -1489,9 +1489,9 @@ export class DBManager {
             for (let i = 0; i < queryOptions.length; i++) {
                 const opt = queryOptions[i];
                 const val = query[opt];
-                sql += `${i === 0 ? "" : ","} \`${opt}\` = ${escape(val)}`;
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
             }
-            console.log(sql);
+            sql += ` ORDER BY inviteat DESC`;
             const result = await <Promise<InvitedData[]>>this.query(`${sql}`);
             if (result.length) {
                 return result;
@@ -1503,11 +1503,26 @@ export class DBManager {
         }
     }
 
-    async addInvite(guildid: string, user: string, code: string, inviter?: User): Promise<InsertionResult | false> {
+    async addInvite(guildid: string, user: { id: string, tag: string }, code: string, inviter?: { id: string, tag: string }): Promise<InsertionResult | false> {
         try {
             const inviterid = inviter ? inviter.id : guildid;
             const invitername = inviter ? inviter.tag : "x";
-            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO \`invitetracking\` (guildid, invitee, inviter, invitername, code) VALUES (${escape(guildid)}, ${escape(user)}, ${escape(inviterid)}, ${escape(invitername)}, ${escape(code)})`);
+            const userid = user.id;
+            const usertag = user.tag;
+            const result = await <Promise<InsertionResult>>this.query(`INSERT INTO \`invitetracking\` (guildid, invitee, inviteename, inviter, invitername, code) VALUES (${escape(guildid)}, ${escape(userid)}, ${escape(usertag)}, ${escape(inviterid)}, ${escape(invitername)}, ${escape(code)})`);
+            if (result.affectedRows) {
+                return result;
+            }
+            return false;
+        } catch (error) {
+            xlog.error(error);
+            return false;
+        }
+    }
+
+    async updateInviteInviter(guildid: string, code: string, inviter: { id: string, tag: string }): Promise<InsertionResult | false> {
+        try {
+            const result = await <Promise<InsertionResult>>this.query(`UPDATE invitetracking SET invitername = ${escape(inviter.tag)}, inviter = ${escape(inviter.id)} WHERE guildid = ${escape(guildid)} AND code = ${escape(code)}`);
             if (result.affectedRows) {
                 return result;
             }
