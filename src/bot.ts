@@ -42,7 +42,7 @@ String.prototype.escapeDiscord = function () {
 };
 
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
-import Discord, { GuildChannel, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
+import Discord, { GuildChannel, MessageEmbedOptions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
 import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
@@ -201,6 +201,7 @@ client.on('guildMemberAdd', async member => {
         }
         client.services?.run(client, "automod_nicenicks", member);
         client.services?.run(client, "autorole", member);
+        client.invites.logIngress(member);
     } catch (error) {
         xlg.error(error);
     }
@@ -213,6 +214,7 @@ client.on("guildMemberRemove", async member => { //Emitted whenever a member lea
             xlg.log(`Couldn't clear XP of member: ${member.id} guild: ${member.guild.id}`);
         }*/
         logMember(member, false);
+        client.invites.logEgress(member);
     }
 });
 
@@ -225,6 +227,9 @@ client.on("guildMemberUpdate", async (om, nm) => {
 
 client.on('messageDelete', async (message) => {
     if (message.partial) {
+        if (message.deleted) {
+            return;
+        }
         message = await message.fetch();
     }
     logMessageDelete(message);
@@ -476,22 +481,33 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         try {
-            command.execute(client, message, args);
-            
-            // adding one to the number of commands executed in auth.json every time command executed, commands that execute inside each other do not feature this
-            /*if (config.commandsExecutedCount) config.commandsExecutedCount += 1;
-            if (!config.commandsExecutedCount) config.commandsExecutedCount = 1;
-            fs.writeFile("./auth.json", JSON.stringify(config, null, 2), function (err) {
-                if (err) return console.log(err);
-            });*/
-
             client.database.logCmdUsage(commandName, message);
+            const ret = await command.execute(client, message, args);
+
+            if (ret && ret !== true) {
+                if (ret.error) {
+                    client.specials.sendError(message.channel, ret.content);
+                } else {
+                    if (ret.embedded) {
+                        const embed: MessageEmbedOptions = {
+                            color: ret.color || await client.database.getColor("info"),
+                            description: ret.content,
+                        }
+                        await message.channel.send({ embed });
+                    } else {
+                        await message.channel.send(ret.content);
+                    }
+                }
+            }
         } catch (error) {
             xlg.error(error);
-            client.specials.sendError(message.channel, 'Error while executing! If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).');
+            client.specials.sendError(message.channel, `Something went wrong. ¯\\_(ツ)_/¯\n[Report](https://github.com/enigmadigm/GreenMesa/issues/new/)`);
         }
     } catch (err) {
-        client.specials.sendError(message.channel, "Error while processing. If this occurs again, please create an issue for this bug on my [GitHub](https://github.com/enigmadigm/GreenMesa/issues).")
+        xlg.error(err);
+        if (message.client.user && !(message.channel instanceof TextChannel && !message.channel.permissionsFor(message.client.user)?.has("SEND_MESSAGES"))) {
+            client.specials.sendError(message.channel, "Error while processing.\n[Report](https://github.com/enigmadigm/GreenMesa/issues/new/)");
+        }
     }
 });
 
