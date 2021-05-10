@@ -58,7 +58,9 @@ export const command: Command = {
             const originatingRoles = tRoles.filter(x => {
                 return ((x.permissions.bitfield & bit) === bit);
             });
-            const originatingOverwrites = channel.permissionOverwrites.filter(x => x.allow.has(bit));
+            const relevantOverwrites = channel.permissionOverwrites.filter(x => (x.allow.has(bit) || x.deny.has(bit)) && (x.type === "member" ? x.id === target.id : target.roles.cache.has(x.id)));
+            const originatingOverwrites = relevantOverwrites.filter(x => x.allow.has(bit));
+            const disallowingOverwrites = relevantOverwrites.filter(x => x.deny.has(bit));
             const embed: MessageEmbedOptions = {
                 color: await client.database.getColor("info"),
                 author: {
@@ -68,10 +70,10 @@ export const command: Command = {
                 description: `**Permission:** \`${flag}\`\n**Target:** ${target.user.tag} ${target}\n**Channel:** ${channel}`,
                 fields: [],
             }
-            if (!originatingRoles.size && !originatingOverwrites.size) {
+            if (!channel.permissionsFor(target)?.has(bit)/* !originatingRoles.size && !originatingOverwrites.size */) {
                 embed.fields?.push({
                     name: `Absent`,
-                    value: `${target} does not have this permission`,
+                    value: `${target} does not have this permission${!originatingRoles.size && !relevantOverwrites.size ? ` because no role or overwrite they have allows it` : (disallowingOverwrites.find(x => x.type === "member") ? ` because they have a personal overwrite in ${channel} denying it` : (disallowingOverwrites.find(x => x.type === "role") ? ` because the overwrite for ${tRoles.get(disallowingOverwrites.first()?.id || "")} denies it` : ``))}`,
                 });
             } else {
                 if (originatingRoles.size) {
