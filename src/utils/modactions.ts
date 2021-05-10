@@ -135,10 +135,12 @@ import { Contraventions } from "./contraventions";
 //         }
 //     }
 // }
+
 /**
  * Auto-mute a target permanently or for a period
  */
 export async function mute(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, reason = "Automatic mute"): Promise<void | string> {
+    if (!target.guild.me?.permissions.has("MANAGE_ROLES")) return;
     const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     const dbmr = await client.database.getGuildSetting(target.guild, "mutedrole");
@@ -199,7 +201,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
         const embed: MessageEmbedOptions = {
             color: await client.database.getColor("fail"),
             title: `Mute Notice`,
-            description: `Muted in ${target.guild.name}.${time ? `\nThis is a temporary mute, it will end in ${duration} at \`${moment().add(time, "ms").format('YYYY-MM-DD HH:mm:ss')}\`.` : ""}`,
+            description: `You were **muted** in \`${target.guild.name}\`.${time ? `\nThis is a temporary mute, it will end in ${duration} at \`${moment().add(time, "ms").format('YYYY-MM-DD HH:mm:ss')}\`.` : ""}`,
             fields: [
                 {
                     name: "Reason",
@@ -254,7 +256,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
  * Ban a target permanently or for a period.
  */
 export async function ban(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, summary?: string): Promise<void | string> {
-    if (!client.database) return;
+    if (!client.database || !target.bannable) return;
     const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
     
     let duration = "";
@@ -269,7 +271,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
         const embed: MessageEmbedOptions = {
             color: await client.database.getColor("fail"),
             title: `Ban Notice`,
-            description: `Banned from ${target.guild.name}.${time ? `\nThis is a temporary ban, it will end in ${duration}` : ""}.`,
+            description: `You were **banned** from \`${target.guild.name}\`.${time ? `\nThis is a temporary ban, it will end in ${duration}` : ""}.`,
             fields: [
                 {
                     name: "Reason",
@@ -313,7 +315,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
     return `\\✅ Banned \`${target.user.tag}\`${mendm}`;
 }
 
-export async function registerBan(client: XClient, target: GuildMember): Promise<void> {
+export async function registerBan(client: XClient, target: GuildMember): Promise<void> {//TODO: the ban counter is currently unused, but I added this in case I wanted to do a future feature where users would get flagged by automod if they had a significant number of bans
     if (!client.database) return;
     const pud = await client.database.getUserData(target.id);
     const gud = await client.database.getGuildUserData(target.guild.id, target.id);
@@ -335,7 +337,7 @@ export async function registerBan(client: XClient, target: GuildMember): Promise
  * Kick someone
  */
 export async function kick(client: XClient, target: GuildMember, mod: GuildMember | string, summary?: string): Promise<void | string> {
-    if (!client.database) return;
+    if (!client.database || !target.kickable) return;
     const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     let noNotify = false;
@@ -343,7 +345,7 @@ export async function kick(client: XClient, target: GuildMember, mod: GuildMembe
         const embed: MessageEmbedOptions = {
             color: await client.database.getColor("warn_embed_color"),
             title: `Kick Notice`,
-            description: `Kicked from ${target.guild.name}.`,
+            description: `You were **kicked** from \`${target.guild.name}\`.`,
             fields: [
                 {
                     name: "Reason",
@@ -379,7 +381,7 @@ export async function warn(client: XClient, target: GuildMember, mod: GuildMembe
         const embed: MessageEmbedOptions = {
             color: await client.database.getColor("warn_embed_color"),
             title: `Warn Notice`,
-            description: `Warned in ${target.guild.name}.`,
+            description: `You were **warned** in \`${target.guild.name}\`.`,
             fields: [
                 {
                     name: "Reason",
