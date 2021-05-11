@@ -45,7 +45,7 @@ export const command: Command = {
                 }
                 message.channel.send(`\\🆘 Could not kick ${target.user.tag}`);
             } else {
-                message.channel.send(`🟥 Invalid member to kick`);
+                message.channel.send(`\\🟥 Invalid member to kick`);
             }
         } catch (error) {
             xlg.error(error);
