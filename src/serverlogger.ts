@@ -106,7 +106,7 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
     }
 }
 
-export async function logMessageDelete(message: Message): Promise<void> {
+export async function logMessageDelete(message: Message): Promise<void> {//TODO: add attachment cache system (posts all deleted attachments in a specific channel in the server and uses the link to that attachment in the msg log)
     try {
         if (!message.guild || message.channel instanceof DMChannel) return;
         const logChannel = await getLogChannel(message.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", message.channel);

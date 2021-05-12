@@ -8,7 +8,7 @@ export const command: Command = {
     name: "invites",
     aliases: ["invs"],
     description: {
-        short: "get personal invite data",
+        short: "inviter stats",
         long: "Get the personal invite data of any user in the a server. This will provide how many members a certain user has invited."
     },
     usage: "<@member> [count|list|users]",
