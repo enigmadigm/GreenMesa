@@ -17,7 +17,6 @@ function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the us
     }
 }
 
-
 function getPresenceEmoji(target: GuildMember) {
     if (target.user.presence.status === 'online') return '<:736903507436896313:752118506950230067>';
     if (target.user.presence.status === 'idle') return '<:736903574235250790:752118507164139570>';
@@ -38,7 +37,7 @@ export const command: Command = {
             message.channel.startTyping();
             await message.guild.fetch();
             const target = await stringToMember(message.guild, args.join(" ")) || message.member;
-            const rank = await client.database.getTop10(message.guild.id, target.id);
+            const rank = await client.database.getXPTop10(message.guild.id, target.id);
             const xp = await client.database.getXP(target);
             /* if (!rank || !xp) {
                 client.specials?.sendError(message.channel, "User information could not be retrieved");

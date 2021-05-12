@@ -15,7 +15,7 @@ export const command: Command = {
         "@Darth Pissed off the mods today"
     ],
     args: true,
-    cooldown: 2,
+    cooldown: 1,
     permLevel: permLevels.mod,
     moderation: false,
     guildOnly: true,

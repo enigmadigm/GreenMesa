@@ -425,7 +425,7 @@ export class DBManager {
     }
 
     /**
-     * get the current db stats for gm counters
+     * Get historical statistics for the GM counter data
      * @param limiter number of past hours to retrieve
      */
     async getGMStats(limiter = 24): Promise<BSRow[]> {
@@ -497,12 +497,13 @@ export class DBManager {
      * @param guildid id of guild to look up
      * @param memberid id of member in guild to look up
      */
-    async getTop10(guildid = "", memberid = ""): Promise<{ rows: ExpRow[], personal: PersonalExpRow }> {
-        const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = '${guildid}' ORDER BY \`xp\` DESC LIMIT 10`);
-        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = '${guildid}' ) ) AS rank FROM dgmxp WHERE id = '${memberid}${guildid}'`);
+    async getXPTop10(guildid: string, memberid = ""): Promise<{ rows: ExpRow[], personal?: PersonalExpRow }> {
+        const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = ${escape(guildid)} ORDER BY \`xp\` DESC LIMIT 10`);
+        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = ${escape(guildid)} ) ) AS rank FROM dgmxp WHERE id = ${escape(memberid + guildid)}`);
+        const person = personalrows.length ? personalrows[0] : undefined;
         return {
             rows: rows || [],
-            personal: personalrows[0] || false
+            personal: person,
         };
     }
 

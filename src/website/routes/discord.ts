@@ -48,6 +48,12 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.use(express.json());
 
+    // router.use(async (req, res, next) => {
+    //     const par = req.params;
+    //     console.log(par);
+    //     next();
+    // });
+
     // GETters
 
     router.get('/guilds', async (req, res) => {
