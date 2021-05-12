@@ -16,7 +16,7 @@ export const command: Command = {
         "@Darth"
     ],
     args: true,
-    cooldown: 3,
+    cooldown: 2,
     permLevel: permLevels.mod,
     moderation: false,
     guildOnly: true,

@@ -17,7 +17,6 @@ function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the us
     }
 }
 
-
 function getPresenceEmoji(target: GuildMember) {
     if (target.user.presence.status === 'online') return '<:736903507436896313:752118506950230067>';
     if (target.user.presence.status === 'idle') return '<:736903574235250790:752118507164139570>';

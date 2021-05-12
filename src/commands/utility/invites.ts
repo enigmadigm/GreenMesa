@@ -2,7 +2,8 @@ import xlg from "../../xlogger";
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
-import { MessageEmbedOptions } from "discord.js";
+import { MessageEmbed, MessageEmbedOptions } from "discord.js";
+import { PaginationExecutor } from "../../utils/pagination";
 
 export const command: Command = {
     name: "invites",
@@ -41,6 +42,7 @@ export const command: Command = {
                         },
                         description: `The list of the invites used historically (not invites that have not been used).`,
                     }
+                    const overflowPages: MessageEmbed[] = [];
                     if (!data.length) {
                         embed.description += `\n*No data is available for past invite use, no invites have been recorded.*`;
                     } else {
@@ -53,9 +55,26 @@ export const command: Command = {
                             add.push(`\` ${c.code} \` (${c.uses} uses)`);
                         }
                         embed.description += `\n`;
-                        embed.description += add.join("\n");//TODO: paginate this damnit
+                        const pages: string[] = [];
+                        let pagei = 0;
+                        for (const a of add) {
+                            const page = pages[pagei] || "";
+                            if (`${page}\n${a}`.length < 512) {
+                                pages[pagei] = `${page}\n${a}`;
+                            } else {
+                                pagei++;
+                                pages[pagei] = a;
+                            }
+                        }
+                        embed.description += pages[0];
+                        overflowPages.push(new MessageEmbed(embed))
+                        pages.shift();
+                        for (const page of pages) {
+                            overflowPages.push(new MessageEmbed(embed).setDescription(page));
+                        }
                     }
-                    await message.channel.send({ embed });
+                    PaginationExecutor.createEmbed(message, overflowPages, [message.author.id], true);
+                    // await message.channel.send({ embed });
                     break;
                 }
                 case "invitees":
@@ -68,6 +87,7 @@ export const command: Command = {
                         },
                         description: ``,
                     }
+                    const overflowPages: MessageEmbed[] = [];
                     if (!data.length) {
                         embed.description += `**Data for ${target.user.username}'s invitees is not available.**\nThey probably joined before I began recording data.`;
                     } else {
@@ -79,9 +99,25 @@ export const command: Command = {
                             add.push(`\` ${u} \``);
                         }
                         embed.description += `\n`;
-                        embed.description += add.join("\n");//TODO: paginate this damnit
+                        const pages: string[] = [];
+                        let pagei = 0;
+                        for (const a of add) {
+                            const page = pages[pagei] || "";
+                            if (`${page}\n${a}`.length < 512) {
+                                pages[pagei] = `${page}\n${a}`;
+                            } else {
+                                pagei++;
+                                pages[pagei] = a;
+                            }
+                        }
+                        embed.description += pages[0];
+                        overflowPages.push(new MessageEmbed(embed))
+                        pages.shift();
+                        for (const page of pages) {
+                            overflowPages.push(new MessageEmbed(embed).setDescription(page));
+                        }
                     }
-                    await message.channel.send({ embed });
+                    PaginationExecutor.createEmbed(message, overflowPages, [message.author.id], true);
                     break;
                 }
                 case "inviter": {
@@ -99,7 +135,10 @@ export const command: Command = {
                     } else {
                         const invite = data[0];
                         const user = g.members.cache.get(invite.inviter)?.user.tag ?? (invite.invitername || "unknown#0000");
-                        embed.description += `\` ${user} \` seems to have invited \` ${target.user.tag} \`.`;
+                        embed.description += `\` ${user} \` seems to have invited ${target.user.username}.`;
+                        embed.footer = {
+                            text: `Inviter ID: ${invite.inviter}`,
+                        };
                     }
                     await message.channel.send({ embed });
                     break;

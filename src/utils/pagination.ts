@@ -38,6 +38,14 @@ export class PaginationExecutor {
     public static emojiRight = "▶";
     public static closeEmoji = "❌";
 
+    /**
+     * Create an embedded paginator message, this function will post a starting embed and react with directional buttons to control the pages
+     * @param message message that the command is being triggered by, assuming the paginator is being used in a command
+     * @param embeds the pages for the paginator to use
+     * @param controllers the users who are allowed to contorl this paginator
+     * @param closeable whether a close button should be provided and monitored
+     * @returns whether or not the paginator was successfully posted
+     */
     public static async createEmbed(message: Message, embeds: MessageEmbedOptions[] | MessageEmbed[], controllers?: string[], closeable = false): Promise<boolean> {
         try {
             if (!embeds.length) return false;
