@@ -1,4 +1,4 @@
-import { Client, Collection, Message, MessageEmbedOptions, PermissionString } from "discord.js";
+import { Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, PermissionString } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -15,7 +15,7 @@ export interface XClient extends Client {
     invites: Invites;
 }
 
-export interface Command {
+export interface Command<T = XMessage> {
     name: string;
     /**
      * Alternate names to use to call the command
@@ -51,8 +51,10 @@ export interface Command {
      */
     ownerOnly?: boolean;
     permissions?: PermissionString[];
-    execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean | CommandReturnData>;
+    execute(client: XClient, message: T, args: string[]): Promise<void | boolean | CommandReturnData>;
 }
+
+export type GuildMessage = XMessage & { guild: Guild, member: GuildMember };
 
 export interface CommandReturnData {
     content: string;
