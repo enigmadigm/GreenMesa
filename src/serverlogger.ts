@@ -2,7 +2,7 @@
 import { stringToChannel, capitalize } from './utils/parsers';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
-import xlg from "./xlogger";
+
 import { Bot } from './bot';
 import { ServerlogData } from './gm';
 

@@ -1,4 +1,4 @@
-import xlg from "../xlogger";
+
 import apppkg from '../../package.json';
 import { Command } from "src/gm";
 //import { getGlobalSetting } from "../dbmanager";

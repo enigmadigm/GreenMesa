@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 //import { getGlobalSetting } from "../dbmanager";
 import fetch from "node-fetch";

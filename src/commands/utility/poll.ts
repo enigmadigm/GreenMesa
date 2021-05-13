@@ -2,7 +2,7 @@ import { MessageEmbedOptions } from "discord.js";
 import { Command } from "src/gm";
 import { parseOptions } from "../../utils/parsers";
 import { delayedLoop } from "../../utils/time";
-import xlg from "../../xlogger";
+
 //import { getGlobalSetting } from "../dbmanager";
 export const command: Command = {
     name: 'poll',

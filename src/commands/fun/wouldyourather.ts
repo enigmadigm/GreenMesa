@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import { Command } from "src/gm";

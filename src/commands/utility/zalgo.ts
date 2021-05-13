@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { Z } from "../../utils/zalgo";
 import { Command } from "src/gm";

@@ -1,6 +1,6 @@
 import { Bot } from "../bot";
 import { MessageService, XMessage } from "../gm";
-import xlg from "../xlogger";
+
 
 /* function escapeRegex(string: string) {
     return string.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');

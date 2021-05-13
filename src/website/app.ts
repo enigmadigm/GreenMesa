@@ -8,7 +8,7 @@ import path from "path";
 import routes from './routes';
 import session from "express-session";
 import mstore from 'express-mysql-session';
-import xlg from "../xlogger";
+
 //const xlg = require("../xlogger");
 
 const PORT = process.env.WEBSITE_PORT || 3002;

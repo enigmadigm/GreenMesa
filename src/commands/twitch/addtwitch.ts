@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { stringToChannel } from "../../utils/parsers";
 import { addTwitchWebhook } from "../../website/routes/twitch";

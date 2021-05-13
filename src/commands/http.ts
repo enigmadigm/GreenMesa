@@ -1,4 +1,4 @@
-import xlg from "../xlogger";
+
 //import { getGlobalSetting } from "../dbmanager";
 import httpdcodes from "../../httpcodes.json";
 import { permLevels } from '../permissions';

@@ -1,5 +1,5 @@
 //import { getGlobalSetting, getGuildSetting, getXP, checkForLevelRoles } from "../dbmanager";
-import xlg from "../../xlogger";
+
 //const moment = require("moment");
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";

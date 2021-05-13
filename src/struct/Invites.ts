@@ -1,7 +1,6 @@
 import { Guild, GuildMember, User } from "discord.js";
 import moment from "moment";
 import { InviteData, InviteStateData, XClient } from "../gm";
-import xlg from "../xlogger";
 
 /**
  * This class tracks invites

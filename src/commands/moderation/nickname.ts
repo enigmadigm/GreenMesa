@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 //import { getGuildSetting } from "../dbmanager";
 import { permLevels, getPermLevel } from "../../permissions";
 import { stringToMember } from "../../utils/parsers";

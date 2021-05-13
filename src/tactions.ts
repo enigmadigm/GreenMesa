@@ -2,7 +2,7 @@ import moment from "moment";
 import { Bot } from "./bot";
 import { TimedAction, UnbanActionData, UnmuteActionData } from "./gm";
 import { Contraventions } from "./utils/contraventions";
-import xlg from "./xlogger";
+
 
 export class TimedActionsSubsystem {
     private scheduled: TimedAction[];

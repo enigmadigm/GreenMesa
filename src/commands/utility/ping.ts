@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { Command } from "src/gm";
 
 export const command: Command = {
@@ -18,4 +18,3 @@ export const command: Command = {
         }
     }
 }
-

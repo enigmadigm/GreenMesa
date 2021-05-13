@@ -1,5 +1,5 @@
 import { default as fetch } from "node-fetch";
-import xlg from "../../xlogger";
+
 import { validURL } from '../../utils/urls';
 //import { getGlobalSetting } from "../dbmanager";
 import { Command } from "src/gm";

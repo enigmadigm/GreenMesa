@@ -2,7 +2,7 @@ import { Command } from "src/gm";
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
 import { stringToDuration } from '../../utils/time';
-import xlg from "../../xlogger";
+
 import { mute } from "../../utils/modactions";
 
 export const command: Command = {

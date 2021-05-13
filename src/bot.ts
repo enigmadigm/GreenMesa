@@ -10,7 +10,6 @@ require('dotenv').config();
 require('source-map-support').install();
 //require('./website/app');
 
-import xlg from "./xlogger";
 process.on('uncaughtException', function (e) {
     xlg.log(e);
     process.exit(1);

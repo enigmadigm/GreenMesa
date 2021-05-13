@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 //import { getGlobalSetting, getXP, setSpideySaved } from "../dbmanager";
 //const moment = require("moment");
 import { permLevels } from '../../permissions';

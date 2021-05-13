@@ -1,4 +1,4 @@
-import xlg from "../xlogger";
+
 import { Message, MessageEmbed, MessageEmbedOptions, MessageReaction, User } from "discord.js";
 
 interface PagerEntry {

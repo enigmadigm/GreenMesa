@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import moment from 'moment';
 //import { getTop10, getXP, getGlobalSetting } from "../dbmanager";
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";

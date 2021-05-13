@@ -1,7 +1,7 @@
 import { Invite } from 'discord.js';
 import moment from 'moment';
 import { Command } from 'src/gm';
-import xlg from "../../xlogger";
+
 
 export const command: Command = {
     name: 'serverinfo',

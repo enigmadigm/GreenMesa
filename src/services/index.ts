@@ -4,7 +4,7 @@ import fs from "fs";
 import { Bot } from "../bot";
 import { ordinalSuffixOf } from "../utils/parsers";
 import { ban, kick, mute, warn } from "../utils/modactions";
-import xlg from "../xlogger";
+
 
 export class MessageServices {
     private services: Collection<string, MessageService>;

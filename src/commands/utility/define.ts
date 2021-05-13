@@ -2,7 +2,7 @@
 import fetch from "node-fetch";
 import { Command } from "src/gm";
 import { MWKEY } from '../../../auth.json';
-import xlg from "../../xlogger";
+
 //import { logDefined } from "../dbmanager";
 
 export const command: Command = {

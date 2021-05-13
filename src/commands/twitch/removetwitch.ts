@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { unsubscribeTwitchWebhook } from "../../website/routes/twitch";
 import Discord, { CollectorFilter } from "discord.js";

@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 //import { getGlobalSetting } from "../dbmanager";
 import { DiceRoll } from 'rpg-dice-roller';
 import { Command } from "src/gm";

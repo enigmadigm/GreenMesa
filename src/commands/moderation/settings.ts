@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { stringToChannel, stringToRole } from '../../utils/parsers';
 import { Channel, Role } from "discord.js";
