@@ -3,7 +3,7 @@ import moment from "moment";
 import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
-import xlg from "../xlogger";
+
 import { Contraventions } from "./contraventions";
 
 // export class BaseModAction<T> {
@@ -271,7 +271,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
         const embed: MessageEmbedOptions = {
             color: await client.database.getColor("fail"),
             title: `Ban Notice`,
-            description: `You were **banned** from \`${target.guild.name}\`.${time ? `\nThis is a temporary ban, it will end in ${duration}` : ""}.`,
+            description: `You were **banned** from \`${target.guild.name}\`.${time ? `\nThis is a temporary ban, it will end in ${duration}.` : ""}`,
             fields: [
                 {
                     name: "Reason",
