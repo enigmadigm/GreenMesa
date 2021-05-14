@@ -46,7 +46,7 @@ export const command: Command<GuildMessageProps> = {
             }
             const pages: string[] = [""];
             let pi = 0;
-            for (const d of groupings) {
+            for (const d of groupings.sort((a,b) => b.cases.length - a.cases.length)) {
                 const u = d.mod ? message.guild.members.cache.get(d.mod)?.user : undefined;
                 const mod = d.mod ? u ? `${u.tag}${u.bot ? ` [BOT](${getDashboardLink()})` : ""}` : d.cases[0].agenttag : `anonymous#0000`;
                 const a = `(${d.cases.length} actions) ${mod}`;
