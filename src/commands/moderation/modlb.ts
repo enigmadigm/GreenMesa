@@ -2,6 +2,7 @@ import { permLevels } from '../../permissions';
 import { Command, GuildMessageProps, ModActionData } from "src/gm";
 import { MessageEmbed, MessageEmbedOptions } from 'discord.js';
 import { PaginationExecutor } from '../../utils/pagination';
+import { getDashboardLink } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
     name: "modlb",
@@ -46,7 +47,8 @@ export const command: Command<GuildMessageProps> = {
             const pages: string[] = [""];
             let pi = 0;
             for (const d of groupings) {
-                const mod = d.mod ? message.guild.members.cache.get(d.mod)?.user.tag || d.cases[0].agenttag : `anonymous#0000`;
+                const u = d.mod ? message.guild.members.cache.get(d.mod)?.user : undefined;
+                const mod = d.mod ? u ? `${u.tag}${u.bot ? ` [BOT](${getDashboardLink()})` : ""}` : d.cases[0].agenttag : `anonymous#0000`;
                 const a = `(${d.cases.length} actions) ${mod}`;
                 if (`${pages[pi]}\n${a}`.length > 512) {
                     pi++;
