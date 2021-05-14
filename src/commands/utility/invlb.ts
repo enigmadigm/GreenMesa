@@ -1,52 +1,51 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps, ModActionData } from "src/gm";
-import { MessageEmbed, MessageEmbedOptions } from 'discord.js';
+import { Command, GuildMessageProps, InvitedData } from "src/gm";
+import { MessageEmbed, MessageEmbedOptions } from "discord.js";
 import { PaginationExecutor } from '../../utils/pagination';
 import { getDashboardLink } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
-    name: "modlb",
-    aliases: ["modslb"],
+    name: "invlb",
     description: {
-        short: "get a leaderboard for mod actions",
-        long: "Get a leaderboard of mods ranked by the number of actions they have."
+        short: "inviters leaderboard",
+        long: "Get a leaderboard of the top inviters in your server. It shows users ranked by the number of valid invites they have."
     },
+    usage: "<@member> [count|list|users]",
     args: false,
-    cooldown: 1,
-    permLevel: permLevels.mod,
-    moderation: true,
+    cooldown: 4,
+    permLevel: permLevels.member,
     guildOnly: true,
-    permissions: ["USE_EXTERNAL_EMOJIS"],
+    permissions: ["MANAGE_GUILD"],
     async execute(client, message) {
         try {
-            const list = await client.database.getModActions({ guildid: message.guild.id });
-            if (!list || !list.length) {
+            const data = await client.database.getInvites({ guildid: message.guild.id });
+            if (!data.length) {
                 client.specials.sendError(message.channel)
                 return;
             }
-            const groupings: { mod: string, cases: ModActionData[] }[] = [];
-            for (const incident of list) {
-                const pre = groupings.find(x => x.mod === incident.agent);
+            const groupings: { user: string, invites: InvitedData[] }[] = [];
+            for (const invite of data) {
+                const pre = groupings.find(x => x.user === invite.inviter);
                 if (pre) {
-                    pre.cases.push(incident);
+                    pre.invites.push(invite);
                 } else {
                     groupings.push({
-                        mod: incident.agent,
-                        cases: [incident],
+                        user: invite.inviter,
+                        invites: [invite],
                     });
                 }
             }
             const embed: MessageEmbedOptions = {
                 color: await client.database.getColor("info"),
-                title: `Moderator Influence Leaderboard`,
+                title: `Inviters Leaderboard`,
                 description: ``,
             }
             const pages: string[] = [""];
             let pi = 0;
-            for (const d of groupings.sort((a,b) => b.cases.length - a.cases.length)) {
-                const u = d.mod ? message.guild.members.cache.get(d.mod)?.user : undefined;
-                const mod = d.mod ? u ? `${u.tag}${u.bot ? ` [BOT](${getDashboardLink()})` : ""}` : d.cases[0].agenttag : `anonymous#0000`;
-                const a = `(${d.cases.length} actions) ${mod}`;
+            for (const d of groupings.sort((a, b) => b.invites.length - a.invites.length)) {
+                const u = d.user ? message.guild.members.cache.get(d.user)?.user : undefined;
+                const tag = d.user ? u ? `${u.tag}${u.bot ? ` [BOT](${getDashboardLink()})` : ""}` : d.invites[0].invitername : `anonymous#0000`;
+                const a = `(${d.invites.length} invites) ${tag}`;
                 if (`${pages[pi]}\n${a}`.length > 512) {
                     pi++;
                     pages[pi] = a;

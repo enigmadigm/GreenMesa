@@ -1,4 +1,3 @@
-import xlg from '../../xlogger';
 import express from 'express';
 import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
@@ -6,7 +5,6 @@ import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
-//import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
 
 export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): PartialGuildObject[] {
     return userGuilds.filter(g => {

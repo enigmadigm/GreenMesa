@@ -1247,6 +1247,33 @@ export class DBManager {
     }
 
     /**
+     * Flexibly query the database of modactions based on parameters set in the query argument object.
+     * @param query query selectors
+     * @returns modactions based on query
+     */
+    async getModActions(query: Partial<ModActionData>/*  & { guildid: string } */): Promise<ModActionData[] | false> {
+        try {
+            const queryOptions = <(keyof Partial<ModActionData>)[]>Object.keys(query);
+            if (!queryOptions.length) return [];
+            let sql = `SELECT * FROM modactions WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            sql += ` ORDER BY created DESC`;
+            const result = await <Promise<ModActionData[]>>this.query(`${sql}`);
+            if (result.length) {
+                return result;
+            }
+            return [];
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    /**
      * Update a user's data. This is global data (opposed to guild data).
      */
     async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
