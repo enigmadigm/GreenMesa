@@ -1,4 +1,3 @@
-import xlg from '../xlogger';
 import { Command } from "src/gm";
 import { getDashboardLink } from "../utils/specials";
 

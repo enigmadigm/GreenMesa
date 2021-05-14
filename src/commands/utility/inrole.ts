@@ -1,5 +1,4 @@
 //import { getGlobalSetting } from '../dbmanager';
-import xlg from '../../xlogger';
 import { stringToRole } from "../../utils/parsers";
 import { permLevels } from '../../permissions';
 import { Command } from 'src/gm';

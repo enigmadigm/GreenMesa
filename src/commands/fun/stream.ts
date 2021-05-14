@@ -1,5 +1,3 @@
-import xlg from '../../xlogger';
-//import { getGlobalSetting } from "../dbmanager";
 import ytdl from 'ytdl-core';
 import { Command } from 'src/gm';
 

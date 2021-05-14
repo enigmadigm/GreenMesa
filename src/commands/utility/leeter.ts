@@ -1,6 +1,4 @@
 import { Command } from "src/gm";
-
-import xlg from '../../xlogger';
 import Leeter from '../../utils/leeter';
 const leeter = new Leeter(1, false);
 

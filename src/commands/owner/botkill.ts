@@ -1,6 +1,5 @@
 import { Command } from 'src/gm';
 import { permLevels } from '../../permissions';
-import xlg from '../../xlogger';
 
 export const command: Command = {
     name: 'botkill',

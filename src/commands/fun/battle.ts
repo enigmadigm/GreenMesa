@@ -1,6 +1,4 @@
 import { Command } from "src/gm";
-import xlg from '../../xlogger';
-//import { getGlobalSetting } from '../dbmanager';
 import { stringToMember } from '../../utils/parsers';
 
 const actions = ['shoot', 'punch', 'kick', 'drop', 'choke', 'torture', 'shoot', 'superhero battle', 'cleave', 'big cgi fight'];

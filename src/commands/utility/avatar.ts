@@ -1,7 +1,5 @@
 import { Command } from 'src/gm';
 import { stringToMember } from '../../utils/parsers';
-import xlg from '../../xlogger';
-//import { getGlobalSetting } from '../dbmanager';
 
 export const command: Command = {
     name: 'avatar',

@@ -52,6 +52,7 @@ import { TimedActionsSubsystem } from "./tactions";
 import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
 import { ban } from "./utils/modactions";
+import "./xlogger";
 
 export class Bot {
     static client: XClient;

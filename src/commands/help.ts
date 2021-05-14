@@ -1,4 +1,3 @@
-import xlg from '../xlogger';
 import { permLevels } from '../permissions';
 import { Command } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';

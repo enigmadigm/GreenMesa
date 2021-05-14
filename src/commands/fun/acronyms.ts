@@ -1,4 +1,3 @@
-import xlg from '../../xlogger';
 import acronyms from '../../../acronyms.json';
 import { Command } from 'src/gm';
 const commonAcronyms = [

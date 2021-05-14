@@ -1,4 +1,3 @@
-import xlg from '../../xlogger';
 import { Command } from 'src/gm';
 import { permLevels } from '../../permissions';
 //import { getGuildSetting, getGlobalSetting } from "../dbmanager";
