@@ -23,6 +23,7 @@
     "express": "^4.17.1",
     "express-mysql-session": "^2.1.5",
     "ffmpeg-static": "^4.2.7",
+    "file-type": "^16.4.0",
     "get-image-colors": "^4.0.0",
     "helmet": "^4.4.1",
     "ibm-watson": "^6.0.2",
