@@ -3,7 +3,7 @@ import { db_config } from "../auth.json";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Role, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -1362,7 +1362,10 @@ export class DBManager {
         overwrite: false,
     }
 
-    async getCommands(guildid: string, noOwner = false, all = true): Promise<CmdConfEntry | false> {
+    /**
+     * Get the full raw command conf stored in the database
+     */
+    async getCommandConf(guildid: string): Promise<CmdConfEntry | false> {
         try {
             const ccd = await this.getGuildSetting(guildid, 'commandconf');
             let tp = "";
@@ -1383,6 +1386,20 @@ export class DBManager {
                 this.editGuildSetting(guildid, "commandconf", undefined, true);
                 return false;
             }
+            return cc;
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Get the full command conf but with additional command list options
+     */
+    async getCommands(guildid: string, noOwner = false, all = true): Promise<CmdConfEntry | false> {
+        try {
+            const cc = await this.getCommandConf(guildid);
+            if (!cc) return false;
             const commands = cc.commands.filter(x => Bot.client.commands.get(x.name));// there is not an assignment reference here because the .filter() usage creates a new object
             const gc = cc.conf;
             Bot.client.commands.forEach((c) => {
@@ -1452,9 +1469,9 @@ export class DBManager {
         }
     }
 
-    async getCommand(guildid: string, cmd: string): Promise<CommandConf | false> {
+    async getCommand(guildid: string, cmd: string, cc?: CmdConfEntry): Promise<CommandConf | false> {
         try {
-            const conf = await this.getCommands(guildid, undefined, false);
+            const conf = !cc ? await this.getCommands(guildid, undefined, false) : cc;
             if (!conf) {
                 return false;
             }
@@ -1469,7 +1486,7 @@ export class DBManager {
         }
     }
 
-    async editCommands(guildid: string, commands: CommandConf[], deleting = false): Promise<boolean> {
+    async editCommands(guildid: string, commands: CommandConf[], deleting = false, glob?: CommandsGlobalConf): Promise<boolean> {
         try {
             const conf = await this.getCommands(guildid, undefined, false);
             if (!conf) {
@@ -1497,6 +1514,9 @@ export class DBManager {
                     }
                 });
             }
+            if (glob) {
+                conf.conf = glob;
+            }
             const r = await this.editGuildSetting(guildid, "commandconf", JSON.stringify(conf));
             if (!r.affectedRows) {
                 return false;
@@ -1507,6 +1527,22 @@ export class DBManager {
             return false;
         }
     }
+
+    /**
+     * Not in use at the moment
+     */
+    // async getCommandsGlobalConf(guildid: string): Promise<CommandsGlobalConf> {
+    //     try {
+    //         const conf = await this.getCommandConf(guildid);
+    //         if (!conf) {
+    //             return {};
+    //         }
+    //         return conf.conf;
+    //     } catch (error) {
+    //         xlg.error(error);
+    //         return {};
+    //     }
+    // }
 
     async getInvites(query: Partial<InvitedData>): Promise<InvitedData[]> {
         try {

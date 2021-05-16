@@ -33,6 +33,7 @@ interface PatchRequest {
     exp_level?: number;
     level?: number;
     overwites_ignore?: string[];
+    respond?: boolean;
 }
 
 const DISABLED = <FontAwesomeIcon icon={faSkull} />;
@@ -163,8 +164,7 @@ export function DashboardCommands(props: HomeProps) {
                 apply: toApply,
                 enabled: state,
             }
-        } else if (mode === 2) {// command multi-toggle
-            if (typeof state !== "boolean") return;
+        } else if (mode === 2) {// global conf modification
             bod = {
                 apply: [],
                 enabled: true,
@@ -172,6 +172,7 @@ export function DashboardCommands(props: HomeProps) {
                 channels: pending.channels,
                 role_mode: pending.role_mode,
                 roles: pending.roles,
+                respond: pending.respond,
             }
         }
         const obj = {
@@ -372,6 +373,13 @@ export function DashboardCommands(props: HomeProps) {
         }
     }
 
+    const toggleRespond = () => {
+        const n = typeof globalConf.respond === "boolean" && !globalConf.respond ? true : false;
+        pending.respond = n;
+        setPending({ ...pending, respond: n });
+        patchNow(2);
+    }
+
     const handleSave = () => {
         setWaiting(true);
         if (mm === 2) {
@@ -472,9 +480,10 @@ export function DashboardCommands(props: HomeProps) {
                             <div className="x-card-header">Commands</div>
                             <div className="x-card-body" style={{paddingTop: "0.5em"}}>
                                 <div className="c-btnrow">
+                                    <button onClick={showIconKey}>Icon Key</button>
                                     <button disabled>Set Global Defaults</button>
                                     <button onClick={editModRole}>Set Mod Role</button>
-                                    <button onClick={showIconKey}>Icon Key</button>
+                                    <button onClick={toggleRespond}>{typeof globalConf.respond === "boolean" && !globalConf.respond ? UNCHECKED : CHECKED} Send Disabled Message</button>
                                 </div>
                                 <hr style={{ marginBottom: 10, marginTop: 0 }} />
                                 <div className="c-cats">
