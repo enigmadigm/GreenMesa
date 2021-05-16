@@ -40,16 +40,16 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, "That target could not be found, it may not be a member.\nTo ban a member that has left, send their ID.");
                 return;
             }
+            if (target.id === client.user?.id) {
+                message.channel.send("What if I said I won't let you ban me?");
+                return;
+            }
             if (!target.bannable) {
                 await client.specials.sendError(message.channel, `I can't ban ${target}`);
                 return;
             }
             if (target.id === message.author.id) {
                 message.channel.send('You cannot ban yourself');
-                return;
-            }
-            if (target.id === client.user?.id) {
-                message.channel.send("Please don't ban me");
                 return;
             }
             const dbmr = await client.database.getGuildSetting(message.guild, "mutedrole");
