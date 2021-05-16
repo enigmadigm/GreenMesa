@@ -1,10 +1,10 @@
 import { Command } from 'src/gm';
 import getColors from 'get-image-colors';
-import FileType from 'file-type';
 import { stringToMember } from '../../utils/parsers';
 import chroma from 'chroma-js';
 import { MessageEmbedOptions } from 'discord.js';
-import fetch from 'node-fetch';
+// import FileType from 'file-type';
+// import fetch from 'node-fetch';
 
 export const command: Command = {
     name: 'avatar',
@@ -16,7 +16,7 @@ export const command: Command = {
             const mtarget = message.guild ? await stringToMember(message.guild, args.join(" "), true, true, true) : undefined;
             const target = mtarget ? mtarget.user : message.mentions.users.first() || message.author;
             //const target = message.mentions.users.first() || ((message.guild && message.guild.available && args.length && message.guild.members.cache.get(args[0])) ? message.guild.members.cache.get(args[0]).user || false : false) || message.author;
-            let col = 0x2F3136;
+            let col;
             const aURL = target.avatarURL({ format: "png", dynamic: true });
             let unsupported = false;
             if (aURL) {
