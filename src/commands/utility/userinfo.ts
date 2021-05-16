@@ -76,7 +76,7 @@ export const command: Command<GuildMessageProps> = {
 
             // invites
             const data = await client.database.getInvites({ guildid: message.guild.id, inviter: target.id });
-            const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png)`;
+            const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png) ⟵`;
 
             // last message
             const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
@@ -120,7 +120,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "Last Message",
-                            value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `They have never sent one`,
+                            value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
                             inline: true
                         },
                         {
