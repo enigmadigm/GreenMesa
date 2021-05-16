@@ -78,6 +78,9 @@ export const command: Command<GuildMessageProps> = {
             const data = await client.database.getInvites({ guildid: message.guild.id, inviter: target.id });
             const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png)`;
 
+            // last message
+            const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
+
             message.channel.send({
                 embed: {
                     color: target.roles.hoist && target.roles.hoist.color != 0x000000 ? target.roles.hoist.color : await client.database.getColor("info"),
@@ -113,6 +116,11 @@ export const command: Command<GuildMessageProps> = {
                         {
                             name: 'Created',
                             value: `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
+                            inline: true
+                        },
+                        {
+                            name: "Last Message",
+                            value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `They have never sent one`,
                             inline: true
                         },
                         {
