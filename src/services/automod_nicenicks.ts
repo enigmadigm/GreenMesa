@@ -1,4 +1,4 @@
-import xlg from "../xlogger";
+
 import { MessageService } from "../gm";
 import { Bot } from "../bot";
 import { GuildMember } from "discord.js";

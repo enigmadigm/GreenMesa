@@ -1,6 +1,5 @@
 import fetch from 'node-fetch';
 import { Command } from 'src/gm';
-import xlg from '../../xlogger';
 // NOTE: The database that this command is built on seems to be kind of done with updates
 
 export const command: Command = {

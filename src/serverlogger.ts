@@ -2,7 +2,7 @@
 import { stringToChannel, capitalize } from './utils/parsers';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
-import xlg from "./xlogger";
+
 import { Bot } from './bot';
 import { ServerlogData } from './gm';
 
@@ -106,7 +106,8 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
     }
 }
 
-export async function logMessageDelete(message: Message): Promise<void> {//TODO: add attachment cache system (posts all deleted attachments in a specific channel in the server and uses the link to that attachment in the msg log)
+export async function logMessageDelete(message: Message): Promise<void> {// add attachment cache system (posts all deleted attachments in a specific channel in the server and uses the link to that attachment in the msg log) 
+    //TODO: NEW PROPOSITION: USE rooskie.is-a-virg.in temp cdn
     try {
         if (!message.guild || message.channel instanceof DMChannel) return;
         const logChannel = await getLogChannel(message.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", message.channel);
@@ -155,7 +156,7 @@ export async function logMessageDelete(message: Message): Promise<void> {//TODO:
         if (!embed.fields?.length || content) {
             embed.fields?.push({
                 name: 'Content' + (shortened ? ' (shortened)' : ''),
-                value: message.content.length > 0 ? content : '*content unavailable*'
+                value: message.content.length > 0 ? content.escapeDiscord() : '*content unavailable*'
             })
         }
 

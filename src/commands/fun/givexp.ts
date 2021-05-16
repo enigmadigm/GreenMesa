@@ -2,7 +2,7 @@
 import { Command } from "src/gm";
 import { permLevels } from "../../permissions";
 import { stringToMember } from "../../utils/parsers";
-import xlg from "../../xlogger";
+
 
 export const command: Command = {
     name: 'givexp',

@@ -1,4 +1,4 @@
-import xlg from "../xlogger";
+
 import { MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
 import expletives from 'corpora/data/words/expletives.json';

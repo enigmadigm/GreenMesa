@@ -1,9 +1,9 @@
-import xlg from "../../xlogger";
+
 import moment from 'moment';
 //import { getTop10, getXP, getGlobalSetting } from "../dbmanager";
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { Guild, GuildMember } from "discord.js";
 
 function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the user and the guild
@@ -25,15 +25,15 @@ function getPresenceEmoji(target: GuildMember) {
     if (target.user.presence.activities.length && target.user.presence.activities[0].type === 'STREAMING') return '<:736903745245413386:752118507248025641>';
 }
 
-export const command: Command = {
-    name: 'userinfo',
-    description: 'get info on any member',
-    aliases: ['ui', 'user'],
+export const command: Command<GuildMessageProps> = {
+    name: "userinfo",
+    description: "get info on any member",
+    aliases: ["ui"],
     cooldown: 3,
+    guildOnly: true,
+    permissions: ["EMBED_LINKS"],
     async execute(client, message, args) {
         try {
-            if (!message.guild || !message.member) return;
-
             message.channel.startTyping();
             await message.guild.fetch();
             const target = await stringToMember(message.guild, args.join(" ")) || message.member;
@@ -67,15 +67,20 @@ export const command: Command = {
                 joinRank = ordinalSuffixOf(parseInt(joinRank, 10)) + ' member joined';
             }
 
+            // designator
             const permLev = await getPermLevel(target);
             //const permLevelNames = Object.keys(permLevels);
             //const permLevelName = permLevelNames[permLev];
             const permLevelName = Object.keys(permLevels)[permLev];
             //xlg.log(permLevelName) // this was uncommented for who knows how long for some reason, not looking at past commits
 
+            // invites
+            const data = await client.database.getInvites({ guildid: message.guild.id, inviter: target.id });
+            const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png)`;
+
             message.channel.send({
                 embed: {
-                    color: target.roles.hoist ? target.roles.hoist.color : await client.database.getColor("info") || 0,
+                    color: target.roles.hoist && target.roles.hoist.color != 0x000000 ? target.roles.hoist.color : await client.database.getColor("info"),
                     author: {
                         name: `Info for ${target.user.tag} ${rank && xp ? `${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}` : ""}`,
                         icon_url: target.user.displayAvatarURL()
@@ -83,7 +88,7 @@ export const command: Command = {
                     thumbnail: {
                         url: target.user.displayAvatarURL()
                     },
-                    description: `${target}`,
+                    description: `${target} ${target.id}`,
                     fields: [
                         {
                             "name": "Status",
@@ -111,13 +116,18 @@ export const command: Command = {
                             inline: true
                         },
                         {
-                            name: 'Designation',
+                            name: "Designation",
                             value: `${permLevelName}\n[What is this?](https://enigmadigm.com/status/Designation/A%20property%20the%20bot%20gives%20you/It%20is%20used%20when%20checking%20for%20required%20or%20missing%20permissions)`,// How the bot internally sees the member in terms of permissions
                             inline: true
                         },
                         {
-                            name: 'XP',
-                            value: rank && xp ? `Rank: ${rank.personal ? rank.personal.rank : 'none'}\nLevel: ${xp.level}` : "none",
+                            name: "XP",
+                            value: rank && xp ? `Rank: \`${rank.personal ? rank.personal.rank : 'none'}\`\nLevel: \`${xp.level}\`` : "none",
+                            inline: true
+                        },
+                        {
+                            name: "Invites",
+                            value: `${invitesTotal}`,
                             inline: true
                         },
                         {
@@ -126,7 +136,7 @@ export const command: Command = {
                         }
                     ],
                     footer: {
-                        text: 'All dates in UTC'
+                        text: 'All dates in UTC ● mm/dd/yyyy'
                     }
                 }
             });
@@ -140,4 +150,3 @@ export const command: Command = {
         }
     }
 }
-

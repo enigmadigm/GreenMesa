@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { Command, XClient, XKCDEndpointResponse } from "src/gm";
 import fetch from 'node-fetch';

@@ -5,7 +5,6 @@ import fs from 'fs';
 import { Command } from 'src/gm';
 import config from '../../auth.json';
 import { getFriendlyUptime } from '../utils/time';
-import xlg from '../xlogger';
 
 export const command: Command = {
     name: 'uptime',

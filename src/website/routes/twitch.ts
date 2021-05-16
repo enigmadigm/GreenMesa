@@ -26,14 +26,7 @@ import moment from 'moment';
 import url from 'url';
 import querystring from 'querystring';
 
-// database functions
-//import { addTwitchSubscription, getTwitchSubsForID, removeTwitchSubscription } from "../../dbmanager";
-
-import xlg from '../../xlogger';
 import { TwitchSearchChannelsReturns, XClient } from 'src/gm';
-// discord client
-//const Bot = require('../../bot');
-//no
 
 import express, { Router } from 'express';
 import { IncomingMessage } from 'http';

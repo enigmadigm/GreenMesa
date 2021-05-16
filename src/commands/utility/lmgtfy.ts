@@ -1,4 +1,3 @@
-import xlg from '../../xlogger';
 import puppeteer from 'puppeteer';
 import Discord, { DMChannel, MessageEmbedOptions } from 'discord.js';
 import { Command } from 'src/gm';

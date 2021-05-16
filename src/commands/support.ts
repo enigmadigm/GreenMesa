@@ -1,5 +1,3 @@
-import xlg from '../xlogger';
-// import { getGlobalSetting } from '../dbmanager';
 import { Command } from 'src/gm';
 
 export const command: Command = {

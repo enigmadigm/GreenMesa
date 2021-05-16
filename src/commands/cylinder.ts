@@ -1,5 +1,5 @@
 import { Command } from "src/gm";
-import xlg from "../xlogger";
+
 //import { getGlobalSetting } from "../dbmanager";
 
 // https://www.w3resource.com/javascript-exercises/javascript-object-exercise-5.php

@@ -10,7 +10,6 @@ require('dotenv').config();
 require('source-map-support').install();
 //require('./website/app');
 
-import xlg from "./xlogger";
 process.on('uncaughtException', function (e) {
     xlg.log(e);
     process.exit(1);
@@ -53,6 +52,7 @@ import { TimedActionsSubsystem } from "./tactions";
 import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
 import { ban } from "./utils/modactions";
+import "./xlogger";
 
 export class Bot {
     static client: XClient;
@@ -323,12 +323,16 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (message.mentions && message.mentions.has(client.user)) {
             if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
                 const iec_gs = await client.database.getColor("info");
-                message.channel.send({
-                    embed: {
-                        "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
-                        "color": iec_gs
-                    }
-                })
+                if (!dm) {
+                    message.channel.send({
+                        embed: {
+                            "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
+                            "color": iec_gs
+                        }
+                    });
+                } else {
+                    message.channel.send(`My prefix is **${message.gprefix}** here`);
+                }
                 return;
             }
         }
@@ -346,7 +350,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
 
         if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
-        const cs = message.guild ? await client.database.getCommand(message.guild.id, command.name) : false;
+        const cc = message.guild ? await client.database.getCommands(message.guild.id, undefined, false) : false;
+        const cs = cc && message.guild ? await client.database.getCommand(message.guild.id, command.name, cc) : false;
+        const gc = cc && message.guild ? cc.conf : false;
         const disabled = cs ? !!(!cs.enabled || (!cs.channel_mode && cs.channels.includes(message.channel.id)) || (cs.channel_mode && !cs.channels.includes(message.channel.id)) || (message.member && ((cs.role_mode && !message.member.roles.cache.find(x => cs.roles.includes(x.id))) || (!cs.role_mode && message.member.roles.cache.find(x => cs.roles.includes(x.id)))))) : false;
 
         if (command.guildOnly && dm) {// command is configured to only execute outside of dms
@@ -371,12 +377,12 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         } else if (botmasters.includes(message.author.id)) { // bot masters
             permLevel = permLevels.botMaster;
         }
-        const pl = cs ? cs.level || permLevels.member : command.permLevel || permLevels.member;
+        const pl = cs ? cs.level || permLevels.member : command.permLevel || permLevels.member;// get the required permission level needed to run the command
 
-        if (permLevel < pl) {// insufficient bot permissions
+        if (permLevel < pl) {// check if the user has the permissions needed to run the command
             const accessMessage = await client.database.getGuildSetting(message.guild || "", "access_message");
             if (accessMessage && accessMessage.value === "enabled") {
-                message.channel.send("You lack the permissions required to use this command.")
+                await message.channel.send("You lack the permissions required to use this command");
             }
             return;
         }
@@ -384,15 +390,17 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const commandEnabledGlobal = await client.database.getGlobalSetting(`${command.name}_enabled`);
         if ((commandEnabledGlobal && commandEnabledGlobal.value !== 'true') || disabled) {
             if (command.name === "h") return;
-            message.channel.send({
-                embed: {
-                    title: `Command Disabled`,
-                    description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "here"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
-                    footer: {
-                        text: `${!disabled ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
+            if (!gc || (typeof gc.respond === "undefined" || gc.respond)) {
+                await message.channel.send({
+                    embed: {
+                        title: `Command Disabled`,
+                        description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "here"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
+                        footer: {
+                            text: `${!disabled ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
+                        }
                     }
-                }
-            });
+                });
+            }
             return;
         }
 
@@ -400,6 +408,44 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled || moderationEnabled.value === 'disabled') {
                 return client.specials.sendModerationDisabled(message.channel);
+            }
+        }
+
+        if (!cooldowns.has(command.name)) {
+            cooldowns.set(command.name, new Discord.Collection());
+        }
+
+        const timestamps = cooldowns.get(command.name);
+        const cd = (cs ? typeof cs.cooldown === "number" ? cs.cooldown : command.cooldown || 0 : command.cooldown || 0) * 1000;
+
+        if (timestamps) {
+            if (timestamps.has(message.author.id)) {
+                const usertimestamp = timestamps.get(message.author.id);
+                if (usertimestamp) {
+                    const expirationTime = usertimestamp + cd;
+
+                    if (now < expirationTime) {
+                        const timeLeft = (expirationTime - now) / 1000;
+                        return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
+                    }
+                }
+            }
+            timestamps.set(message.author.id, now);
+            setTimeout(() => timestamps.delete(message.author.id), cd);
+        }
+
+        if (command.permissions && command.permissions.length) {
+            const lacking: PermissionString[] = [];
+            for (const perm of command.permissions) {
+                if (!message.guild?.me?.hasPermission(perm)) {
+                    lacking.push(perm);
+                }
+            }
+            if (lacking.length) {
+                if (message.guild?.me?.permissionsIn(message.channel).has("SEND_MESSAGES")) {
+                    await message.channel.send(`I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`);
+                }
+                return;
             }
         }
 
@@ -440,44 +486,6 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
             await client.specials.sendError(message.channel, reply)
             return;
-        }
-
-        if (!cooldowns.has(command.name)) {
-            cooldowns.set(command.name, new Discord.Collection());
-        }
-
-        const timestamps = cooldowns.get(command.name);
-        const cd = (cs ? typeof cs.cooldown === "number" ? cs.cooldown : command.cooldown || 0 : command.cooldown || 0) * 1000;
-
-        if (timestamps) {
-            if (timestamps.has(message.author.id)) {
-                const usertimestamp = timestamps.get(message.author.id);
-                if (usertimestamp) {
-                    const expirationTime = usertimestamp + cd;
-            
-                    if (now < expirationTime) {
-                        const timeLeft = (expirationTime - now) / 1000;
-                        return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
-                    }
-                }
-            }
-            timestamps.set(message.author.id, now);
-            setTimeout(() => timestamps.delete(message.author.id), cd);
-        }
-
-        if (command.permissions && command.permissions.length) {
-            const lacking: PermissionString[] = [];
-            for (const perm of command.permissions) {
-                if (!message.guild?.me?.hasPermission(perm)) {
-                    lacking.push(perm);
-                }
-            }
-            if (lacking.length) {
-                if (message.guild?.me?.permissionsIn(message.channel).has("SEND_MESSAGES")) {
-                    await message.channel.send(`I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`);
-                }
-                return;
-            }
         }
 
         try {

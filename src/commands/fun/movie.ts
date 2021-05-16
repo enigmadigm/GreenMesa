@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import fetch from "node-fetch";
 //import { getGlobalSetting } from "../dbmanager";
 import getColors from 'get-image-colors';

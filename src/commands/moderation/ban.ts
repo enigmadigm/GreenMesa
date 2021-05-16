@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { stringToMember } from "../../utils/parsers";
 import Discord from 'discord.js';

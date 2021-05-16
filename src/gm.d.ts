@@ -1,4 +1,4 @@
-import { Client, Collection, Message, MessageEmbedOptions, PermissionString } from "discord.js";
+import { Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, PermissionString } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -15,7 +15,8 @@ export interface XClient extends Client {
     invites: Invites;
 }
 
-export interface Command {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface Command<T = Record<string, any>, A = string[]> {
     name: string;
     /**
      * Alternate names to use to call the command
@@ -51,8 +52,12 @@ export interface Command {
      */
     ownerOnly?: boolean;
     permissions?: PermissionString[];
-    execute(client: XClient, message: XMessage, args: string[]): Promise<void | boolean | CommandReturnData>;
+    // client: XClient, message: XMessage, args: string[]
+    execute(client: XClient, message: XMessage & T, args: A): Promise<void | boolean | CommandReturnData>;
 }
+
+export type GuildMessageProps = { guild: Guild, member: GuildMember };
+// export type GuildMessage = XMessage & { guild: Guild, member: GuildMember };
 
 export interface CommandReturnData {
     content: string;
@@ -443,18 +448,57 @@ export interface WarnConfEndpointData extends GuildsEndpointBase {
 }
 
 export interface ModActionData {
+    /**
+     * The number of this action following an always-incrementing pattern of all the cases the bot has ever tracked
+     */
     id: number;
+    /**
+     * The super unique key for the case (in case it is ever needed for some reason)
+     */
     superid: string;
+    /**
+     * The id of the guild the case belongs to
+     */
     guildid: string;
+    /**
+     * The guild-localized case number for the incident (represents the identifier of the case based on a self-incrementing identifier number pattern)
+     */
     casenumber: number;
+    /**
+     * The target's id
+     */
     userid: string;
+    /**
+     * The tag of the target at the time of the incident
+     */
     usertag: string;
+    /**
+     * The type of action this case represents
+     */
     type: string;
+    /**
+     * When this case entry was created
+     */
     created: string;
+    /**
+     * When this case was last updated
+     */
     updated: string;
+    /**
+     * A timestamp if it is a limited duration event
+     */
     endtime?: string;
+    /**
+     * The moderator's id
+     */
     agent: string;
+    /**
+     * The tag of the moderator at the time of incident
+     */
     agenttag: string;
+    /**
+     * The given reason/case summary for the incident
+     */
     summary: string;
 }
 

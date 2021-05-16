@@ -1,7 +1,7 @@
 import { Message } from "discord.js";
 import { Bot } from "../bot";
 import { MessageService, XMessage } from "../gm";
-import xlg from "../xlogger";
+
 
 export const service: MessageService = {
     text: true,

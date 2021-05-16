@@ -1,8 +1,6 @@
 import Discord, { CollectorFilter, GuildMember, Message, User } from "discord.js";
 import fetch from 'node-fetch';
 import { Command, TriviaResponse } from "src/gm";
-import xlg from '../../xlogger';
-//import { getGlobalSetting } from "../dbmanager";
 
 interface TriviaScoreboard {
     user: GuildMember;

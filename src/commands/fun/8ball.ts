@@ -1,5 +1,5 @@
 import { Command } from "src/gm";
-import xlg from "../../xlogger";
+
 
 /**
  * Generates the magic 8ball response

@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels, getPermLevel } from "../../permissions";
 import { Command } from "src/gm";
 

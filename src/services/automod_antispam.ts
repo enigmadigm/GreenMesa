@@ -1,4 +1,4 @@
-import xlg from "../xlogger";
+
 import { MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
 import { Message, TextChannel } from "discord.js";

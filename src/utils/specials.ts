@@ -1,5 +1,5 @@
 //import { getGlobalSetting } from '../dbmanager';
-import xlg from "../xlogger";
+
 import moment from 'moment';
 import { ClientValuesGuild, XClient } from '../gm';
 import { Channel, DMChannel, TextChannel } from 'discord.js';

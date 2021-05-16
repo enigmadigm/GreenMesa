@@ -1,12 +1,7 @@
 import config from '../../../auth.json';
 import NaturalLanguageUnderstandingV1 from 'ibm-watson/natural-language-understanding/v1';
-import {
-    IamAuthenticator
-} from 'ibm-watson/auth';
-import xlg from '../../xlogger';
-import {
-    Command
-} from 'src/gm';
+import { IamAuthenticator } from 'ibm-watson/auth';
+import { Command } from 'src/gm';
 
 const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
     version: '2019-07-12',

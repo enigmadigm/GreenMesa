@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 //import { getGlobalSetting, getGuildSetting, editGuildSetting } from "../dbmanager";
 import moment from "moment";

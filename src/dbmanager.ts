@@ -1,10 +1,9 @@
 import mysql, { escape } from "mysql";
 import { db_config } from "../auth.json";
-import xlog from "./xlogger";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Role, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -69,12 +68,12 @@ export class DBManager {
             const conn: mysql.Connection = mysql.createConnection(db_config);
             conn.connect((err) => {
                 if (err) {
-                    xlog.error('error when connecting to db:', err);
+                    xlg.error('error when connecting to db:', err);
                     setTimeout(this.handleDisconnect, 2000);
                     return;
                 }
                 this.connected = true;
-                xlog.log("Connected to database");
+                xlg.log("Connected to database");
             });
             conn.on('error', (err) => {
                 //console.log('db error', err);
@@ -82,7 +81,7 @@ export class DBManager {
                     this.handleDisconnect();
                 } else {
                     // throw err;// throwing an error in this error event handler will crash the application
-                    xlog.error("FATAL DB ERROR:", err);
+                    xlg.error("FATAL DB ERROR:", err);
                     this.handleDisconnect();
                 }
             });
@@ -117,7 +116,7 @@ export class DBManager {
 
             return this;
         } catch (error) {
-            xlog.error(`DB Error: ${error.message}\nError: ${error.stack}`);
+            xlg.error(`DB Error: ${error.message}\nError: ${error.stack}`);
             return this;
         }
     }
@@ -131,7 +130,7 @@ export class DBManager {
      * @param {string} name name of setting to retrieve
      */
     async getGlobalSetting(name: string): Promise<GlobalSettingRow | false> {
-        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlog.error);
+        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlg.error);
         if (rows && rows.length > 0) {
             return rows[0];
         } else {
@@ -151,7 +150,7 @@ export class DBManager {
             name += "_embed_color";
         }
         // color cache lookup and management should go here
-        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlog.error);
+        const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlg.error);
         if (!rows || rows.length == 0) {
             if (name === "info_embed_color") return 279673;
             if (name === "fail_embed_color") return 16711680;
@@ -214,7 +213,7 @@ export class DBManager {
                 this.updateLevelRole(member, level);
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
         }
     }
 
@@ -276,9 +275,9 @@ export class DBManager {
             return { points: p, level: l };
         } catch (error) {
             if (error.code === "ER_DUP_ENTRY") {
-                xlog.error('error: ER_DUP_ENTRY caught and deflected');
+                xlg.error('error: ER_DUP_ENTRY caught and deflected');
             } else {
-                xlog.error(error);
+                xlg.error(error);
             }
         }
         return { points: -1, level: -1 };
@@ -385,7 +384,7 @@ export class DBManager {
             }
             return levelRows;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
         }
     }
 
@@ -420,7 +419,7 @@ export class DBManager {
                 }
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
         }
     }
 
@@ -430,7 +429,7 @@ export class DBManager {
      */
     async getGMStats(limiter = 24): Promise<BSRow[]> {
         const et = moment().subtract(limiter, "hours").format('YYYY-MM-DD HH:mm:ss');
-        const rows = await <Promise<BSRow[]>>this.query(`SELECT * FROM botstats WHERE logDate >= ${escape(et)} ORDER BY updateId DESC LIMIT ${limiter}`).catch(xlog.error);
+        const rows = await <Promise<BSRow[]>>this.query(`SELECT * FROM botstats WHERE logDate >= ${escape(et)} ORDER BY updateId DESC LIMIT ${limiter}`).catch(xlg.error);
         return rows;
     }
 
@@ -469,7 +468,7 @@ export class DBManager {
      * @param guildid Guild ID
      */
     async getPrefix(guildid = ""): Promise<string | false> {
-        const rows = await <Promise<{ guildid: string, prefix: string }[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+        const rows = await <Promise<{ guildid: string, prefix: string }[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlg.error);
         if (rows.length > 0) {
             return rows[0].prefix;
         } else {
@@ -484,11 +483,11 @@ export class DBManager {
      */
     async setPrefix(guildid = "", newprefix = ""): Promise<void> {
         newprefix = newprefix.replace(/'/g, "\\'");
-        const rows = await <Promise<{ guildid: string, prefix: string }[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlog.error);
+        const rows = await <Promise<{ guildid: string, prefix: string }[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlg.error);
         if (rows.length > 0) {
-            await <Promise<InsertionResult>>this.query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlog.error);
+            await <Promise<InsertionResult>>this.query(`UPDATE \`prefix\` SET \`prefix\`='${newprefix}' WHERE \`guildid\`='${guildid}'`).catch(xlg.error);
         } else {
-            await <Promise<InsertionResult>>this.query(`INSERT INTO \`prefix\`(\`guildid\`, \`prefix\`) VALUES ('${guildid}', '${newprefix}')`).catch(xlog.error);
+            await <Promise<InsertionResult>>this.query(`INSERT INTO \`prefix\`(\`guildid\`, \`prefix\`) VALUES ('${guildid}', '${newprefix}')`).catch(xlg.error);
         }
     }
 
@@ -516,14 +515,14 @@ export class DBManager {
         try {
             if (!guild) return false;
             const gid = guild instanceof Guild ? guild.id : guild;
-            const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${gid}' AND property = '${name}'`).catch(xlog.error);
+            const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${gid}' AND property = '${name}'`).catch(xlg.error);
             if (rows.length > 0) {
                 return rows[0];
             } else {
                 return false;
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -570,7 +569,7 @@ export class DBManager {
      */
     async clearXP(member: GuildMember | PartialGuildMember): Promise<number> {
         if (!member || !member.id || !member.guild || !member.guild.id) return 0;
-        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM dgmxp WHERE guildid = '${member.guild.id}' AND userid = '${member.id}'`).catch(xlog.error);
+        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM dgmxp WHERE guildid = '${member.guild.id}' AND userid = '${member.id}'`).catch(xlg.error);
         return result.affectedRows || 0;
     }
 
@@ -580,7 +579,7 @@ export class DBManager {
      */
     async massClearXP(guild: Guild): Promise<number> {
         if (!guild) return 0;
-        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM dgmxp WHERE guildid = '${guild.id}'`).catch(xlog.error);
+        const result = await <Promise<InsertionResult>>this.query(`DELETE FROM dgmxp WHERE guildid = '${guild.id}'`).catch(xlg.error);
         return result.affectedRows || 0;
     }
 
@@ -666,7 +665,7 @@ export class DBManager {
                 await <Promise<InsertionResult>>this.query(`INSERT INTO cmdhistory (command_name, guildid, userid, messageid, channelid) VALUES (${escape(name)}, ${escape(message.guild?.id || "")}, ${escape(message.author.id)}, ${escape(message.id)}, ${escape(message.channel.id)})`);
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
         }
     }
 
@@ -678,7 +677,7 @@ export class DBManager {
         try {
             return await <Promise<CmdTrackingRow[]>>this.query(`SELECT * FROM cmdtracking WHERE cmdname = 'all'`);
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
         }
     }
 
@@ -694,7 +693,7 @@ export class DBManager {
                 await <Promise<InsertionResult>>this.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`= value + 1 WHERE \`name\`='mreceived'`);
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
         }
     }
 
@@ -710,7 +709,7 @@ export class DBManager {
                 await <Promise<InsertionResult>>this.query(`UPDATE globalsettings SET previousvalue=value, value=value + 1 WHERE name='definedcount'`);
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
         }
     }
 
@@ -729,7 +728,7 @@ export class DBManager {
                 return true;
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -762,7 +761,7 @@ export class DBManager {
                 return true;
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -780,7 +779,7 @@ export class DBManager {
             const delresult = await <Promise<InsertionResult>>this.query(`DELETE FROM twitchhooks WHERE streamerid = ${escape(streamerid)} AND guildid = ${escape(guildid)}`);
             return delresult.affectedRows;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -796,7 +795,7 @@ export class DBManager {
             if (!result.length) return false;
             return result;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -812,7 +811,7 @@ export class DBManager {
             if (!result.length) return false;
             return result;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -824,7 +823,7 @@ export class DBManager {
             const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE guildid = ${escape(guildid)}`);
             return result;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -845,7 +844,7 @@ export class DBManager {
             }
             return result;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -869,7 +868,7 @@ export class DBManager {
             }
             return dashuser;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -890,7 +889,7 @@ export class DBManager {
             }
             return true;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -908,7 +907,7 @@ export class DBManager {
             }
             return true;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -977,7 +976,7 @@ export class DBManager {
                 return defaults;
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return defaults;
         }
     }
@@ -1002,7 +1001,7 @@ export class DBManager {
             }
             return result;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -1144,7 +1143,7 @@ export class DBManager {
                 return defaults;
             }
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return defaults;
         }
     }
@@ -1163,7 +1162,7 @@ export class DBManager {
             }
             return result;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -1179,7 +1178,7 @@ export class DBManager {
             }
             return false;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -1193,7 +1192,7 @@ export class DBManager {
     //             }
     //             return false;
     //         } catch (error) {
-    //             xlog.error(error);
+    //             xlg.error(error);
     //             return false;
     //         }
     //     }
@@ -1210,7 +1209,7 @@ export class DBManager {
             }
             return false;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -1226,7 +1225,7 @@ export class DBManager {
             }
             return false;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -1242,7 +1241,34 @@ export class DBManager {
             }
             return false;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Flexibly query the database of modactions based on parameters set in the query argument object.
+     * @param query query selectors
+     * @returns modactions based on query
+     */
+    async getModActions(query: Partial<ModActionData>/*  & { guildid: string } */): Promise<ModActionData[] | false> {
+        try {
+            const queryOptions = <(keyof Partial<ModActionData>)[]>Object.keys(query);
+            if (!queryOptions.length) return [];
+            let sql = `SELECT * FROM modactions WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            sql += ` ORDER BY created DESC`;
+            const result = await <Promise<ModActionData[]>>this.query(`${sql}`);
+            if (result.length) {
+                return result;
+            }
+            return [];
+        } catch (error) {
+            xlg.error(error);
             return false;
         }
     }
@@ -1278,7 +1304,7 @@ export class DBManager {
             }
             return result;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -1296,7 +1322,7 @@ export class DBManager {
             }
             return 0;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return 0;
         }
     }
@@ -1336,7 +1362,10 @@ export class DBManager {
         overwrite: false,
     }
 
-    async getCommands(guildid: string, noOwner = false, all = true): Promise<CmdConfEntry | false> {
+    /**
+     * Get the full raw command conf stored in the database
+     */
+    async getCommandConf(guildid: string): Promise<CmdConfEntry | false> {
         try {
             const ccd = await this.getGuildSetting(guildid, 'commandconf');
             let tp = "";
@@ -1357,6 +1386,20 @@ export class DBManager {
                 this.editGuildSetting(guildid, "commandconf", undefined, true);
                 return false;
             }
+            return cc;
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Get the full command conf but with additional command list options
+     */
+    async getCommands(guildid: string, noOwner = false, all = true): Promise<CmdConfEntry | false> {
+        try {
+            const cc = await this.getCommandConf(guildid);
+            if (!cc) return false;
             const commands = cc.commands.filter(x => Bot.client.commands.get(x.name));// there is not an assignment reference here because the .filter() usage creates a new object
             const gc = cc.conf;
             Bot.client.commands.forEach((c) => {
@@ -1420,15 +1463,15 @@ export class DBManager {
             }
             return cc;
         } catch (error) {
-            xlog.error(error)
+            xlg.error(error)
             this.editGuildSetting(guildid, "commandconf", undefined, true);
             return false;
         }
     }
 
-    async getCommand(guildid: string, cmd: string): Promise<CommandConf | false> {
+    async getCommand(guildid: string, cmd: string, cc?: CmdConfEntry): Promise<CommandConf | false> {
         try {
-            const conf = await this.getCommands(guildid, undefined, false);
+            const conf = !cc ? await this.getCommands(guildid, undefined, false) : cc;
             if (!conf) {
                 return false;
             }
@@ -1438,12 +1481,12 @@ export class DBManager {
             }
             return false;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
 
-    async editCommands(guildid: string, commands: CommandConf[], deleting = false): Promise<boolean> {
+    async editCommands(guildid: string, commands: CommandConf[], deleting = false, glob?: CommandsGlobalConf): Promise<boolean> {
         try {
             const conf = await this.getCommands(guildid, undefined, false);
             if (!conf) {
@@ -1471,16 +1514,35 @@ export class DBManager {
                     }
                 });
             }
+            if (glob) {
+                conf.conf = glob;
+            }
             const r = await this.editGuildSetting(guildid, "commandconf", JSON.stringify(conf));
             if (!r.affectedRows) {
                 return false;
             }
             return true;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
+
+    /**
+     * Not in use at the moment
+     */
+    // async getCommandsGlobalConf(guildid: string): Promise<CommandsGlobalConf> {
+    //     try {
+    //         const conf = await this.getCommandConf(guildid);
+    //         if (!conf) {
+    //             return {};
+    //         }
+    //         return conf.conf;
+    //     } catch (error) {
+    //         xlg.error(error);
+    //         return {};
+    //     }
+    // }
 
     async getInvites(query: Partial<InvitedData>): Promise<InvitedData[]> {
         try {
@@ -1499,7 +1561,7 @@ export class DBManager {
             }
             return [];
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return [];
         }
     }
@@ -1516,7 +1578,7 @@ export class DBManager {
             }
             return false;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }
@@ -1529,7 +1591,7 @@ export class DBManager {
             }
             return false;
         } catch (error) {
-            xlog.error(error);
+            xlg.error(error);
             return false;
         }
     }

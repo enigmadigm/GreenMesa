@@ -1,4 +1,3 @@
-import xlg from '../../xlogger';
 import express from 'express';
 import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
@@ -6,7 +5,6 @@ import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
 //const { token } = require("../../auth.json");
 //const fetch = require("node-fetch");
-//import { setPrefix, getPrefix, getGlobalSetting, getGuildSetting } from '../../dbmanager';
 
 export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
@@ -1172,12 +1170,13 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.patch("/guilds/:id/commands", async (req, res) => {
         try {
-            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore, delete_overwrites} = req.body;
+            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore, delete_overwrites, respond} = req.body;
             // these type checks used to be one big if block, but it was harder to read
             if ((!Array.isArray(apply) || !isStringArray(apply)) ||
                 (typeof enabled !== "boolean") ||
                 (typeof level !== "undefined" && typeof level !== "number") ||
                 (typeof delete_overwrites !== "undefined" && typeof delete_overwrites !== "boolean") || 
+                (typeof respond !== "undefined" && typeof respond !== "boolean") || 
                 (typeof channel_mode !== "undefined" && typeof channel_mode !== "boolean") || 
                 (typeof role_mode !== "undefined" && typeof role_mode !== "boolean") ||
                 (typeof channels !== "undefined" && (!Array.isArray(channels) || !isStringArray(channels))) ||
@@ -1301,9 +1300,13 @@ export default function routerBuild (client: XClient): express.Router {
                 if (overwites_ignore) {
                     glob.overwites_ignore = overwites_ignore;
                 }
+                if (typeof respond === "boolean") {
+                    glob.respond = respond;
+                }
 
-                const r = await client.database.editGuildSetting(id, "commandconf", JSON.stringify(conf));
-                if (r.affectedRows) {
+                // const r = await client.database.editGuildSetting(id, "commandconf", JSON.stringify(conf));
+                const r = await client.database.editCommands(id, conf.commands, false, glob);
+                if (r) {
                     return res.sendStatus(200);
                 }
             }

@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { Command, CommandConf } from "src/gm";
 import { stringToChannel, stringToRole } from "../../utils/parsers";

@@ -2,13 +2,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import moment from 'moment'; // require
 const now = moment().format();
-export = {
-    log(e: any): void {
+global.xlg = {
+    log(e) {
         if (e) {
             return console.log(`[${now}]`, e.stack || e);
         }
     },
-    error(e: any, err?: Error): void {
+    error(e, err) {
         if (e) {
             return console.error(`[${now}]`, e.stack || e, err?.stack);
         }

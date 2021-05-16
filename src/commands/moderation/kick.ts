@@ -2,7 +2,7 @@
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
 import Discord from 'discord.js';
-import xlg from "../../xlogger";
+
 import { Command } from 'src/gm';
 import { kick } from '../../utils/modactions';
 

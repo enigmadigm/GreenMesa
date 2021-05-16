@@ -7,7 +7,7 @@ import p from 'plotly';
 const plotly = p(config.plotly.username, config.plotly.key)
 import Discord from "discord.js";
 import { BSRow, Command } from "src/gm";
-import xlg from "../xlogger";
+
 //import { getGMStats, getTotalCmdUsage } from "../dbmanager";
 
 interface BotStatsLineData {

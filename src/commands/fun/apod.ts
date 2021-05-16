@@ -1,5 +1,5 @@
 import { default as fetch } from "node-fetch";
-import xlg from "../../xlogger";
+
 import config from '../../../auth.json';
 import lux from "luxon";
 import { validURL } from '../../utils/urls';

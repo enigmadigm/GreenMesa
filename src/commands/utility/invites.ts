@@ -1,4 +1,4 @@
-import xlg from "../../xlogger";
+
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
@@ -12,7 +12,7 @@ export const command: Command = {
         short: "inviter stats",
         long: "Get the personal invite data of any user in the a server. This will provide how many members a certain user has invited."
     },
-    usage: "<@member> [count|list|users]",
+    usage: "<@member> [count|list|users|inviter]",
     args: false,
     cooldown: 3,
     permLevel: permLevels.member,
