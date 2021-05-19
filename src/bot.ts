@@ -289,6 +289,13 @@ client.on("messageReactionAdd", async (reaction, user) => {
     PaginationExecutor.paginate(reaction, user);
 })
 
+client.on("messageReactionRemove", async (reaction, user) => {
+    if (user.partial) {
+        user = await user.fetch();
+    }
+    PaginationExecutor.paginate(reaction, user);
+})
+
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
@@ -396,7 +403,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                         title: `Command Disabled`,
                         description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "here"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
                         footer: {
-                            text: `${!disabled ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
+                            text: `${!disabled ? "Sorry, please be patient" : ""}`
                         }
                     }
                 });
