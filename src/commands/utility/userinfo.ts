@@ -1,9 +1,7 @@
-
+import { Command, GuildMessageProps } from "src/gm";
 import moment from 'moment';
-//import { getTop10, getXP, getGlobalSetting } from "../dbmanager";
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
-import { Command, GuildMessageProps } from "src/gm";
 import { Guild, GuildMember } from "discord.js";
 
 function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the user and the guild
@@ -37,6 +35,10 @@ export const command: Command<GuildMessageProps> = {
             message.channel.startTyping();
             await message.guild.fetch();
             const target = await stringToMember(message.guild, args.join(" ")) || message.member;
+            if (target.id === message.author.id && args.length) {
+                client.specials.sendError(message.channel, `That user could not be found`);
+                return;
+            }
             const rank = await client.database.getXPTop10(message.guild.id, target.id);
             const xp = await client.database.getXP(target);
             /* if (!rank || !xp) {
