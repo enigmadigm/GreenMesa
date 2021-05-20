@@ -1,10 +1,8 @@
-
 import { getPermLevel, permLevels } from '../../permissions';
 import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
-//import { getGlobalSetting, getGuildSetting } from "../dbmanager";
 import { getFriendlyUptime } from "../../utils/time";
-import { Role, GuildMember, CollectorFilter, MessageEmbed } from "discord.js";
-import { Command } from "src/gm";
+import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection } from "discord.js";
+import { Command, GuildMessageProps } from "src/gm";
 const roleDelay = 1000;
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -15,13 +13,15 @@ async function* delayedLoop(start: number, end: number, increment: number, delay
     }
 }
 
-export const command: Command = {
+const activeOps = new Collection<string, () => void>();
+
+export const command: Command<GuildMessageProps> = {
     name: "role",
     description: {
-        short: "toggles a role on a member",
-        long: "Toggles a role on a member or all members. This command can be used by any members with role management permissions. Members will only be able to toggle roles on themselves that are below the highest one they have. There are many options for who to toggle the role on. Specify 'all' to toggle the role on everyone, this will remove it if they have it, or add it if they don't for each person. Specify 'alloff' to remove the role from everyone. Specify 'allon' to add the role to everyone. Specify a @member to toggle the role on or off of. Specify a @role to toggle the role on everyone with that role."
+        short: "toggle roles on members",
+        long: "Toggles a role on a member or all members.\nThis command can be used by any members with role management permissions. Members will only be able to toggle roles on themselves that are below the highest one they have.\nSend 'all' or '+all' to give the role to everyone.\n'-all' will remove it from everyone.\nSpecify @member or +@member to give the role to a member.\n-@member will remove the role\nYou can even specify @role, +@role, or -@role to toggle the role on everyone with that role.",
     },
-    usage: "<who to toggle role on: all | allon | alloff | @member | @role> <role to toggle: @role>",
+    usage: "<target: [+-]all | [+-]@member | [+-]@role> <role: @role>",
     args: true,
     permLevel: permLevels.member,
     guildOnly: true,
@@ -29,30 +29,47 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             if (args.join(" ").toLocaleLowerCase() === "cancel") {
-
+                const op = activeOps.get(`${message.author.id}${message.guild.id}`);
+                if (op) {
+                    op();
+                    await message.reply(`Stopped your running process, hopefully`);
+                    activeOps.delete(`${message.author.id}${message.guild.id}`);
+                    return;
+                }
+                await client.specials.sendError(message.channel, `You have not started any currently running processes`);
+                return;
+            } else if (activeOps.get(`${message.author.id}${message.guild.id}`)) {
+                await client.specials.sendError(message.channel, `You already have an active operation running. Send \`${message.gprefix} ${this.name} cancel\` to stop it.`);
                 return;
             }
-            if (!message.guild || !message.member) return;
             const g = await message.guild.fetch();
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let target: any;
+            let target: Role | GuildMember | 'all' | undefined;
+            let add = true;
+            if (args[0]) {
+                if (args[0].startsWith("+")) {
+                    args[0] = args[0].slice(1);
+                } else if (args[0].startsWith("-")) {
+                    add = false;
+                    args[0] = args[0].slice(1);
+                }
+                if (!args[0]) {
+                    args.shift();
+                }
+            }
             if (args[0] === "all" || args[0] === "everyone" || args[0] === "@everyone") {
                 target = "all";
-            } else if (args[0] === "allon") {
-                target = "allon";
-            } else if (args[0] === "alloff") {
-                target = "alloff";
             } else {
-                target = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true, false);
+                target = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true);
                 if (!target) {
                     client.specials?.sendError(message.channel, "Member/role target not specified/valid.\n`<target> <role>`");
                     return false;
                 }
             }
+            console.log(add)
             console.log(target)
             args.shift();
-            const targetRole = stringToRole(g, args.join(" "), true, true, false);
+            const targetRole = stringToRole(g, args.join(" "), true, true);
             if (!targetRole || !(targetRole instanceof Role)) {
                 client.specials?.sendError(message.channel, "Role-to-toggle not specified/valid.\n`<target> <role>`");
                 return false;
@@ -60,7 +77,7 @@ export const command: Command = {
 
             const permLevel = await getPermLevel(message.member || message.author);
             if (permLevel < permLevels.admin) {
-                if (((message.member.permissions.bitfield & 0x10000000) !== 0x10000000 || target === "all" || target === "allon" || target === "alloff" || target instanceof Role || (targetRole.position >= message.member.roles.highest.position))) {
+                if (((message.member.permissions.bitfield & 0x10000000) !== 0x10000000 || target === "all" || target instanceof Role || (targetRole.position >= message.member.roles.highest.position))) {
                     client.specials?.sendError(message.channel, `${message.member}, you don't have permission to toggle this role.`);
                     return;
                 }
@@ -78,11 +95,26 @@ export const command: Command = {
                 return;
             }
 
-            if (target === "all" || target === "allon" || target === "alloff") {
-                const targets = g.members.cache.array();
-                if (!targets.length) return;
+            if (target === "all" || target instanceof Role) {
+                const targets = g.members.cache.filter((m) => {
+                    if (target instanceof Role) {
+                        return !!m.roles.cache.get(target.id);
+                    }
+                    if (add) {
+                        return !m.roles.cache.get(targetRole.id);
+                    } else {
+                        return !!m.roles.cache.get(targetRole.id);
+                    }
+                }).array();
+                if (!targets.length) {
+                    await client.specials.sendError(message.channel, `**Failure:** No members to ${add ? "give this role to" : "remove this role from"}`);
+                    return;
+                }
 
                 const loop = delayedLoop(0, targets.length, 1, roleDelay);
+                const cancelOp = () => {
+                    loop.return();
+                }
                 const d = targets.length * roleDelay + 500;
                 const t = getFriendlyUptime(d);
                 const fu = parseFriendlyUptime(t);
@@ -104,94 +136,62 @@ export const command: Command = {
                     time: d,
                     maxUsers: 1,
                 });
-                etaMessage.react("🔴");
+                await etaMessage.react("🔴");
 
                 collector.on('collect', () => {
-                    loop.return()
+                    cancelOp();
                 });
-
+                
                 collector.on('end', async () => {
                     const e = new MessageEmbed(etaMessage.embeds[0]).setFooter("");
                     await etaMessage.edit(e);
+                    cancelOp();
                 });
 
+                activeOps.set(`${message.author.id}${message.guild.id}`, cancelOp);
                 let affected = 0;
                 let errored = false;
                 for await (const i of loop) {
+                    const m = targets[i];
                     try {
-                        // if (cancel) continue;
-                        const m = targets[i];
                         if (m.roles.cache.has(targetRole.id)) {
-                            if (target !== "allon") {
+                            if (!add) {
                                 await m.roles.remove(targetRole);
                                 affected++;
                             }
-                            //await sleep(500);
                         } else {
-                            if (target !== "alloff") {
+                            if (add) {
                                 await m.roles.add(targetRole);
                                 affected++;
                             }
-                            //await sleep(500);
                         }
                     } catch (error) {
                         if (!errored) {
                             xlg.error(error);
-                            client.specials?.sendError(message.channel, `Error toggling ${targetRole} en mass.`);
+                            await client.specials?.sendError(message.channel, `An error was encountered while giving ${targetRole} to ${m}`);
                             errored = true;
                         }
                     }
                 }
 
-                await message.channel.send({
-                    embed: {
-                        color: await client.database.getColor("success"),
-                        description: `${targetRole} ${target === "all" ? "toggled on" : target === "allon" ? "given to" : "removed from"} ${affected} member(s)`
-                    }
-                });
-            } else if (target instanceof Role) {
-                const targets = g.members.cache.filter((m) => !!(m.roles && m.roles.cache.get(target.id))).array();
-                let errored = false;
-
-                const loop = delayedLoop(0, targets.length, 1, roleDelay);
-                const t = getFriendlyUptime(targets.length * roleDelay + 500);
-                const fu = parseFriendlyUptime(t);
-                await message.channel.send({
-                    embed: {
-                        color: await client.database.getColor("info"),
-                        description: `**ETA:**\n${fu}`
-                    }
-                });
-
-                for await (const i of loop) {
-                    try {
-                        const m = targets[i];
-                        if (m.roles.cache.has(targetRole.id)) {
-                            await m.roles.remove(targetRole);
-                            //await sleep(500);
-                        } else {
-                            await m.roles.add(targetRole);
-                            //await sleep(500);
+                activeOps.delete(`${message.author.id}${message.guild.id}`);
+                if (affected) {
+                    await message.channel.send({
+                        embed: {
+                            color: await client.database.getColor("success"),
+                            description: `${targetRole} ${add ? "given to" : "removed from"} ${affected} member(s)`
                         }
-                    } catch (error) {
-                        if (!errored) {
-                            xlg.error(error);
-                            client.specials?.sendError(message.channel, `Error toggling ${targetRole} en mass to ${target}`);
-                            errored = true;
-                        }
-                    }
+                    });
+                } else {
+                    await client.specials.sendError(message.channel, `**Failure:** No members were ${add ? "given" : "removed"} ${targetRole}`);
                 }
-
-                await message.channel.send({
-                    embed: {
-                        color: await client.database.getColor("success"),
-                        description: `${targetRole} toggled on ${targets.length} member(s)`
-                    }
-                });
             } else if (target instanceof GuildMember) {
                 if (target.roles.cache.has(targetRole.id)) {
+                    if (add) {
+                        await client.specials.sendError(message.channel, `${target} already has ${targetRole}`);
+                        return;
+                    }
                     await target.roles.remove(targetRole);
-                    //await sleep(500);
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("success"),
@@ -199,8 +199,11 @@ export const command: Command = {
                         }
                     });
                 } else {
+                    if (!add) {
+                        await client.specials.sendError(message.channel, `${target} already lacks ${targetRole}`);
+                        return;
+                    }
                     await target.roles.add(targetRole);
-                    //await sleep(500);
                     await message.channel.send({
                         embed: {
                             color: await client.database.getColor("success"),
@@ -208,10 +211,9 @@ export const command: Command = {
                         }
                     });
                 }
-            } else {
+            }/*  else {
                 client.specials?.sendError(message.channel, "No target to assign", true)
-            }
-
+            } */
         } catch (error) {
             xlg.error(error);
             await client.specials?.sendError(message.channel);

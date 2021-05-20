@@ -1,14 +1,16 @@
-//import { getGlobalSetting } from '../dbmanager';
 import { stringToRole } from "../../utils/parsers";
 import { permLevels } from '../../permissions';
-import { Command } from 'src/gm';
+import { Command, GuildMessageProps } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';
 import { PaginationExecutor } from '../../utils/pagination';
 const maxlen = 15;
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'inrole',
-    description: 'get the members that have a role',
+    description: {
+        short: `list members with a role`,
+        long: `Get an approximate list of members with a role`,
+    },
     aliases: ['ir'],
     usage: '<role>',
     examples: [
@@ -20,7 +22,6 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
             message.channel.startTyping();
             const g = await message.guild.fetch();
             const target = stringToRole(g, args.join(" "), true, true);
@@ -29,11 +30,11 @@ export const command: Command = {
                 message.channel.stopTyping();
                 return;
             }
-            if (target === "@everyone" || target === "@here"/* || target.name === "@everyone"*/) {
-                await client.specials?.sendError(message.channel, "No @everyone or @here! Everyone is in that role, obviously.")
-                message.channel.stopTyping();
-                return;
-            }
+            // if (target.name === "@everyone" && target.position === 0) {
+            //     await client.specials?.sendError(message.channel, "No @everyone! Everyone is in that role, obviously.");
+            //     message.channel.stopTyping();
+            //     return;
+            // }
             let list = [];
             const userList = target.members.array().map(x => {//˾
                 const tag = `${x.user.tag || "not identifiable"}`.split("").map((x) => {
@@ -106,4 +107,3 @@ export const command: Command = {
         }
     }
 }
-
