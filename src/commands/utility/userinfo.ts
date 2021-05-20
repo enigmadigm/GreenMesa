@@ -33,18 +33,14 @@ export const command: Command<GuildMessageProps> = {
     async execute(client, message, args) {
         try {
             message.channel.startTyping();
-            await message.guild.fetch();
             const target = await stringToMember(message.guild, args.join(" ")) || message.member;
             if (target.id === message.author.id && args.length) {
-                client.specials.sendError(message.channel, `That user could not be found`);
+                await client.specials.sendError(message.channel, `That user could not be found`);
+                message.channel.stopTyping();
                 return;
             }
             const rank = await client.database.getXPTop10(message.guild.id, target.id);
             const xp = await client.database.getXP(target);
-            /* if (!rank || !xp) {
-                client.specials?.sendError(message.channel, "User information could not be retrieved");
-                return;
-            } */
 
             let roles = '';
             const roleArray = target.roles.cache.array().sort((a, b) => a.position > b.position ? -1 : 1);
