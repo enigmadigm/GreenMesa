@@ -1,14 +1,13 @@
 import { Message } from "discord.js";
 import { Bot } from "../bot";
-import { MessageService } from "../gm";
+import { GuildMessageProps, MessageService } from "../gm";
 import { stringToMember } from "../utils/parsers";
-
 
 export const service: MessageService = {
     text: true,
-    async execute(client, message: Message) {
+    async execute(client, message: Message & GuildMessageProps) {
         try {
-            if (!message.guild) return;
+            if (!message.guild || message.author.id === client.user?.id) return;
             const afk = await Bot.client.database.getUserData(message.author.id);
             if (afk && afk.afk && afk.afk !== "~~off~~") {
                 await client.database.updateUserData({
@@ -25,14 +24,24 @@ export const service: MessageService = {
                     if (target && target.id !== message.author.id) {
                         const afk = await Bot.client.database.getUserData(target.id);
                         if (afk && afk.afk && afk.afk !== "~~off~~") {
-                            let b = `**${target.user.tag} is currently afk:**\n${afk.afk}`;
+                            const t = afk.afk.replace(/@everyone/g, "@​everyone").replace(/@here/g, "@​here").replace(/<@&(\d*)>/g, "`@​role`");
+                            // for (let word of afk.afk.split(" ")) {
+                            //     // const ext = extractString(afk.afk, /<@&(\d*)>/);
+                            //     const ext = stringToRole(message.guild, word, false, false);
+                            //     if (ext) {
+                            //         word = `\`@${ext.name}\``;
+                            //     }
+                            //     t.push(word);
+                            // }
+
+                            let b = `**${target.user.tag.escapeDiscord()} is currently afk:**\n${t}`;
                             if (b.length > 2000) {
                                 while (b.length > 1992) {
                                     b = b.slice(0, -1);
                                 }
                                 b += "..."
                             }
-                            message.channel.send(b);
+                            await message.channel.send(b);
                         }
                     }
                 }

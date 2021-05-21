@@ -67,7 +67,7 @@ function editDistance(s1: string, s2: string) {
  * @param regex RegExp to search with
  * @returns
  */
-function extractString(str: string, regex: RegExp) {
+export function extractString(str: string, regex: RegExp): string | undefined {
     const result = regex.exec(str);
     if (!result)
         return undefined;

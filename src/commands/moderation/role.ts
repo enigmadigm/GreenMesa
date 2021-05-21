@@ -66,8 +66,6 @@ export const command: Command<GuildMessageProps> = {
                     return false;
                 }
             }
-            console.log(add)
-            console.log(target)
             args.shift();
             const targetRole = stringToRole(g, args.join(" "), true, true);
             if (!targetRole || !(targetRole instanceof Role)) {
