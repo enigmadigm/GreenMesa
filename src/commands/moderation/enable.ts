@@ -1,12 +1,10 @@
-
-//import { getGuildSetting, editGuildSetting, getGlobalSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
-import { Command, CommandConf } from "src/gm";
+import { Command, CommandConf, GuildMessageProps } from "src/gm";
 import { GuildChannel } from "discord.js";
 import { stringToRole, stringToChannel } from "../../utils/parsers";
 import { getDashboardLink } from "../../utils/specials";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'enable',
     aliases: ['en'],
     description: {
@@ -19,8 +17,6 @@ export const command: Command = {
     permLevel: permLevels.admin,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-
             const searchName = args[0].toLowerCase();
             const conf = await client.database.getCommands(message.guild.id, true);
             if (!conf) {
@@ -59,13 +55,13 @@ export const command: Command = {
 
             args.shift();
             const a = args.join(" ");
-            const spec = stringToChannel(message.guild, a, true, true) || stringToRole(message.guild, a, true, true, false);
+            const spec = stringToChannel(message.guild, a, true, true) || stringToRole(message.guild, a, true, true);
             const unchanged: string[] = [];
 
             if (applyTo.some(x => !x.enabled || x.channel_mode || x.channels.length || x.role_mode || x.roles.length) || spec) {
                 let already = 0;
                 for (const c of applyTo) {
-                    if (!spec || spec === "@everyone" || spec === "@here") {
+                    if (!spec || spec.id === message.guild.roles.cache.find(x => x.name === "@everyone")?.id) {
                         c.enabled = true;
                         c.channel_mode = false;
                         c.channels = [];
@@ -167,4 +163,3 @@ export const command: Command = {
         }
     }
 }
-

@@ -1,9 +1,7 @@
-
+import { Command, GuildMessageProps } from "src/gm";
 import moment from 'moment';
-//import { getTop10, getXP, getGlobalSetting } from "../dbmanager";
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
-import { Command, GuildMessageProps } from "src/gm";
 import { Guild, GuildMember } from "discord.js";
 
 function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the user and the guild
@@ -35,14 +33,14 @@ export const command: Command<GuildMessageProps> = {
     async execute(client, message, args) {
         try {
             message.channel.startTyping();
-            await message.guild.fetch();
             const target = await stringToMember(message.guild, args.join(" ")) || message.member;
+            if (target.id === message.author.id && args.length) {
+                await client.specials.sendError(message.channel, `That user could not be found`);
+                message.channel.stopTyping();
+                return;
+            }
             const rank = await client.database.getXPTop10(message.guild.id, target.id);
             const xp = await client.database.getXP(target);
-            /* if (!rank || !xp) {
-                client.specials?.sendError(message.channel, "User information could not be retrieved");
-                return;
-            } */
 
             let roles = '';
             const roleArray = target.roles.cache.array().sort((a, b) => a.position > b.position ? -1 : 1);
@@ -76,7 +74,7 @@ export const command: Command<GuildMessageProps> = {
 
             // invites
             const data = await client.database.getInvites({ guildid: message.guild.id, inviter: target.id });
-            const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png)`;
+            const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png) ⟵`;
 
             // last message
             const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
@@ -120,7 +118,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "Last Message",
-                            value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `They have never sent one`,
+                            value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
                             inline: true
                         },
                         {

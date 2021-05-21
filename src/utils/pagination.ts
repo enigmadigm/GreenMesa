@@ -116,7 +116,7 @@ export class PaginationExecutor {
             if (reaction.message.editable) {
                 await reaction.message.edit(p.setFooter(`${pager.currentPageNumber + 1} of ${pager.pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`));
             }
-            await reaction.users.remove(user);
+            // await reaction.users.remove(user);
         } catch (error) {
             xlg.error(error);
         }

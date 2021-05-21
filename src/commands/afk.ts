@@ -1,4 +1,3 @@
-
 import { Command } from "src/gm";
 
 export const command: Command = {
@@ -12,7 +11,7 @@ export const command: Command = {
     async execute(client, message, args) {
         try {
             const a = args.join(" ");
-            if (a === "off") {
+            if (a === "off" || a === "~~off~~") {
                 await client.database.updateUserData({
                     userid: message.author.id,
                     afk: "~~off~~"
@@ -37,4 +36,3 @@ export const command: Command = {
         }
     }
 }
-

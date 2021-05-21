@@ -1,32 +1,26 @@
-
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { MessageEmbedOptions } from "discord.js";
 import { PaginationExecutor } from "../../utils/pagination";
-//import { getGlobalSetting } from "../dbmanager";
-const maxlen = 15;
+const maxlen = 15;// maximum number of roles to be displayed at one time
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'listroles',
     aliases: ['lsroles'],
-    description: 'list all of the roles in the server',
+    description: {
+        short: `display roles in the server`,
+        long: `Display the full list of roles in the server`,
+    },
     guildOnly: true,
     permLevel: permLevels.trustedMember,
     async execute(client, message) {
         try {
-            if (!message.guild) return;
-            //const roles = await message.guild.roles.fetch();
             const roleArray = message.guild.roles.cache
                 .sort((roleA, roleB) => roleB.position - roleA.position)
                 .filter((x) => x.name !== "@everyone")
-                .array()
-                .map(r => {
-                    const role = message.guild?.roles.cache.get(r.id);
-                    if (role) {
-                        return `${role.position + 1} ${role}`
-                    } else {
-                        return `unknown role`
-                    }
+                .map((r, i, c) => {
+                    const prefix = `${c.size}`.split(/./).map(() => "0").join("").slice(0, `${c.size}`.length - `${r.position}`.length);
+                    return `\`${prefix}${r.position}\` ${r} *${r.id}*`;
                 });
             const roleOverflowArray: string[][] = [];
             let runs = 0;

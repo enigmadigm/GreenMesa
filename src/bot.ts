@@ -242,7 +242,7 @@ client.on('messageDeleteBulk', messageCollection => {
 client.on('messageUpdate', (omessage, nmessage) => {
     if (!omessage.partial && !nmessage.partial) {
         logMessageUpdate(omessage, nmessage);
-        client.services?.runAllAutomod(client, nmessage);
+        client.services?.runAllTextAutomod(client, nmessage);
     }
 });
 
@@ -289,6 +289,13 @@ client.on("messageReactionAdd", async (reaction, user) => {
     PaginationExecutor.paginate(reaction, user);
 })
 
+client.on("messageReactionRemove", async (reaction, user) => {
+    if (user.partial) {
+        user = await user.fetch();
+    }
+    PaginationExecutor.paginate(reaction, user);
+});
+
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
@@ -302,9 +309,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         let dm = false; // checks if it's from a dm
         if (!message.guild)
             dm = true;
-    
+
         const now = Date.now();
-        
+
         let special_prefix;
         if (!dm) {
             const gpr = await client.database.getPrefix(message.guild?.id);
@@ -319,7 +326,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             if (gsr) special_prefix = gsr.value;
         }
         message.gprefix = special_prefix || "";
-    
+
         if (message.mentions && message.mentions.has(client.user)) {
             if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
                 const iec_gs = await client.database.getColor("info");
@@ -337,11 +344,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
         }
 
-        // Also good practice to ignore any message that does not start with our prefix,
-        // which is set in the configuration file.
-        if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;
-        // ▼▼▼▼▼ deprecated with the guild only command handler filter
-        //if (message.channel.type === "dm") return;
+        if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;// check for prefix
 
         const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
         const commandName = args.shift()?.toLowerCase() || "";
@@ -388,7 +391,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const commandEnabledGlobal = await client.database.getGlobalSetting(`${command.name}_enabled`);
-        if ((commandEnabledGlobal && commandEnabledGlobal.value !== 'true') || disabled) {
+        const disabledGlobal = (commandEnabledGlobal && commandEnabledGlobal.value !== 'true');
+        if (disabledGlobal || disabled) {
             if (command.name === "h") return;
             if (!gc || (typeof gc.respond === "undefined" || gc.respond)) {
                 await message.channel.send({
@@ -396,8 +400,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                         title: `Command Disabled`,
                         description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "here"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
                         footer: {
-                            text: `${!disabled ? 'Sorry, please be patient' : 'Admins may re-enable it'}`
-                        }
+                            text: `${disabledGlobal ? "Sorry, please be patient" : ""}`,
+                        },
                     }
                 });
             }

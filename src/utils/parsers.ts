@@ -67,7 +67,7 @@ function editDistance(s1: string, s2: string) {
  * @param regex RegExp to search with
  * @returns
  */
-function extractString(str: string, regex: RegExp) {
+export function extractString(str: string, regex: RegExp): string | undefined {
     const result = regex.exec(str);
     if (!result)
         return undefined;
@@ -153,16 +153,7 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
  * @param [bySimilar=true] if it should also search by similar name (default true)
  * @returns
  */
-
-export function stringToRole(guild: Guild, text: string, byName = true, bySimilar = true, everyone = false): Role | '@everyone' | '@here' | undefined {
-
-    if (everyone && (text == 'here' || text == '@here')) {
-        return '@here';
-    }
-    if (everyone && (text == 'everyone' || text == '@everyone')) {
-        return '@everyone';
-    }
-
+export function stringToRole(guild: Guild, text: string, byName = true, bySimilar = true): Role | undefined {
     text = extractString(text, /<@&(\d*)>/) || text;
 
     // by id

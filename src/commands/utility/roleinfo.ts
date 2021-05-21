@@ -1,9 +1,8 @@
-
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { stringToRole } from "../../utils/parsers";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "roleinfo",
     aliases: ["ri"],
     description: {
@@ -17,11 +16,9 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-
-            const role = stringToRole(message.guild, args.join(" "), true, true, false);
-            if (!role || role === "@everyone" || role === "@here") {
-                client.specials?.sendError(message.channel, "A valid role could not be found");
+            const role = stringToRole(message.guild, args.join(" "), true, true);
+            if (!role) {
+                await client.specials?.sendError(message.channel, "A valid role could not be found");
                 return;
             }
             await message.channel.send({

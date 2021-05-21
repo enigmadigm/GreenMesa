@@ -1,4 +1,4 @@
-import { Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, PermissionString } from "discord.js";
+import { Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, NewsChannel, PermissionString, TextChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -56,7 +56,7 @@ export interface Command<T = Record<string, any>, A = string[]> {
     execute(client: XClient, message: XMessage & T, args: A): Promise<void | boolean | CommandReturnData>;
 }
 
-export type GuildMessageProps = { guild: Guild, member: GuildMember };
+export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel };
 // export type GuildMessage = XMessage & { guild: Guild, member: GuildMember };
 
 export interface CommandReturnData {
@@ -197,6 +197,8 @@ export interface MessageService {
     name?: string;
     disabled?: true;
     text?: true;
+    allowNonUser?: true;
+    guildOnly?: true;
     getInformation?(client: XClient, guildid: string): Promise<string>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     execute(client: XClient, data: any): Promise<void>;

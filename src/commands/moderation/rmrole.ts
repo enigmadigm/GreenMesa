@@ -1,10 +1,8 @@
-
-//import { getGlobalSetting, getGuildSetting } from "../dbmanager";
 import { stringToRole } from '../../utils/parsers';
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "rmrole",
     description: "remove a role",
     usage: "<@role>",
@@ -14,19 +12,17 @@ export const command: Command = {
     moderation: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-
-            const target = stringToRole(message.guild, args.join(" "), true, true, false);
+            const target = stringToRole(message.guild, args.join(" "), true, true);
             if (!target) {
-                client.specials?.sendError(message.channel, "That role could not be found.")
+                await client.specials?.sendError(message.channel, "That role could not be found.")
                 return;
             }
-            if (target === "@everyone" || target === "@here") {
-                client.specials?.sendError(message.channel, "No @everyone or @here!")
+            if (target.name === "@everyone" && target.position === 0) {
+                await client.specials?.sendError(message.channel, "@everyone is not a normal role and cannot be deleted");
                 return;
             }
             await target.delete();
-            message.channel.send({
+            await message.channel.send({
                 embed: {
                     color: await client.database.getColor("success"),
                     description: `Role removed successfully`

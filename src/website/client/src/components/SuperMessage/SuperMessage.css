@@ -1,0 +1,61 @@
+.sm-super {
+    background-color: rgba(0, 0, 0, 0.25);
+    width: 100%;
+    top: 0;
+    overflow-y: auto;
+    /* padding-bottom: 20px; */
+}
+
+.sm-super .sm-form-container {
+    padding: 1.25rem;
+    position: relative;
+}
+
+.sm-txt {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background-color: #3A4149;
+    width: 100%;
+    padding: 3px 5px;
+}
+
+.sm-container select {
+    background-color: #343B41;
+    margin-right: 5px;
+}
+
+.sm-buttons {
+    position: absolute;
+    width: 100%;
+    padding: 1.25em;
+    bottom: 0;
+    left: 0;
+}
+
+.sm-buttons button.primary-button {
+    background-color: rgb(0, 75, 148);
+    transition: opacity 0.3s;
+}
+
+.sm-buttons button.primary-button:hover {
+    opacity: 0.7;
+}
+
+.sm-buttons button.primary-button:disabled {
+    color: rgb(122, 122, 122);
+    cursor: not-allowed;
+    /* background-image: linear-gradient(63deg, #230063 38.89%, #610000 38.89%, #610000 50%, #230063 50%, #230063 88.89%, #610000 88.89%, #610000 100%); */
+    /* background-size: 10.10px 19.82px; */
+    /* background-color: rgba(35, 0, 99, 0.8); */
+    opacity: 0.5;
+}
+
+.sm-buttons button.primary-button+.sm-cancel-bottom {
+    margin-left: 15px;
+    position: absolute;
+    right: 1.25em;
+}
+
+.sm-buttons hr:first-child {
+    margin-bottom: 10px;
+}

@@ -1,11 +1,10 @@
-
 import { permLevels } from '../../permissions';
 import { stringToChannel, stringToRole } from '../../utils/parsers';
 import { Channel, Role } from "discord.js";
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { getDashboardLink } from "../../utils/specials";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "settings",
     description: {
         short: "manage the server settings for the bot",
@@ -18,8 +17,6 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-            // const fail_embed_color = await client.database.getColor("fail");
             const info_embed_color = await client.database.getColor("info");
             const success_embed_color = await client.database.getColor("success");
             if (!args.length) {
@@ -349,7 +346,7 @@ export const command: Command = {
                         });
                         return;
                     }
-                    const role = stringToRole(message.guild, args[argIndex], true, false, false);
+                    const role = stringToRole(message.guild, args[argIndex], true, false);
                     if (!role || !(role instanceof Role)) {
                         client.specials?.sendError(message.channel, 'Please send a valid role.');
                         return;
