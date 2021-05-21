@@ -11,7 +11,7 @@ export interface XClient extends Client {
     specials: typeof Specials;
     database: DBManager;
     services: MessageServices;
-    msgLogging: boolean | strin;
+    msgLogging: boolean | string;
     invites: Invites;
 }
 
@@ -198,7 +198,7 @@ export interface MessageService {
     disabled?: true;
     text?: true;
     allowNonUser?: true;
-    guildOnly?: true;
+    guildOnly?: boolean;
     getInformation?(client: XClient, guildid: string): Promise<string>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     execute(client: XClient, data: any): Promise<void>;

@@ -49,9 +49,9 @@ export class MessageServices {
     async runAll(client: XClient, message: XMessage): Promise<void> {
         try {
             if (!Bot.client) return;
-            for await(const [,service] of this.services) {
+            for (const [,service] of this.services) {
                 if (service.text && !service.disabled && !(service.name?.startsWith("automod_") && message.author.id === client.user?.id) && (service.allowNonUser || !(message.author.bot || message.author.system)) && (!service.guildOnly || message.guild)) {
-                    await service.execute(client, message);
+                    service.execute(client, message);
                 }
             }
         } catch (error) {
@@ -65,9 +65,9 @@ export class MessageServices {
     async runAllTextAutomod(client: XClient, message: XMessage): Promise<void> {
         try {
             if (!Bot.client) return;
-            for await (const [, service] of this.services) {
+            for (const [, service] of this.services) {
                 if (service.text && service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
-                    await service.execute(client, message);
+                    service.execute(client, message);
                 }
             }
             // this.services.forEach(async (service: MessageService) => {

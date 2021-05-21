@@ -5,15 +5,23 @@ import { stringToMember } from "../utils/parsers";
 
 export const service: MessageService = {
     text: true,
+    guildOnly: true,
     async execute(client, message: Message & GuildMessageProps) {
         try {
             if (!message.guild || message.author.id === client.user?.id) return;
             const afk = await Bot.client.database.getUserData(message.author.id);
-            if (afk && afk.afk && afk.afk !== "~~off~~") {
+            if (afk.afk !== "~~off~~" && afk.afk !== "off") {
                 await client.database.updateUserData({
                     userid: message.author.id,
-                    afk: "~~off~~"
+                    afk: "off"
                 });
+                if (afk.afk) {
+                    try {
+                        await message.author.send(`\\👋 Your afk message has been reset`);
+                    } catch (error) {
+                        //
+                    }
+                }
             }
             if (message.mentions) {
                 //const u = message.mentions.users.first();
@@ -23,7 +31,7 @@ export const service: MessageService = {
                     const target = await stringToMember(message.guild, match, false, false, false);
                     if (target && target.id !== message.author.id) {
                         const afk = await Bot.client.database.getUserData(target.id);
-                        if (afk && afk.afk && afk.afk !== "~~off~~") {
+                        if (afk.afk && afk.afk !== "~~off~~" && afk.afk !== "off") {
                             const t = afk.afk.replace(/@everyone/g, "@​everyone").replace(/@here/g, "@​here").replace(/<@&(\d*)>/g, "`@​role`");
                             // for (let word of afk.afk.split(" ")) {
                             //     // const ext = extractString(afk.afk, /<@&(\d*)>/);
