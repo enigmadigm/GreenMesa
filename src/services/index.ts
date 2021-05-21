@@ -49,27 +49,32 @@ export class MessageServices {
     async runAll(client: XClient, message: XMessage): Promise<void> {
         try {
             if (!Bot.client) return;
-            this.services.forEach(async (service: MessageService) => {
-                if (service.text && !service.disabled && !(service.name?.startsWith("automod_") && message.author.id === client.user?.id)) {
+            for await(const [,service] of this.services) {
+                if (service.text && !service.disabled && !(service.name?.startsWith("automod_") && message.author.id === client.user?.id) && (service.allowNonUser || !(message.author.bot || message.author.system)) && (!service.guildOnly || message.guild)) {
                     await service.execute(client, message);
                 }
-            });
+            }
         } catch (error) {
             xlg.error(error);
         }
     }
 
     /**
-     * Better to consider this runAllTextAutomodules
+     * Runs all modules that are text based
      */
-    async runAllAutomod(client: XClient, message: XMessage): Promise<void> {
+    async runAllTextAutomod(client: XClient, message: XMessage): Promise<void> {
         try {
             if (!Bot.client) return;
-            this.services.forEach(async (service: MessageService) => {
+            for await (const [, service] of this.services) {
                 if (service.text && service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
                     await service.execute(client, message);
                 }
-            });
+            }
+            // this.services.forEach(async (service: MessageService) => {
+            //     if (service.text && service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
+            //         await service.execute(client, message);
+            //     }
+            // });
         } catch (error) {
             xlg.error(error);
         }
@@ -87,11 +92,7 @@ export class MessageServices {
 
     isText(mod: string): boolean {
         const s = this.services.find(x => x.name === mod);
-        if (s && s.text) {
-            return true;
-        } else {
-            return false;
-        }
+        return !!(s && s.text);
     }
 
     async punish<T = unknown>(mod: AutomoduleData, target: GuildMember, data?: T): Promise<void> {
