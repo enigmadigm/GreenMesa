@@ -17,7 +17,8 @@ export const service: MessageService = {
                 });
                 if (afk.afk) {
                     try {
-                        await message.author.send(`\\👋 Your afk message has been reset`);
+                        // await message.author.send(`\\👋 Your afk message has been reset`);
+                        await message.react("👋");// just going to react to their first message with a wave instead of dming them
                     } catch (error) {
                         //
                     }
