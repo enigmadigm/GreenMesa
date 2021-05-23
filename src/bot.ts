@@ -45,7 +45,7 @@ import Discord, { GuildChannel, MessageEmbedOptions, PermissionString, TextChann
 import config from "../auth.json"; // Loading app config file
 //import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
-import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname } from './serverlogger';
+import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger';
 import MesaWebsite from "./website/app";
 import { Command, XClient, XMessage } from "./gm";
 import { TimedActionsSubsystem } from "./tactions";
@@ -253,6 +253,10 @@ client.on('roleCreate', nrole => {
 client.on('roleDelete', orole => {
     logRole(orole, true);
 });
+
+client.on("roleUpdate", (previousRole, currentRole) => {
+    logRoleUpdate(previousRole, currentRole);
+})
 
 client.on('channelCreate', nchannel => {
     if (nchannel instanceof GuildChannel) {
