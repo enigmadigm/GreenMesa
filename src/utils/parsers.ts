@@ -309,6 +309,9 @@ export function randomIntFromInterval(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+/**
+ * Parse hyphen flagged options that occur at the beginning of an options array
+ */
 export function parseOptions(opts: string[]): string[] {
     const n = opts.reduce((p, c, ci) => {
         const condition = (pcv: string) => pcv.startsWith("-") && pcv.length < 20;
@@ -320,6 +323,47 @@ export function parseOptions(opts: string[]): string[] {
     }, <string[]>[]);
     opts.splice(0, n.length);
     return n;
+}
+
+/**
+ * Parse hyphen flagged arguments that occur at the beginning of a string
+ *
+ * const flags = parseLongArgs(args);
+ * args = args.join(" ").slice(flags.taken.join(" ").length).trim().split(" ");// trim the provided argument array to disclude the parsed flags
+ * @param toParse the pre-split arguments (assuming space delimited) from commands
+ * @returns a list of specified options
+ */
+export function parseLongArgs(toParse: string[]): { flags: { name: string, value: string }[], taken: string[] } {
+    const a = toParse.join(" ");
+    const opts: { name: string, value: string }[] = [];
+    // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    const matcher = /(?<![^\s])--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    let match;
+    let matchCycle = 0;
+    let currentStartingIndex = 0;
+    const taken: string[] = [];
+    while ((match = matcher.exec(a)) !== null) {
+        if (!matchCycle && match.index) {
+            break;
+        }
+        if (new RegExp(matcher).exec(a.slice(currentStartingIndex).trim())?.index) {
+            break;
+        }
+        const g1 = match[1] || "";
+        const g2 = match[2] ? match[2].replace(/^"(.*)"$/, "$1") : "";
+        opts.push({
+            name: g1,
+            value: g2,
+        });
+        // a = a.slice(match.index + match[0].length)
+        taken.push(match[0]);
+        matchCycle++;
+        currentStartingIndex = match.index + match[0].length;
+    }
+    // toParse = toParse.slice(taken.join(" ").length - 1);// trim the provided argument array to disclude the parsed flags
+    // toParse = toParse.join(" ").slice(taken.join(" ").length).trim().split(" ");
+    // ^ apparently this reference ends at reassignment
+    return { flags: opts, taken: taken };
 }
 
 /**
