@@ -1,11 +1,10 @@
-
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
 import { MessageEmbed, MessageEmbedOptions } from "discord.js";
 import { PaginationExecutor } from "../../utils/pagination";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "invites",
     aliases: ["invs"],
     description: {
@@ -20,7 +19,6 @@ export const command: Command = {
     permissions: ["MANAGE_GUILD"],
     async execute(client, message, args) {
         try {
-            if (!message.guild || !message.member) return;
             const g = await message.guild.fetch();
             let target = message.member;
             const secondaryTarget = await stringToMember(g, args[0], false, false, false);

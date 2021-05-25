@@ -1,10 +1,9 @@
-import { Collection, GuildMember, Message, MessageEmbedOptions } from "discord.js";
 import { AutomoduleData, MessageService, XClient, XMessage } from "../gm";
+import { Collection, GuildMember, Message, MessageEmbedOptions } from "discord.js";
 import fs from "fs";
 import { Bot } from "../bot";
 import { ordinalSuffixOf } from "../utils/parsers";
 import { ban, kick, mute, warn } from "../utils/modactions";
-
 
 export class MessageServices {
     private services: Collection<string, MessageService>;

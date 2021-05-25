@@ -1,6 +1,5 @@
-
-import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
+import { permLevels } from '../../permissions';
 import { stringToChannel, stringToMember } from "../../utils/parsers";
 import { DMChannel, MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
 
