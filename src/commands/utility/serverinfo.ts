@@ -61,13 +61,8 @@ export const command: Command = {
                             "inline": true
                         },
                         {
-                            "name": "Roles <:atsign_1:757386730960584815>",
-                            "value": `${message.guild.roles.cache.size}`,
-                            "inline": true
-                        },
-                        {
-                            "name": "Open Invites",
-                            "value": `${invites ? invites.length : "[no invites access]"}`,
+                            "name": "Created",
+                            "value": `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
                             "inline": true
                         },
                         {
@@ -76,10 +71,15 @@ export const command: Command = {
                             "inline": true
                         },
                         {
-                            "name": "Created",
-                            "value": `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
+                            "name": "Roles <:atsign_1:757386730960584815>",
+                            "value": `\`${message.guild.roles.cache.size}\``,
                             "inline": true
-                        }
+                        },
+                        {
+                            "name": "Open Invites",
+                            "value": `\`${invites ? invites.length : "NO PERMS"}\``,
+                            "inline": true
+                        },
                     ],
                     "footer": {
                         "text": "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
