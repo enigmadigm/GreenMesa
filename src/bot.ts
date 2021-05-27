@@ -53,6 +53,7 @@ import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
 import { ban } from "./utils/modactions";
 import "./xlogger";
+import { parseLongArgs } from './utils/parsers';
 
 export class Bot {
     static client: XClient;
@@ -199,9 +200,9 @@ client.on('guildMemberAdd', async member => {
                 xlg.error(error);
             }
         }
-        client.services?.run(client, "automod_nicenicks", member);
-        client.services?.run(client, "autorole", member);
-        client.invites.logIngress(member);
+        await client.invites.logIngress(member);
+        await client.services.run(client, "autorole", member);
+        await client.services.run(client, "automod_nicenicks", member);
     } catch (error) {
         xlg.error(error);
     }
@@ -215,6 +216,11 @@ client.on("guildMemberRemove", async member => { //Emitted whenever a member lea
         }*/
         logMember(member, false);
         client.invites.logEgress(member);
+        client.database.updateGuildUserData({
+            guildid: member.guild.id,
+            userid: member.id,
+            roles: JSON.stringify(member.roles.cache.map(r => r.id)).escapeSpecialChars(),
+        });
     }
 });
 
@@ -222,7 +228,7 @@ client.on("guildMemberUpdate", async (om, nm) => {
     if (!om.partial) {
         logNickname(om, nm);
     }
-    client.services?.run(client, "automod_nicenicks", nm)
+    client.services.run(client, "automod_nicenicks", nm)
 });
 
 client.on('messageDelete', async (message) => {
@@ -242,7 +248,7 @@ client.on('messageDeleteBulk', messageCollection => {
 client.on('messageUpdate', (omessage, nmessage) => {
     if (!omessage.partial && !nmessage.partial) {
         logMessageUpdate(omessage, nmessage);
-        client.services?.runAllTextAutomod(client, nmessage);
+        client.services.runAllTextAutomod(client, nmessage);
     }
 });
 
@@ -350,7 +356,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;// check for prefix
 
-        const args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
+        let args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
         const commandName = args.shift()?.toLowerCase() || "";
 
         const command = client.commands.get(commandName || "")
@@ -496,9 +502,12 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             return;
         }
 
+        const flags = parseLongArgs(args);// get the flags from the beginning of the message, if they are provided
+        args = args.join(" ").slice(flags.taken.join(" ").length).trim().split(" ");// trim the provided argument array to disclude the parsed flags
+
         try {
             client.database.logCmdUsage(commandName, message);
-            const ret = await command.execute(client, message, args);
+            const ret = await command.execute(client, message, args, flags.flags);
 
             if (ret && ret !== true) {
                 if (ret.error) {

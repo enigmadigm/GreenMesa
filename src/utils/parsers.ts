@@ -2,7 +2,7 @@
 // https://www.npmjs.com/package/string-similarity
 
 import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, Role, User } from "discord.js";
-import { XClient } from "src/gm";
+import { CommandArgumentFlag, XClient } from "src/gm";
 
 /**
  * Returns similarity value based on Levenshtein distance.
@@ -333,7 +333,7 @@ export function parseOptions(opts: string[]): string[] {
  * @param toParse the pre-split arguments (assuming space delimited) from commands
  * @returns a list of specified options
  */
-export function parseLongArgs(toParse: string[]): { flags: { name: string, value: string }[], taken: string[] } {
+export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[], taken: string[] } {
     const a = toParse.join(" ");
     const opts: { name: string, value: string }[] = [];
     // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")

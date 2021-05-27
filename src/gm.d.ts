@@ -53,10 +53,14 @@ export interface Command<T = Record<string, any>, A = string[]> {
     ownerOnly?: boolean;
     permissions?: PermissionString[];
     // client: XClient, message: XMessage, args: string[]
-    execute(client: XClient, message: XMessage & T, args: A): Promise<void | boolean | CommandReturnData>;
+    execute(client: XClient, message: XMessage & T, args: A, flags?: CommandArgumentFlag[]): Promise<void | boolean | CommandReturnData>;
 }
 
 export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel };
+export interface CommandArgumentFlag {
+    name: string;
+    value: string;
+}
 // export type GuildMessage = XMessage & { guild: Guild, member: GuildMember };
 
 export interface CommandReturnData {
@@ -212,13 +216,13 @@ export interface UnparsedTimedAction {
     casenumber: number;
 }
 
-export interface TimedAction {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface TimedAction<T = Record<string, any>> {
     id: string;
     case?: number;
     time: Date;
     type: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: Record<string, any>;
+    data: T;
 }
 
 export interface UnmuteActionData {
@@ -419,11 +423,19 @@ export interface AutoroleData {
      * the roles to automatically give people when they join
      */
     roles?: string[];
-    ignore?: string[];
+    // ignore?: string[];// not sure what this property was supposed to be
     /**
      * the roles to automatically give to bots when they join
      */
     botRoles?: string[];
+    /**
+     * Whether user's roles should be restored when they rejoin the server
+     */
+    retain?: boolean;
+    /**
+     * The optional list of roles that should not be restored when users rejoin
+     */
+    noRetain?: string[];
 }
 
 export interface LevelsEndpointData  extends GuildsEndpointBase {
@@ -801,4 +813,12 @@ export interface InviteData {// data for the actual invites that are in use for 
 export interface InviteStateData {
     guildid: string;
     invites: InviteData[];
+    rewards?: Record<number, InviteLevelReward>;
+}
+
+export interface InviteLevelReward {
+    level: number;
+    mode: string;
+    value: string;
+    attachment?: string;
 }
