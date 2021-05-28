@@ -45,7 +45,7 @@
     "source-map-support": "^0.5.19",
     "ytdl-core": "^3.4.2"
   },
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/enigmadigm/greenmesa/issues"
   },
