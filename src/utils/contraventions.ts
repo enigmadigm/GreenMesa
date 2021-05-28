@@ -75,7 +75,7 @@ export class Contraventions {
         await this.logOne(d);
     }
 
-    public static async logMute(u: GuildMember, duration: number, agent: GuildMember | string, reason = ""): Promise<void> {
+    public static async logMute(u: GuildMember, duration: number, agent: GuildMember | string, reason = "", remute = false): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const d: ModActionEditData = {
@@ -85,8 +85,8 @@ export class Contraventions {
             endtime: moment().add(duration, "ms").toISOString(),
             agent: modId,
             agenttag: modTag,
-            summary: reason,
-            type: "mute"
+            summary: remute ? "Attempted mute evasion; automatically remuting to counter." : reason,
+            type: remute ? "remute" : "mute"
         };
         await this.logOne(d, await Bot.client.database.getColor("warn"), duration);
     }

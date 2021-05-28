@@ -1,12 +1,24 @@
-
-import { AutoroleData, MessageService } from "../gm";
+import { AutoroleData, MessageService, UnmuteActionData } from "../gm";
 import { Bot } from "../bot";
 import { GuildMember } from "discord.js";
+import moment from "moment";
+import { mute } from "../utils/modactions";
 
 export const service: MessageService = {
     async execute(client, member: GuildMember) {
         try {
-            if (!member.guild) return;
+            if (!member.guild || !member.guild.available) return;
+            // restoring mute role for mute evasion protection
+            const mutes = await client.database.getTimedActions<UnmuteActionData>({
+                actiontype: "unmute",
+            });
+            if (mutes && mutes.length) {
+                const muteDat = mutes.find(x => x.data.userid === member.id && moment(x.time).isAfter(moment()));
+                if (muteDat) {
+                    await mute(client, member, undefined, member.guild.me || client.user?.id || "", undefined, true);
+                }
+            }
+            // normal autorole starts here
             const ar = await Bot.client.database.getGuildSetting(member.guild, "autorole");
             if (!ar) return;
             const autorole: AutoroleData = JSON.parse(ar.value);
@@ -24,7 +36,21 @@ export const service: MessageService = {
                     for (const id of autorole.roles) {
                         const r = member.guild.roles.cache.get(id);
                         if (r) {
-                            member.roles.add(r);
+                            await member.roles.add(r);
+                        }
+                    }
+                }
+                if (autorole.retain) {
+                    const guserDat = await Bot.client.database.getGuildUserData(member.guild.id, member.id);
+                    if (guserDat.roles) {
+                        const storedRoles: string[] = JSON.parse(guserDat.roles);
+                        if (storedRoles.length) {
+                            const roles = await member.guild.roles.fetch();
+                            const rolesToGive = roles.cache.filter((x) => storedRoles.includes(x.id) && !member.roles.cache.get(x.id));
+                            for (const r of rolesToGive) {
+                                await member.roles.add(r);
+                                await new Promise((resolve) => setTimeout(resolve, 200));
+                            }
                         }
                     }
                 }

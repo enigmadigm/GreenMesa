@@ -19,7 +19,7 @@ export class TimedActionsSubsystem {
 
     async poll(): Promise<void> {
         try {
-            const r = await Bot.client.database.getActions(1);
+            const r = await Bot.client.database.getTimedActionsRange(1);
             if (!r || !r.length) return;
             for (const action of r) {
                 if (!this.scheduled.find(x => x.id === action.id)) {

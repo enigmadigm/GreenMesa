@@ -2,7 +2,6 @@ import { Invite } from 'discord.js';
 import moment from 'moment';
 import { Command } from 'src/gm';
 
-
 export const command: Command = {
     name: 'serverinfo',
     description: 'get info on the current server',
@@ -93,4 +92,3 @@ export const command: Command = {
         }
     }
 }
-

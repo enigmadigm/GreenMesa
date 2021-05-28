@@ -50,6 +50,8 @@ const levelRoles = [{
     }
 ];
 
+type TimedActionQuery = Partial<UnparsedTimedAction>/* & */;
+
 // https://www.tutorialkart.com/nodejs/nodejs-mysql-result-object/#Example-Nodejs-MySQL-INSERT-INTO-Result-Object
 
 export class DBManager {
@@ -916,7 +918,7 @@ export class DBManager {
      * Get all actions up to the number of give seconds ahead of the current time.
      * @param lookahead number representing the number of seconds to look ahead in the db
      */
-    async getActions(lookahead: number): Promise<TimedAction[] | false> {
+    async getTimedActionsRange(lookahead: number): Promise<TimedAction[] | false> {
         if (lookahead < 0 || lookahead > 3600) return false;
         const et = moment().add(lookahead, "seconds").format('YYYY-MM-DD HH:mm:ss');
         const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= ${escape(et)}`);
@@ -937,20 +939,92 @@ export class DBManager {
         return parsed;
     }
 
-    async getAction(id: string): Promise<TimedAction | false> {
-        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE actionid = ${escape(id)}`);
-        if (!r || !r.length) {
+    /**
+     * Query the db to find scheduled actions for the bot to take
+     * @param query Options: {
+     *   actionid: string;
+     *   exectime: string;
+     *   actiontype: string;
+     *   actiondata: string;
+     *   casenumber: number;
+     * }
+     * @returns an array of timed actions
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async getTimedActions<T = Record<string, any>>(query: TimedActionQuery): Promise<TimedAction<T>[] | false> {
+        try {
+            const queryOptions = <(keyof TimedActionQuery)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `SELECT * FROM timedactions WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<UnparsedTimedAction[]>>this.query(`${sql}`);
+            if (result.length) {
+                const a: TimedAction<T>[] = [];
+                for (const row of result) {
+                    try {
+                        const b: TimedAction<T> = {
+                            id: row.actionid,
+                            time: moment(row.exectime).toDate(),
+                            type: row.actiontype,
+                            data: JSON.parse(row.actiondata),
+                            case: row.casenumber
+                        }
+                        a.push(b);
+                    } catch (error) {
+                        //
+                    }
+                }
+                return a;
+            }
+            return [];
+        } catch (error) {
+            xlg.error(error);
             return false;
         }
-        const a = r[0];
-        const b: TimedAction = {
-            id: a.actionid,
-            time: moment(a.exectime).toDate(),
-            type: a.actiontype,
-            data: JSON.parse(a.actiondata),
-            case: a.casenumber
+    }
+
+    /**
+     * Query the db to a scheduled action for the bot to take
+     * @param query Options: {
+     *   actionid: string;
+     *   exectime: string;
+     *   actiontype: string;
+     *   actiondata: string;
+     *   casenumber: number;
+     * }
+     * @returns a single timed action, if one is found
+     */
+    async getTimedAction(query: TimedActionQuery): Promise<TimedAction | false> {
+        try {
+            const queryOptions = <(keyof TimedActionQuery)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `SELECT * FROM timedactions WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<UnparsedTimedAction[]>>this.query(`${sql}`);
+            if (result.length) {
+                const a = result[0];
+                const b: TimedAction = {
+                    id: a.actionid,
+                    time: moment(a.exectime).toDate(),
+                    type: a.actiontype,
+                    data: JSON.parse(a.actiondata),
+                    case: a.casenumber
+                }
+                return b;
+            }
+            return false;
+        } catch (error) {
+            xlg.error(error);
+            return false;
         }
-        return b;
     }
 
     /**
