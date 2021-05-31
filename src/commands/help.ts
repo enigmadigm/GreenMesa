@@ -21,8 +21,8 @@ function titleCase(str: string) {
 
 export const command: Command = {
     name: 'help',
-    description: 'get a command list or command help',
-    usage:"[command name]",
+    description: 'command lists and help',
+    usage:"[command|category]",
     cooldown: 2,
     async execute(client, message, args) {
         try {
@@ -189,7 +189,7 @@ export const command: Command = {
                 await message.channel.send({
                     embed: {
                         color: await client.database.getColor("fail"),
-                        description: `that is not a valid command or category`,
+                        description: `\` ${name.escapeDiscord()} \` is not a valid command or category`,
                         footer: {
                             text: `an nlp command assistant is in the works`
                         }

@@ -337,7 +337,7 @@ export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[]
     const a = toParse.join(" ");
     const opts: { name: string, value: string }[] = [];
     // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
-    const matcher = /(?<![^\s])--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
     let match;
     let matchCycle = 0;
     let currentStartingIndex = 0;
@@ -425,36 +425,59 @@ export function ordinalSuffixOf(i: number): string {
 //     return isTitle && isDescription && isURL && isTimestamp && isColor && isFields;
 // }
 
-export function combineMessageText(m: Message): string {
+/**
+ * Turn a normal message from discord into a single string of text, this will join elements like strings in embeds together into a more parseable form
+ * @param m the message to parse
+ * @returns a string representing the entire message
+ */
+export function combineMessageText(m: Message, space = false): string {
     let t = "";
     if (m.content) {
         t += m.content;
     }
     if (m.embeds && m.embeds.length && m.embeds[0]) {
         const e = m.embeds[0];
-        if (e.description) {
-            t += e.description;
-        }
-        if (e.footer) {
-            if (e.footer.text) {
-                t += e.footer.text;
+        if (e.author && e.author.name) {
+            if (space) {
+                t += "";
             }
+            t += e.author.name;
+        }
+        if (e.title) {
+            if (space) {
+                t += "";
+            }
+            t += e.title;
+        }
+        if (e.description) {
+            if (space) {
+                t += "";
+            }
+            t += e.description;
         }
         if (e.fields && e.fields.length) {
             e.fields.forEach(f => {
                 if (f.name) {
+                    if (space) {
+                        t += "";
+                    }
                     t += f.name;
                 }
                 if (f.value) {
+                    if (space) {
+                        t += "";
+                    }
                     t += f.value;
                 }
             })
         }
-        if (e.author && e.author.name) {
-            t += e.author.name;
-        }
-        if (e.title) {
-            t += e.title;
+        if (e.footer) {
+            if (e.footer.text) {
+                if (space) {
+                    t += "";
+                }
+                t += e.footer.text;
+            }
         }
     }
     return t;

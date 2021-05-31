@@ -145,6 +145,8 @@ export interface BSRow {
 
 export interface XMessage extends Message {
     gprefix?: string;
+    // [index: 'client']: Partial<Omit<XClient, keyof Client>> & Client;
+    client: Partial<Omit<XClient, keyof Client>> & Client;
 }
 
 export interface InsertionResult {
@@ -185,7 +187,7 @@ export interface TwitchHookRow {
     laststream: string;
 }
 
-export interface PartialGuildObject extends DiscordStrategy.GuildInfo {
+export type PartialGuildObject = DiscordStrategy.GuildInfo & {
     features?: string[];
     permissions_new?: string;
 }
@@ -516,7 +518,8 @@ export interface ModActionData {
     summary: string;
 }
 
-export interface ModActionEditData {
+export type ModActionEditData<R = 'guildid' | 'agent' | 'userid'> = Required<Pick<ModActionData, R>> & Partial<Omit<ModActionData, R>>;
+/* {
     superid?: string;
     guildid: string;
     casenumber?: number;
@@ -527,7 +530,7 @@ export interface ModActionEditData {
     agent: string;
     agenttag?: string;// maybe make this required
     summary?: string;
-}
+} */
 
 export interface ServerlogData {
     log_channel: string;

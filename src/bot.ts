@@ -70,7 +70,7 @@ import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
 import { ban } from "./utils/modactions";
 import "./xlogger";
-import { parseLongArgs } from './utils/parsers';
+import { combineMessageText, parseLongArgs } from './utils/parsers';
 
 export class Bot {
     static client: XClient;
@@ -354,26 +354,37 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
         message.gprefix = special_prefix || "";
 
+        const ct = combineMessageText(message);// all of the text in the message put together (no delimeter, raw text);
+
+        const clientMentionBase = `(<@!?${client.user.id}>)`;
         if (message.mentions && message.mentions.has(client.user)) {
-            if (message.content == '<@' + client.user.id + '>' || message.content == '<@!' + client.user.id + '>') {
-                const iec_gs = await client.database.getColor("info");
+            if (new RegExp(`^${clientMentionBase}$`, "g").test(ct)) {
                 if (!dm) {
-                    message.channel.send({
+                    await message.channel.send({
                         embed: {
-                            "description": `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
-                            "color": iec_gs
+                            description: `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
+                            color: await client.database.getColor("info")
                         }
                     });
                 } else {
-                    message.channel.send(`My prefix is **${message.gprefix}** here`);
+                    await message.channel.send(`My prefix is **${message.gprefix}** here`);
                 }
                 return;
             }
         }
+        // console.log("before", ct)
+        let prefixUsed = message.gprefix;
+        if (ct.toLowerCase().indexOf(message.gprefix) !== 0) {// check for prefix
+            const mentionTest = new RegExp(`^${clientMentionBase}`, "g").exec(ct);
+            // console.log("text", mentionTest)
+            if (!mentionTest || !mentionTest[1]) {// check for mention prefix
+                return;
+            } else {
+                prefixUsed = mentionTest[1];
+            }
+        }
 
-        if (message.content.toLowerCase().indexOf(message.gprefix) !== 0) return;// check for prefix
-
-        let args = message.content.slice(message.gprefix.length).trim().split(/ +/g);
+        let args = ct.slice(prefixUsed.length).trim().split(/ +/g);
         const commandName = args.shift()?.toLowerCase() || "";
 
         const command = client.commands.get(commandName || "")
@@ -520,7 +531,15 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const flags = parseLongArgs(args);// get the flags from the beginning of the message, if they are provided
-        args = args.join(" ").slice(flags.taken.join(" ").length).trim().split(" ");// trim the provided argument array to disclude the parsed flags
+        args = flags.taken.length ? args.join(" ").slice(flags.taken.join(" ").length).trim().split(" ").filter(x => x) : args;// trim the provided argument flag array to disclude the parsed flags
+
+        if (flags.flags.find(x => x.name === "help") && !args.length) {
+            const helpCommand = client.commands.find(x => x.name === "help");
+            if (helpCommand) {
+                await helpCommand.execute(client, message, [command.name], flags.flags);
+                return;
+            }
+        }
 
         try {
             client.database.logCmdUsage(commandName, message);
