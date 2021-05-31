@@ -3,10 +3,10 @@ import { Command } from "src/gm";
 export const command: Command = {
     name: "afk",
     description: {
-        short: "set an autoresponse afk message",
-        long: "Use this command to set a message that this bot will send when you are pinged. This is meant to tell people that you are AFK (Away From Keyboard). It can also be used to tell when you may be back.",
+        short: "set auto afk message",
+        long: "Use this command to set a message that this bot will send when you are pinged. This is meant to tell people that you are away, and maybe when you will be back. It will not trigger in messages with multiple mentions.",
     },
-    usage: "<text | off>",
+    usage: "<text | 'off'>",
     args: true,
     async execute(client, message, args) {
         try {
