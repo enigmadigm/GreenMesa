@@ -110,7 +110,7 @@ export const command: Command = {
     ],
     aliases:['tr'],
     cooldown: 3,
-    async execute(client, message, args) {
+    async execute(client, message, args, flags) {
         try {
             const a = args.join(" ");
             if (a === "cats") {
@@ -197,7 +197,7 @@ export const command: Command = {
             if (j.response_code !== 0) {
                 if (j.response_code === 3 || j.response_code === 4) {
                     process.env.TRIVIA_SESSION = undefined;
-                    triviaCommand.execute(client, message, args);
+                    triviaCommand.execute(client, message, args, flags);
                     return;
                 }
                 if (j.response_code === 1) {
@@ -294,7 +294,7 @@ export const command: Command = {
                             gameEndCallout.edit(`**Looks like nobody got the answer this time.**`).catch(xlg.error);
                             //displayScores(message, game.round, game.scores);
                             game.displayScores(message);
-                            triviaCommand.execute(client, message, args);
+                            triviaCommand.execute(client, message, args, flags);
                         })  
                         .catch(() => {
                             gameEndCallout.edit('**Looks like nobody got the answer this time.** Scores deleted.').catch(xlg.error);
@@ -328,7 +328,7 @@ export const command: Command = {
                         gameEndCallout.edit(`**${collectedLast} got the correct answer!**`).catch(xlg.error);
                         //displayScores(message, round, scores);
                         game.displayScores(message);
-                        triviaCommand.execute(client, message, args);
+                        triviaCommand.execute(client, message, args, flags);
                     })
                     .catch(() => {
                         gameEndCallout.edit(`**${collectedLast} got the correct answer!** Scores deleted.`).catch(xlg.error);

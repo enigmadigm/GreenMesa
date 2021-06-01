@@ -29,6 +29,14 @@ export interface Command<T = Record<string, any>, A = string[]> {
         short: string,
         long: string
     }
+    flags?: {
+        f: string;
+        d: string;
+        v?: string;
+    }[];
+    /**
+     * NOT FOR NORMAL USE
+     */
     category?: string;
     /**
      * Optional usage instructions for the command
@@ -43,17 +51,41 @@ export interface Command<T = Record<string, any>, A = string[]> {
      */
     args?: boolean | number;
     // specialArgs?: number;
+    /**
+     * The amount of time, in ms, that the user will need to wait to use the command again
+     */
     cooldown?: number;
+    /**
+     * The security level required on the user to execute the command (higher meaning a greater amount of access needed)
+     */
     permLevel?: number;
+    /**
+     * Whether the command should be treated as a moderation command and require moderation to be active
+     * 
+     * This may also involve additional checks on the user in the feature
+     */
     moderation?: boolean;
+    /**
+     * Whether the command should only by allowed to execute in guilds (the {@type GuildMessageProps} type parameter should still be provided to the command interface type)
+     */
     guildOnly?: boolean;
     /**
      * @deprecated
      */
     ownerOnly?: boolean;
+    /**
+     * The discord permissions necessary to execute the command
+     */
     permissions?: PermissionString[];
+    /**
+     * Whether the command executor should try to parse meaningful flags from the arguments
+     */
+    // acceptFlags?: boolean | string[];// i realized that the `flags` descriptor type can basically function the same
     // client: XClient, message: XMessage, args: string[]
-    execute(client: XClient, message: XMessage & T, args: A, flags?: CommandArgumentFlag[]): Promise<void | boolean | CommandReturnData>;
+    /**
+     * The method that will be called to execute the command (what should provide the command's function)
+     */
+    execute(client: XClient, message: XMessage & T, args: A, flags: CommandArgumentFlag[]): Promise<void | boolean | CommandReturnData>;
 }
 
 export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel };

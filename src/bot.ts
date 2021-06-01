@@ -531,13 +531,31 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const flags = parseLongArgs(args);// get the flags from the beginning of the message, if they are provided
-        args = flags.taken.length ? args.join(" ").slice(flags.taken.join(" ").length).trim().split(" ").filter(x => x) : args;// trim the provided argument flag array to disclude the parsed flags
+        if (flags.taken.length) {
+            const queriedFlags = command.flags ? command.flags.length ? !command.flags.map(x => x.f).includes("help") ? ["help", ...command.flags.map(x => x.f)] : command.flags.map(x => x.f) : null : ["help"];
+            // const queriedFlags = command.acceptFlags ? Array.isArray(command.acceptFlags) ? !command.acceptFlags.includes("help") ? ["help", ...command.acceptFlags] : command.acceptFlags : null : ["help"];
+            if (queriedFlags) {
+                const notActuallyTaken = flags.flags.map((x, i) => !queriedFlags.includes(x.name) ? i : -1);
+                for (const nat of notActuallyTaken) {
+                    if (nat > -1) {
+                        flags.taken.splice(nat, 1);
+                    }
+                }
+                flags.flags = flags.flags.filter(x => queriedFlags.includes(x.name));
+            }
+            const remainingArgs = args.join(" ").slice(flags.taken.join(" ").length).trim();// trim the provided argument flag array to disclude the parsed flags
+            args = remainingArgs.length ? remainingArgs.split(" ") : [];
+        }
 
-        if (flags.flags.find(x => x.name === "help") && !args.length) {
-            const helpCommand = client.commands.find(x => x.name === "help");
-            if (helpCommand) {
-                await helpCommand.execute(client, message, [command.name], flags.flags);
-                return;
+        if (flags.flags.find(x => x.name === "help")) {// if the help flag has been specified
+            if (flags.flags.length === 1 && !args.length) {// if it was the only flag and there are no standard arguments
+                const helpCommand = client.commands.find(x => x.name === "help");
+                if (helpCommand) {
+                    await helpCommand.execute(client, message, [command.name], flags.flags);
+                    return;
+                }
+            } else {
+                args.unshift("--help");
             }
         }
 
