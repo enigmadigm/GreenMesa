@@ -1,6 +1,6 @@
 {
   "name": "greenmesa",
-  "version": "3.5.19",
+  "version": "3.6.0",
   "description": "A basic multifaceted Discord bot. The dev uses it to practice his coding.",
   "main": "dist/main.js",
   "scripts": {
@@ -43,6 +43,7 @@
     "puppeteer": "^5.5.0",
     "rpg-dice-roller": "^4.5.2",
     "source-map-support": "^0.5.19",
+    "pug": "^3.0.2",
     "ytdl-core": "^3.4.2"
   },
   "license": "AGPL-3.0-or-later",
@@ -69,7 +70,6 @@
     "dayjs": "^1.9.6",
     "eslint": "^7.22.0",
     "jsonschema": "^1.4.0",
-    "pug": "^3.0.2",
     "reddit": "^1.2.1",
     "snyk": "^1.518.0",
     "twitch": "^4.3.0",
