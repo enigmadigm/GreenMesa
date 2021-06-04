@@ -77,7 +77,9 @@ export const command: Command = {
                 }
             }
             if (!message.deleted) {
-                await message.delete().catch();
+                if (message.guild.me.hasPermission("MANAGE_MESSAGES")) {
+                    await message.delete().catch();
+                }
             }
         } catch (error) {
             xlg.error(error);
