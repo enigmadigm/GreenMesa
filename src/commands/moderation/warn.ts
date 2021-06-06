@@ -1,10 +1,9 @@
-
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
 import { warn } from "../../utils/modactions";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "warn",
     description: {
         short: "warn a member",
@@ -18,7 +17,6 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild || !message.member) return;
             const target = await stringToMember(message.guild, args[0], false, false, false);
             if (!target) {
                 await client.specials?.sendError(message.channel, "Invalid target", true);
@@ -28,7 +26,7 @@ export const command: Command = {
             const reason = args.join(" ");
             const warnResult = await warn(client, target, message.member, reason);
             if (warnResult) {
-                await message.channel.send(`\\✅ ${target} has been warned`);
+                await message.channel.send(`\\✅ \`${target.user.tag.escapeDiscord()}\` has been warned`);
                 return;
             }
             message.channel.send(`It seems that something may have gone wrong`);
