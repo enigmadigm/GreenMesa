@@ -74,26 +74,29 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
         if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return false;
         if (!args || !args.length) return false;
         let forResult = true;
+        const invalid: string[] = [];// there should only really be one or zero entries
         for (let i = 0; i < args.length; i++) {
             const arg = args[i];
             if (!/^[0-9]+(?:\.[0-9]+)?$/.test(arg)) {
                 forResult = false;
+                invalid.push(arg);
                 break;
             }
             const nr = parseInt(arg, 10);
             if (isNaN(nr)) {
                 forResult = false;
+                invalid.push(arg);
                 break;
             }
         }
         if (!forResult) {
-            channel.send({
+            await channel.send({
                 embed: {
                     color: await Bot.client.database.getColor("fail"),
                     title: "Invalid Arguments",
-                    description: "All arguments must be numbers (floating or integer)"
+                    description: `Some or all arguments must be numbers (floating or integer)\nYou sent: \` ${invalid.map(x => x.escapeDiscord()).join(", ")} \``,
                 }
-            }).catch(xlg.error);
+            });
             return false;
         }
         return true;
@@ -199,14 +202,23 @@ export async function getAllChannels(client: XClient): Promise<Channel[] | false
     return channels;
 }
 
+/**
+ * Get an accurate and universal link to the web dashboard
+ */
 export function getDashboardLink(guildid?: string, mod?: string): string {
     return `${process.env.DASHBOARD_HOST}/dash/${guildid}${guildid && mod ? `/${mod}` : ""}`
 }
 
+/**
+ * Get the base URI for the website
+ */
 export function getBackendRoot(): string {
     return process.env.NODE_ENV === "dev" ? 'http://localhost:3005' : `https://stratum.hauge.rocks`;
 }
 
+/**
+ * Send a message through all of the sharded clients that will send from the client that has the desired channel
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function sendMessageAll(m: Record<string, any>, cid: string): void {
     Bot.client.shard?.broadcastEval(`
@@ -215,4 +227,12 @@ export function sendMessageAll(m: Record<string, any>, cid: string): void {
         c.send(${JSON.stringify(m)})
     }
     `);
+}
+
+/**
+ * Get the true link to the support server
+ */
+export function getSupportServer(embed = false): string {
+    const link = `https://discord.gg/AvXvvSg`;
+    return embed ? `[support server](${link})` : `${link}`;
 }

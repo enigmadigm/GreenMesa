@@ -98,7 +98,6 @@ export const command: Command = {
         {
             f: "i",
             d: "search google images",
-            v: "something something "
         },
         {
             f: "l",

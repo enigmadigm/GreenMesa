@@ -2,7 +2,7 @@ import { GuildMember, MessageEmbed, TextChannel, User } from "discord.js";
 import moment from "moment";
 import { Bot } from "../bot";
 import { ModActionEditData } from "../gm";
-import { titleCase } from "./parsers";
+import { combineEmbedText, titleCase } from "./parsers";
 import { getFriendlyUptime } from "./time";
 
 // enum colorContraventions {
@@ -120,7 +120,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             // Bot.client.specials.sendMessageAll({ embed }, r.value);
             const c = Bot.client.channels.cache.get(r.value);
             if (c && c instanceof TextChannel && c.permissionsFor(Bot.client.user)?.has("SEND_MESSAGES")) {
-                const m = await c.send({ embed });
+                const m = c.permissionsFor(Bot.client.user)?.has("EMBED_LINKS") ? await c.send({ embed }) : await c.send({ content: `${combineEmbedText(embed, 2)}` });//TODO: I should probably format the fallback message separately
                 data.superid = m.id;
             }
         }
@@ -128,6 +128,20 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         return data;
     }
 
+    /**
+     * Construct the embed data for a modlog channel entry
+     * @param target user who the entry concerns
+     * @param mod the moderator who executed the action
+     * @param casenum the identifier for the entry
+     * @param action the type of entry/action
+     * @param color the embed flare color
+     * @param reason case summary
+     * @param duration if the action had a duration, the duration in ms
+     * @param endat the formatted time/date the action will end at
+     * @param usertag the tag of the target
+     * @param modtag the tag of the mod
+     * @returns embed data
+     */
     public static async constructEmbed(target: User | string, mod: User | string, casenum: number, action = "log", color: number, reason = "", duration = 0, endat = "", usertag?: string, modtag?: string): Promise<MessageEmbed> {
         const modTag = mod instanceof User ? mod.tag : typeof modtag === "string" ? modtag : `unknown#0000`;
         const modId = mod instanceof User ? mod.id : "none";
@@ -185,7 +199,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
                 return `${x} ${ttypes[i]}${i !== (xt.length - 1) ? (xt.length > 1 && xt.length - 2 === i ? `${xt.length > 2 ? "," : ""} and ` : ", ") : ""}`;
             });
             const joinedtt = tt.join("");
-            embed.description += `\n\n**Period:** ${joinedtt} (ends at ${moment(endat).format('M/D/Y HH:mm:ss')})`;
+            embed.description += `\n**Period:** ${joinedtt} (ends at ${moment(endat).format('M/D/Y HH:mm:ss')})`;
         }
         return embed;
     }

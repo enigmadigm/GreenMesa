@@ -1,5 +1,5 @@
 import { AutomoduleData, MessageService, XClient, XMessage } from "../gm";
-import { Collection, GuildMember, Message, MessageEmbedOptions } from "discord.js";
+import { Collection, GuildChannel, GuildMember, Message, MessageEmbedOptions } from "discord.js";
 import fs from "fs";
 import { Bot } from "../bot";
 import { ordinalSuffixOf } from "../utils/parsers";
@@ -115,30 +115,48 @@ export class MessageServices {
                 for (const action of mod.actions) {
                     switch (action) {
                         case "channelMessage": {
-                            if (mod.text && data instanceof Message) {
-                                await data.channel.send({
-                                    content: `${target}`,
-                                    embed: {
-                                        color: await Bot.client.database.getColor("warn_embed_color"),
-                                        title: `Automod Alert`,
-                                        description: `${target} has been caught by the **${mod.name}** module.${!ud.offenses ? "\nThis is their **first** offense" : `\nThis is their **${ordinalSuffixOf(ud.offenses)}** offense`}`
+                            try {
+                                if (mod.text && data instanceof Message && data.channel instanceof GuildChannel) {
+                                    if (data.channel.permissionsFor(data.client.user || "")?.has("EMBED_LINKS")) {
+                                        await data.channel.send({
+                                            content: `${target}`,
+                                            embed: {
+                                                color: await Bot.client.database.getColor("warn_embed_color"),
+                                                title: `Automod Alert`,
+                                                description: `${target} was flagged by the **${mod.name}** module.${!ud.offenses ? "" : `\n**${ordinalSuffixOf(ud.offenses)}** offense`}`
+                                            }
+                                        });
+                                    } else {
+                                        await data.channel.send({
+                                            content: `${target} was flagged by the ${mod.name} automod module`,
+                                        });
                                     }
-                                });
+                                }
+                            } catch (error) {
+                                xlg.error(error);
                             }
                             break;
                         }
                         case "courtesyMessage": {
-                            const e: MessageEmbedOptions = {
-                                color: await Bot.client.database.getColor("warn_embed_color"),
-                                title: `Automod Violation`,
-                                description: `**Server:** ${target.guild.name}\nYou were caught in violation of the ${mod.name} module.${!ud.offenses || ud.offenses === 1 ? "\nThis is your **first** offense" : `\nThis is your **${ordinalSuffixOf(ud.offenses)}** offense`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`
+                            try {
+                                const e: MessageEmbedOptions = {
+                                    color: await Bot.client.database.getColor("warn_embed_color"),
+                                    title: `Automod Violation`,
+                                    description: `**Server:** ${target.guild.name.escapeDiscord()}\nYou have been found in violation of the ${mod.name} module.${!ud.offenses ? "" : `\n**${ordinalSuffixOf(ud.offenses)}** offense.`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`,
+                                }
+                                await target.send({ embed: e });
+                            } catch (error) {
+                                //
                             }
-                            await target.send({ embed: e });
                             break;
                         }
                         case "delete": {
                             if (mod.text && data instanceof Message) {
-                                await data.delete();
+                                try {
+                                    await data.delete();
+                                } catch (error) {
+                                    //
+                                }
                             }
                             break;
                         }

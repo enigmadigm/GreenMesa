@@ -1246,6 +1246,7 @@ export class DBManager {
      */
     async getModActionByGuildCase(guildid: string, num: number): Promise<ModActionData | false> {
         try {
+            if (!Number.isSafeInteger(num)) return false;
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${num}`);
             if (rows && rows.length > 0) {
                 return rows[0];

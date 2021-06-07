@@ -333,14 +333,14 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (message.author.bot || message.system) return;
         if (!client.user || !client.commands || !client.categories) return;
     
-        let dm = false; // checks if it's from a dm
-        if (!message.guild)
-            dm = true;
+        // let dm = false; // checks if it's from a dm
+        // if (!(message.channel instanceof GuildChannel))
+        //     dm = true;
 
         const now = Date.now();
 
         let special_prefix;
-        if (!dm) {
+        if (message.channel instanceof GuildChannel) {
             const gpr = await client.database.getPrefix(message.guild?.id);
             if (gpr) {
                 special_prefix = gpr;
@@ -359,15 +359,19 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const clientMentionBase = `(<@!?${client.user.id}>)`;
         if (message.mentions && message.mentions.has(client.user)) {
             if (new RegExp(`^${clientMentionBase}$`, "g").test(ct)) {
-                if (!dm) {
-                    await message.channel.send({
-                        embed: {
-                            description: `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix}**`,
-                            color: await client.database.getColor("info")
-                        }
-                    });
+                if (message.channel instanceof GuildChannel) {
+                    if (message.channel.permissionsFor(client.user)?.has("EMBED_LINKS")) {
+                        await message.channel.send({
+                            embed: {
+                                description: `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix.escapeDiscord()}**`,
+                                color: await client.database.getColor("info")
+                            }
+                        });
+                    } else {
+                        await message.channel.send(`Use \`${message.gprefix.escapeDiscord()}\` or ${client.user} as my prefix.\nBy the way, it seems I cannot send embeds in this channel, that may break some features.`);
+                    }
                 } else {
-                    await message.channel.send(`My prefix is **${message.gprefix}** here`);
+                    await message.channel.send(`My prefix is **${message.gprefix.escapeDiscord()}** here`);
                 }
                 return;
             }
@@ -396,7 +400,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const gc = cc && message.guild ? cc.conf : false;
         const disabled = cs ? !!(!cs.enabled || (!cs.channel_mode && cs.channels.includes(message.channel.id)) || (cs.channel_mode && !cs.channels.includes(message.channel.id)) || (message.member && ((cs.role_mode && !message.member.roles.cache.find(x => cs.roles.includes(x.id))) || (!cs.role_mode && message.member.roles.cache.find(x => cs.roles.includes(x.id)))))) : false;
 
-        if (command.guildOnly && dm) {// command is configured to only execute outside of dms
+        if (command.guildOnly && !(message.channel instanceof GuildChannel)) {// command is configured to only execute outside of dms
             message.channel.send(`That is not a DM executable command.`);
             return;
         }
@@ -413,7 +417,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         } else {
             botmasters = [];
         }
-        if (!dm) { // gets perm level of member if message isn't from dms
+        if (message.channel instanceof GuildChannel) { // gets perm level of member if message isn't from dms
             permLevel = await getPermLevel(message.member || message.author);
         } else if (botmasters.includes(message.author.id)) { // bot masters
             permLevel = permLevels.botMaster;
@@ -479,19 +483,22 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (command.permissions && command.permissions.length) {
             const lacking: PermissionString[] = [];
             for (const perm of command.permissions) {
-                if (!message.guild?.me?.hasPermission(perm)) {
+                if (!message.guild?.me?.hasPermission(perm) ||
+                    (message.channel instanceof GuildChannel && !message.channel.permissionsFor(message.guild?.me || "")?.has(perm))) {
                     lacking.push(perm);
                 }
             }
             if (lacking.length) {
                 if (message.guild?.me?.permissionsIn(message.channel).has("SEND_MESSAGES")) {
                     await message.channel.send(`I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`);
+                } else {
+                    await message.author.send(`I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`);
                 }
                 return;
             }
         }
 
-        if (command.args && (typeof command.args === "boolean" || command.args > 0) && !args.length) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
+        if (command.args && (typeof command.args === "boolean" || command.args > 0) && (!args.length || (typeof command.args === "number" && args.length < command.args))) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
             const fec_gs = await client.database.getColor("fail");
 
             let reply = `Arguments are needed to make that work!`;
@@ -584,7 +591,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
     } catch (err) {
         xlg.error(err);
-        if (message.client.user && !(message.channel instanceof TextChannel && !message.channel.permissionsFor(message.client.user)?.has("SEND_MESSAGES"))) {
+        if (message.client.user && !(message.channel instanceof GuildChannel && (!message.channel.permissionsFor(message.client.user)?.has("SEND_MESSAGES") || !message.channel.permissionsFor(message.client.user)?.has("EMBED_LINKS")))) {
             client.specials.sendError(message.channel, "Error while processing.\n[Report](https://github.com/enigmadigm/GreenMesa/issues/new/)");
         }
     }

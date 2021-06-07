@@ -1,10 +1,10 @@
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { TextChannel } from "discord.js";
 import { Contraventions } from "../../utils/contraventions";
 import moment from "moment";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "reason",
     description: {
         short: "set reason for an infraction",
@@ -15,33 +15,34 @@ export const command: Command = {
     cooldown: 1,
     permLevel: permLevels.mod,
     moderation: true,
-    guildOnly: true,
     async execute(client, message, args) {
         try {
             if (!message.guild) return;
-            if (!/^[0-9]+$/.test(args[0])) {
-                message.channel.send(`Invalid case. Provide a case number.`);
-                return;
-            }
+            // if (!/^[0-9]+$/.test(args[0])) {
+            //     message.channel.send(`Invalid case. Provide a case number.`);
+            //     return;
+            // }
+            if (!(await client.specials.argsMustBeNum(message.channel, [args[0]]))) return false;
             const c = parseInt(args[0], 10);
             args.shift();
             if (!args.length) {
-                message.channel.send(`Provide a reason. What do you think the point of this command is?`);
+                // await message.channel.send(`Provide a reason. What do you think the point of this command is?`);
+                args.unshift("");// allows for the removal of the action reason
                 return;
             }
             const a = args.join(" ");
             const file = await client.database.getModActionByGuildCase(message.guild.id, c);
             if (!file) {
-                message.channel.send(`I couldn't find a case with an ID of ${c}. Try something else?`);
+                await message.channel.send(`I couldn't find a case with an ID of \` ${c} \`. Try something else?`);
                 return;
             }
             file.summary = a;
             const r = await client.database.setModAction(file);
             if (!r || !r.affectedRows) {
-                message.channel.send(`Something went wrong while updating the file. Please join https://dsc.gg/ro if this happens again.`);
+                await message.channel.send(`Something went wrong while updating the file. Please join ${client.specials.getSupportServer()} if this happens again.`);
                 return;
             }
-            const responseMessage = await message.channel.send(`Reason added to case ${c}`);
+            const responseMessage = await message.channel.send(`Reason ${file.summary ? "added to" : "removed from"} case ${c}`);
             if (/^[0-9]{18}$/.test(file.superid)) {
                 const chan = await client.database.getGuildSetting(message.guild.id, "modlog");// get the case channel
                 if (chan && chan.value) {// try to send the message to the channel

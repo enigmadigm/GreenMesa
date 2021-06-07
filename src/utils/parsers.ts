@@ -1,7 +1,7 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, Role, User } from "discord.js";
+import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, User } from "discord.js";
 import { CommandArgumentFlag, XClient } from "src/gm";
 
 /**
@@ -430,54 +430,63 @@ export function ordinalSuffixOf(i: number): string {
  * @param m the message to parse
  * @returns a string representing the entire message
  */
-export function combineMessageText(m: Message, space = false): string {
+export function combineMessageText(m: Message, space = 0): string {
     let t = "";
     if (m.content) {
         t += m.content;
     }
     if (m.embeds && m.embeds.length && m.embeds[0]) {
         const e = m.embeds[0];
-        if (e.author && e.author.name) {
-            if (space) {
-                t += "";
-            }
-            t += e.author.name;
+        const combinedEmbed = combineEmbedText(e, space);
+        if (combinedEmbed) {
+            t += combinedEmbed;
         }
-        if (e.title) {
-            if (space) {
-                t += "";
-            }
-            t += e.title;
+    }
+    return t;
+}
+
+export function combineEmbedText(e: MessageEmbedOptions | MessageEmbed, space = 0): string {
+    let t = "";
+    if (e.author && e.author.name) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
         }
-        if (e.description) {
-            if (space) {
-                t += "";
-            }
-            t += e.description;
+        t += e.author.name;
+    }
+    if (e.title) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
         }
-        if (e.fields && e.fields.length) {
-            e.fields.forEach(f => {
-                if (f.name) {
-                    if (space) {
-                        t += "";
-                    }
-                    t += f.name;
-                }
-                if (f.value) {
-                    if (space) {
-                        t += "";
-                    }
-                    t += f.value;
-                }
-            })
+        t += e.title;
+    }
+    if (e.description) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
         }
-        if (e.footer) {
-            if (e.footer.text) {
+        t += e.description;
+    }
+    if (e.fields && e.fields.length) {
+        e.fields.forEach(f => {
+            if (f.name) {
                 if (space) {
-                    t += "";
+                    t += space === 1 ? " " : "\n";
                 }
-                t += e.footer.text;
+                t += f.name;
             }
+            if (f.value) {
+                if (space) {
+                    t += space === 1 ? " " : "\n";
+                }
+                t += f.value;
+            }
+        });
+    }
+    if (e.footer) {
+        if (e.footer.text) {
+            if (space) {
+                t += space === 1 ? " " : "\n";
+            }
+            t += e.footer.text;
         }
     }
     return t;
