@@ -95,7 +95,7 @@ const categories: TriviaCategory[] = [];
     }
 }*/
 
-export const command: Command = {
+export const command: Command = {//TODO: should probably update this command to use flags to set category and difficulty
     name: 'trivia',
     description: {
         short: 'starts a trivia game to play solo or with friends',
@@ -232,7 +232,7 @@ export const command: Command = {
             triviaChoices = triviaChoices.map((e, i) => `${triviaChoiceLetters[i]} : ${decodeURIComponent(e)}`);
 
             // Send the message that users will respond to
-            const filter: CollectorFilter = (response) => {
+            const filter: CollectorFilter<[Message]> = (response) => {
                 return triviaChoiceASCII.includes(response.content.toLowerCase());
             }
             if (Math.floor(Math.random() * 100) >= 92 && game.round == 1) {
@@ -252,9 +252,9 @@ export const command: Command = {
             const countDownMessage = await message.channel.send(`Enter the ***letter*** for the correct answer in \` < ${allowedTime} \` seconds`);
             const i1 = setInterval(() => {
                 if (allowedTime <= 0) return clearInterval(i1);
-                allowedTime -= 5;
+                allowedTime -= 2;
                 countDownMessage.edit(`Enter the ***letter*** for the correct answer in \` < ${allowedTime} \` seconds`).catch(xlg.error);
-            }, 5000);
+            }, 2000);
             const collector = message.channel.createMessageCollector(filter, {
                 time: allowedTime * 1000
             });
@@ -345,4 +345,3 @@ export const command: Command = {
         }
     }
 }
-
