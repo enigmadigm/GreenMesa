@@ -1,9 +1,8 @@
+// —
 import { permLevels } from '../permissions';
 import { Command } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';
 import { PaginationExecutor } from '../utils/pagination';
-
-// —
 
 function titleCase(str: string) {
     if (str == "nsfw") {
@@ -20,8 +19,11 @@ function titleCase(str: string) {
 }
 
 export const command: Command = {
-    name: 'help',
-    description: 'command lists and help',
+    name: "help",
+    description: {
+        short: "detailed command help",
+        long: "Per command/category help. List commands and categories. Find out how to use commands.",
+    },
     usage:"[command|category]",
     cooldown: 2,
     async execute(client, message, args) {
@@ -152,14 +154,20 @@ export const command: Command = {
                         value: `${command.examples.map(example => `\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}${longest.substring(example.length - 1, longest.length).split("").map(() => " ").join("")}\``).join("\n")}`,
                     });
                 }
-                embed.fields?.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)`, inline: true });
+                embed.fields?.push({ name: "Cooldown", value: `\`${command.cooldown ?? 0}\` second(s)`, inline: true });
                 if (command.permLevel) {
                     const permKeys = Object.keys(permLevels);
                     embed.fields?.push({
-                        name: "Permissions",
-                        value: permKeys[command.permLevel],
+                        name: "Designate",
+                        value: `${permKeys[command.permLevel]}`,
                         inline: true
-                    })
+                    });
+                }
+                if (command.permissions?.length) {
+                    embed.fields?.push({
+                        name: "Required Permissions",
+                        value: `${command.permissions.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}`,
+                    });
                 }
 
                 message.channel.send({ embed });
