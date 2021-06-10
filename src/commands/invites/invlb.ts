@@ -1,6 +1,6 @@
 import { permLevels } from '../../permissions';
 import { Command, GuildMessageProps, InvitedData } from "src/gm";
-import { MessageEmbed, MessageEmbedOptions } from "discord.js";
+import { MessageEmbed, MessageEmbedOptions, Snowflake } from "discord.js";
 import { PaginationExecutor } from '../../utils/pagination';
 import { getDashboardLink } from '../../utils/specials';
 
@@ -23,14 +23,14 @@ export const command: Command<GuildMessageProps> = {
                 client.specials.sendError(message.channel)
                 return;
             }
-            const groupings: { user: string, invites: InvitedData[] }[] = [];
+            const groupings: { user: Snowflake, invites: InvitedData[] }[] = [];
             for (const invite of data) {
                 const pre = groupings.find(x => x.user === invite.inviter);
                 if (pre) {
                     pre.invites.push(invite);
                 } else {
                     groupings.push({
-                        user: invite.inviter,
+                        user: invite.inviter as Snowflake,
                         invites: [invite],
                     });
                 }

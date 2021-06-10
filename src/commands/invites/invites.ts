@@ -3,6 +3,7 @@ import { Command, GuildMessageProps } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
 import { MessageEmbed, MessageEmbedOptions } from "discord.js";
 import { PaginationExecutor } from "../../utils/pagination";
+import { isSnowflake } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
     name: "invites",
@@ -132,7 +133,7 @@ export const command: Command<GuildMessageProps> = {
                         embed.description += `**Data for ${target.user.username}'s inviter is not available.**\nThey probably joined before I began recording data.`;
                     } else {
                         const invite = data[0];
-                        const user = g.members.cache.get(invite.inviter)?.user.tag ?? (invite.invitername || "unknown#0000");
+                        const user = isSnowflake(invite.inviter) ? g.members.cache.get(invite.inviter)?.user.tag ?? (invite.invitername || "unknown#0000") : (invite.invitername || "unknown#0000");
                         embed.description += `\` ${user} \` seems to have invited ${target.user.username}.`;
                         embed.footer = {
                             text: `Inviter ID: ${invite.inviter}`,
@@ -144,7 +145,7 @@ export const command: Command<GuildMessageProps> = {
                 case "count":
                 default: {
                     const stillHere = data.filter(x => {
-                        return g.members.cache.get(x.invitee);
+                        return isSnowflake(x.invitee) && g.members.cache.get(x.invitee);
                     });
                     const hasLeft = data.filter(x => {
                         return !stillHere.find(x2 => x2.id === x.id);
@@ -168,7 +169,7 @@ export const command: Command<GuildMessageProps> = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
