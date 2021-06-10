@@ -3,6 +3,7 @@ import { Bot } from "../bot";
 import { GuildMember } from "discord.js";
 import moment from "moment";
 import { mute } from "../utils/modactions";
+import { isSnowflake } from "../utils/specials";
 
 export const service: MessageService = {
     async execute(client, member: GuildMember) {
@@ -25,18 +26,22 @@ export const service: MessageService = {
             if (member.user.bot) {
                 if (autorole.botRoles && autorole.botRoles.length) {
                     for (const id of autorole.botRoles) {
-                        const r = member.guild.roles.cache.get(id);
-                        if (r) {
-                            member.roles.add(r);
+                        if (isSnowflake(id)) {
+                            const r = member.guild.roles.cache.get(id);
+                            if (r) {
+                                member.roles.add(r);
+                            }
                         }
                     }
                 }
             } else {
                 if (autorole.roles && autorole.roles.length) {
                     for (const id of autorole.roles) {
-                        const r = member.guild.roles.cache.get(id);
-                        if (r) {
-                            await member.roles.add(r);
+                        if (isSnowflake(id)) {
+                            const r = member.guild.roles.cache.get(id);
+                            if (r) {
+                                await member.roles.add(r);
+                            }
                         }
                     }
                 }
@@ -46,7 +51,7 @@ export const service: MessageService = {
                         const storedRoles: string[] = JSON.parse(guserDat.roles);
                         if (storedRoles.length) {
                             const roles = await member.guild.roles.fetch();
-                            const rolesToGive = roles.cache.filter((x) => storedRoles.includes(x.id) && !member.roles.cache.get(x.id));
+                            const rolesToGive = roles.filter((x) => storedRoles.includes(x.id) && !member.roles.cache.get(x.id));
                             for (const r of rolesToGive) {
                                 await member.roles.add(r);
                                 await new Promise((resolve) => setTimeout(resolve, 200));

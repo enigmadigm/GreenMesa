@@ -3,8 +3,8 @@ import moment from "moment";
 import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
-
 import { Contraventions } from "./contraventions";
+import { isSnowflake } from "./specials";
 
 // export class BaseModAction<T> {
 //     public client: XClient;
@@ -141,7 +141,7 @@ import { Contraventions } from "./contraventions";
  */
 export async function mute(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, reason = "Automatic mute", remute = false): Promise<void | string> {
     if (!target.guild.me?.permissions.has("MANAGE_ROLES")) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     const dbmr = await client.database.getGuildSetting(target.guild, "mutedrole");
     const mutedRoleID = dbmr ? dbmr.value : "";
@@ -152,12 +152,10 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
     if (!mutedRole) {
         // Create a role called "Muted"
         mutedRole = await target.guild.roles.create({
-            data: {
-                name: 'Muted',
-                color: '#708090',
-                permissions: 0,
-                position: 1
-            }
+            name: 'Muted',
+            color: '#708090',
+            permissions: 0n,
+            position: 1
         });
 
         client.database.editGuildSetting(target.guild, "mutedrole", mutedRole.id);
@@ -266,7 +264,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
  */
 export async function ban(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, summary?: string): Promise<void | string> {
     if (!client.database || !target.bannable) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
     
     let duration = "";
     let mendm = "";
@@ -347,7 +345,7 @@ export async function registerBan(client: XClient, target: GuildMember): Promise
  */
 export async function kick(client: XClient, target: GuildMember, mod: GuildMember | string, summary?: string): Promise<void | string> {
     if (!client.database || !target.kickable) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     let noNotify = false;
     try {
@@ -383,7 +381,7 @@ export async function kick(client: XClient, target: GuildMember, mod: GuildMembe
  */
 export async function warn(client: XClient, target: GuildMember, mod: GuildMember | string, summary?: string): Promise<void | string> {
     if (!client.database) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     let noNotify = false;
     try {

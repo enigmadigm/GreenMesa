@@ -3,7 +3,6 @@ import { Bot } from "./bot";
 import { TimedAction, UnbanActionData, UnmuteActionData } from "./gm";
 import { Contraventions } from "./utils/contraventions";
 
-
 export class TimedActionsSubsystem {
     private scheduled: TimedAction[];
     private running: boolean;
@@ -56,12 +55,17 @@ export class TimedActionsSubsystem {
             switch (action.type) {
                 case "unmute": {
                     const d = <UnmuteActionData>action.data;
-                    if (!d.guildid || !d.userid || !d.roleid) return;
+                    if (!d.guildid || !d.userid || !d.roleid) break;
 
-                    const g = await Bot.client.guilds.fetch(d.guildid);
-                    if (!g) break;
-                    const m = g.members.cache.get(d.userid);
-                    if (!m) break;
+                    const g = Bot.client.guilds.cache.find(x => x.id === d.guildid);
+                    if (!g || !g.me?.permissions.has("MANAGE_ROLES")) break;
+                    let m = g.members.cache.get(d.userid);
+                    if (!m) {
+                        m = await g.members.fetch(d.userid);
+                        if (!m) {
+                            break;
+                        }
+                    }
                     if (!m.roles.cache.has(d.roleid)) break;
 
                     // Remove the mentioned users role and make notation in audit log
@@ -69,19 +73,21 @@ export class TimedActionsSubsystem {
                     if (m.voice.connection && m.voice.mute) {
                         m.voice.setMute(false);
                     }
-                    Contraventions.logUnmute(m, m.guild.me || "", `Automatic unmute after ${d.duration}`);//Automic
+                    await Contraventions.logUnmute(m, m.guild.me || "", `Automatic unmute after ${d.duration}`);//Automic
+                    await Bot.client.database.deleteAction(action.id);
                     break;
                 }
                 case "unban": {
                     const d = <UnbanActionData>action.data;
-                    if (!d.guildid || !d.userid) return;
+                    if (!d.guildid || !d.userid) break;
 
                     try {
-                        const g = await Bot.client.guilds.fetch(d.guildid);
+                        const g = Bot.client.guilds.cache.find(x => x.id === d.guildid);
                         if (!g) break;
     
                         await g.members.unban(d.userid, `unbanning automatically after ${d.duration}`);
-                        Contraventions.logUnban(g.id, d.userid, Bot.client.user?.id || "", `Automatic unban after ${d.duration}`);
+                        await Contraventions.logUnban(g.id, d.userid, Bot.client.user?.id || "", `Automatic unban after ${d.duration}`);
+                        await Bot.client.database.deleteAction(action.id);
                     } catch (error) {
                         //
                     }
@@ -91,7 +97,6 @@ export class TimedActionsSubsystem {
                     break;
             }
 
-            await Bot.client.database.deleteAction(action.id);
         } catch (error) {
             xlg.error(error);
         }

@@ -1,10 +1,9 @@
-
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { stringToChannel } from "../../utils/parsers";
-import { getDashboardLink } from "../../utils/specials";
+import { getDashboardLink, isSnowflake } from "../../utils/specials";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "automod",
     aliases: ["am"],
     description: {
@@ -19,8 +18,6 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-
             const allMods = await client.database.getAllAutoModules(message.guild.id) || [];
 
             let argIndex = 0;
@@ -167,16 +164,16 @@ export const command: Command = {
                 case "reset": {
                     argIndex++;
                     if (!args[argIndex]) {
-                        client.specials.sendError(message.channel, `Module not provided.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
+                        await client.specials.sendError(message.channel, `Module not provided.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
                         break;
                     }
                     const mod = allMods.find(x => x.name === args[argIndex]);
                     if (!mod) {
-                        client.specials.sendError(message.channel, `That is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
+                        await client.specials.sendError(message.channel, `That is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`);
                         break;
                     }
                     await client.database.editGuildSetting(message.guild, `automod_${mod.name}`, undefined, true);
-                    message.channel.send({
+                    await message.channel.send({
                         embed: {
                             color: await client.database.getColor("info"),
                             description: `The configuration for ${mod.name} has been reset.`
@@ -189,7 +186,7 @@ export const command: Command = {
                     if (args[argIndex] && mod) {
                         argIndex++;
                         if (args[argIndex] && args[argIndex] === "enable" || args[argIndex] === "disable") {
-                            client.specials.sendError(message.channel, `To enable/disable a module, you must send \`${message.gprefix} am enable|disable ${mod.name || "{module}"}\`.`)
+                            await client.specials.sendError(message.channel, `To enable/disable a module, you must send \`${message.gprefix} am enable|disable ${mod.name || "{module}"}\`.`)
                             break;
                         }
                         const enabled = await client.database.getAutoModuleEnabled(message.guild.id, mod.name, undefined, true) || false;
@@ -197,11 +194,11 @@ export const command: Command = {
                             client.specials.sendError(message.channel, "Module not enabled anywhere");
                             break;
                         }*/
-                        const info = await client.services?.getInfo(client, message.guild.id, `automod_${mod.name}`);
+                        const info = await client.services.getInfo(client, message.guild.id, `automod_${mod.name}`);
                         if (mod.text) {
                             if (mod.channelEffect && mod.channels) {
-                                const channelList = mod.channels.map(x => message.guild?.channels.cache.get(x) || "#deleted-channel");
-                                message.channel.send({
+                                const channelList = mod.channels.map(x => (isSnowflake(x) && message.guild.channels.cache.get(x)) || "#deleted-channel");
+                                await message.channel.send({
                                     embed: {
                                         color: await client.database.getColor("info"),
                                         title: `Automod Config - \`${mod.name}\``,
@@ -214,7 +211,7 @@ ${!enabled ? "Module not enabled anywhere" : (mod.enableAll ? "all channels" : (
                                 });
                             }
                         } else {
-                            message.channel.send({
+                            await message.channel.send({
                                 embed: {
                                     color: await client.database.getColor("info"),
                                     title: "Automod Config",
@@ -228,11 +225,11 @@ ${!enabled ? "Disabled" : "Enabled"}
                         }
                         break;
                     } else if (args[argIndex]) {
-                        client.specials.sendError(message.channel, `\`${args[argIndex]}\` is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`)
+                        await client.specials.sendError(message.channel, `\`${args[argIndex]}\` is not a valid module.\n\nAvailable mods:\n${allMods.map(m => `\`${m.name}\``).join(" ")}`)
                         break;
                     }
 
-                    message.channel.send({
+                    await message.channel.send({
                         embed: {
                             color: await client.database.getColor("info"),
                             title: "Automod Config",
@@ -247,7 +244,7 @@ ${allMods.map(m => {
         if (m.enableAll) {
             txt += `\`${m.name}\` (enabled everywhere)`
         } else if (m.channels.length) {
-            txt += `\`${m.name}\` (${m.channelEffect === "enable" ? "enabled in" : "disabled in"} ${m.channels.map((c) => message.guild?.channels.cache.get(c) || "#unknown")})`
+            txt += `\`${m.name}\` (${m.channelEffect === "enable" ? "enabled in" : "disabled in"} ${m.channels.map((c) => (isSnowflake(c) && message.guild.channels.cache.get(c)) || "#unknown")})`
         } else {
             txt += `\`${m.name}\` (${m.channelEffect === "enable" ? "disabled" : "enabled everywhere"})`
         }

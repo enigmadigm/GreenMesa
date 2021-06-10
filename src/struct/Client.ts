@@ -16,7 +16,7 @@ export default class extends Client implements XClient {
     public msgLogging = true;
     public invites: Invites;
 
-    constructor(options?: ClientOptions) {
+    constructor(options: ClientOptions) {
         super(options);
 
         if (typeof config.msgLogging === "string") {

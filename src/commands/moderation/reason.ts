@@ -3,6 +3,7 @@ import { Command, GuildMessageProps } from "src/gm";
 import { TextChannel } from "discord.js";
 import { Contraventions } from "../../utils/contraventions";
 import moment from "moment";
+import { isSnowflake } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
     name: "reason",
@@ -17,7 +18,6 @@ export const command: Command<GuildMessageProps> = {
     moderation: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
             // if (!/^[0-9]+$/.test(args[0])) {
             //     message.channel.send(`Invalid case. Provide a case number.`);
             //     return;
@@ -45,19 +45,21 @@ export const command: Command<GuildMessageProps> = {
             const responseMessage = await message.channel.send(`Reason ${file.summary ? "added to" : "removed from"} case ${c}`);
             if (/^[0-9]{18}$/.test(file.superid)) {
                 const chan = await client.database.getGuildSetting(message.guild.id, "modlog");// get the case channel
-                if (chan && chan.value) {// try to send the message to the channel
+                if (chan && chan.value && isSnowflake(chan.value)) {// try to send the message to the channel
                     // Bot.client.specials.sendMessageAll({ embed }, r.value);
                     const c = message.guild.channels.cache.get(chan.value);
                     if (c && c instanceof TextChannel) {
                         try {
                             const u = client.users.cache.get(file.userid);
-                            const agent = client.users.cache.get(file.agent);
-                            const m = await c.messages.fetch(file.superid);
-                            const e = await Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, -1, file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime, file.usertag);
-                            await m.edit(e);
-                            // m.embeds[0].description = e.description;
-                            // await m.edit(new MessageEmbed(m.embeds[0]));
-                            await responseMessage.edit(`${responseMessage.content} and the case message in ${m.channel}`);
+                            const agent = client.users.cache.find(x => x.id === file.agent);
+                            const m = isSnowflake(file.superid) ? await c.messages.fetch(file.superid) : undefined;
+                            if (m) {
+                                const e = await Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, -1, file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime, file.usertag);
+                                await m.edit(e);
+                                // m.embeds[0].description = e.description;
+                                // await m.edit(new MessageEmbed(m.embeds[0]));
+                                await responseMessage.edit(`${responseMessage.content} and the case message in ${m.channel}`);
+                            }
                         } catch (error) {
                             //
                         }

@@ -1,8 +1,6 @@
-//import { getGlobalSetting } from '../dbmanager';
-
 import moment from 'moment';
 import { ClientValuesGuild, XClient } from '../gm';
-import { Channel, DMChannel, TextChannel } from 'discord.js';
+import { Channel, DMChannel, Snowflake, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
@@ -110,14 +108,14 @@ export function timedMessagesHandler(client: XClient): void {
     setInterval(async () => {
         if (moment().utcOffset(-5).format('M/D HH:mm') == "9/26 21:30") {
             const pcr = await client.database.getGlobalSetting('primchan');
-            const primchan = pcr ? await client.channels.fetch(pcr.value) : false;
+            const primchan = pcr ? await client.channels.fetch(pcr.value as Snowflake) : false;
             if (primchan instanceof TextChannel) {
                 primchan.send('happy birthday');
             }
         }
         if (moment().utcOffset(-6).format('M/D HH:mm') == "1/1 00:00") {
             const pcr = await client.database.getGlobalSetting('primchan');
-            const primchan = pcr ? await client.channels.fetch(pcr.value) : false;
+            const primchan = pcr ? await client.channels.fetch(pcr.value as Snowflake) : false;
             if (primchan instanceof TextChannel) {
                 primchan.send("Welcome to the New Year (CST) @everyone");
             }
@@ -235,4 +233,8 @@ export function sendMessageAll(m: Record<string, any>, cid: string): void {
 export function getSupportServer(embed = false): string {
     const link = `https://discord.gg/AvXvvSg`;
     return embed ? `[support server](${link})` : `${link}`;
+}
+
+export function isSnowflake(o: string): o is Snowflake {
+    return (/^[0-9]{18}$/.test(o));
 }

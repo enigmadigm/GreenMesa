@@ -1,9 +1,9 @@
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { permLevels } from '../../permissions';
 import { stringToChannel, stringToMember } from "../../utils/parsers";
-import { DMChannel, MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
+import { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "permsfrom",
     aliases: ["pf"],
     description: {
@@ -21,7 +21,6 @@ export const command: Command = {
     permissions: ["MANAGE_CHANNELS", "MANAGE_ROLES"],
     async execute(client, message, args) {
         try {
-            if (!message.guild || message.channel instanceof DMChannel) return;
             const target = await stringToMember(message.guild, args[0], true, true, true);
             if (!target) {
                 await message.channel.send(`Target not found`);
@@ -70,9 +69,10 @@ export const command: Command = {
                 fields: [],
             }
             if (!channel.permissionsFor(target)?.has(bit)/* !originatingRoles.size && !originatingOverwrites.size */) {
+                const disallowingOverwrite = disallowingOverwrites.first()?.id;
                 embed.fields?.push({
                     name: `Absent`,
-                    value: `${target} does not have this permission${!originatingRoles.size && !relevantOverwrites.size ? ` because no role or overwrite they have allows it` : (disallowingOverwrites.find(x => x.type === "member") ? ` because they have a personal overwrite in ${channel} denying it` : (disallowingOverwrites.find(x => x.type === "role") ? ` because the overwrite for ${tRoles.get(disallowingOverwrites.first()?.id || "")} denies it` : ``))}`,
+                    value: `${target} does not have this permission${!originatingRoles.size && !relevantOverwrites.size ? ` because no role or overwrite they have allows it` : (disallowingOverwrites.find(x => x.type === "member") ? ` because they have a personal overwrite in ${channel} denying it` : (disallowingOverwrites.find(x => x.type === "role") ? ` because the overwrite for ${disallowingOverwrite && tRoles.get(disallowingOverwrite)} denies it` : ``))}`,
                 });
             } else {
                 if (originatingRoles.size) {

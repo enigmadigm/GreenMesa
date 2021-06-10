@@ -2,7 +2,7 @@ import { permLevels } from '../../permissions';
 import { stringToChannel, stringToRole } from '../../utils/parsers';
 import { Channel, Role } from "discord.js";
 import { Command, GuildMessageProps } from "src/gm";
-import { getDashboardLink } from "../../utils/specials";
+import { getDashboardLink, isSnowflake } from "../../utils/specials";
 
 export const command: Command<GuildMessageProps> = {
     name: "settings",
@@ -327,7 +327,7 @@ export const command: Command<GuildMessageProps> = {
                         if (result && result.value) {
                             mrid = result.value;
                         }
-                        const mr = message.guild.roles.cache.get(mrid);
+                        const mr = isSnowflake(mrid) ? message.guild.roles.cache.get(mrid) : undefined;
                         message.channel.send({
                             embed: {
                                 color: info_embed_color,
@@ -373,8 +373,9 @@ export const command: Command<GuildMessageProps> = {
                         if (result && result.value) {
                             mrid = result.value;
                         }
-                        const mr = message.guild.channels.cache.get(mrid);
-                        message.channel.send({
+                        let mr = isSnowflake(mrid) ? message.guild.channels.cache.get(mrid) : undefined;
+                        if (!mr?.isText()) mr = undefined;
+                        await message.channel.send({
                             embed: {
                                 color: info_embed_color,
                                 description: `${mr ? `Current File Cabinet:\n${mr} (${mr.id})\n\n` : ""}To set/clear the channel please provide:\n\`<#channel | 'reset'>\``
@@ -384,7 +385,7 @@ export const command: Command<GuildMessageProps> = {
                     }
                     if (args[argIndex] === "reset" && !args[argIndex + 1]) {
                         await client.database.editGuildSetting(message.guild, "modlog", ``, true);
-                        message.channel.send({
+                        await message.channel.send({
                             embed: {
                                 color: success_embed_color,
                                 description: `Done. The mod cases channel has been cleared.`
@@ -394,12 +395,12 @@ export const command: Command<GuildMessageProps> = {
                     }
                     const channel = stringToChannel(message.guild, args[argIndex], true, true);
                     if (!channel || !(channel instanceof Channel)) {
-                        client.specials?.sendError(message.channel, 'Please send a valid channel.');
+                        await client.specials.sendError(message.channel, 'Please send a valid channel.');
                         return;
                     }
                     const result = await client.database.editGuildSetting(message.guild, "modlog", `${channel.id}`);
                     if (!result) {
-                        client.specials?.sendError(message.channel, 'The channel could not be registered.');
+                        await client.specials.sendError(message.channel, 'The channel could not be registered.');
                         return;
                     }
                     message.channel.send({
@@ -417,27 +418,27 @@ export const command: Command<GuildMessageProps> = {
                     switch (args[argIndex]) {
                         case 'enable': {
                             if (accessMessage && accessMessage.value === 'enabled') {
-                                message.channel.send('Perms message is already **enabled**.');
+                                await message.channel.send('Perms message is already **enabled**.');
                                 return;
                             }
                             const editResult = await client.database.editGuildSetting(message.guild, 'access_message', 'enabled');
                             if (editResult && editResult.affectedRows == 1) {
-                                message.channel.send('Perms message **enabled**!');
+                                await message.channel.send('Perms message **enabled**!');
                             } else {
-                                message.channel.send('Failed to enable perms message.');
+                                await message.channel.send('Failed to enable perms message.');
                             }
                             break;
                         }
                         case 'disable': {
                             if (!accessMessage || accessMessage.value === 'disabled') {
-                                message.channel.send('Perms message is already **disabled**.');
+                                await message.channel.send('Perms message is already **disabled**.');
                                 return;
                             }
                             const editResult = await client.database.editGuildSetting(message.guild, 'access_message', 'disabled', true);
                             if (editResult && editResult.affectedRows == 1) {
-                                message.channel.send('Perms message **disabled**!');
+                                await message.channel.send('Perms message **disabled**!');
                             } else {
-                                message.channel.send('Failed to disable perms message.');
+                                await message.channel.send('Failed to disable perms message.');
                             }
                             break;
                         }
@@ -446,7 +447,7 @@ export const command: Command<GuildMessageProps> = {
                             if (accessMessage && accessMessage.value === 'enabled') {
                                 messageStatus = 'enabled';
                             }
-                            message.channel.send({
+                            await message.channel.send({
                                 embed: {
                                     color: info_embed_color,
                                     description: `The perms access message in ${message.guild.name} is currently **${messageStatus}**.\nAdjust this setting with \`enable\` or \`disable\``

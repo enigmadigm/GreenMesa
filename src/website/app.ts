@@ -1,6 +1,4 @@
 import { XClient } from "src/gm";
-
-require('./strategies/discord');
 import express from "express";
 import passport from 'passport';
 import helmet from "helmet";
@@ -8,8 +6,8 @@ import path from "path";
 import routes from './routes';
 import session from "express-session";
 import mstore from 'express-mysql-session';
-
-//const xlg = require("../xlogger");
+import { isSnowflake } from "../utils/specials";
+require('./strategies/discord');
 
 const PORT = process.env.WEBSITE_PORT || 3002;
 //const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";
@@ -55,19 +53,24 @@ export default class MesaWebsite {
         });
         this.app.get("/invite/:id", async (req, res) => {
             const { id } = req.params;
-            let url = await this.client.generateInvite({
-                permissions: 2147483639,
+            if (!isSnowflake(id)) {
+                return res.sendStatus(400);
+            }
+            const url = this.client.generateInvite({
+                permissions: 2147483639n,
                 guild: id,
                 //disableGuildSelect: true,
+                additionalScopes: ["applications.commands"],
             });
-            url = url.replace("scope=bot", "scope=bot applications.commands");
+            // url = url.replace("scope=bot", "scope=bot applications.commands");
             res.redirect(301, `${url}&response_type=code&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000' : `https://stratum.hauge.rocks`)}/embark`);
         });
         this.app.get("/invite", async (req, res) => {
-            let url = await this.client.generateInvite({
-                permissions: 2147483639
+            const url = this.client.generateInvite({
+                permissions: 2147483639n,
+                additionalScopes: ["applications.commands"],
             });
-            url = url.replace("scope=bot", "scope=bot applications.commands");
+            // url = url.replace("scope=bot", "scope=bot applications.commands");
             res.redirect(301, `${url}&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000/embark' : `https://stratum.hauge.rocks/embark`)}`);
         });
         /*this.app.get("/embark", (req, res) => {
@@ -142,5 +145,4 @@ export default class MesaWebsite {
             xlg.log(`Website running on port ${PORT}${client.shard ? ` in shard ${client.shard.ids[0]}` : ""}`);
         });
     }
-
 }

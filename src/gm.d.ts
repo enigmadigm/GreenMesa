@@ -1,4 +1,4 @@
-import { Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, NewsChannel, PermissionString, TextChannel } from "discord.js";
+import { ActivityType, Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -29,11 +29,14 @@ export interface Command<T = Record<string, any>, A = string[]> {
         short: string,
         long: string
     }
-    flags?: {
-        f: string;
-        d: string;
-        v?: string;
-    }[];
+    /**
+     * The flags that are allowed to be used for the command
+     * 
+     * if it is an empty array, all flags will be accepted
+     * if it is not defined, no flags will be accepted and they will remain in the arguments array
+     * if certain flags are specified in the definition array, only those flags will be allowed in the arguments
+     */
+    flags?: CommandFlagDefinition[];
     /**
      * NOT FOR NORMAL USE
      */
@@ -85,14 +88,37 @@ export interface Command<T = Record<string, any>, A = string[]> {
     /**
      * The method that will be called to execute the command (what should provide the command's function)
      */
-    execute(client: XClient, message: XMessage & T, args: A, flags: CommandArgumentFlag[]): Promise<void | boolean | CommandReturnData>;
+    execute(client: XClient, message: XMessage & T, args: A, flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 }
 
 export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel };
+
+export interface CommandFlagDefinition {
+    /**
+     * The name of the flag
+     */
+    f: string;
+    /**
+     * The description of the flag
+     */
+    d: string;
+    /**
+     * Example value for the flag
+     */
+    v?: string;
+    // aliases?: string[];
+    isNumber?: boolean;
+}
+
 export interface CommandArgumentFlag {
     name: string;
     value: string;
+    numberValue: number;
 }
+
+// export interface NumberCommandArgumentFlag extends CommandArgumentFlag {
+//     value: number;
+// }
 // export type GuildMessage = XMessage & { guild: Guild, member: GuildMember };
 
 export interface CommandReturnData {
@@ -139,18 +165,50 @@ export interface SSRow {
 }
 
 export interface ExpRow {
+    /**
+     * combined snowflakes
+     */
     id: string;
-    userid: string;
-    guildid: string;
+    userid: Snowflake;
+    guildid: Snowflake;
+    /**
+     * when their data was first added
+     */
     timeAdded: timestamp;
+    /**
+     * last user exp updated time
+     */
     timeUpdated: timestamp;
+    /**
+     * exp count
+     */
     xp: number;
+    /**
+     * exp level
+     */
     level: number;
+    /**
+     * total number of messages used in calculating the xp
+     * not accurate for data aggregated before the count began
+     * only a count of messages used once per minute
+     */
+    msgcount: number;
+    /**
+     * not used
+     * @deprecated
+     */
+    thinice: 0 | 1;
+    /**
+     * not used
+     * @deprecated
+     */
+    warnings: number;
     spideySaved: string;
 }
 
 export interface PersonalExpRow extends ExpRow {
     rank: number;
+    totalcount: number;
 }
 
 /*export interface LevelRow {
@@ -162,8 +220,8 @@ export interface PersonalExpRow extends ExpRow {
 
 export interface LevelRolesRow {
     id: string;
-    guildid: string;
-    roleid: string;
+    guildid: Snowflake;
+    roleid: Snowflake;
     level: number;
 }
 
@@ -194,7 +252,7 @@ export interface InsertionResult {
 
 export interface GuildSettingsRow {
     id: number;
-    guildid: string;
+    guildid: Snowflake;
     property: string;
     value: string;
     previousvalue: string;
@@ -209,8 +267,8 @@ export interface CmdTrackingRow {
 export interface TwitchHookRow {
     id: string;
     streamerid: string;
-    guildid: string;
-    channelid: string;
+    guildid: Snowflake;
+    channelid: Snowflake;
     streamerlogin: string;
     message: string;
     expires: string;
@@ -260,15 +318,15 @@ export interface TimedAction<T = Record<string, any>> {
 }
 
 export interface UnmuteActionData {
-    guildid: string;
-    userid: string;
-    roleid: string;
+    guildid: Snowflake;
+    userid: Snowflake;
+    roleid: Snowflake;
     duration: string;
 }
 
 export interface UnbanActionData {
-    guildid: string;
-    userid: string;
+    guildid: Snowflake;
+    userid: Snowflake;
     duration: string;
 }
 
@@ -280,7 +338,7 @@ export interface UnbanActionData {
 }*/
 
 export interface UserDataRow {
-    userid: string;
+    userid: Snowflake;
     createdat?: string;
     updatedat?: string;
     bio?: string;
@@ -376,8 +434,8 @@ export interface AutomoduleData {
 
 export interface GuildUserDataRow {
     id?: string;
-    userid?: string;
-    guildid?: string;
+    userid?: Snowflake;
+    guildid?: Snowflake;
     createdat?: string;
     updatedat?: string;
     offenses?: number;
@@ -411,11 +469,11 @@ export interface GuildsEndpointData {
 }
 
 export interface ChannelData {
-    id: string;
+    id: Snowflake;
     name: string;
     type: string;
     position: number;
-    parentID: string;
+    parentID?: Snowflake;
     nsfw?: boolean;
     topic?: string;
 }
@@ -426,7 +484,7 @@ export interface ChannelEndpointData extends GuildsEndpointBase {
 }
 
 export interface RoleData {
-    id: string;
+    id: Snowflake;
     name: string;
     hexColor: string;
     position: number;
@@ -507,7 +565,7 @@ export interface ModActionData {
     /**
      * The id of the guild the case belongs to
      */
-    guildid: string;
+    guildid: Snowflake;
     /**
      * The guild-localized case number for the incident (represents the identifier of the case based on a self-incrementing identifier number pattern)
      */
@@ -515,7 +573,7 @@ export interface ModActionData {
     /**
      * The target's id
      */
-    userid: string;
+    userid: Snowflake;
     /**
      * The tag of the target at the time of the incident
      */
@@ -580,7 +638,7 @@ export type ServerlogEndpointData = ServerlogData;
 
 export interface UserNote {
     id: number;
-    authorID: string;
+    authorID: Snowflake;
     author: string;
     content: string;
     created: string;
@@ -820,15 +878,15 @@ export interface CmdHistoryRow {
     command_name: string;
     message_content: string;
     guildid: string;
-    userid: string | null;
-    messageid: string;
-    channelid: string;
+    userid: Snowflake | null;
+    messageid: Snowflake;
+    channelid: Snowflake;
     invocation_time: string;
 }
 
 export interface InvitedData {// data for the people that have joined and were tracked by an invite
     id: number;
-    guildid: string;
+    guildid: Snowflake;
     inviteat: string;
     invitee: string;
     inviteename: string;
@@ -846,7 +904,7 @@ export interface InviteData {// data for the actual invites that are in use for 
 }
 
 export interface InviteStateData {
-    guildid: string;
+    guildid: Snowflake;
     invites: InviteData[];
     rewards?: Record<number, InviteLevelReward>;
 }
@@ -856,4 +914,27 @@ export interface InviteLevelReward {
     mode: string;
     value: string;
     attachment?: string;
+}
+
+export interface StoredPresenceData {
+    /**
+     * dnd, offline, etc
+     */
+    status: PresenceStatusData;
+    /**
+     * the description
+     */
+    name: string;
+    /**
+     * watching, listening, etc
+     */
+    type: ActivityType;
+    /**
+     * afk value for the api, not really sure what it does
+     */
+    afk?: boolean;
+    /**
+     * whether to deactivate these stored values and use the hardcoded default
+     */
+    useDefault?: boolean;
 }

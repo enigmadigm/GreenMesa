@@ -1,8 +1,9 @@
-import { GuildMember, MessageEmbed, TextChannel, User } from "discord.js";
+import { GuildMember, MessageEmbed, Snowflake, TextChannel, User } from "discord.js";
 import moment from "moment";
 import { Bot } from "../bot";
 import { ModActionEditData } from "../gm";
 import { combineEmbedText, titleCase } from "./parsers";
+import { isSnowflake } from "./specials";
 import { getFriendlyUptime } from "./time";
 
 // enum colorContraventions {
@@ -58,7 +59,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         await this.logOne(d, -1, duration);
     }
 
-    public static async logUnban(guildid: string, u: GuildMember | string, agent: GuildMember | string, reason = "", utag?: string): Promise<void> {
+    public static async logUnban(guildid: Snowflake, u: GuildMember | Snowflake, agent: GuildMember | string, reason = "", utag?: string): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const userId = typeof u === "string" ? u : u.id;
@@ -112,11 +113,11 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         data.casenumber = num;
         const u = Bot.client.users.cache.get(data.userid) || data.userid;// retrieve the user who the case pertains to
         // if (!u) return;//TODO: finding the user should not be necessary, the last known tag of the user should be stored with the mod action data in the db
-        const m = Bot.client.users.cache.get(data.agent) || await Bot.client.users.fetch(data.agent) || "anonymous";
+        const m = isSnowflake(data.agent) ? Bot.client.users.cache.get(data.agent) || await Bot.client.users.fetch(data.agent) : "anonymous";
         const action = data.type;
         const embed = await this.constructEmbed(u, m, num, action, color, data.summary, duration, data.endtime, u instanceof User ? undefined : data.usertag);
         const r = await Bot.client.database.getGuildSetting(data.guildid, "modlog");// get the case channel
-        if (r && r.value) {// try to send the message to the channel
+        if (r && r.value && isSnowflake(r.value)) {// try to send the message to the channel
             // Bot.client.specials.sendMessageAll({ embed }, r.value);
             const c = Bot.client.channels.cache.get(r.value);
             if (c && c instanceof TextChannel && c.permissionsFor(Bot.client.user)?.has("SEND_MESSAGES")) {

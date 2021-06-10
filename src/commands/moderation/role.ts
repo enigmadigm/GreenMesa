@@ -1,11 +1,11 @@
 import { getPermLevel, permLevels } from '../../permissions';
 import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
 import { getFriendlyUptime } from "../../utils/time";
-import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection } from "discord.js";
+import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, MessageReaction, User } from "discord.js";
 import { Command, GuildMessageProps } from "src/gm";
+
 const roleDelay = 1000;
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-
 async function* delayedLoop(start: number, end: number, increment: number, delay: number) {
     for (let i = start; i < end; i += increment) {
         yield i
@@ -62,34 +62,34 @@ export const command: Command<GuildMessageProps> = {
             } else {
                 target = await stringToMember(g, args[0], true, false, false) || stringToRole(g, args[0], true, true);
                 if (!target) {
-                    client.specials?.sendError(message.channel, "Member/role target not specified/valid.\n`<target> <role>`");
+                    await client.specials.sendError(message.channel, "Member/role target not specified/valid.\n`<target> <role>`");
                     return false;
                 }
             }
             args.shift();
             const targetRole = stringToRole(g, args.join(" "), true, true);
             if (!targetRole || !(targetRole instanceof Role)) {
-                client.specials?.sendError(message.channel, "Role-to-toggle not specified/valid.\n`<target> <role>`");
+                await client.specials.sendError(message.channel, "Role-to-toggle not specified/valid.\n`<target> <role>`");
                 return false;
             }
 
             const permLevel = await getPermLevel(message.member || message.author);
             if (permLevel < permLevels.admin) {
-                if (((message.member.permissions.bitfield & 0x10000000) !== 0x10000000 || target === "all" || target instanceof Role || (targetRole.position >= message.member.roles.highest.position))) {
-                    client.specials?.sendError(message.channel, `${message.member}, you don't have permission to toggle this role.`);
+                if (((message.member.permissions.bitfield & 0x10000000n) !== 0x10000000n || target === "all" || target instanceof Role || (targetRole.position >= message.member.roles.highest.position))) {
+                    await client.specials.sendError(message.channel, `${message.member}, you don't have permission to toggle this role.`);
                     return;
                 }
-                if (targetRole.permissions.has(["MANAGE_ROLES"]) && message.member.roles.cache.has(targetRole.id) && message.member.roles.cache.filter(r => (r.permissions.bitfield & 0x10000000) === 0x10000000).size === 1 && (message.member.permissions.bitfield & 0x8) !== 0x8) {
-                    client.specials?.sendError(message.channel, `I cannot remove ${targetRole} from you because doing so would remove your role management permissions. Only an admin may remove this role from you.`);
+                if (targetRole.permissions.has(["MANAGE_ROLES"]) && message.member.roles.cache.has(targetRole.id) && message.member.roles.cache.filter(r => (r.permissions.bitfield & 0x10000000n) === 0x10000000n).size === 1 && (message.member.permissions.bitfield & 0x8n) !== 0x8n) {
+                    await client.specials.sendError(message.channel, `I cannot remove ${targetRole} from you because doing so would remove your role management permissions. Only an admin may remove this role from you.`);
                     return;
                 }
                 if (targetRole.permissions.remove(message.member.permissions.bitfield).toArray().length) {
-                    client.specials?.sendError(message.channel, `I cannot give ${targetRole} to you because doing so would give you more permissions than you currently have.`);
+                    await client.specials.sendError(message.channel, `I cannot give ${targetRole} to you because doing so would give you more permissions than you currently have.`);
                     return;
                 }
             }
             if (targetRole.position >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
-                client.specials?.sendError(message.channel, `Sorry ${message.member}, ${targetRole} has a higher position than your highest role, you aren't allowed to manage it.`);
+                await client.specials.sendError(message.channel, `Sorry ${message.member}, ${targetRole} has a higher position than your highest role, you aren't allowed to manage it.`);
                 return;
             }
 
@@ -127,9 +127,9 @@ export const command: Command<GuildMessageProps> = {
                 });
 
                 // listener for the cancel button
-                const filter: CollectorFilter = (r, u) => u.id !== client.user?.id &&
+                const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => u.id !== client.user?.id &&
                     (r.emoji.name === '🔴') &&
-                    (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
+                    (message.guild.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
                 const collector = etaMessage.createReactionCollector(filter, {
                     time: d,
                     maxUsers: 1,
@@ -166,7 +166,7 @@ export const command: Command<GuildMessageProps> = {
                     } catch (error) {
                         if (!errored) {
                             xlg.error(error);
-                            await client.specials?.sendError(message.channel, `An error was encountered while giving ${targetRole} to ${m}`);
+                            await client.specials.sendError(message.channel, `An error was encountered while giving ${targetRole} to ${m}`);
                             errored = true;
                         }
                     }
@@ -214,7 +214,7 @@ export const command: Command<GuildMessageProps> = {
             } */
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

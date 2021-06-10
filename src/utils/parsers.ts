@@ -1,7 +1,7 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, User } from "discord.js";
+import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, User } from "discord.js";
 import { CommandArgumentFlag, XClient } from "src/gm";
 
 /**
@@ -85,7 +85,7 @@ export function extractString(str: string, regex: RegExp): string | undefined {
 export async function stringToUser(client: XClient, text: string): Promise<User | undefined> {
     text = extractString(text, /<@!?(\d*)>/) || text;
     try {
-        return await client.users.fetch(text) || undefined;
+        return await client.users.fetch(text as Snowflake) || undefined;
     } catch (e) {
         return undefined;
     }
@@ -115,7 +115,7 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
     guild.members.cache = await guild.members.fetch();
 
     // by id
-    let member = guild.members.cache.get(text);
+    let member = guild.members.cache.get(text as Snowflake);
     if (!member && byUsername)
     // by username
     member = guild.members.cache.find(x => x.user.username == text || x.user.tag == text);
@@ -157,7 +157,7 @@ export function stringToRole(guild: Guild, text: string, byName = true, bySimila
     text = extractString(text, /<@&(\d*)>/) || text;
 
     // by id
-    let role = guild.roles.cache.get(text);
+    let role = guild.roles.cache.get(text as Snowflake);
     if (!role && byName) {
         // by name
         role = guild.roles.cache.find(x => x.name == text);
@@ -191,7 +191,7 @@ export function stringToChannel(guild: Guild, text: string, byName = true, bySim
     if (!guild || !text) return undefined;
     text = extractString(text, /<#(\d*)>/) || text;
 
-    let channel = guild.channels.cache.get(text);
+    let channel = guild.channels.cache.get(text as Snowflake);
     if (!channel && byName) channel = guild.channels.cache.find(x => x.name == text);
     if (!channel && bySimilar) {
         // closest matching name
@@ -335,7 +335,7 @@ export function parseOptions(opts: string[]): string[] {
  */
 export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[], taken: string[] } {
     const a = toParse.join(" ");
-    const opts: { name: string, value: string }[] = [];
+    const opts: CommandArgumentFlag[] = [];
     // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
     const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
     let match;
@@ -351,9 +351,11 @@ export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[]
         }
         const g1 = match[1] || "";
         const g2 = match[2] ? match[2].replace(/^"(.*)"$/, "$1") : "";
+        const numVal = g2 && /^[0-9]+(?:\.[0-9]+)?$/.test(g2) ? parseInt(g2, 10) : 0;
         opts.push({
             name: g1,
             value: g2,
+            numberValue: numVal,
         });
         // a = a.slice(match.index + match[0].length)
         taken.push(match[0]);

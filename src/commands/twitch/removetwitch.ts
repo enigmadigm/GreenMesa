@@ -1,10 +1,9 @@
-
 import { permLevels } from '../../permissions';
 import { unsubscribeTwitchWebhook } from "../../website/routes/twitch";
-import Discord, { CollectorFilter } from "discord.js";
-import { Command } from "src/gm";
+import Discord, { CollectorFilter, MessageReaction, User } from "discord.js";
+import { Command, GuildMessageProps } from "src/gm";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "removetwitch",
     aliases: ["rmtwitch"],
     description: {
@@ -17,7 +16,6 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
             const confMsg = await message.channel.send({
                 embed: {
                     color: await client.database.getColor("info"),
@@ -28,7 +26,7 @@ export const command: Command = {
             await confMsg.react("🟢").catch(xlg.error);
             await confMsg.react("🚫").catch(xlg.error);
 
-            const filter: CollectorFilter = (r, u) => (r.emoji.name === '🟢' || r.emoji.name === '🚫') && (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
+            const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => (r.emoji.name === '🟢' || r.emoji.name === '🚫') && (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
             const collected = await confMsg.awaitReactions(filter, {
                 max: 1,
                 time: 60000
@@ -39,7 +37,7 @@ export const command: Command = {
                 confMsg.embeds[0].description = "Aborted deletion process.";
                 await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0])).catch(xlg.error);
 
-                const reactsToRemove = confMsg.reactions.cache.filter(r => r.users.cache.has(client.user?.id || ""));
+                const reactsToRemove = confMsg.reactions.cache.filter(r => !!(client.user && r.users.cache.has(client.user.id)));
                 try {
                     for (const reaction of reactsToRemove.values()) {
                         await reaction.users.remove(client.user?.id);
@@ -82,8 +80,7 @@ export const command: Command = {
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
                 }
 
-
-                const reactsToRemove = confMsg.reactions.cache.filter(r => r.users.cache.has(client.user?.id || ""));
+                const reactsToRemove = confMsg.reactions.cache.filter(r => !!(client.user && r.users.cache.has(client.user.id)));
                 try {
                     for (const reaction of reactsToRemove.values()) {
                         await reaction.users.remove(client.user?.id);
@@ -99,4 +96,3 @@ export const command: Command = {
         }
     }
 }
-

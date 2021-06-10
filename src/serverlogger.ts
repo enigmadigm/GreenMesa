@@ -440,7 +440,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                 };
                 
                 let didsomething = false;
-                if (oldBitfield.allow !== newBitfield.allow && newBitfield.allow !== 0) {
+                if (oldBitfield.allow !== newBitfield.allow && newBitfield.allow !== 0n) {
                     const flgs = new Discord.Permissions(newBitfield.allow).remove(oldBitfield.allow);
                     embed.description += `\n**Allowed:**\n${flgs.toArray().map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
                     didsomething = true;
@@ -452,7 +452,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                         
                     }*/
                 }
-                if (oldBitfield.deny !== newBitfield.deny && newBitfield.deny !== 0) {
+                if (oldBitfield.deny !== newBitfield.deny && newBitfield.deny !== 0n) {
                     const flgs = new Discord.Permissions(newBitfield.deny).remove(oldBitfield.deny);// i think newbit & oldbit would also work
                     embed.description += `\n**Denied:**\n${flgs.toArray().map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
                     didsomething = true;

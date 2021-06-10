@@ -57,10 +57,16 @@ String.prototype.escapeDiscord = function () {
         .replace(/`/g, "'");
 };
 
+Number.prototype.between = function (gt, lt, inclusive = false) {
+    if (inclusive) {
+        return (gt <= this && this <= lt);
+    }
+    return (gt < this && this < lt);
+};
+
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
-import Discord, { GuildChannel, MessageEmbedOptions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
+import Discord, { GuildChannel, Intents, MessageEmbedOptions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
 import config from "../auth.json"; // Loading app config file
-//import { updateXP, updateBotStats, getGlobalSetting, getPrefix, clearXP, massClearXP, logCmdUsage, getGuildSetting, logMsgReceive, DBManager } from "./dbmanager";
 import { permLevels, getPermLevel } from "./permissions";
 import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger';
 import MesaWebsite from "./website/app";
@@ -84,8 +90,9 @@ export class Bot {
     }
 }
 
-const client: XClient = new Client({
-    partials: ["MESSAGE"],
+const client = new Client({
+    partials: ["MESSAGE", "CHANNEL"],
+    intents: [Object.values(Intents.FLAGS)],
 });
 
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
@@ -116,35 +123,28 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
             if (err) return console.log(err);
         });
 
-        const game = await client.database.getGlobalSetting('game_name');
-        const gamePrefix = await client.database.getGlobalSetting('game_prefix');
-        const gameStatus = await client.database.getGlobalSetting('game_status');
-        if (game && game.value !== 'default') {
+        const presence = await client.database.getStoredPresence();
+        if (!presence.useDefault || Math.floor(Math.random() * 10) <= 8) {
             client.user?.setPresence({
-                activity: {
-                    name: game.value || 'nothing',
-                    type: (gamePrefix && gamePrefix.value && (gamePrefix.value === "WATCHING" || gamePrefix.value === "PLAYING" || gamePrefix.value === "STREAMING" || gamePrefix.value === "LISTENING" || gamePrefix.value === "CUSTOM_STATUS" || gamePrefix.value === "COMPETING")) ? gamePrefix.value : 'WATCHING'
-                },
-                status: (gameStatus && gameStatus.value && (gameStatus.value === "idle" || gameStatus.value === "online" || gameStatus.value === "dnd" || gameStatus.value === "invisible")) ? gameStatus.value : 'idle'
-            }).catch(console.error);
+                status: presence.status,
+                afk: presence.afk,
+                activities: [
+                    {
+                        name: presence.name,
+                        type: presence.type,
+                    }
+                ],
+            });
         } else {
-            if (Math.floor(Math.random() * 10) <= 8) {
-                // Set the bot's presence (activity and status)
-                client.user?.setPresence({
-                    activity: {
-                        name: `${config.prefix} help | ${config.prefix} invite`,
-                    },
-                    status: 'online'
-                })
-            } else {
-                client.user?.setPresence({
-                    activity: {
+            client.user?.setPresence({
+                activities: [
+                    {
                         name: 'society crumble',
                         type: 'WATCHING'
                     },
-                    status: 'idle'
-                })
-            }
+                ],
+                status: 'idle',
+            });
         }
     }, 20000); // Runs this every 20 seconds. Discord has an update LIMIT OF 15 SECONDS
     // End of this rubbish loop, can insert other settings after
@@ -453,7 +453,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (command.moderation && message.guild) {
             const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                return client.specials.sendModerationDisabled(message.channel);
+                client.specials.sendModerationDisabled(message.channel);
+                return;
             }
         }
 
@@ -472,7 +473,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
                     if (now < expirationTime) {
                         const timeLeft = (expirationTime - now) / 1000;
-                        return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
+                        message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
+                        return;
                     }
                 }
             }
@@ -482,8 +484,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         if (command.permissions && command.permissions.length) {
             const lacking: PermissionString[] = [];
-            for (const perm of command.permissions) {
-                if (!message.guild?.me?.hasPermission(perm) ||
+            for (const perm of command.permissions.concat(!command.permissions.includes("EMBED_LINKS") ? ["EMBED_LINKS"] : [])) {// check if a needed permission is not met, injects the embed_links perm if it isn't already specified
+                if (!message.guild?.me?.permissions.has(perm) ||
                     (message.channel instanceof GuildChannel && !message.channel.permissionsFor(message.guild?.me || "")?.has(perm))) {
                     lacking.push(perm);
                 }
@@ -539,11 +541,16 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         const flags = parseLongArgs(args);// get the flags from the beginning of the message, if they are provided
         if (flags.taken.length) {
-            const queriedFlags = command.flags ? command.flags.length ? !command.flags.map(x => x.f).includes("help") ? ["help", ...command.flags.map(x => x.f)] : command.flags.map(x => x.f) : null : ["help"];
+            const queriedFlags = command.flags ? command.flags.length ? !command.flags.map(x => x.f).includes("help") ? ["help", ...command.flags.map(x => x.f)] : command.flags.map(x => x.f) : null : ["help"];/* if the flags property is specified, it will be used to figure out what flags will be accepted
+             * if it is an empty array, all flags will be accepted
+             * if it is not defined, no flags will be accepted and they will remain in the arguments array
+             * if certain flags are specified in the definition array, only those flags will be allowed in the arguments
+            */
+
             // const queriedFlags = command.acceptFlags ? Array.isArray(command.acceptFlags) ? !command.acceptFlags.includes("help") ? ["help", ...command.acceptFlags] : command.acceptFlags : null : ["help"];
-            if (queriedFlags) {
-                const notActuallyTaken = flags.flags.map((x, i) => !queriedFlags.includes(x.name) ? i : -1);
-                for (const nat of notActuallyTaken) {
+            if (queriedFlags) {// if there is a list of accepted flags
+                const notActuallyTaken = flags.flags.map((x, i) => !queriedFlags.includes(x.name) ? i : -1);// a list of provided flags that are not accepted
+                for (const nat of notActuallyTaken) {// begin the process of adding the flags back into the arguments
                     if (nat > -1) {
                         flags.taken.splice(nat, 1);
                     }
@@ -552,6 +559,25 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
             const remainingArgs = args.join(" ").slice(flags.taken.join(" ").length).trim();// trim the provided argument flag array to disclude the parsed flags
             args = remainingArgs.length ? remainingArgs.split(" ") : [];
+            // below flag conditions are checked (just isNumber as of now)
+            if (command.flags) {// if there are flag defintions
+                try {
+                    for (const f of flags.flags) {// iterate through provided flags
+                        const flagDef = command.flags.find(x => x.f);
+                        if (flagDef) {
+                            if (flagDef.isNumber && !/^[0-9]+(?:\.[0-9]+)?$/.test(f.value)) {
+                                throw `You must provide a number value to the flag \`${flagDef.f}\`.`;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    if (typeof error === "string") {
+                        await client.specials.sendError(message.channel, error);
+                        return;
+                    }
+                    throw error;
+                }
+            }
         }
 
         if (flags.flags.find(x => x.name === "help")) {// if the help flag has been specified

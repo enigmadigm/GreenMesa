@@ -1,8 +1,7 @@
-
 import { permLevels } from '../../permissions';
 import { stringToChannel } from "../../utils/parsers";
 import { addTwitchWebhook } from "../../website/routes/twitch";
-import Discord, { CollectorFilter } from "discord.js";
+import Discord, { CollectorFilter, MessageReaction, User } from "discord.js";
 import { Command } from "src/gm";
 
 function validateTwitchURL(str: string) {
@@ -99,7 +98,7 @@ export const command: Command = {
             });
             await confMsg.react("🟢").catch(xlg.error);
 
-            const filter: CollectorFilter = (r, u) => r.emoji.name === '🟢' && (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
+            const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => r.emoji.name === '🟢' && (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
             const collected = await confMsg.awaitReactions(filter, { max: 1, time: 60000 });
             if (!collected || !collected.size) {
                 confMsg.embeds[0].color = await client.database.getColor("fail") || null;
@@ -107,7 +106,7 @@ export const command: Command = {
                 confMsg.embeds[0].description = "Aborted setup";
                 await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0])).catch(xlg.error);
 
-                const reactsToRemove = confMsg.reactions.cache.filter(r => r.users.cache.has(client.user?.id || ""));
+                const reactsToRemove = confMsg.reactions.cache.filter(r => !!(client.user && r.users.cache.has(client.user.id)));
                 try {
                     for (const reaction of reactsToRemove.values()) {
                         await reaction.users.remove(client.user?.id);
@@ -150,10 +149,12 @@ export const command: Command = {
                     confMsg.embeds[0].description = `You server is now subscribed to notifications in ${targetChannel} for when **${targetUsername}** goes live.\n\nEdit subscription from the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")})`;
                     await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
 
-                    const reactsToRemove = confMsg.reactions.cache.filter(r => r.users.cache.has(client.user?.id || ""));
+                    const reactsToRemove = confMsg.reactions.cache.filter(r => !!(client.user && r.users.cache.has(client.user.id)));
                     try {
                         for (const reaction of reactsToRemove.values()) {
-                            await reaction.users.remove(client.user?.id || "");
+                            if (client.user) {
+                                await reaction.users.remove(client.user.id);
+                            }
                         }    
                     } catch (error) {
                         xlg.error(error);
@@ -169,4 +170,3 @@ export const command: Command = {
         }
     }
 }
-

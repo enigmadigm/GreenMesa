@@ -1,4 +1,4 @@
-import { GuildMember, Message, NewsChannel, TextChannel } from "discord.js";
+import { GuildMember, Message, NewsChannel, Snowflake, TextChannel } from "discord.js";
 import { Bot } from "../bot";
 import { GuildMessageProps, MessageService } from "../gm";
 import { stringToMember } from "../utils/parsers";
@@ -56,7 +56,7 @@ export const service: MessageService = {
                 }
                 return false;
             }
-            const testReference = async (gid: string, cid: string, mid: string) => {
+            const testReference = async (gid: Snowflake, cid: Snowflake, mid: Snowflake) => {
                 if (gid === message.guild.id) {
                     const c = <TextChannel | NewsChannel | undefined>message.guild.channels.cache.get(cid);
                     if (c) {
