@@ -1,4 +1,3 @@
-
 import { Message, MessageEmbed, MessageEmbedOptions, MessageReaction, User } from "discord.js";
 
 interface PagerEntry {
@@ -63,7 +62,11 @@ export class PaginationExecutor {
                 pages.push(embed);
             }
             if (pages.length < 2) {
-                await message.channel.send(pages[0]);
+                const current = await message.channel.send(pages[0]);
+                if (closeable) {
+                    // await current.react(this.closeEmoji);
+                    await this.addCloseListener(current);
+                }
             } else {
                 const p = new MessageEmbed(pages[0]);
                 const current = await message.channel.send(p.setFooter(`1 of ${pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`));
@@ -90,7 +93,7 @@ export class PaginationExecutor {
 
     public static async paginate(reaction: MessageReaction, user: User): Promise<void> {
         try {
-            if (reaction.message.author.id !== reaction.message.client.user?.id || user.id === reaction.message.client.user?.id) return;
+            if (reaction.message.author?.id !== reaction.message.client.user?.id || user.id === reaction.message.client.user?.id) return;
             if (reaction.emoji.name !== this.emojiLeft && reaction.emoji.name !== this.emojiRight && reaction.emoji.name !== this.closeEmoji) return;
             const pager = this.pagers.find(x => x.id === reaction.message.id);
             if (reaction.emoji.name === this.closeEmoji) {
