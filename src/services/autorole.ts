@@ -1,4 +1,4 @@
-import { AutoroleData, MessageService, UnmuteActionData } from "../gm";
+import { AutoroleData, MessageService } from "../gm";
 import { Bot } from "../bot";
 import { GuildMember } from "discord.js";
 import moment from "moment";
@@ -8,9 +8,9 @@ import { isSnowflake } from "../utils/specials";
 export const service: MessageService = {
     async execute(client, member: GuildMember) {
         try {
-            if (!member.guild || !member.guild.available) return;
+            if (!member.guild.available) return;
             // restoring mute role for mute evasion protection
-            const mutes = await client.database.getTimedActions<UnmuteActionData>({
+            const mutes = await client.database.getTimedActions({
                 actiontype: "unmute",
             });
             if (mutes && mutes.length) {
