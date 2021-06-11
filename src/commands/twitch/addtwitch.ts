@@ -1,7 +1,7 @@
 import { permLevels } from '../../permissions';
 import { stringToChannel } from "../../utils/parsers";
 import { addTwitchWebhook } from "../../website/routes/twitch";
-import Discord, { CollectorFilter, MessageReaction, User } from "discord.js";
+import Discord, { CollectorFilter, MessageReaction, Permissions, User } from "discord.js";
 import { Command } from "src/gm";
 
 function validateTwitchURL(str: string) {
@@ -98,7 +98,7 @@ export const command: Command = {
             });
             await confMsg.react("🟢").catch(xlg.error);
 
-            const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => r.emoji.name === '🟢' && (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
+            const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => r.emoji.name === '🟢' && (message.guild?.members.cache.get(u.id)?.permissions.has(Permissions.FLAGS.ADMINISTRATOR) || u.id === message.author.id);
             const collected = await confMsg.awaitReactions(filter, { max: 1, time: 60000 });
             if (!collected || !collected.size) {
                 confMsg.embeds[0].color = await client.database.getColor("fail") || null;

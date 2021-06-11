@@ -2,16 +2,17 @@ import mysql, { escape } from "mysql";
 import config, { db_config } from "../auth.json";
 import moment from "moment";
 import util from 'util';
-import Discord, { Guild, GuildMember, PartialGuildMember, Role, Snowflake, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StoredPresenceData, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
+import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
 import { isSnowflake } from "./utils/specials";
 
-const levelRoles = [{
+const levelRoles = [
+    {
         level: 70,
-        name: 'no-life',
+        name: 'Mega Divine Active Member',
         color: '#9F2292'
     },
     {
@@ -41,17 +42,17 @@ const levelRoles = [{
     },
     {
         level: 5,
-        name: 'prob not a bot level',
+        name: 'Not-An-Alt Level',
         color: '#a886f1'
     },
     {
         level: 1,
-        name: 'noob level',
+        name: 'Noob Level',
         color: '#99AAB1'
     }
 ];
 
-type TimedActionQuery = Partial<UnparsedTimedAction>/* & */;
+type TimedActionQuery = Partial<TimedActionRow>/* & */;
 
 // https://www.tutorialkart.com/nodejs/nodejs-mysql-result-object/#Example-Nodejs-MySQL-INSERT-INTO-Result-Object
 
@@ -320,7 +321,7 @@ export class DBManager {
      * @param level the level of the member to apply
      */
     async updateLevelRole(member: GuildMember, level: number): Promise<boolean> {
-        if (!member || !member.guild || !level || !member.guild.me?.permissions.has("MANAGE_ROLES")) {
+        if (!member || !member.guild || !level || !member.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
             return false;
         }
         let levelsEnabled: false | GuildSettingsRow | string = await this.getGuildSetting(member.guild, 'xp_levels');
@@ -496,15 +497,23 @@ export class DBManager {
         }
     }
 
+    async getXPPersonal(guildid: Snowflake, memberid: Snowflake): Promise<PersonalExpRow | false> {
+        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT \`userid\`, \`xp\`, \`level\`, FIND_IN_SET(\`xp\`, (SELECT GROUP_CONCAT(\`xp\` ORDER BY \`xp\` DESC) FROM dgmxp WHERE guildid = ${escape(guildid)} ) ) AS rank, COUNT(*) as \`totalcount\` FROM dgmxp WHERE id = ${escape(memberid + guildid)}`);
+        if (personalrows.length) {
+            return personalrows[0];
+        }
+        return false;
+    }
+
     /**
      * Gets the top 10 members by xp of a guild plus the ranking of the provided member.
      * @param guildid id of guild to look up
      * @param memberid id of member in guild to look up
      */
-    async getXPTop10(guildid: string, memberid = ""): Promise<{ rows: ExpRow[], personal?: PersonalExpRow }> {
+    async getXPTop10(guildid: Snowflake, memberid: Snowflake): Promise<{ rows: ExpRow[], personal?: PersonalExpRow }> {
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = ${escape(guildid)} ORDER BY \`xp\` DESC LIMIT 10`);
-        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT \`userid\`, \`xp\`, \`level\`, FIND_IN_SET(\`xp\`, (SELECT GROUP_CONCAT(\`xp\` ORDER BY \`xp\` DESC) FROM dgmxp WHERE guildid = ${escape(guildid)} ) ) AS rank, COUNT(*) as \`totalcount\` FROM dgmxp WHERE id = ${escape(memberid + guildid)}`);
-        const person = personalrows.length ? personalrows[0] : undefined;
+        const personalrows = await this.getXPPersonal(guildid, memberid);
+        const person = personalrows || undefined;
         return {
             rows: rows || [],
             personal: person,
@@ -881,8 +890,7 @@ export class DBManager {
     /**
      * Set an action to be executed automatically at a given time
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>, casenumber = 0): Promise<boolean> {
+    async setAction(id: string, time: Date, actionType: string, data: TimedAction["data"], casenumber = 0): Promise<boolean> {
         try {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).escapeSpecialChars();
@@ -924,7 +932,7 @@ export class DBManager {
     async getTimedActionsRange(lookahead: number): Promise<TimedAction[] | false> {
         if (lookahead < 0 || lookahead > 3600) return false;
         const et = moment().add(lookahead, "seconds").format('YYYY-MM-DD HH:mm:ss');
-        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= ${escape(et)}`);
+        const r = await <Promise<TimedActionRow[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= ${escape(et)}`);
         if (!r || !r.length) {
             return [];
         }
@@ -954,7 +962,7 @@ export class DBManager {
      * @returns an array of timed actions
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async getTimedActions<T = Record<string, any>>(query: TimedActionQuery): Promise<TimedAction<T>[] | false> {
+    async getTimedActions/* <T = Record<string, any>> */(query: TimedActionQuery): Promise<TimedAction[] | false> {
         try {
             const queryOptions = <(keyof TimedActionQuery)[]>Object.keys(query);
             if (!queryOptions.length) return false;
@@ -964,12 +972,12 @@ export class DBManager {
                 const val = query[opt];
                 sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
             }
-            const result = await <Promise<UnparsedTimedAction[]>>this.query(`${sql}`);
+            const result = await <Promise<TimedActionRow[]>>this.query(`${sql}`);
             if (result.length) {
-                const a: TimedAction<T>[] = [];
+                const a: TimedAction[] = [];
                 for (const row of result) {
                     try {
-                        const b: TimedAction<T> = {
+                        const b: TimedAction = {
                             id: row.actionid,
                             time: moment(row.exectime).toDate(),
                             type: row.actiontype,
@@ -1011,7 +1019,7 @@ export class DBManager {
                 const val = query[opt];
                 sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
             }
-            const result = await <Promise<UnparsedTimedAction[]>>this.query(`${sql}`);
+            const result = await <Promise<TimedActionRow[]>>this.query(`${sql}`);
             if (result.length) {
                 const a = result[0];
                 const b: TimedAction = {

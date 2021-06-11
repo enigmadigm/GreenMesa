@@ -300,35 +300,36 @@ export interface MessageService {
     execute(client: XClient, data: any): Promise<void>;
 }
 
-export interface UnparsedTimedAction {
+export interface TimedActionRow {
     actionid: string;
     exectime: string;
-    actiontype: string;
+    actiontype: TimedAction["type"];
     actiondata: string;
     casenumber: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface TimedAction<T = Record<string, any>> {
+export type TimedAction = UnmuteAction | UnbanAction;
+
+export interface TimedActionPayload<T = string, D = Record<string, unknown>> {
     id: string;
     case?: number;
     time: Date;
-    type: string;
-    data: T;
+    type: T;
+    data: D;
 }
 
-export interface UnmuteActionData {
+export type UnmuteAction = TimedActionPayload<'unmute', {
     guildid: Snowflake;
     userid: Snowflake;
     roleid: Snowflake;
     duration: string;
-}
+}>;
 
-export interface UnbanActionData {
+export type UnbanAction = TimedActionPayload<'unban', {
     guildid: Snowflake;
     userid: Snowflake;
     duration: string;
-}
+}>;
 
 /*export interface UserData {
     userid?: string;

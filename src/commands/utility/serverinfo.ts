@@ -1,4 +1,4 @@
-import { Invite } from 'discord.js';
+import { Invite, Permissions } from 'discord.js';
 import moment from 'moment';
 import { Command, GuildMessageProps } from 'src/gm';
 
@@ -23,7 +23,7 @@ export const command: Command<GuildMessageProps> = {
             if (message.guild.channels.cache.filter(x => x.type == 'store').size) channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
 
             let invites: boolean | Invite[] = false;
-            if (message.guild.me?.permissions.has("MANAGE_GUILD")) {
+            if (message.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
                 const invitesCollection = await message.guild.fetchInvites();
                 invites = invitesCollection.array();
             }

@@ -1,6 +1,6 @@
 import { permLevels } from '../../permissions';
 import { unsubscribeTwitchWebhook } from "../../website/routes/twitch";
-import Discord, { CollectorFilter, MessageReaction, User } from "discord.js";
+import Discord, { CollectorFilter, MessageReaction, Permissions, User } from "discord.js";
 import { Command, GuildMessageProps } from "src/gm";
 
 export const command: Command<GuildMessageProps> = {
@@ -26,7 +26,7 @@ export const command: Command<GuildMessageProps> = {
             await confMsg.react("🟢").catch(xlg.error);
             await confMsg.react("🚫").catch(xlg.error);
 
-            const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => (r.emoji.name === '🟢' || r.emoji.name === '🚫') && (message.guild?.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
+            const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => (r.emoji.name === '🟢' || r.emoji.name === '🚫') && (message.guild?.members.cache.get(u.id)?.permissions.has(Permissions.FLAGS.ADMINISTRATOR) || u.id === message.author.id);
             const collected = await confMsg.awaitReactions(filter, {
                 max: 1,
                 time: 60000

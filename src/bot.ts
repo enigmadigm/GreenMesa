@@ -40,6 +40,20 @@ process.on('unhandledRejection', async (reason, promise) => {
     console.error(error, "Promise:", promise);
 });
 
+import fs from 'fs'; // Get the filesystem library that comes with nodejs
+import Discord, { GuildChannel, Intents, MessageEmbedOptions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
+import config from "../auth.json"; // Loading app config file
+import { permLevels, getPermLevel } from "./permissions";
+import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger';
+import MesaWebsite from "./website/app";
+import { Command, XClient, XMessage } from "./gm";
+import { TimedActionsSubsystem } from "./tactions";
+import { PaginationExecutor } from "./utils/pagination";
+import Client from "./struct/Client";
+import { ban } from "./utils/modactions";
+import "./xlogger";
+import { combineMessageText, parseLongArgs } from './utils/parsers';
+
 String.prototype.escapeSpecialChars = function () {
     return this.replace(/(?<!\\)\\n/g, "\\n")
         .replace(/(?<!\\)\\'/g, "\\'")
@@ -64,20 +78,6 @@ Number.prototype.between = function (gt, lt, inclusive = false) {
     return (gt < this && this < lt);
 };
 
-import fs from 'fs'; // Get the filesystem library that comes with nodejs
-import Discord, { GuildChannel, Intents, MessageEmbedOptions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
-import config from "../auth.json"; // Loading app config file
-import { permLevels, getPermLevel } from "./permissions";
-import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger';
-import MesaWebsite from "./website/app";
-import { Command, XClient, XMessage } from "./gm";
-import { TimedActionsSubsystem } from "./tactions";
-import { PaginationExecutor } from "./utils/pagination";
-import Client from "./struct/Client";
-import { ban } from "./utils/modactions";
-import "./xlogger";
-import { combineMessageText, parseLongArgs } from './utils/parsers';
-
 export class Bot {
     static client: XClient;
     static tas: TimedActionsSubsystem;
@@ -91,7 +91,7 @@ export class Bot {
 }
 
 const client = new Client({
-    partials: ["MESSAGE", "CHANNEL"],
+    partials: ["MESSAGE", "CHANNEL", "REACTION"],
     intents: [Object.values(Intents.FLAGS)],
 });
 
@@ -311,14 +311,40 @@ client.on('emojiDelete', oemoji => {
 
 client.on("messageReactionAdd", async (reaction, user) => {
     if (user.partial) {
-        user = await user.fetch();
+        try {
+            user = await user.fetch();
+        } catch (error) {
+            xlg.error("error filling in user reaction partial: ", error);
+            return;
+        }
+    }
+    if (reaction.partial) {
+        try {
+            reaction = await reaction.fetch();
+        } catch (error) {
+            xlg.error("error filling in reaction partial: ", error);
+            return;
+        }
     }
     PaginationExecutor.paginate(reaction, user);
 })
 
 client.on("messageReactionRemove", async (reaction, user) => {
     if (user.partial) {
-        user = await user.fetch();
+        try {
+            user = await user.fetch();
+        } catch (error) {
+            xlg.error("error filling in user reaction partial: ", error);
+            return;
+        }
+    }
+    if (reaction.partial) {
+        try {
+            reaction = await reaction.fetch();
+        } catch (error) {
+            xlg.error("error filling in reaction partial: ", error);
+            return;
+        }
     }
     PaginationExecutor.paginate(reaction, user);
 });
@@ -326,13 +352,17 @@ client.on("messageReactionRemove", async (reaction, user) => {
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
+        // if (message.partial) {
+        //     message = await <Promise<XMessage>>message.fetch();
+        // }
+
         client.database.logMsgReceive();// log reception of message event
 
-        client.services?.runAll(client, message);// run all passive command services
+        client.services.runAll(client, message);// run all passive command services
 
         if (message.author.bot || message.system) return;
-        if (!client.user || !client.commands || !client.categories) return;
-    
+        if (!client.user) return;
+
         // let dm = false; // checks if it's from a dm
         // if (!(message.channel instanceof GuildChannel))
         //     dm = true;

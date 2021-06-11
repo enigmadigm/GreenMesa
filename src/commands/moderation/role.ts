@@ -1,7 +1,7 @@
 import { getPermLevel, permLevels } from '../../permissions';
 import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
 import { getFriendlyUptime } from "../../utils/time";
-import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, MessageReaction, User } from "discord.js";
+import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, MessageReaction, User, Permissions } from "discord.js";
 import { Command, GuildMessageProps } from "src/gm";
 
 const roleDelay = 1000;
@@ -129,7 +129,7 @@ export const command: Command<GuildMessageProps> = {
                 // listener for the cancel button
                 const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => u.id !== client.user?.id &&
                     (r.emoji.name === '🔴') &&
-                    (message.guild.members.cache.get(u.id)?.permissions.has(["ADMINISTRATOR"]) || u.id === message.author.id);
+                    (message.guild.members.cache.get(u.id)?.permissions.has(Permissions.FLAGS.ADMINISTRATOR) || u.id === message.author.id);
                 const collector = etaMessage.createReactionCollector(filter, {
                     time: d,
                     maxUsers: 1,

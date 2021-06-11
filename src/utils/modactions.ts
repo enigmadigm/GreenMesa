@@ -1,6 +1,6 @@
-import { GuildMember, MessageEmbedOptions } from "discord.js";
+import { GuildMember, MessageEmbedOptions, Permissions } from "discord.js";
 import moment from "moment";
-import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
+import { UnbanAction, UnmuteAction, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
 import { Contraventions } from "./contraventions";
@@ -140,7 +140,7 @@ import { isSnowflake } from "./specials";
  * Auto-mute a target permanently or for a period
  */
 export async function mute(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, reason = "Automatic mute", remute = false): Promise<void | string> {
-    if (!target.guild.me?.permissions.has("MANAGE_ROLES")) return;
+    if (!target.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) return;
     const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     const dbmr = await client.database.getGuildSetting(target.guild, "mutedrole");
@@ -240,7 +240,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
                 }
             }
         }, time)*/
-        const data: UnmuteActionData = {
+        const data: UnmuteAction["data"] = {
             guildid: target.guild.id,
             userid: target.id,
             roleid: mutedRole.id,
@@ -306,7 +306,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
     await Contraventions.logBan(target, mod, `${summary ? summary : ``}${noNotify ? " - could not notify offender" : ""}`, time);
 
     if (time) {
-        const data: UnbanActionData = {
+        const data: UnbanAction["data"] = {
             guildid: target.guild.id,
             userid: target.id,
             duration: duration,

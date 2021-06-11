@@ -1,4 +1,4 @@
-import { Guild, GuildMember, User } from "discord.js";
+import { Guild, GuildMember, Permissions, User } from "discord.js";
 import moment from "moment";
 import { InviteData, InviteStateData, XClient } from "../gm";
 import { isSnowflake } from "../utils/specials";
@@ -17,7 +17,7 @@ export default class {
 
     public async getFull(guild: Guild): Promise<{ invitesNow: InviteData[], invitesBefore: InviteData[], increased: InviteData[], decreased: InviteData[] } | void> {
         try {
-            if (!guild.me?.permissions.has("MANAGE_GUILD")) return;
+            if (!guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) return;
             const previousResult = await this.client.database.getGuildSetting(guild.id, "invites_data");//TODO: make this a direct method for interacting with the db table
             const stateBefore: InviteStateData = previousResult ? JSON.parse(previousResult.value) : { guildid: guild.id, invites: [] };
             const invitesBefore = stateBefore.invites;
