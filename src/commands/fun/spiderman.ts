@@ -35,7 +35,10 @@ export const command: Command = {
                 embed: {
                     color: await client.database.getColor("darkred_embed_color"),
                     title: "<:spidey_face:754750502083887165> :spider_web:",
-                    description: "Spiderman saves you"
+                    description: "Spiderman saves you",
+                    footer: {
+                        text: `send again`,
+                    },
                 }
             });
             return true;

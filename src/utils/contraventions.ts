@@ -122,7 +122,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             const c = Bot.client.channels.cache.get(r.value);
             if (c && c instanceof TextChannel && c.permissionsFor(Bot.client.user)?.has("SEND_MESSAGES")) {
                 const m = c.permissionsFor(Bot.client.user)?.has("EMBED_LINKS") ? await c.send({ embed }) : await c.send({ content: `${combineEmbedText(embed, 2)}` });//TODO: I should probably format the fallback message separately
-                data.superid = m.id;
+                data.superid = m.id;//NOTE: superid column used for editing the info embed in the case logs (when it is a snowflake, it is attempted to be fetched)
             }
         }
         await Bot.client.database.setModAction(data);

@@ -1,11 +1,11 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { TextChannel } from "discord.js";
 import { Contraventions } from "../../utils/contraventions";
 import moment from "moment";
 import { isSnowflake } from '../../utils/specials';
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "reason",
     description: {
         short: "set reason for an infraction",
@@ -16,6 +16,7 @@ export const command: Command<GuildMessageProps> = {
     cooldown: 1,
     permLevel: permLevels.mod,
     moderation: true,
+    guildOnly: true,
     async execute(client, message, args) {
         try {
             // if (!/^[0-9]+$/.test(args[0])) {
@@ -68,7 +69,7 @@ export const command: Command<GuildMessageProps> = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
