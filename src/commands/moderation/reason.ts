@@ -1,11 +1,11 @@
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { TextChannel } from "discord.js";
 import { Contraventions } from "../../utils/contraventions";
 import moment from "moment";
 import { isSnowflake } from '../../utils/specials';
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "reason",
     description: {
         short: "set reason for an infraction",

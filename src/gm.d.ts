@@ -15,10 +15,9 @@ export interface XClient extends Client {
     invites: Invites;
 }
 
+// export type Command<T = Record<string, any>> = NormalCommand<T> | GuildCommand<T>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Command<T = Record<string, any>> = NormalCommand<T> | GuildCommand<T>;
-
-export interface NormalCommand<T> {
+export interface Command<T = Record<string, any>> {
     name: string;
     /**
      * Alternate names to use to call the command
@@ -80,7 +79,7 @@ export interface NormalCommand<T> {
      * in guilds (the {@type GuildMessageProps} type parameter
      * should still be provided to the command interface type)
      */
-    guildOnly?: false;
+    guildOnly?: boolean;
     /**
      * @deprecated
      */
@@ -100,10 +99,10 @@ export interface NormalCommand<T> {
     execute(client: XClient, message: XMessage & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 }
 
-export interface GuildCommand<T> extends NormalCommand<T> {
-    guildOnly: true;
-    execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
-}
+// export interface GuildCommand<T> extends NormalCommand<T> {
+//     guildOnly: true;
+//     execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
+// }
 
 export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel };
 
