@@ -1673,7 +1673,7 @@ export class DBManager {
         }
     }
 
-    async getStoredPresence(): Promise<StoredPresenceData> {
+    async getStoredPresence(bypassDefault = false): Promise<StoredPresenceData> {
         const r = await this.getGlobalSetting("presence");
         const presenceDefault: StoredPresenceData = {
             status: `online`,
@@ -1688,7 +1688,7 @@ export class DBManager {
                 return 'status' in o && 'type' in o && 'name' in o;
             }
             if (isStoredPresence(parsed)) {
-                if (parsed.useDefault) {
+                if (!bypassDefault && parsed.useDefault) {
                     return presenceDefault;
                 }
                 return parsed;
