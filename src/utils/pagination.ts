@@ -45,49 +45,45 @@ export class PaginationExecutor {
      * @param closeable whether a close button should be provided and monitored
      * @returns whether or not the paginator was successfully posted
      */
-    public static async createEmbed(message: Message, embeds: MessageEmbedOptions[] | MessageEmbed[], controllers?: string[], closeable = false): Promise<boolean> {
-        try {
-            if (!embeds.length) return false;
+    public static async createEmbed(message: Message, embeds: MessageEmbedOptions[] | MessageEmbed[], controllers?: string[], closeable = false): Promise<Message> {
+        if (!embeds.length) throw new Error("MISSING_PAGES");
 
-            const preexisting = this.pagers.find(x => x.id === message.id);
-            if (preexisting) {
-                this.pagers.splice(this.pagers.indexOf(preexisting));
+        const preexisting = this.pagers.find(x => x.id === message.id);
+        if (preexisting) {
+            this.pagers.splice(this.pagers.indexOf(preexisting));
+        }
+        const pages: MessageEmbed[] = [];
+        for (const embed of embeds) {
+            if (!(embed instanceof MessageEmbed)) {
+                pages.push(new MessageEmbed(embed));
+                continue;
             }
-            const pages: MessageEmbed[] = [];
-            for (const embed of embeds) {
-                if (!(embed instanceof MessageEmbed)) {
-                    pages.push(new MessageEmbed(embed));
-                    continue;
-                }
-                pages.push(embed);
+            pages.push(embed);
+        }
+        if (pages.length < 2) {
+            const current = await message.channel.send(pages[0]);
+            if (closeable) {
+                // await current.react(this.closeEmoji);
+                await this.addCloseListener(current);
             }
-            if (pages.length < 2) {
-                const current = await message.channel.send(pages[0]);
-                if (closeable) {
-                    // await current.react(this.closeEmoji);
-                    await this.addCloseListener(current);
-                }
-            } else {
-                const p = new MessageEmbed(pages[0]);
-                const current = await message.channel.send(p.setFooter(`1 of ${pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`));
-                await current.react(this.emojiLeft);
-                await current.react(this.emojiRight);
-                if (closeable) {
-                    await current.react(this.closeEmoji);
-                }
-                this.pagers.push({
-                    id: current.id,
-                    pages: pages,
-                    currentPageNumber: 0,
-                    currentPage: pages[0],
-                    controllers: controllers ? controllers : undefined,
-                    closeable: closeable
-                });
+            return current;
+        } else {
+            const p = new MessageEmbed(pages[0]);
+            const current = await message.channel.send(p.setFooter(`1 of ${pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`));
+            await current.react(this.emojiLeft);
+            await current.react(this.emojiRight);
+            if (closeable) {
+                await current.react(this.closeEmoji);
             }
-            return true;
-        } catch (error) {
-            xlg.error(error);
-            return false;
+            this.pagers.push({
+                id: current.id,
+                pages: pages,
+                currentPageNumber: 0,
+                currentPage: pages[0],
+                controllers: controllers ? controllers : undefined,
+                closeable: closeable
+            });
+            return current;
         }
     }
 
