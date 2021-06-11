@@ -2,6 +2,7 @@ import { permLevels } from '../../permissions';
 import { Command, GuildMessageProps } from "src/gm";
 import { Contraventions } from '../../utils/contraventions';
 import moment from 'moment';
+import { isSnowflake } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
     name: "vinfrac",
@@ -10,7 +11,6 @@ export const command: Command<GuildMessageProps> = {
         short: "view an infraction",
         long: "Use to view an infraction on a user or a general mod action."
     },
-    flags: undefined,
     examples: [
         "69",
     ],
@@ -31,7 +31,7 @@ export const command: Command<GuildMessageProps> = {
                 return;
             }
             const u = client.users.cache.get(file.userid);
-            const agent = client.users.cache.get(file.agent);
+            const agent = isSnowflake(file.agent) ? client.users.cache.get(file.agent) : undefined;
             const e = await Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, -1, file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime, file.usertag);
             await message.channel.send({
                 embed: {
