@@ -82,7 +82,7 @@ export const command: Command = {
                 }
             }
         }
-        if ((f = flags.find(x => x.name === "afk"))) {
+        if (flags.find(x => x.name === "afk")) {
             presence.afk = !presence.afk;
             const editRes = await client.database.setStoredPresence(presence, message.author);
             if (editRes && editRes.affectedRows) {
@@ -94,7 +94,7 @@ export const command: Command = {
                 });
             }
         }
-        if ((f = flags.find(x => x.name === "default"))) {
+        if (flags.find(x => x.name === "default")) {
             console.log(presence)
             presence.useDefault = !presence.useDefault;
             const editRes = await client.database.setStoredPresence(presence, message.author);
