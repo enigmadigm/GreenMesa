@@ -439,7 +439,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             return;
         }
 
-        let permLevel = permLevels.member;
+        let permLevel = permLevels.trustedMember;
         const bmr = await client.database.getGlobalSetting("botmasters").catch(xlg.error);
         let botmasters: string[];
         if (bmr) {
@@ -447,7 +447,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         } else {
             botmasters = [];
         }
-        if (message.channel instanceof GuildChannel) { // gets perm level of member if message isn't from dms
+        if (message.channel.isText()) { // gets perm level of member if message isn't from dms
             permLevel = await getPermLevel(message.member || message.author);
         } else if (botmasters.includes(message.author.id)) { // bot masters
             permLevel = permLevels.botMaster;
@@ -455,7 +455,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const pl = cs ? cs.level || permLevels.member : command.permLevel || permLevels.member;// get the required permission level needed to run the command
 
         if (permLevel < pl) {// check if the user has the permissions needed to run the command
-            const accessMessage = await client.database.getGuildSetting(message.guild || "", "access_message");
+            // the access message is a setting for guilds, if disabled members will not be notified of missing permissions
+            const accessMessage = message.guild ? await client.database.getGuildSetting(message.guild, "access_message") : { value: "enabled" };
             if (accessMessage && accessMessage.value === "enabled") {
                 await message.channel.send("You lack the permissions required to use this command");
             }
@@ -514,7 +515,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         if (command.permissions && command.permissions.length) {
             const lacking: PermissionString[] = [];
-            for (const perm of command.permissions.concat(!command.permissions.includes("EMBED_LINKS") ? ["EMBED_LINKS"] : [])) {// check if a needed permission is not met, injects the embed_links perm if it isn't already specified
+            for (const perm of command.permissions) {// check if a needed permission is not met, injects the embed_links perm if it isn't already specified
                 if (!message.guild?.me?.permissions.has(perm) ||
                     (message.channel instanceof GuildChannel && !message.channel.permissionsFor(message.guild?.me || "")?.has(perm))) {
                     lacking.push(perm);

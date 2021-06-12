@@ -166,7 +166,7 @@ export const command: Command = {
                 if (command.permissions?.length) {
                     embed.fields?.push({
                         name: "Required Permissions",
-                        value: `${command.permissions.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}`,
+                        value: `${command.permissions.map(x => `${x.toLowerCase().replace(/_/g, " ")}`).join(", ")}`,
                     });
                 }
 
