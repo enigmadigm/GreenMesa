@@ -953,3 +953,18 @@ export interface StoredPresenceData {
      */
     useDefault?: boolean;
 }
+
+export interface SkeletonGuildObject {
+    id: Snowflake;
+    name: string;
+    icon: string | null;
+    owner: Snowflake;
+    ownerName?: string;
+}
+
+// export interface SkeletonUserObject {// i literally accidentally made this, it isn't currently being used but it could be in the future for other broadcast methods
+//     id: Snowflake;
+//     tag: string;
+//     profile: string;
+//     created: string;
+// }

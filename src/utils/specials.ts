@@ -1,16 +1,17 @@
 import moment from 'moment';
-import { ClientValuesGuild, XClient } from '../gm';
-import { Channel, DMChannel, Snowflake, TextChannel } from 'discord.js';
+import { ClientValuesGuild, SkeletonGuildObject, XClient } from '../gm';
+import { Channel, Snowflake, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
+import Client from '../struct/Client';
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
     try {
-        if (!(channel instanceof TextChannel)) return;
+        if (!channel.isText() || !('guild' in channel)) return;
         const fail_embed_color = await Bot.client.database.getColor("fail");
         channel.send({
             embed: {
                 color: fail_embed_color,
-                description: `Server moderation in ${channel.guild.name} is currently disabled. Admins must enable moderation features with \`settings moderation enable\`.`
+                description: `Server moderation in ${channel.guild.name.escapeDiscord()} is currently disabled. Admins must enable moderation features with \`settings moderation enable\`.`
             }
         });
     } catch (error) {
@@ -18,13 +19,13 @@ export async function sendModerationDisabled(channel: Channel): Promise<void> {
     }
 }
 
-export async function sendError(channel: Channel, message?: string, errorTitle = false): Promise<void> {
+export async function sendError(channel: Channel, message?: string, errorTitle: string | boolean = false): Promise<void> {
     try {
-        if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
-        channel.send({
+        if (!channel.isText()) return;
+        await channel.send({
             embed: {
                 color: await Bot.client.database.getColor("fail") || 16711680,
-                title: (errorTitle) ? "Error" : undefined,
+                title: errorTitle ? typeof errorTitle === "string" ? errorTitle : "Error" : undefined,
                 description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
             }
         });
@@ -36,7 +37,7 @@ export async function sendError(channel: Channel, message?: string, errorTitle =
 
 export async function sendInfo(channel: Channel, message: string): Promise<void> {
     try {
-        if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return;
+        if (!channel.isText()) return;
         channel.send({
             embed: {
                 color: 0x337fd5/* await Bot.client.database.getColor("info") */,
@@ -51,7 +52,7 @@ export async function sendInfo(channel: Channel, message: string): Promise<void>
 
 export async function argsNumRequire(channel: Channel, args: string[], num: number): Promise<boolean> {
     try {
-        if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return false;
+        if (!channel.isText()) return false;
         if (args.length == num) return true;
         const fail_embed_color = await Bot.client.database.getColor("fail");
         channel.send({
@@ -69,7 +70,7 @@ export async function argsNumRequire(channel: Channel, args: string[], num: numb
 
 export async function argsMustBeNum(channel: Channel, args: string[]): Promise<boolean> {
     try {
-        if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) return false;
+        if (!channel.isText()) return false;
         if (!args || !args.length) return false;
         let forResult = true;
         const invalid: string[] = [];// there should only really be one or zero entries
@@ -161,46 +162,6 @@ export function memoryUsage(): string {
 }*/
 
 /**
- * Retrieves all of the guilds that belonging to a client if the client is sharded. It will asynchronously fetch all guilds from each of the shards and reduce them to one array. The values returned from the shards are not normal guild objects. They are reduced guild object.
- * @param client the client to retrieve the guilds from
- * @returns all guilds cached in the client's shards
- */
-export async function getAllGuilds(client: XClient): Promise<ClientValuesGuild[] | false> {
-    if (!client.shard) {
-        return false;
-    }
-    const reductionFunc = (p: ClientValuesGuild[], c: ClientValuesGuild[]) => {
-        for (const bg of c) {
-            p.push(bg);
-        }
-        return p;
-    };
-    const values = await <Promise<ClientValuesGuild[][]>>client.shard.fetchClientValues("guilds.cache");
-    if (!values) {
-        return false;
-    }
-    const guilds = values.reduce(reductionFunc, <ClientValuesGuild[]>[]);
-    if (!guilds) {
-        return false;
-    }
-    return guilds;
-}
-
-export async function getAllChannels(client: XClient): Promise<Channel[] | false> {
-    const reductionFunc = (p: Channel[], c: Channel[]) => {
-        for (const chan of c) {
-            p.push(chan);
-        }
-        return p;
-    };
-    const channels = (await client.shard?.fetchClientValues("channels.cache"))?.reduce(reductionFunc, []);
-    if (!channels) {
-        return false;
-    }
-    return channels;
-}
-
-/**
  * Get an accurate and universal link to the web dashboard
  */
 export function getDashboardLink(guildid?: string, mod?: string): string {
@@ -214,18 +175,6 @@ export function getBackendRoot(): string {
     return process.env.NODE_ENV === "dev" ? 'http://localhost:3005' : `https://stratum.hauge.rocks`;
 }
 
-/**
- * Send a message through all of the sharded clients that will send from the client that has the desired channel
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function sendMessageAll(m: Record<string, any>, cid: string): void {
-    Bot.client.shard?.broadcastEval(`
-    const c = this.channels.cache.get('${cid}');
-    if (c && c.send) {
-        c.send(${JSON.stringify(m)})
-    }
-    `);
-}
 
 /**
  * Get the true link to the support server
@@ -237,4 +186,91 @@ export function getSupportServer(embed = false): string {
 
 export function isSnowflake(o: string): o is Snowflake {
     return (/^[0-9]{18}$/.test(o));
+}
+
+export const shards = {
+    /**
+     * Send a message through all of the sharded clients that will send from the client that has the desired channel
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sendMessageAll(m: Record < string, any >, cid: string): void {
+        Bot.client.shard?.broadcastEval(`
+const c = this.channels.cache.get('${cid}');
+if (c && c.send) {
+    c.send(${JSON.stringify(m)})
+}
+    `);
+    },
+    /**
+     * Retrieves all of the guilds that belonging to a client if the client is sharded. It will asynchronously fetch all guilds from each of the shards and reduce them to one array. The values returned from the shards are not normal guild objects. They are reduced guild object.
+     * @param client the client to retrieve the guilds from
+     * @returns all guilds cached in the client's shards
+     */
+    async getAllGuilds(): Promise<ClientValuesGuild[] | false> {
+        if (!Bot.client.shard) {
+            return false;
+        }
+        const reductionFunc = (p: ClientValuesGuild[], c: ClientValuesGuild[]) => {
+            for (const bg of c) {
+                p.push(bg);
+            }
+            return p;
+        };
+        const values = await <Promise<ClientValuesGuild[][]>>Bot.client.shard.fetchClientValues("guilds.cache");
+        if (!values) {
+            return false;
+        }
+        const guilds = values.reduce(reductionFunc, <ClientValuesGuild[]>[]);
+        if (!guilds) {
+            return false;
+        }
+        return guilds;
+    },
+    async getAllChannels(): Promise<Channel[] | false> {
+        if (!Bot.client.shard) {
+            return false;
+        }
+        const reductionFunc = (p: Channel[], c: Channel[]) => {
+            for (const chan of c) {
+                p.push(chan);
+            }
+            return p;
+        };
+        const channels = (await Bot.client.shard.fetchClientValues("channels.cache"))?.reduce(reductionFunc, []);
+        if (!channels) {
+            return false;
+        }
+        return channels;
+    },
+    async getMutualGuilds(uid: Snowflake): Promise<SkeletonGuildObject[] | false> {
+        if (!Bot.client.shard) {
+            return false;
+        }
+        const getMutual = async function (c: Client, id: Snowflake): Promise<SkeletonGuildObject[] | void> {
+            try {
+                const mutualGuilds: SkeletonGuildObject[] = c.guilds.cache.filter(x => !!x.members.cache.get(id)).map(x => {
+                    return {
+                        name: x.name,
+                        id: x.id,
+                        icon: x.iconURL(),
+                        owner: x.ownerID,
+                    }
+                });
+                return mutualGuilds;
+            } catch (error) {
+                //
+            }
+        };
+        const r: (SkeletonGuildObject[] | void)[] = await Bot.client.shard.broadcastEval(`(${getMutual})(this, '${uid}')`);
+        const mut: SkeletonGuildObject[] = [];
+        for (const ga of r) {
+            if (ga) {
+                for (const g of ga) {
+                    mut.push(g);
+                }
+            }
+        }
+        return mut;
+        // return false;
+    },
 }

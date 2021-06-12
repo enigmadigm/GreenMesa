@@ -64,7 +64,7 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(500);
             }
 
-            const allGuilds = await client.specials.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const { excluded, included } = getApplicableGuilds(req.user.guilds, allGuilds || []);
             const guilds: GuildItemSpecial[] = [
                 ...excluded.map((e) => {
@@ -108,7 +108,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!Array.isArray(req.user.guilds)) {
                 return res.sendStatus(500);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuilds(req.user.guilds, allGuilds ? allGuilds : []);
             res.send({
                 guilds: mg,
@@ -129,7 +129,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -172,7 +172,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -209,7 +209,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -252,7 +252,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -291,7 +291,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -334,7 +334,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -368,7 +368,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -404,7 +404,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -436,7 +436,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -487,7 +487,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -540,7 +540,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -585,7 +585,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -633,7 +633,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -698,7 +698,7 @@ export default function routerBuild (client: XClient): express.Router {
     //         if (!req.user) {
     //             return res.sendStatus(401);
     //         }
-    //         const allGuilds = await client.specials.getAllGuilds(client);
+    //         const allGuilds = await client.specials.getAllGuilds();
     //         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
     //         if (!mg.find(x => x.id && x.id === id)) {
     //             return res.sendStatus(401);
@@ -730,7 +730,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -761,7 +761,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -798,7 +798,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -836,7 +836,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -889,7 +889,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -940,7 +940,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -996,7 +996,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -1048,7 +1048,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -1089,7 +1089,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -1135,7 +1135,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             const g = mg.find(x => x.id && x.id === id);
             if (!g) {
@@ -1194,7 +1194,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             const g = mg.find(x => x.id && x.id === id);
             if (!g) {
@@ -1332,7 +1332,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             const g = mg.find(x => x.id && x.id === id);
             if (!g) {

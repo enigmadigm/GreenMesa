@@ -3,6 +3,7 @@
 
 import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, User } from "discord.js";
 import { CommandArgumentFlag, XClient } from "src/gm";
+import { isSnowflake } from "./specials";
 
 /**
  * Returns similarity value based on Levenshtein distance.
@@ -85,7 +86,7 @@ export function extractString(str: string, regex: RegExp): string | undefined {
 export async function stringToUser(client: XClient, text: string): Promise<User | undefined> {
     text = extractString(text, /<@!?(\d*)>/) || text;
     try {
-        return await client.users.fetch(text as Snowflake) || undefined;
+        return isSnowflake(text) ? await client.users.fetch(text) || undefined : undefined;
     } catch (e) {
         return undefined;
     }
