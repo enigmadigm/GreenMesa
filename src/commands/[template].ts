@@ -24,7 +24,7 @@ export const command: Command = {
             //
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
