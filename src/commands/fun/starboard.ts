@@ -150,7 +150,7 @@ export const command: Command<GuildMessageProps> = {
                         return;
                     }
                     sb.locked = !!lockFlag.numberValue;
-                    changes.push(`= starboard ${lockFlag.numberValue ? "locked" : "activated"}`);
+                    changes.push(`= starboard ${lockFlag.numberValue == 1 ? "locked" : "activated"}`);
                 }
                 const nsfwFlag = flags.find(x => x.name === "nsfw");
                 if (nsfwFlag) {
@@ -159,7 +159,7 @@ export const command: Command<GuildMessageProps> = {
                         return;
                     }
                     sb.allowSensitive = !!nsfwFlag.numberValue;
-                    changes.push(`= sensitive content ${nsfwFlag.numberValue ? "allowed" : "denied"}`);
+                    changes.push(`= sensitive content ${nsfwFlag.numberValue == 1 ? "allowed" : "denied"}`);
                 }
                 const selfFlag = flags.find(x => x.name === "self");
                 if (selfFlag) {
@@ -168,7 +168,7 @@ export const command: Command<GuildMessageProps> = {
                         return;
                     }
                     sb.allowSelf = !!selfFlag.numberValue;
-                    changes.push(`= self-starring ${selfFlag.numberValue ? "allowed" : "not allowed"}`);
+                    changes.push(`= self-starring ${selfFlag.numberValue == 1 ? "allowed" : "not allowed"}`);
                 }
                 const starFlag = flags.find(x => x.name === "star");
                 if (starFlag) {
@@ -177,7 +177,7 @@ export const command: Command<GuildMessageProps> = {
                         return;
                     }
                     sb.starStarred = !!starFlag.numberValue;
-                    changes.push(`= post-star status now ${starFlag.numberValue ? "on" : "off"}`);
+                    changes.push(`= post-star status now ${starFlag.numberValue == 1 ? "on" : "off"}`);
                 }
                 const emojiFlag = flags.find(x => x.name === "emoji");
                 if (emojiFlag) {
@@ -196,7 +196,7 @@ export const command: Command<GuildMessageProps> = {
                         return;
                     }
                     sb.starStarred = !!colorFlag.numberValue;
-                    changes.push(`= accent color set to ${colorFlag.numberValue ? "on" : "off"}`);
+                    changes.push(`= accent color set to ${colorFlag.numberValue == 1 ? "on" : "off"}`);
                 }
                 await client.database.setStarboard(message.guild.id, sb);
                 changes[0] = `**Changes made (${changes.length - 1}):**`;
