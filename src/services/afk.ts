@@ -25,9 +25,9 @@ async function sendAfk(m: string, c: TextChannel | NewsChannel, t: GuildMember) 
 }
 
 export const service: MessageService = {
-    text: true,
+    events: ["message", "messageUpdate"],
     guildOnly: true,
-    async execute(client, message: Message & GuildMessageProps) {
+    async execute(client, event, message: Message & GuildMessageProps) {
         try {
             if (!message.guild || message.author.id === client.user?.id) return;
             const afk = await Bot.client.database.getUserData(message.author.id);

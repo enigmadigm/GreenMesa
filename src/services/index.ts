@@ -1,5 +1,5 @@
 import { AutomoduleData, MessageService, XClient, XMessage } from "../gm";
-import { Collection, GuildChannel, GuildMember, Message, MessageEmbedOptions } from "discord.js";
+import { ClientEvents, Collection, GuildChannel, GuildMember, Message, MessageEmbedOptions, MessageReaction, User } from "discord.js";
 import fs from "fs";
 import { Bot } from "../bot";
 import { ordinalSuffixOf } from "../utils/parsers";
@@ -43,14 +43,27 @@ export class MessageServices {
     }
 
     /**
-     * Better to consider this runAllTextServices
+     * Better to consider this runAllForACertainEvent
      */
-    async runAll(client: XClient, message: XMessage): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    runAllForEvent(event: keyof ClientEvents, ...data: any[]): void {//FIXME: executes on bot account reaction
         try {
-            if (!Bot.client) return;
+            if (!Bot.client || !Bot.client.user) return;
             for (const [,service] of this.services) {
-                if (service.text && !service.disabled && !(service.name?.startsWith("automod_") && message.author.id === client.user?.id) && (service.allowNonUser || !(message.author.bot || message.author.system)) && (!service.guildOnly || message.guild)) {
-                    service.execute(client, message);
+                if (service.events.includes(event) &&
+                    !service.disabled &&
+                    !(service.name?.startsWith("automod_") &&
+                        (!(data[0] instanceof Message) ||
+                            data[0].author.id === Bot.client.user.id)) &&
+                    (service.allowNonUser ||
+                        !((data[0] instanceof Message &&
+                            (data[0].author.bot ||
+                                data[0].author.system ||
+                                data[0].webhookID)) ||
+                            (data[0] instanceof MessageReaction && data[1] instanceof User && (data[1].bot || data[1].system)))) &&
+                    (!service.guildOnly ||
+                        ('guild' in data[0] || (data[0] instanceof Message && data[0].guild) || (data[0] instanceof MessageReaction && data[0].message.guild)))) {
+                    service.execute(Bot.client, event, ...data);
                 }
             }
         } catch (error) {
@@ -65,8 +78,8 @@ export class MessageServices {
         try {
             if (!Bot.client) return;
             for (const [, service] of this.services) {
-                if (service.text && service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id) {
-                    service.execute(client, message);
+                if (this.isText(service.name || "") && service.name?.startsWith("automod_") && !service.disabled && message.author.id !== client.user?.id && message.guild) {
+                    service.execute(client, "message", message);
                 }
             }
             // this.services.forEach(async (service: MessageService) => {
@@ -91,7 +104,7 @@ export class MessageServices {
 
     isText(mod: string): boolean {
         const s = this.services.find(x => x.name === mod);
-        return !!(s && s.text);
+        return !!(s && (s.events.includes("message") || s.events.includes("messageUpdate") || s.events.includes("messageDelete")));
     }
 
     async punish<T = unknown>(mod: AutomoduleData, target: GuildMember, data?: T): Promise<void> {

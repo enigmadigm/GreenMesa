@@ -1,17 +1,15 @@
-
-import { MessageService, XMessage } from "../gm";
+import { GuildMessageProps, MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
 import expletives from 'corpora/data/words/expletives.json';
 const expletiveList: string[] = expletives.expletives;
 
 export const service: MessageService = {
-    text: true,
+    events: ["message", "messageUpdate"],
     async getInformation() {
         return "Christian mode for your server. Enabling this module will censore all popular obscene language and many variations of that totally vulgar content.";
     },
-    async execute(client, message: XMessage) {
+    async execute(client, event, message: XMessage & GuildMessageProps) {
         try {
-            if (!message.guild || !message.member) return;
             const modResult = await Bot.client.database.getAutoModuleEnabled(message.guild.id, "profanity", message.channel.id, undefined, message.member);
             if (!modResult) return;
 

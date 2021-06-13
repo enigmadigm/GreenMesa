@@ -3,11 +3,12 @@ import config, { db_config } from "../auth.json";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
 import { isSnowflake } from "./utils/specials";
+import Starboard from "./struct/Starboard";
 
 const levelRoles = [
     {
@@ -117,6 +118,7 @@ export class DBManager {
             //async function dbInit() {}
             this.query("CREATE TABLE IF NOT EXISTS `cmdhistory` ( `invocation_id` int(11) NOT NULL AUTO_INCREMENT, `command_name` text COLLATE utf8mb4_unicode_ci NOT NULL, `message_content` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `userid` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL, `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `invocation_time` timestamp NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`invocation_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `invitetracking` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `inviteat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `invitee` text COLLATE utf8mb4_unicode_ci NOT NULL, `inviteename` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `inviter` text COLLATE utf8mb4_unicode_ci NOT NULL, `invitername` text COLLATE utf8mb4_unicode_ci NOT NULL, `code` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `starboard` ( `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `authorid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `stars` int(11) NOT NULL DEFAULT 0, `nsfw` tinyint(1) NOT NULL DEFAULT 0, `locked` tinyint(1) NOT NULL DEFAULT 0, `postid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `postchannel` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`messageid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
             return this;
         } catch (error) {
@@ -1712,5 +1714,39 @@ export class DBManager {
             return r;
         }
         return false;
+    }
+
+    async getStarboardSetting(gid: Snowflake): Promise<Starboard> {
+        const r = await this.getGuildSetting(gid, "starboard");
+        if (r) {
+            const j = JSON.parse(r.value);// assuming that the data is a starboard setting
+            const s = new Starboard(j);
+            return s;
+        } else {
+            const s = new Starboard();
+            return s;
+        }
+    }
+
+    async setStarboard(gid: Snowflake, d: Starboard): Promise<InsertionResult> {
+        const r = await this.editGuildSetting(gid, "starboard", JSON.stringify(d).escapeSpecialChars());
+        return r;
+    }
+
+    async getStarredMessage(mid: Snowflake): Promise<StarredMessageData | false> {
+        const r = await <Promise<StarredMessageData[]>>this.query(`SELECT * FROM starboard WHERE messageid = ${escape(mid)}`);
+        if (r.length) {
+            const s1 = r[0];
+            return s1;
+        }
+        return false;
+    }
+
+    //TODO: add queryStarredMessages()
+
+    async setStarredMessage(d: StarredMessageData): Promise<InsertionResult> {
+        const { messageid, channelid, guildid, authorid, stars, nsfw, locked, postid, postchannel } = d;
+        const r = await <Promise<InsertionResult>>this.query(`INSERT INTO starboard (messageid, guildid, channelid, authorid, stars, nsfw, locked, postid, postchannel) VALUES (${escape(messageid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(authorid)}, ${escape(stars)}, ${escape(nsfw)}, ${escape(locked)}, ${escape(postid)}, ${escape(postchannel)}) ON DUPLICATE KEY UPDATE guildid = COALESCE(${escape(guildid)}, guildid), guildid = COALESCE(${escape(guildid)}, guildid), channelid = COALESCE(${escape(channelid)}, channelid), stars = COALESCE(${escape(stars)}, stars), nsfw = COALESCE(${nsfw}, nsfw), locked = COALESCE(${escape(locked)}, locked), postid = COALESCE(${escape(postid)}, postid), postchannel = COALESCE(${escape(postchannel)}, postchannel)`);
+        return r;
     }
 }

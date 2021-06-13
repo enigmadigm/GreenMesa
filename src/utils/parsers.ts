@@ -338,7 +338,7 @@ export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[]
     const a = toParse.join(" ");
     const opts: CommandArgumentFlag[] = [];
     // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
-    const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=("[\w\s<@#&!>$*()\-=+^%:';[\]{}\\|]*"|[\w<@#&!>$*()\-=+^%:';[\]{}\\|]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
     let match;
     let matchCycle = 0;
     let currentStartingIndex = 0;
@@ -352,7 +352,7 @@ export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[]
         }
         const g1 = match[1] || "";
         const g2 = match[2] ? match[2].replace(/^"(.*)"$/, "$1") : "";
-        const numVal = g2 && /^[0-9]+(?:\.[0-9]+)?$/.test(g2) ? parseInt(g2, 10) : 0;
+        const numVal = g2 && /^(?:[0-9]+(?:\.[0-9]+)?|0x[0-9A-Za-z]{6})$/.test(g2) ? /^[0-9]+(?:\.[0-9]+)?$/.test(g2) ? parseInt(g2, 10) : parseInt(g2, 16) : 0;
         opts.push({
             name: g1,
             value: g2,

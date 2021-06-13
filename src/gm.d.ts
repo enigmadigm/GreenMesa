@@ -1,4 +1,4 @@
-import { ActivityType, Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel } from "discord.js";
+import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, MessageEmbedOptions, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -54,6 +54,8 @@ export interface Command<T = Record<string, any>> {
     /**
      * Whether arguments should be required, or the number of
      * arguments needed
+     * 
+     * Flags ARE NOT args
      */
     args?: boolean | number;
     // specialArgs?: number;
@@ -121,6 +123,7 @@ export interface CommandFlagDefinition {
     v?: string;
     // aliases?: string[];
     isNumber?: boolean;
+    notEmpty?: boolean;
 }
 
 export interface CommandArgumentFlag {
@@ -306,12 +309,12 @@ export interface DashUserObject {
 export interface MessageService {
     name?: string;
     disabled?: true;
-    text?: true;
     allowNonUser?: true;
     guildOnly?: boolean;
+    events: (keyof ClientEvents)[];
     getInformation?(client: XClient, guildid: string): Promise<string>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    execute(client: XClient, data: any): Promise<void>;
+    execute(client: XClient, event: keyof ClientEvents, ...data: any): Promise<void>;
 }
 
 export interface TimedActionRow {
@@ -968,3 +971,28 @@ export interface SkeletonGuildObject {
 //     profile: string;
 //     created: string;
 // }
+
+export interface StarboardSetting {
+    channel: Snowflake;
+    threshold: number;
+    allowSelf: boolean;
+    jumpLink: boolean;
+    allowSensitive: boolean;
+    locked: boolean;
+    ignoredChannels: Snowflake[];
+    starStarred: boolean;
+    emoji: string[];
+    color: number;
+}
+
+export interface StarredMessageData {
+    messageid: Snowflake;
+    guildid: Snowflake;
+    channelid: Snowflake;
+    authorid: Snowflake;
+    stars: number;
+    locked: number;
+    nsfw: number;
+    postid: string;
+    postchannel: string;
+}

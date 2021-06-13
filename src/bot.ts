@@ -218,8 +218,9 @@ client.on('guildMemberAdd', async member => {
             }
         }
         await client.invites.logIngress(member);
-        await client.services.run(client, "autorole", member);
-        await client.services.run(client, "automod_nicenicks", member);
+        // await client.services.run(client, "autorole", member);
+        // await client.services.run(client, "automod_nicenicks", member);
+        await client.services.runAllForEvent("guildMemberAdd", member);
     } catch (error) {
         xlg.error(error);
     }
@@ -239,13 +240,15 @@ client.on("guildMemberRemove", async member => { //Emitted whenever a member lea
             roles: JSON.stringify(member.roles.cache.map(r => r.id)).escapeSpecialChars(),
         });
     }
+    client.services.runAllForEvent("guildMemberRemove", member);
 });
 
 client.on("guildMemberUpdate", async (om, nm) => {
     if (!om.partial) {
         logNickname(om, nm);
     }
-    client.services.run(client, "automod_nicenicks", nm)
+    // client.services.run(client, "automod_nicenicks", nm)
+    client.services.runAllForEvent("guildMemberUpdate", nm, om);
 });
 
 client.on('messageDelete', async (message) => {
@@ -256,57 +259,68 @@ client.on('messageDelete', async (message) => {
         message = await message.fetch();
     }
     logMessageDelete(message);
+    client.services.runAllForEvent("messageDelete", message);
 });
 
 client.on('messageDeleteBulk', messageCollection => {
     logMessageBulkDelete(messageCollection);
+    client.services.runAllForEvent("messageDeleteBulk", messageCollection);
 });
 
 client.on('messageUpdate', (omessage, nmessage) => {
     if (!omessage.partial && !nmessage.partial) {
         logMessageUpdate(omessage, nmessage);
-        client.services.runAllTextAutomod(client, nmessage);
+        // client.services.runAllTextAutomod(client, nmessage);
+        client.services.runAllForEvent("messageUpdate", nmessage, omessage);
     }
 });
 
 client.on('roleCreate', nrole => {
     logRole(nrole);
+    client.services.runAllForEvent("roleCreate", nrole);
 });
 
 client.on('roleDelete', orole => {
     logRole(orole, true);
+    client.services.runAllForEvent("roleDelete", orole);
 });
 
 client.on("roleUpdate", (previousRole, currentRole) => {
     logRoleUpdate(previousRole, currentRole);
+    client.services.runAllForEvent("roleUpdate", currentRole, previousRole);
 })
 
 client.on('channelCreate', nchannel => {
     if (nchannel instanceof GuildChannel) {
         logChannelState(nchannel);
     }
+    client.services.runAllForEvent("channelCreate", nchannel);
 });
 
 client.on('channelDelete', ochannel => {
     if (ochannel instanceof GuildChannel) {
         logChannelState(ochannel, true);
     }
+    client.services.runAllForEvent("channelDelete", ochannel);
 });
 
 client.on('channelUpdate', (ochannel, nchannel) => {
     if (ochannel instanceof GuildChannel && nchannel instanceof GuildChannel) {
         logChannelUpdate(ochannel, nchannel);
     }
+    client.services.runAllForEvent("channelUpdate", nchannel, ochannel);
 });
 
 client.on('emojiCreate', nemoji => {
     if (!nemoji.guild) return;
     logEmojiState(nemoji)
+    client.services.runAllForEvent("emojiCreate", nemoji);
 });
 
 client.on('emojiDelete', oemoji => {
     if (!oemoji.guild) return;
     logEmojiState(oemoji, true);
+    client.services.runAllForEvent("emojiDelete", oemoji);
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {
@@ -327,6 +341,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
         }
     }
     PaginationExecutor.paginate(reaction, user);
+    client.services.runAllForEvent("messageReactionAdd", reaction, user);
 })
 
 client.on("messageReactionRemove", async (reaction, user) => {
@@ -338,7 +353,7 @@ client.on("messageReactionRemove", async (reaction, user) => {
             return;
         }
     }
-    if (reaction.partial) {
+    if (reaction.partial) {// obviously, you cannot fetch the reaction because it is deleted
         try {
             reaction = await reaction.fetch();
         } catch (error) {
@@ -347,6 +362,7 @@ client.on("messageReactionRemove", async (reaction, user) => {
         }
     }
     PaginationExecutor.paginate(reaction, user);
+    client.services.runAllForEvent("messageReactionRemove", reaction, user);
 });
 
 // the actual command processing
@@ -357,8 +373,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         // }
 
         client.database.logMsgReceive();// log reception of message event
-
-        client.services.runAll(client, message);// run all passive command services
+        client.services.runAllForEvent("message", message);// run all passive command services
 
         if (message.author.bot || message.system) return;
         if (!client.user) return;
@@ -594,9 +609,12 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             if (command.flags) {// if there are flag defintions
                 try {
                     for (const f of flags.flags) {// iterate through provided flags
-                        const flagDef = command.flags.find(x => x.f);
+                        const flagDef = command.flags.find(x => x.f === f.name);
                         if (flagDef) {
-                            if (flagDef.isNumber && !/^[0-9]+(?:\.[0-9]+)?$/.test(f.value)) {
+                            if (flagDef.notEmpty && !f.value.length) {
+                                throw `You must provide a value to the flag \`${flagDef.f}\`.`;
+                            }
+                            if (flagDef.isNumber && (/* !f.value ||  */!/^(?:[0-9]+(?:\.[0-9]+)?|0x[0-9A-Za-z]{6})$/.test(f.value))) {
                                 throw `You must provide a number value to the flag \`${flagDef.f}\`.`;
                             }
                         }

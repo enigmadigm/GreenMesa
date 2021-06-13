@@ -6,7 +6,8 @@ import { mute } from "../utils/modactions";
 import { isSnowflake } from "../utils/specials";
 
 export const service: MessageService = {
-    async execute(client, member: GuildMember) {
+    events: ["guildMemberAdd"],
+    async execute(client, event, member: GuildMember) {
         try {
             if (!member.guild.available) return;
             // restoring mute role for mute evasion protection

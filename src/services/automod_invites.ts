@@ -1,5 +1,5 @@
 import { Bot } from "../bot";
-import { MessageService, XMessage } from "../gm";
+import { GuildMessageProps, MessageService, XMessage } from "../gm";
 
 
 /* function escapeRegex(string: string) {
@@ -26,13 +26,12 @@ function containsInvite(str: string, nested?: boolean): boolean {
 }
 
 export const service: MessageService = {
-    text: true,
+    events: ["message", "messageUpdate"],
     async getInformation() {
         return "Detects any messages containing properly formed invites for Discord servers. This module ignores links in embeds by default.";
     },
-    async execute(client, message: XMessage) {
+    async execute(client, event, message: XMessage & GuildMessageProps) {
         try {
-            if (!message.guild || !message.member) return;
             const modResult = await Bot.client.database.getAutoModuleEnabled(message.guild.id, "invites", message.channel.id, undefined, message.member);
             if (!modResult) return;
             let flag = false;
