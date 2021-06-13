@@ -1,8 +1,6 @@
-//import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
-import { stringToChannel, capitalize } from './utils/parsers';
+import { stringToChannel, capitalize, combineMessageText } from './utils/parsers';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
-
 import { Bot } from './bot';
 import { ServerlogData } from './gm';
 
@@ -116,24 +114,23 @@ export async function logMessageDelete(message: Message): Promise<void> {// add 
         if (message.author.id === message.client.user?.id) return;
         // shorten message if it's longer then 1024 (thank you bulletbot)
         let shortened = false;
-        let content = message.content;
+        let content = combineMessageText(message);
         if (content.length > 1024) {
             content = content.slice(0, 1020) + '...';
             shortened = true;
         }
-
         const embed: MessageEmbedOptions = {
             // "color": await Bot.client.database.getColor("fail") || 0xff0000,
             author: {
                 name: "Message Deleted",
-                icon_url: message.author.displayAvatarURL()
+                icon_url: message.author.displayAvatarURL(),
             },
             description: `by ${message.author} in ${message.channel}\ncreated ${moment(message.createdAt).utc().fromNow()}`,
             fields: [],
             timestamp: new Date(message.createdAt),
             footer: {
-                text: `Message ID: ${message.id} | Author ID: ${message.author.id}`
-            }
+                text: `Message ID: ${message.id} | Author ID: ${message.author.id}`,
+            },
         };
 
         if (message.attachments.size) {
@@ -149,15 +146,15 @@ export async function logMessageDelete(message: Message): Promise<void> {// add 
                     }
                     const name = a.name?.split(".");
                     return `[${a.height || a.width ? "Image" : "Attachment"} ${a.height || a.width ? images : other}](${a.url})${name ? ` (${name[name.length - 1]})` : ""}`;
-                })}`
-            })
+                })}`,
+            });
         }
 
         if (!embed.fields?.length || content) {
             embed.fields?.push({
                 name: 'Content' + (shortened ? ' (shortened)' : ''),
-                value: message.content.length > 0 ? content.escapeDiscord() : '*content unavailable*'
-            })
+                value: content.length > 0 ? content.escapeDiscord() : '*content unavailable*',
+            });
         }
 
         logChannel.send({ embed });
