@@ -50,7 +50,6 @@ import { Command, XClient, XMessage } from "./gm";
 import { TimedActionsSubsystem } from "./tactions";
 import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
-import { ban } from "./utils/modactions";
 import "./xlogger";
 import { combineMessageText, parseLongArgs } from './utils/parsers';
 
@@ -197,30 +196,8 @@ client.on("guildDelete", async guild => {// this event triggers when the bot is 
 client.on('guildMemberAdd', async member => {
     try {
         await logMember(member, true);
-        const storedBans = await client.database.getGuildSetting(member.guild, "toban");
-        if (storedBans) {
-            try {
-                const bans: string[] = JSON.parse(storedBans.value);
-                if (bans.includes(member.id) && member.guild.me) {
-                    try {
-                        //await member.ban();
-                        await ban(client, member, undefined, member.guild.me, `Autoban initiated on join. Triggered because ${member.user.tag} was on the autoban list.`);
-                        bans.splice(bans.indexOf(member.id), 1);
-                        await client.database.editGuildSetting(member.guild, "toban", JSON.stringify(bans).escapeSpecialChars());
-                    } catch (error) {
-                        await member.kick().catch((o_O) => o_O);
-                    }
-                    //await logAutoBan(member);
-                    return;
-                }
-            } catch (error) {
-                xlg.error(error);
-            }
-        }
         await client.invites.logIngress(member);
-        // await client.services.run(client, "autorole", member);
-        // await client.services.run(client, "automod_nicenicks", member);
-        await client.services.runAllForEvent("guildMemberAdd", member);
+        client.services.runAllForEvent("guildMemberAdd", member);
     } catch (error) {
         xlg.error(error);
     }
@@ -239,8 +216,8 @@ client.on("guildMemberRemove", async member => { //Emitted whenever a member lea
             userid: member.id,
             roles: JSON.stringify(member.roles.cache.map(r => r.id)).escapeSpecialChars(),
         });
+        client.services.runAllForEvent("guildMemberRemove", member);
     }
-    client.services.runAllForEvent("guildMemberRemove", member);
 });
 
 client.on("guildMemberUpdate", async (om, nm) => {

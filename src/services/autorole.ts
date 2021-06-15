@@ -1,7 +1,6 @@
 import { AutoroleData, MessageService } from "../gm";
 import { Bot } from "../bot";
 import { GuildMember } from "discord.js";
-import moment from "moment";
 import { mute } from "../utils/modactions";
 import { isSnowflake } from "../utils/specials";
 
@@ -11,13 +10,20 @@ export const service: MessageService = {
         try {
             if (!member.guild.available) return;
             // restoring mute role for mute evasion protection
-            const mutes = await client.database.getTimedActions({
-                actiontype: "unmute",
-            });
-            if (mutes && mutes.length) {
-                const muteDat = mutes.find(x => x.data.userid === member.id && moment(x.time).isAfter(moment()));
-                if (muteDat) {
-                    await mute(client, member, undefined, member.guild.me || client.user?.id || "", undefined, true);
+            const memberDat = await client.database.getGuildUserData(member.guild.id, member.id);
+            if (memberDat && memberDat.roles) {
+                try {
+                    const storedRoles: string[] = JSON.parse(memberDat.roles);
+                    if (storedRoles.length) {
+                        const roles = storedRoles.map(x => member.guild.roles.cache.find(x2 => x2.id === x));
+                        const dbmr = await client.database.getGuildSetting(member.guild, "mutedrole");
+                        const mutedRoleID = dbmr ? dbmr.value : "";
+                        if (roles.find(x => x && x.id === mutedRoleID)) {
+                            await mute(client, member, undefined, member.guild.me || client.user?.id || "", undefined, true);
+                        }
+                    }
+                } catch (error) {
+                    //TODO: maybe not just ignore errors here
                 }
             }
             // normal autorole starts here
