@@ -5,10 +5,10 @@ import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, 
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
-import { faClipboardList, faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller } from '@fortawesome/pro-solid-svg-icons';
+import { faClipboardList, faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller, faTransporter1 } from '@fortawesome/pro-solid-svg-icons';
 import { faBadgeSheriff, faThList } from '@fortawesome/pro-duotone-svg-icons';
 import { faTwitch } from '@fortawesome/free-brands-svg-icons';
-import { faTransporter1 } from '@fortawesome/pro-light-svg-icons';
+// import { faTransporter1 } from '@fortawesome/pro-light-svg-icons';
 import { DashboardMovement } from '../../components/DashboardMovement';
 
 export interface IUser {
