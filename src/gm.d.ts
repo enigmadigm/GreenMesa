@@ -1,4 +1,4 @@
-import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, MessageEmbedOptions, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel } from "discord.js";
+import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -785,13 +785,34 @@ export interface TriviaResponse {
 
 export interface DashboardMessage {
     outside: string;
-    embed: MessageEmbedOptions;
+    embed: DashboardMessageEmbed;
+}
+
+export interface DashboardMessageEmbed {
+    title?: string;
+    description?: string;
+    url?: string;
+    timestamp?: number;
+    color?: number | [number, number, number];
+    fields?: {
+        name: string;
+        value: string;
+        inline?: boolean;
+    }[];
+    files?: string[];
+    authorname?: string;
+    authorurl?: string;
+    authoricon?: string;
+    thumbnailurl?: string;
+    imageurl?: string;
+    videourl?: string;
+    footertext?: string;
+    footericon?: string;
 }
 
 export interface MovementData {
     add_channel: string;
     depart_channel: string;
-    dm_channel: string;
     add_message: DashboardMessage;
     depart_message: DashboardMessage;
     dm_message: DashboardMessage;

@@ -222,7 +222,7 @@ export default function routerBuild (client: XClient): express.Router {
                 id: c.id,
                 name: c.name,
                 type: c.type,
-                position: c.position,
+                position: c.rawPosition,
                 parentID: c.parentID ?? undefined
             }
             if (c.isText()) {
@@ -592,14 +592,14 @@ export default function routerBuild (client: XClient): express.Router {
             }
 
             try {
-                const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
+                const g = client.guilds.cache.get(id);//TODO: make this able to work with shards
                 if (!g) return res.sendStatus(404);
                 const channels = g.channels.cache.map((c) => {
                     const data: ChannelData = {
                         id: c.id,
                         name: c.name,
                         type: c.type,
-                        position: c.position,
+                        position: c.rawPosition,
                         parentID: c.parentID ?? undefined
                         //parent: c.parent
                     }
@@ -647,7 +647,7 @@ export default function routerBuild (client: XClient): express.Router {
                     id: c.id,
                     name: c.name,
                     type: c.type,
-                    position: c.position,
+                    position: c.rawPosition,
                     parentID: c.parentID ?? undefined
                 }
                 if (c.isText()) {
@@ -661,7 +661,7 @@ export default function routerBuild (client: XClient): express.Router {
                 const data: RoleData = {
                     id: c.id,
                     name: c.name,
-                    position: c.position,
+                    position: c.rawPosition,
                     hexColor: c.hexColor
                 }
                 return data;
@@ -1124,8 +1124,9 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.put("/guilds/:id/movement", async (req, res) => {
         try {
-            const { data } = req.body;
-            if (typeof data !== "string") {
+            const { add_channel, depart_channel, add_message, dm_message, depart_message } = req.body;
+            if (typeof add_channel !== "string" ||
+                typeof depart_channel !== "string") {
                 return res.sendStatus(400);
             }
             const { id } = req.params;
@@ -1142,20 +1143,26 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(401);
             }
 
-            const parsed = JSON.parse(data);
-
+            // const parsed = JSON.parse(data);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const conformsToMvm = (o: any): o is MovementData => {
-                return typeof o === "object" && !!o && typeof o.dm_channel === "string" && typeof o.add_channel === "string" && typeof o.depart_channel === "string" && 'add_message' in o && 'dm_message' in o && 'depart_message' in o;
-            }
+            // const conformsToMvm = (o: any): o is MovementData => {
+            //     return typeof o === "object" && !!o && typeof o.dm_channel === "string" && typeof o.add_channel === "string" && typeof o.depart_channel === "string" && 'add_message' in o && 'dm_message' in o && 'depart_message' in o;
+            // }
 
-            if (!conformsToMvm(parsed)) {
-                return res.sendStatus(400);
-            }
+            // if (!conformsToMvm(parsed)) {
+            //     return res.sendStatus(400);
+            // }
+
+            const data: MovementData = {
+                add_channel,
+                depart_channel,
+                add_message,
+                dm_message,
+                depart_message,
+            };
 
             // store the data however it will be stored
-            const r = await client.database.editGuildSetting(g, "movement", JSON.stringify(parsed).escapeSpecialChars());
-
+            const r = await client.database.editGuildSetting(g, "movement", JSON.stringify(data).escapeSpecialChars());
             if (r && r.affectedRows) {
                 return res.sendStatus(200);
             }

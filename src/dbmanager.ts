@@ -1239,9 +1239,9 @@ export class DBManager {
      */
     async updateGuildUserData(data: GuildUserDataRow): Promise<InsertionResult | false> {
         try {
-            const { guildid, userid, offenses, warnings, bans, bio, nicknames, modnote} = data;
+            const { guildid, userid, offenses, warnings, bans, bio, nicknames, modnote, roles} = data;
             if (!guildid || !userid) return false;
-            const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames, modnote) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(nicknames || "")}, ${escape(modnote)}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames), modnote = COALESCE(${escape(modnote)}, modnote)`;
+            const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames, modnote, roles) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(nicknames || "")}, ${escape(modnote)}, ${escape(roles)}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames), modnote = COALESCE(${escape(modnote)}, modnote), roles = COALESCE(${escape(roles)}, roles)`;
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
                 return false;
@@ -1418,19 +1418,18 @@ export class DBManager {
         try {
             const mvmGS = await this.getGuildSetting(guildid, "movement");
             if (!mvmGS || !mvmGS.value) {
-                return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+                return { add_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
             }
             const mvm = JSON.parse(mvmGS.value);
-            const movement: MovementData = { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} } };
+            const movement: MovementData = { add_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} } };
             if (mvm.add_channel) movement.add_channel = mvm.add_channel;
-            if (mvm.dm_channel) movement.dm_channel = mvm.dm_channel;
             if (mvm.depart_channel) movement.depart_channel = mvm.depart_channel;
-            if (mvm.depart_message) movement.depart_channel = mvm.depart_message;
-            if (mvm.dm_message) movement.depart_channel = mvm.dm_message;
-            if (mvm.add_message) movement.depart_channel = mvm.add_message;
+            if (mvm.depart_message) movement.depart_message = mvm.depart_message;
+            if (mvm.dm_message) movement.dm_message = mvm.dm_message;
+            if (mvm.add_message) movement.add_message = mvm.add_message;
             return movement;
         } catch (error) {
-            return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+            return { add_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
         }
     }
 

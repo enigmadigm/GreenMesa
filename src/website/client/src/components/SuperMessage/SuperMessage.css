@@ -3,6 +3,8 @@
     width: 100%;
     top: 0;
     overflow-y: auto;
+    transition: opacity 0.3s;
+    opacity: 0;
     /* padding-bottom: 20px; */
 }
 
@@ -11,10 +13,56 @@
     position: relative;
 }
 
-.sm-txt {
+.sm-opener {
+    height: 35px;
+    line-height: 0.6;
+}
+
+.sm-opener-blend {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.sm-input-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.sm-iholder {
+    padding-left: 15px;
+    padding-right: 15px;
+    width: 100%;
+    position: relative;
+}
+
+.sm-iholder input {
+    outline: 0;
+    display: block;
+    width: 100%;
+    height: calc(1.5em + .75rem + 2px);
+    padding: .375rem .75rem;
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #e4e7ea;
+    background-clip: padding-box;
+    border: 1px solid #23282c;
+    -webkit-transition: border-color .15s ease-in-out, -webkit-box-shadow .15s ease-in-out;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out, -webkit-box-shadow .15s ease-in-out;
+}
+
+.sm-iholder .sm-climiter {
+    position: absolute;
+    opacity: 0.7;
+    font-size: 0.8em;
+}
+
+.sm-txta {
     margin-top: 5px;
     margin-bottom: 5px;
-    background-color: #3A4149;
+    background-color: #343B41;
     width: 100%;
     padding: 3px 5px;
 }
@@ -22,6 +70,47 @@
 .sm-container select {
     background-color: #343B41;
     margin-right: 5px;
+}
+
+.sm-add-field {
+    padding: 5px 15px;
+    background-color: #800020;
+    cursor: pointer;
+    /* margin-left: 5px; */
+    transition: opacity 0.2s;
+}
+
+.sm-add-field:hover {
+    opacity: 0.8;
+}
+
+.sm-fields {
+    width: 100%;
+    position: relative;
+}
+
+.sm-field {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 1rem;
+}
+
+.sm-field > div {
+    width: 100%;
+}
+
+.sm-field > div:first-of-type {
+    margin-bottom: 0.5rem;
+}
+
+.sm-field .sm-field-text {
+    flex-grow: 1;
+    height: 37px;
+}
+
+.sm-field .sm-field-option {
+    padding: 5px;
+    margin-left: 5px;
 }
 
 .sm-buttons {

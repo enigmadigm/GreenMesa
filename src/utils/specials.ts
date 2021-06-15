@@ -1,8 +1,9 @@
 import moment from 'moment';
-import { ClientValuesGuild, SkeletonGuildObject, XClient } from '../gm';
-import { Channel, Snowflake, TextChannel } from 'discord.js';
+import { ClientValuesGuild, DashboardMessage, SkeletonGuildObject, XClient } from '../gm';
+import { Channel, MessageEmbed, MessageEmbedOptions, Snowflake, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 import Client from '../struct/Client';
+import { combineEmbedText } from './parsers';
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
     try {
@@ -273,4 +274,47 @@ if (c && c.send) {
         return mut;
         // return false;
     },
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isDashboardMessage(o: Record<string, any>): o is DashboardMessage {
+    return typeof o.add_channel === "string"
+        && typeof o.dm_channel === "string"
+        && typeof o.depart_channel === "string"
+        && 'add_message' in o
+        && 'dm_message' in o
+        && 'depart_message' in o;
+}
+
+type MC = { content: string | undefined, embed: MessageEmbed | undefined };
+export function assembleDashboardMessage(m: DashboardMessage): MC {
+    const e: MessageEmbedOptions = {
+        author: {
+            iconURL: m.embed.authoricon,
+            name: m.embed.authorname,
+        },
+        thumbnail: {
+            url: m.embed.thumbnailurl,
+        },
+        color: m.embed.color,
+        url: m.embed.url,
+        timestamp: m.embed.timestamp,
+        title: m.embed.title,
+        description: m.embed.description,
+        fields: m.embed.fields,
+        image: {
+            url: m.embed.imageurl,
+        },
+        video: {
+            url: m.embed.videourl,
+        },
+        footer: {
+            text: m.embed.footertext,
+            iconURL: m.embed.footericon,
+        },
+    };
+    return {
+        content: m.outside || undefined,
+        embed: combineEmbedText(e).length ? new MessageEmbed(e) : undefined,
+    };
 }

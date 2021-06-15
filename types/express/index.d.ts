@@ -5,7 +5,7 @@ declare namespace Express {
         twitch_hex: string;
         twitch_signature: string;
     }
-    interface User {
+    interface User {//TODO: this needs to be integrated with the userdata table, like, seriously, what the hell did i do this for
         id: string;
         tag: string;
         avatar: string;
@@ -18,5 +18,9 @@ declare namespace Express {
             features?: string[];
             permissions_new?: string;
         }[];
+        kingpin?: {
+            yes: boolean;
+            grade?: number;
+        };
     }
 }
