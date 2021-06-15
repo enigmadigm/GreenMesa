@@ -6,6 +6,7 @@
     transition: opacity 0.3s;
     opacity: 0;
     /* padding-bottom: 20px; */
+    transition: border 0.3s;
 }
 
 .sm-super .sm-form-container {
@@ -16,6 +17,7 @@
 .sm-opener {
     height: 35px;
     line-height: 0.6;
+    transition: border 0.3s;
 }
 
 .sm-opener-blend {
@@ -37,20 +39,26 @@
     position: relative;
 }
 
-.sm-iholder input {
+.sm-iholder input[type=text] {
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
     outline: 0;
     display: block;
     width: 100%;
-    height: calc(1.5em + .75rem + 2px);
-    padding: .375rem .75rem;
+    height: calc(2rem + 2px);/* 1.5em + 0.75rem + 2px */
+    /* padding: .375rem .75rem; */
     font-size: .875rem;
     font-weight: 400;
     line-height: 1.5;
     color: #e4e7ea;
-    background-clip: padding-box;
+    /* background-clip: padding-box; */
     border: 1px solid #23282c;
     -webkit-transition: border-color .15s ease-in-out, -webkit-box-shadow .15s ease-in-out;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out, -webkit-box-shadow .15s ease-in-out;
+}
+
+.sm-iholder input[type=color] {
+    
 }
 
 .sm-iholder .sm-climiter {

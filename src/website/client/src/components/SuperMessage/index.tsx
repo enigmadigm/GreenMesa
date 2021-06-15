@@ -3,6 +3,7 @@ import './SuperMessage.css';
 import { DashboardMessage } from "../../../../../gm";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowClose } from '@fortawesome/pro-duotone-svg-icons';
+import chroma from 'chroma-js';
 
 interface SuperMessageProps {
     value: DashboardMessage;
@@ -41,6 +42,22 @@ export function SuperMessage(props: SuperMessageProps) {
             set({
                 ...value,
                 outside: e.target.value
+            });
+        }
+    }
+
+    const handleColorAspectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        const col = chroma(e.target.value);
+        const numform = col.num();
+        console.log(numform)
+        if (numform !== value.embed.color) {
+            set({
+                ...value,
+                embed: {
+                    ...value.embed,
+                    color: numform
+                }
             });
         }
     }
@@ -375,9 +392,9 @@ export function SuperMessage(props: SuperMessageProps) {
 
     return (
         <div>
-            <button className={`sm-opener card-footer-button ${mc ? "sm-opener-blend" : ""}`} onClick={handleShowClick}>{showing ? "Close Creator" : "Supermessage Creator"}</button>
+            <button className={`sm-opener card-footer-button ${mc ? "sm-opener-blend" : ""}`} style={{ borderLeft: mc && value.embed.color ? `solid 10px ${chroma(value.embed.color).hex()}` : undefined}} onClick={handleShowClick}>{showing ? "Close Creator" : "Supermessage Creator"}</button>
             {showing ? (
-                <div className={`sm-super ${mc}`}>
+                <div className={`sm-super ${mc}`} style={{ borderLeft: mc && value.embed.color ? `solid 10px ${chroma(value.embed.color).hex()}` : undefined }}>
                     <div className="sm-form-container">
                         {em && (
                             <div className="inline-error">
@@ -392,6 +409,10 @@ export function SuperMessage(props: SuperMessageProps) {
                             onChange={handleOutsideChange}
                         ></textarea>
                         <div className="sm-input-group">
+                            <div className="sm-iholder" style={{ display: "flex", flexWrap: "nowrap" }}>
+                                <span style={{ marginRight: 5 }}>Accent:</span>
+                                <input type="color" name="smcolor" value={value.embed.color ?? 0x000000} onChange={handleColorAspectChange} />
+                            </div>
                             <div className="sm-iholder">
                                 <input type="text" name="smicon" id="" placeholder="icon url" value={value.embed.authoricon ?? ""} onChange={handleIconChange} />
                             </div>

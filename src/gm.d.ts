@@ -793,7 +793,7 @@ export interface DashboardMessageEmbed {
     description?: string;
     url?: string;
     timestamp?: number;
-    color?: number | [number, number, number];
+    color?: number/*  | [number, number, number] */;
     fields?: {
         name: string;
         value: string;
