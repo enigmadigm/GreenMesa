@@ -6,8 +6,7 @@ import { PaginationExecutor } from "../../utils/pagination";
 import { isSnowflake } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
-    name: "invites",
-    aliases: ["invs"],
+    name: "invs",
     description: {
         short: "inviter stats",
         long: "Get the personal invite data of any user in the a server. This will provide how many members a certain user has invited."
