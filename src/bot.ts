@@ -52,6 +52,7 @@ import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
 import "./xlogger";
 import { combineMessageText, parseLongArgs } from './utils/parsers';
+import cron from 'node-cron';
 
 String.prototype.escapeSpecialChars = function () {
     return this.replace(/(?<!\\)\\n/g, "\\n")
@@ -94,6 +95,20 @@ const client = new Client({
     intents: [Object.values(Intents.FLAGS)],
 });
 
+const botStatCron = cron.schedule('0 0-23 * * *', async () => {
+    try {
+        const lo = client.channels.cache.get('661614128204480522');
+        if (lo?.isText()) {
+            await lo.send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
+        }
+        await client.database.updateBotStats(client);
+    } catch (error) {
+        xlg.error(`Error While Updating Botstats: `, error)
+    }
+}, {
+    scheduled: false,
+})
+
 // Chalk for "terminal string styling done right," currently not using, just using the built in styling tools https://telepathy.freedesktop.org/doc/telepathy-glib/telepathy-glib-debug-ansi.html
 //const chalk = require('chalk');
 
@@ -108,13 +123,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
     if (lo instanceof TextChannel) {
         lo.send(`Started \\🟩 \\🟩`).catch(console.error);
     }
-    setInterval(() => {
-        const lo = client.channels.cache.get('661614128204480522');
-        if (lo instanceof TextChannel) {
-            lo.send(`Scheduled Update: ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`).catch(xlg.error);
-        }
-        client.database.updateBotStats(client);
-    }, 3600000);
+    botStatCron.start();
 
     setInterval(async () => {
         if (!config.longLife || config.longLife < (client.uptime || 0)) config.longLife = client.uptime;
