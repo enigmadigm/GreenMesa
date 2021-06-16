@@ -105,7 +105,7 @@ export const command: Command = {
                     };
                     pages.push(e);
                 }
-                PaginationExecutor.createEmbed(message, pages);
+                await PaginationExecutor.createEmbed(message, pages);
                 return;
             }
             const name = args[0].toLowerCase();
@@ -170,7 +170,7 @@ export const command: Command = {
                     });
                 }
 
-                message.channel.send({ embed });
+                await message.channel.send({ embed });
             } else if (category) {// if help was requested for a specific category
                 if (category.name === "owner") {
                     message.channel.send("That is a hidden category");
@@ -218,7 +218,7 @@ export const command: Command = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

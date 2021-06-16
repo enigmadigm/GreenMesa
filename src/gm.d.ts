@@ -224,7 +224,6 @@ export interface ExpRow {
 
 export interface PersonalExpRow extends ExpRow {
     rank: number;
-    totalcount: number;
 }
 
 /*export interface LevelRow {
@@ -251,6 +250,7 @@ export interface BSRow {
 
 export interface XMessage extends Message {
     gprefix?: string;
+    bprefix?: string;
     treatOwner?: true;
     // [index: 'client']: Partial<Omit<XClient, keyof Client>> & Client;
     client: Partial<Omit<XClient, keyof Client>> & Client;
