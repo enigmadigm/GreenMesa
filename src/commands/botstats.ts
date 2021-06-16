@@ -70,15 +70,15 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, "Could not get statistical data from database");
                 return;
             }
-            if (!rows.length) {
-                rows.push({
-                    updateId: 0,
-                    logDate: new Date(),
-                    numUsers: 0,
-                    numGuilds: 0,
-                    numChannels: 5
-                });
-            }
+            // if (!rows.length) {
+            //     rows.push({
+            //         updateId: 0,
+            //         logDate: new Date(),
+            //         numUsers: 0,
+            //         numGuilds: 0,
+            //         numChannels: 5
+            //     });
+            // }
             await generatePlot(rows);
             const diffs = [];
             for (let i = 0; i < rows.length - 1; i++) {
