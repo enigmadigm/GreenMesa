@@ -41,7 +41,7 @@ process.on('unhandledRejection', async (reason, promise) => {
 });
 
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
-import Discord, { GuildChannel, Intents, MessageEmbedOptions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
+import Discord, { GuildChannel, Intents, MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
 import config from "../auth.json"; // Loading app config file
 import { permLevels, getPermLevel } from "./permissions";
 import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger';
@@ -361,7 +361,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         client.database.logMsgReceive();// log reception of message event
         client.services.runAllForEvent("message", message);// run all passive command services
 
-        if (message.author.bot || message.system) return;
+        if (message.author.bot || message.system || message.webhookID) return;
         if (!client.user) return;
 
         // let dm = false; // checks if it's from a dm
@@ -372,16 +372,21 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         let special_prefix;
         if (message.channel instanceof GuildChannel) {
-            const gpr = await client.database.getPrefix(message.guild?.id);
+            const gsr = await client.database.getGlobalSetting('global_prefix');
+            if (gsr) {
+                special_prefix = gsr.value;
+                message.bprefix = gsr.value;
+            }
+            const gpr = await client.database.getPrefix(message.channel.guild.id);
             if (gpr) {
                 special_prefix = gpr;
-            } else {
-                const gsr = await client.database.getGlobalSetting('global_prefix');
-                if (gsr) special_prefix = gsr.value;
             }
         } else {
             const gsr = await client.database.getGlobalSetting('global_prefix');
-            if (gsr) special_prefix = gsr.value;
+            if (gsr) {
+                special_prefix = gsr.value;
+                message.bprefix = gsr.value;
+            }
         }
         message.gprefix = special_prefix || "";
 
@@ -391,7 +396,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (message.mentions && message.mentions.has(client.user)) {
             if (new RegExp(`^${clientMentionBase}$`, "g").test(ct)) {
                 if (message.channel instanceof GuildChannel) {
-                    if (message.channel.permissionsFor(client.user)?.has("EMBED_LINKS")) {
+                    if (message.channel.permissionsFor(client.user)?.has(Permissions.FLAGS.EMBED_LINKS)) {
                         await message.channel.send({
                             embed: {
                                 description: `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix.escapeDiscord()}**`,
@@ -432,7 +437,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const disabled = cs ? !!(!cs.enabled || (!cs.channel_mode && cs.channels.includes(message.channel.id)) || (cs.channel_mode && !cs.channels.includes(message.channel.id)) || (message.member && ((cs.role_mode && !message.member.roles.cache.find(x => cs.roles.includes(x.id))) || (!cs.role_mode && message.member.roles.cache.find(x => cs.roles.includes(x.id)))))) : false;
 
         if (command.guildOnly && !(message.channel instanceof GuildChannel)) {// command is configured to only execute outside of dms
-            message.channel.send(`That is not a DM executable command.`);
+            await message.channel.send(`This command cannot be used in DM's`);
             return;
         }
         if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only, THIS IS AN OUTDATED PROPERTY BUT IS STILL USED
@@ -485,7 +490,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (command.moderation && message.guild) {
             const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled || moderationEnabled.value === 'disabled') {
-                client.specials.sendModerationDisabled(message.channel);
+                await client.specials.sendModerationDisabled(message.channel);
                 return;
             }
         }
@@ -518,15 +523,16 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             const lacking: PermissionString[] = [];
             for (const perm of command.permissions) {// check if a needed permission is not met, injects the embed_links perm if it isn't already specified
                 if (!message.guild?.me?.permissions.has(perm) ||
-                    (message.channel instanceof GuildChannel && !message.channel.permissionsFor(message.guild?.me || "")?.has(perm))) {
+                    (message.channel instanceof GuildChannel && !message.channel.permissionsFor(message.guild?.me || "")?.has(Permissions.FLAGS[perm]))) {
                     lacking.push(perm);
                 }
             }
             if (lacking.length) {
+                const textToSend = `I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`;
                 if (message.guild?.me?.permissionsIn(message.channel).has("SEND_MESSAGES")) {
-                    await message.channel.send(`I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`);
+                    await message.channel.send(textToSend);
                 } else {
-                    await message.author.send(`I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`);
+                    await message.author.send(textToSend);
                 }
                 return;
             }
@@ -633,7 +639,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
             if (ret && ret !== true) {
                 if (ret.error) {
-                    client.specials.sendError(message.channel, ret.content);
+                    await client.specials.sendError(message.channel, ret.content);
                 } else {
                     if (ret.embedded) {
                         const embed: MessageEmbedOptions = {
