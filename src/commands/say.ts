@@ -1,11 +1,11 @@
-import { MessageEmbed, NewsChannel, TextChannel } from "discord.js";
+import { Collection, MessageAttachment, MessageEmbed } from "discord.js";
 import { Command, CommandArgumentFlag, GuildMessageProps } from "src/gm";
 import { permLevels } from "../permissions";
 import { stringToChannel } from "../utils/parsers";
 
-type MC = { content: string | null, embed: MessageEmbed | undefined };
-function constructMessage(content: string, flags: CommandArgumentFlag[]): MC {
-    const fin: MC = { content: null, embed: undefined };
+type MC = { content: string | undefined, embed: MessageEmbed | undefined, attachments: Collection<string, MessageAttachment> };
+function constructMessage(content: string, flags: CommandArgumentFlag[], atts: Collection<string, MessageAttachment>): MC {
+    const fin: MC = { content: undefined, embed: undefined, attachments: new Collection() };
     if (content) {
         fin.content = content;
     }
@@ -13,10 +13,10 @@ function constructMessage(content: string, flags: CommandArgumentFlag[]): MC {
         for (const flag of flags) {
             if (!fin.embed) fin.embed = new MessageEmbed();
             fin.embed.setDescription("");
-            if (flag.name === "description" && flag.value) {
+            if ((flag.name === "description" || flag.name === "desc") && flag.value) {
                 fin.embed.setDescription(flag.value);
             }
-            if (flag.name === "color" && flag.value) {
+            if ((flag.name === "color" || flag.name === "clr") && flag.value) {
                 if (parseInt(flag.value, 10) && parseInt(flag.value, 10) <= 16777215) {
                     fin.embed.setColor(parseInt(flag.value, 10));
                 } else {
@@ -26,16 +26,19 @@ function constructMessage(content: string, flags: CommandArgumentFlag[]): MC {
                     }
                 }
             }
-            if (flag.name === "title" && flag.value) {
+            if ((flag.name === "title" || flag.name === "tit") && flag.value) {
                 fin.embed.setTitle(flag.value);
             }
-            if (flag.name === "footer" && flag.value) {
+            if ((flag.name === "footer" || flag.name === "foot") && flag.value) {
                 fin.embed.setFooter(flag.value);
             }
             if (flag.name === "author" && flag.value) {
                 fin.embed.setAuthor(flag.value);
             }
         }
+    }
+    if (atts.size) {
+        fin.attachments.concat(atts);
     }
     return fin;
 }
@@ -59,21 +62,29 @@ export const command: Command<GuildMessageProps> = {
     cooldown: 0,
     async execute(client, message, args, flags) {
         try {
-            if (!args.length && flags.length) {
-                args.push("");
-            }
-            const channel = stringToChannel(message.guild, args[0], false, false);
-            if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
-                args.shift();
-            }
-            if (!args.length) {
+            if (!args.length && !flags.length && !message.attachments.size) {// if no content
                 await client.specials.sendError(message.channel, `Stuff to send was not specified.`);
                 return;
             }
-            const made = constructMessage(args.join(" "), flags);
-            await message.channel.send(made);
+            if (!args.length && flags.length) {// if no normal text but embed options were specified
+                args.push("");
+            }
+            const channel = stringToChannel(message.guild, args[0], false, false);
+            if (channel && channel.isText()) {
+                args.shift();
+            }
+            if (!args.length && !message.attachments.size) {// if no normal text content
+                await client.specials.sendError(message.channel, `Stuff to send was not specified.`);
+                return;
+            }
+            const made = constructMessage(args.join(" "), flags, message.attachments);
+            if (channel && channel.isText()) {
+                await channel.send(made);
+            } else {
+                await message.channel.send(made);
+            }
             try {
-                if (!channel) {
+                if (!channel && !flags.find(x => x.name === "nd")) {
                     await message.delete();
                 }
             } catch (error) {
