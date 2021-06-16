@@ -94,53 +94,53 @@ export const command: Command<GuildMessageProps> = {
                     description: `${target} ${target.id}`,
                     fields: [
                         {
-                            "name": "Status",
-                            "value": `${getPresenceEmoji(target)} ${target.user.presence.status || ''}`,
-                            "inline": true
+                            name: "Status",
+                            value: `${getPresenceEmoji(target)} ${target.user.presence.status || ''}`,
+                            inline: true,
                         },
                         {
                             name: 'Join Rank',
                             value: joinRank,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: 'Nitro Boosting',
                             value: `${target.premiumSince ? `since ${moment(target.premiumSince).format('ddd M/D/Y HH:mm:ss')}` : 'no'}`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: 'Joined',
                             value: `${joinedAt.format('ddd M/D/Y HH:mm:ss')}\n(${joinedAt.fromNow()})`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: 'Created',
                             value: `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Last Message",
                             value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Designation",
-                            value: `${permLevelName}\n[What is this?](https://enigmadigm.com/status/Designation/A%20property%20the%20bot%20gives%20you/It%20is%20used%20when%20checking%20for%20required%20or%20missing%20permissions)`,// How the bot internally sees the member in terms of permissions
-                            inline: true
+                            value: `${permLevelName}\n[Wʰᵃᵗ ᶦˢ ᵗʰᶦˢ?](https://enigmadigm.com/status/Designation/A%20property%20the%20bot%20gives%20you/It%20is%20used%20when%20checking%20for%20required%20or%20missing%20permissions)`,// How the bot internally sees the member in terms of permissions
+                            inline: true,
                         },
                         {
                             name: "XP",
-                            value: rank && xp ? `Rank: ${rank.personal ? `\`${rank.personal.rank}\`/${rank.personal.totalcount}` : '`none`'}\nLevel: \`${xp.level}\`` : "none",
-                            inline: true
+                            value: rank && xp ? `Rank: ${rank.personal ? `\`${rank.personal.rank}\` of \`${rank.total}\`` : '`none`'}\nLevel: \`${xp.level}\`` : "none",
+                            inline: true,
                         },
                         {
                             name: "Invites",
                             value: `${invitesTotal}`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: `Roles [${roleCount}]`,
-                            value: roles
+                            value: roles,
                         }
                     ],
                     footer: {

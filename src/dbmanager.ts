@@ -500,7 +500,7 @@ export class DBManager {
     }
 
     async getXPPersonal(guildid: Snowflake, memberid: Snowflake): Promise<PersonalExpRow | false> {
-        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT \`userid\`, \`xp\`, \`level\`, FIND_IN_SET(\`xp\`, (SELECT GROUP_CONCAT(\`xp\` ORDER BY \`xp\` DESC) FROM dgmxp WHERE guildid = ${escape(guildid)} ) ) AS rank, COUNT(*) as \`totalcount\` FROM dgmxp WHERE id = ${escape(memberid + guildid)}`);
+        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT \`userid\`, \`xp\`, \`level\`, FIND_IN_SET(\`xp\`, (SELECT GROUP_CONCAT(\`xp\` ORDER BY \`xp\` DESC) FROM dgmxp WHERE guildid = ${escape(guildid)} ) ) AS rank FROM dgmxp WHERE id = ${escape(memberid + guildid)}`);
         if (personalrows.length) {
             return personalrows[0];
         }
@@ -512,13 +512,15 @@ export class DBManager {
      * @param guildid id of guild to look up
      * @param memberid id of member in guild to look up
      */
-    async getXPTop10(guildid: Snowflake, memberid: Snowflake): Promise<{ rows: ExpRow[], personal?: PersonalExpRow }> {
+    async getXPTop10(guildid: Snowflake, memberid: Snowflake): Promise<{ rows: ExpRow[], personal?: PersonalExpRow, total: number }> {
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = ${escape(guildid)} ORDER BY \`xp\` DESC LIMIT 10`);
         const personalrows = await this.getXPPersonal(guildid, memberid);
         const person = personalrows || undefined;
+        const total = await <Promise<(Partial<ExpRow> & { p: string })[]>>this.query(`SELECT '' AS \`p\` FROM \`dgmxp\` WHERE \`guildid\` = ${escape(guildid)}`);
         return {
             rows: rows || [],
             personal: person,
+            total: total.length
         };
     }
 

@@ -224,7 +224,6 @@ export interface ExpRow {
 
 export interface PersonalExpRow extends ExpRow {
     rank: number;
-    totalcount: number;
 }
 
 /*export interface LevelRow {
