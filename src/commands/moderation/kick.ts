@@ -1,12 +1,10 @@
-//import { getGuildSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
 import Discord from 'discord.js';
-
-import { Command } from 'src/gm';
+import { Command, GuildMessageProps } from 'src/gm';
 import { kick } from '../../utils/modactions';
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'kick',
     description: {
         short: 'kick a user',
@@ -20,8 +18,6 @@ export const command: Command = {
     permissions: ["KICK_MEMBERS"],
     async execute(client, message, args) {
         try {
-            if (!message.guild || !message.member) return;
-
             const target = await stringToMember(message.guild, args[0], false, false, false);
             // If we have a user mentioned
             if (target && target instanceof Discord.GuildMember) {
@@ -54,4 +50,3 @@ export const command: Command = {
         }
     }
 }
-

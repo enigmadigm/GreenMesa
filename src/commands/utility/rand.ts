@@ -14,13 +14,15 @@ function getRandom(n: number) {
 
 export const command: Command = {
     name: 'rand',
-    description: 'provides a decently random number between 0 and 10 or the maximum',
+    description: {
+        short: "provides a decently random number between 0 and 10 or the maximum",
+        long: "Get a decently random number, defaults between 0 and 10 or provide a maximum yourself.",
+    },
     usage: "[maximum >= 0]",
-    aliases: ['random', 'randomnumber', 'rn', 'rng'],
+    aliases: ['random', 'rn'],
     async execute(client, message, args) {
-        if (args.length && !(await client.specials?.argsNumRequire(message.channel, args, 1))) return false;
+        if (args.length && !(await client.specials.argsNumRequire(message.channel, args, 1))) return false;
         const provNum = parseInt(args[0], 10) || 10;
-        message.channel.send(getRandom(provNum)).catch(console.error);
+        await message.channel.send(`${getRandom(provNum)}`);
     }
 }
-

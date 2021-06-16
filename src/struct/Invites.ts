@@ -1,6 +1,7 @@
-import { Guild, GuildMember, User } from "discord.js";
+import { Guild, GuildMember, Permissions, User } from "discord.js";
 import moment from "moment";
 import { InviteData, InviteStateData, XClient } from "../gm";
+import { isSnowflake } from "../utils/specials";
 
 /**
  * This class tracks invites
@@ -16,7 +17,7 @@ export default class {
 
     public async getFull(guild: Guild): Promise<{ invitesNow: InviteData[], invitesBefore: InviteData[], increased: InviteData[], decreased: InviteData[] } | void> {
         try {
-            if (!guild.me?.permissions.has("MANAGE_GUILD")) return;
+            if (!guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) return;
             const previousResult = await this.client.database.getGuildSetting(guild.id, "invites_data");//TODO: make this a direct method for interacting with the db table
             const stateBefore: InviteStateData = previousResult ? JSON.parse(previousResult.value) : { guildid: guild.id, invites: [] };
             const invitesBefore = stateBefore.invites;
@@ -61,6 +62,7 @@ export default class {
                 if (!probable.length) return;
                 invite = probable[0];
             }
+            if (!isSnowflake(invite.inviter)) return;
             const inviter = member.guild.members.cache.get(invite.inviter);
             if (!inviter) return;
             await this.client.database.addInvite(member.guild.id, member.user, invite.code, inviter.user);
@@ -92,6 +94,7 @@ export default class {
             const userInvites = await this.client.database.getInvites({ invitee: member.id, guildid: member.guild.id });
             console.log(userInvites)
             if (!userInvites.length || !userInvites.find(x => moment().diff(x.inviteat, "s") < 300)) {// if it is determined that an invite has not already been tracked for the departing user, it adds one to the database just so it can be recorded
+                if (!isSnowflake(invite.inviter)) return;
                 const inviter = member.guild.members.cache.get(invite.inviter);
                 const pastCodeInvites = await this.client.database.getInvites({ guildid: member.guild.id, code: invite.code });
                 await this.client.database.addInvite(member.id, member.user, invite.code, inviter?.user ?? { id: invite.inviter, tag: pastCodeInvites.length ? pastCodeInvites[0].invitername : "" });

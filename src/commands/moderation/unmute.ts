@@ -1,11 +1,10 @@
-
-// import { getGuildSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { Contraventions } from "../../utils/contraventions";
+import { Permissions } from 'discord.js';
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'unmute',
     description: {
         short: 'unmute a member',
@@ -18,11 +17,9 @@ export const command: Command = {
     moderation: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild || !message.member) return;
-
             const toMute = await stringToMember(message.guild, args[0], false, false, false);
             // Check perms, self, rank, etc
-            if (!message.guild.me?.hasPermission("MANAGE_ROLES")) { // check if the bot has the permissions to mute  members
+            if (!message.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) { // check if the bot has the permissions to mute  members
                 message.channel.send("I do not have the permissions to do that");
                 return;
             }

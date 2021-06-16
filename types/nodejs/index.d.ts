@@ -10,5 +10,5 @@ interface XlgObj {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     log(e: any): void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error(e: any, err?: Error | undefined): void;
+    error(message?: any, ...optionalParams: any[]): void;
 }

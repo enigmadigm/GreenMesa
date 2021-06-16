@@ -8,7 +8,7 @@ function useQuery() {
 
 export function ErrorPage() {
     const query = useQuery();
-    const err = query.get("err");
+    const err = query.get("err")?.toLowerCase();
     const redirect = query.get("redirect");
 
     React.useEffect(() => {
@@ -19,12 +19,21 @@ export function ErrorPage() {
         }
     }, [redirect]);
 
+    const parseError = (err: string) => {
+        if (err === "token") {
+            err = "There was an issue with the token Discord gave.";
+        } else if (err === "appealnoguild") {
+            err = "Invalid appeal form. A server must be specified in the form URI.";
+        }
+        return err;
+    }
+
     return (
         <Center w="100%" h="100%">
             <div>
                 <Heading textAlign="center">Error</Heading>
                 <Text fontSize="2xl">
-                    {err && err === "token" ? "There was an issue with the token Discord gave." : "An exceptional error occurred."}
+                    {err ? <span>{parseError(err)}</span> : <span>An exceptional error occurred.</span>}
                     {redirect ? " Let's try that again, shall we?" : null}
                 </Text>
             </div>

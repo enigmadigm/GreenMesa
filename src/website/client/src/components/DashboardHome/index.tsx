@@ -190,7 +190,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                             <h4 className="cardsubtitle">Set Bot Prefix</h4>
                                             <p style={{ marginBottom: "1rem" }}>Set the prefix of the bot in the server.</p>
                                             <div className="input-group">
-                                                <input type="text" name="prefix" onChange={fprops.handleChange} defaultValue={fprops.values.prefix} style={{ color: "black", padding: "5px 8px" }} />
+                                                <input type="text" name="prefix" onChange={fprops.handleChange} defaultValue={fprops.values.prefix} style={{ padding: "5px 8px" }} />
                                                 <button className="c-button" type="submit" disabled={fprops.isSubmitting}>Update Prefix</button>
                                                 <br/>
                                                 <br/>

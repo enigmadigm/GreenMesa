@@ -1,16 +1,19 @@
 import mysql, { escape } from "mysql";
-import { db_config } from "../auth.json";
+import config, { db_config } from "../auth.json";
 import moment from "moment";
 import util from 'util';
-import Discord, { Guild, GuildMember, PartialGuildMember, Role, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, TimedAction, TwitchHookRow, UnparsedTimedAction, UserDataRow, XClient, XMessage } from "./gm";
+import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
+import { isSnowflake } from "./utils/specials";
+import Starboard from "./struct/Starboard";
 
-const levelRoles = [{
+const levelRoles = [
+    {
         level: 70,
-        name: 'no-life',
+        name: 'Mega Divine Active Member',
         color: '#9F2292'
     },
     {
@@ -40,15 +43,17 @@ const levelRoles = [{
     },
     {
         level: 5,
-        name: 'prob not a bot level',
+        name: 'Not-An-Alt Level',
         color: '#a886f1'
     },
     {
         level: 1,
-        name: 'noob level',
+        name: 'Noob Level',
         color: '#99AAB1'
     }
 ];
+
+type TimedActionQuery = Partial<TimedActionRow>/* & */;
 
 // https://www.tutorialkart.com/nodejs/nodejs-mysql-result-object/#Example-Nodejs-MySQL-INSERT-INTO-Result-Object
 
@@ -98,7 +103,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `botstats` (`updateId` int(11) NOT NULL AUTO_INCREMENT, `logDate` timestamp NOT NULL DEFAULT current_timestamp(), `numUsers` int(11) NOT NULL DEFAULT 0, `numGuilds` int(11) NOT NULL DEFAULT 1, `numChannels` int(11) NOT NULL DEFAULT 0, PRIMARY KEY (`updateId`)) ENGINE=MyISAM AUTO_INCREMENT=76 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `clientstats` (`stat` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),`value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,`description` text COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`stat`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `cmdtracking` (`cmdname` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`used` int(11) NOT NULL DEFAULT 0,`iscmd` tinyint(1) NOT NULL DEFAULT 1,PRIMARY KEY (`cmdname`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `dgmxp` ( `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `userid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `guildid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `timeAdded` timestamp NOT NULL DEFAULT current_timestamp(), `timeUpdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `xp` int(11) NOT NULL, `level` int(11) NOT NULL DEFAULT 0, `spideySaved` timestamp NULL DEFAULT NULL, `warnings` int(11) NOT NULL DEFAULT 0, `thinice` int(1) NOT NULL DEFAULT 0, UNIQUE KEY `id` (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `dgmxp` ( `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `userid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `guildid` varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL, `timeAdded` timestamp NOT NULL DEFAULT current_timestamp(), `timeUpdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `xp` int(11) NOT NULL, `level` int(11) NOT NULL DEFAULT 0, `msgcount` int(12) NOT NULL DEFAULT 0, `spideySaved` timestamp NULL DEFAULT NULL, `warnings` int(11) NOT NULL DEFAULT 0, `thinice` int(1) NOT NULL DEFAULT 0, UNIQUE KEY `id` (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `globalsettings` (`name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`value` varchar(5000) COLLATE utf8mb4_unicode_ci NOT NULL,`previousvalue` varchar(5000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,`description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`lastupdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),`updatedby` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '745780460034195536',`category` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',PRIMARY KEY (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `guildsettings` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `value` longtext COLLATE utf8mb4_unicode_ci NOT NULL, `previousvalue` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `levelroles` (`id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`roleid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`level` int(11) NOT NULL DEFAULT 1,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
@@ -107,12 +112,13 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `bans` int(11) DEFAULT 0, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `roles` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `roles` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `banned` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'false', `modnote` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `usertag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `endtime` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `agent` text COLLATE utf8mb4_unicode_ci NOT NULL, `agenttag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
             this.query("CREATE TABLE IF NOT EXISTS `cmdhistory` ( `invocation_id` int(11) NOT NULL AUTO_INCREMENT, `command_name` text COLLATE utf8mb4_unicode_ci NOT NULL, `message_content` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `userid` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL, `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `invocation_time` timestamp NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`invocation_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `invitetracking` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `inviteat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `invitee` text COLLATE utf8mb4_unicode_ci NOT NULL, `inviteename` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `inviter` text COLLATE utf8mb4_unicode_ci NOT NULL, `invitername` text COLLATE utf8mb4_unicode_ci NOT NULL, `code` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `starboard` ( `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `authorid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `stars` int(11) NOT NULL DEFAULT 0, `nsfw` tinyint(1) NOT NULL DEFAULT 0, `locked` tinyint(1) NOT NULL DEFAULT 0, `postid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `postchannel` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`messageid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
             return this;
         } catch (error) {
@@ -207,7 +213,7 @@ export class DBManager {
                 if (!maxs) return 15;
                 return Math.floor(Math.random() * (parseInt(maxs.value, 10) - 15) + 15);
             }
-            const { level } = await this.setXP(member.guild.id, member.id, genXP(), 1);
+            const { level } = await this.setXP(member.guild.id, member.id, genXP(), 1, true);
 
             if (level > -1) {
                 this.updateLevelRole(member, level);
@@ -225,31 +231,31 @@ export class DBManager {
      * @param mode the point set mode, specify less than 0 to subtract, 0 to set exactly, and greater than 0 to add
      * @returns the updated points and new level
      */
-    async setXP(guildid: string, userid: string, amount: number, mode = 0): Promise<{ points: number, level: number }> {
+    async setXP(guildid: string, userid: string, amount: number, mode = 0, incrmsg = false): Promise<{ points: number, level: number }> {
         try {
             if (!guildid || !userid || typeof guildid !== "string" || typeof userid !== "string") return { points: -1, level: -1 };
             let l = 0;
             let p = 0;
-            if (!mode) {
+            if (!mode) {// mode = 0, set exactly
                 let level = 0;
                 let totalNeeded = 0;
                 while (amount > totalNeeded) {
                     totalNeeded += this.getPointsForLevel(level);
                     if (amount > totalNeeded) level++;
                 }
-                await <Promise<InsertionResult>>this.query(`INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${amount}, 0) ON DUPLICATE KEY UPDATE xp = ${amount}, level = ${level}`);
+                await <Promise<InsertionResult>>this.query(`INSERT INTO dgmxp (id, userid, guildid, xp, level, msgcount) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${amount}, 0, ${incrmsg ? 1 : 0}) ON DUPLICATE KEY UPDATE xp = ${amount}, level = ${level}, msgcount = ${incrmsg ? "msgcount + 1" : "msgcount"}`);
                 l = level;
                 p = amount;
-            } else {
+            } else {// 0 < mode < 0
                 const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM dgmxp WHERE id = ${escape(userid + guildid)}`);
                 let sql;
-                if (rows.length < 1) {
+                if (rows.length < 1) {// no entry yet, set the xp amount to whatever was given to the method
                     p = mode > 0 ? amount : 0 - amount;
-                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${p}, 0)`;
+                    sql = `INSERT INTO dgmxp (id, userid, guildid, xp, level, msgcount) VALUES (${escape(userid + guildid)}, ${escape(userid)}, ${escape(guildid)}, ${p}, 0, ${incrmsg ? 1 : 0})`;
                 } else {
                     // SENSITIVE AREA
                     // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
-                    const xp = mode > 0 ? rows[0].xp + amount : rows[0].xp - amount;
+                    const xp = mode > 0 ? rows[0].xp + amount : rows[0].xp - amount;// mode > 0: add, mode < 0: subtract
                     // let totalNeeded = 0;
                     // for (let x = 0; x < rows[0].level + 1; x++) {
                     //     totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
@@ -266,7 +272,7 @@ export class DBManager {
                     if (rows[0].level !== levelNow) {
                         rows[0].level = levelNow;
                     }*/
-                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${level} WHERE id = ${escape(userid + guildid)}`;
+                    sql = `UPDATE dgmxp SET xp = ${xp}, level = ${level}, msgcount = ${incrmsg ? "msgcount + 1" : "msgcount"} WHERE id = ${escape(userid + guildid)}`;
                     l = level;
                     p = xp;
                 }
@@ -317,13 +323,13 @@ export class DBManager {
      * @param level the level of the member to apply
      */
     async updateLevelRole(member: GuildMember, level: number): Promise<boolean> {
-        if (!member || !member.guild || !level || !member.guild.me?.hasPermission("MANAGE_ROLES")) {
+        if (!member || !member.guild || !level || !member.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
             return false;
         }
         let levelsEnabled: false | GuildSettingsRow | string = await this.getGuildSetting(member.guild, 'xp_levels');
         levelsEnabled = levelsEnabled ? levelsEnabled.value : false;
         if (levelsEnabled === "enabled") {
-            member.guild.roles = await member.guild.roles.fetch();
+            member.guild.roles.cache = await member.guild.roles.fetch();
             const levelRows = await this.checkForLevelRoles(member.guild);
             if (!levelRows) return false;
             const availableRoles = [];
@@ -363,12 +369,10 @@ export class DBManager {
             if (!levelRows || !levelRows.length) {
                 for (const ro of levelRoles) {
                     const roleToAdd = await guild.roles.create({
-                        data: {
-                            name: ro.name || `Level ${ro.level}`,
-                            color: ro.color || '#99AAB1',
-                            permissions: 0,
-                            position: 1
-                        }
+                        name: ro.name || `Level ${ro.level}`,
+                        color: ro.color || '#99AAB1',
+                        permissions: 0n,
+                        position: 1
                     });
                     await this.query(`INSERT INTO levelroles (id, guildid, roleid, level) VALUES ('${guild.id + roleToAdd.id}', '${guild.id}', '${roleToAdd.id}', ${ro.level})`);
                 }
@@ -409,13 +413,17 @@ export class DBManager {
             const channels = (await client.shard?.fetchClientValues("channels.cache.size"))?.reduce(reductionFunc, 0);
             this.query(`INSERT INTO botstats (numUsers, numGuilds, numChannels) VALUES (${users}, ${guilds}, ${channels})`);
             const scConf = await client.database.getGlobalSetting("sc_conf");
-            const sg = await client.guilds.fetch(scConf ? scConf.value.split(",")[0] : "745670883074637904");
-            if (sg) {
-                const c = sg.channels.cache.get(scConf ? scConf.value.split(",")[1] : "813404897403732008");
-                if (c) {
-                    await c.edit({
-                        name: `${guilds} servers`
-                    });
+            const statChannelGuild = scConf ? scConf.value.split(",")[0] : "745670883074637904";
+            const statChannel = scConf ? scConf.value.split(",")[1] : "813404897403732008";
+            if (isSnowflake(statChannelGuild) && isSnowflake(statChannel)) {
+                const sg = await client.guilds.fetch(statChannelGuild);
+                if (sg) {
+                    const c = sg.channels.cache.get(statChannel);
+                    if (c) {
+                        await c.edit({
+                            name: `${guilds} servers`
+                        });
+                    }
                 }
             }
         } catch (error) {
@@ -441,10 +449,10 @@ export class DBManager {
      * @param value setting value
      * @returns result object with edit information, or string for promise rejection
      */
-    async editGlobalSettings(selectortype = "", selectorvalue = "", updateuser: User, value = ""): Promise<InsertionResult> {
+    async editGlobalSettings(selectortype: 'name' | 'category', selectorvalue: string, updateuser: User, value = ""): Promise<InsertionResult> {
         return new Promise((resolve, reject) => {
-            if (!selectortype || !selectorvalue || !value || !updateuser || !updateuser.id || typeof selectorvalue !== "string" || typeof value !== "string") return reject("MISSING_VALUES");
-            if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");
+            if (!selectortype || !selectorvalue || !value || !updateuser) return reject("MISSING_VALUES");
+            if (selectortype !== "name" && selectortype !== "category") return reject("NAME_OR_CAT");// shouldn't really be necessary because of ts, now
             selectorvalue = selectorvalue.replace(/'/g, "\\'");
             value = value.replace(/'/g, "\\'");
             this.db.query(`UPDATE \`globalsettings\` SET \`previousvalue\`=\`value\`,\`value\`='${value}',\`updatedby\`='${updateuser.id}' WHERE \`${selectortype}\`='${selectorvalue}'`, (err, result: InsertionResult) => {
@@ -491,15 +499,23 @@ export class DBManager {
         }
     }
 
+    async getXPPersonal(guildid: Snowflake, memberid: Snowflake): Promise<PersonalExpRow | false> {
+        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT \`userid\`, \`xp\`, \`level\`, FIND_IN_SET(\`xp\`, (SELECT GROUP_CONCAT(\`xp\` ORDER BY \`xp\` DESC) FROM dgmxp WHERE guildid = ${escape(guildid)} ) ) AS rank, COUNT(*) as \`totalcount\` FROM dgmxp WHERE id = ${escape(memberid + guildid)}`);
+        if (personalrows.length) {
+            return personalrows[0];
+        }
+        return false;
+    }
+
     /**
      * Gets the top 10 members by xp of a guild plus the ranking of the provided member.
      * @param guildid id of guild to look up
      * @param memberid id of member in guild to look up
      */
-    async getXPTop10(guildid: string, memberid = ""): Promise<{ rows: ExpRow[], personal?: PersonalExpRow }> {
+    async getXPTop10(guildid: Snowflake, memberid: Snowflake): Promise<{ rows: ExpRow[], personal?: PersonalExpRow }> {
         const rows = await <Promise<ExpRow[]>>this.query(`SELECT * FROM \`dgmxp\` WHERE \`guildid\` = ${escape(guildid)} ORDER BY \`xp\` DESC LIMIT 10`);
-        const personalrows = await <Promise<PersonalExpRow[]>>this.query(`SELECT userid, xp, level , FIND_IN_SET( xp, ( SELECT GROUP_CONCAT( xp ORDER BY xp DESC ) FROM dgmxp WHERE guildid = ${escape(guildid)} ) ) AS rank FROM dgmxp WHERE id = ${escape(memberid + guildid)}`);
-        const person = personalrows.length ? personalrows[0] : undefined;
+        const personalrows = await this.getXPPersonal(guildid, memberid);
+        const person = personalrows || undefined;
         return {
             rows: rows || [],
             personal: person,
@@ -637,7 +653,7 @@ export class DBManager {
     async logCmdUsage(name: string, message?: XMessage): Promise<void> {
         try {
             if (Bot.client.msgLogging) {
-                const logChannel = Bot.client.channels.cache.get(typeof Bot.client.msgLogging === "string" ? Bot.client.msgLogging : '661614128204480522');
+                const logChannel = Bot.client.channels.cache.get(typeof Bot.client.msgLogging === "string" && isSnowflake(Bot.client.msgLogging) ? Bot.client.msgLogging : '661614128204480522');
                 if (logChannel && logChannel instanceof TextChannel) {
                     let s = `\`${name}\` sent`;
                     if (message) {
@@ -876,8 +892,7 @@ export class DBManager {
     /**
      * Set an action to be executed automatically at a given time
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async setAction(id: string, time: Date, actionType: string, data: Record<string, any>, casenumber = 0): Promise<boolean> {
+    async setAction(id: string, time: Date, actionType: string, data: TimedAction["data"], casenumber = 0): Promise<boolean> {
         try {
             const mtime = moment(time).format('YYYY-MM-DD HH:mm:ss');
             const actionData = JSON.stringify(data).escapeSpecialChars();
@@ -916,10 +931,10 @@ export class DBManager {
      * Get all actions up to the number of give seconds ahead of the current time.
      * @param lookahead number representing the number of seconds to look ahead in the db
      */
-    async getActions(lookahead: number): Promise<TimedAction[] | false> {
+    async getTimedActionsRange(lookahead: number): Promise<TimedAction[] | false> {
         if (lookahead < 0 || lookahead > 3600) return false;
         const et = moment().add(lookahead, "seconds").format('YYYY-MM-DD HH:mm:ss');
-        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= ${escape(et)}`);
+        const r = await <Promise<TimedActionRow[]>>this.query(`SELECT * FROM timedactions WHERE exectime <= ${escape(et)}`);
         if (!r || !r.length) {
             return [];
         }
@@ -937,20 +952,92 @@ export class DBManager {
         return parsed;
     }
 
-    async getAction(id: string): Promise<TimedAction | false> {
-        const r = await <Promise<UnparsedTimedAction[]>>this.query(`SELECT * FROM timedactions WHERE actionid = ${escape(id)}`);
-        if (!r || !r.length) {
+    /**
+     * Query the db to find scheduled actions for the bot to take
+     * @param query Options: {
+     *   actionid: string;
+     *   exectime: string;
+     *   actiontype: string;
+     *   actiondata: string;
+     *   casenumber: number;
+     * }
+     * @returns an array of timed actions
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async getTimedActions/* <T = Record<string, any>> */(query: TimedActionQuery): Promise<TimedAction[] | false> {
+        try {
+            const queryOptions = <(keyof TimedActionQuery)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `SELECT * FROM timedactions WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<TimedActionRow[]>>this.query(`${sql}`);
+            if (result.length) {
+                const a: TimedAction[] = [];
+                for (const row of result) {
+                    try {
+                        const b: TimedAction = {
+                            id: row.actionid,
+                            time: moment(row.exectime).toDate(),
+                            type: row.actiontype,
+                            data: JSON.parse(row.actiondata),
+                            case: row.casenumber
+                        }
+                        a.push(b);
+                    } catch (error) {
+                        //
+                    }
+                }
+                return a;
+            }
+            return [];
+        } catch (error) {
+            xlg.error(error);
             return false;
         }
-        const a = r[0];
-        const b: TimedAction = {
-            id: a.actionid,
-            time: moment(a.exectime).toDate(),
-            type: a.actiontype,
-            data: JSON.parse(a.actiondata),
-            case: a.casenumber
+    }
+
+    /**
+     * Query the db to a scheduled action for the bot to take
+     * @param query Options: {
+     *   actionid: string;
+     *   exectime: string;
+     *   actiontype: string;
+     *   actiondata: string;
+     *   casenumber: number;
+     * }
+     * @returns a single timed action, if one is found
+     */
+    async getTimedAction(query: TimedActionQuery): Promise<TimedAction | false> {
+        try {
+            const queryOptions = <(keyof TimedActionQuery)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `SELECT * FROM timedactions WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<TimedActionRow[]>>this.query(`${sql}`);
+            if (result.length) {
+                const a = result[0];
+                const b: TimedAction = {
+                    id: a.actionid,
+                    time: moment(a.exectime).toDate(),
+                    type: a.actiontype,
+                    data: JSON.parse(a.actiondata),
+                    case: a.casenumber
+                }
+                return b;
+            }
+            return false;
+        } catch (error) {
+            xlg.error(error);
+            return false;
         }
-        return b;
     }
 
     /**
@@ -964,7 +1051,7 @@ export class DBManager {
     /**
      * Get discord global user data, stored in the database.
      */
-    async getUserData(userid: string): Promise<UserDataRow> {
+    async getUserData(userid: Snowflake): Promise<UserDataRow> {
         const defaults: UserDataRow = {
             userid: userid,
         }
@@ -989,12 +1076,11 @@ export class DBManager {
             // eslint-disable-next-line prefer-const
             let { userid, afk, offenses, nicknames, bans, bio } = data;
             if (!userid) return false;
-            userid = escape(userid);
             let afk2 = afk;
             if (afk === "~~off~~") {
                 afk2 = null;
             }
-            const sql = `INSERT INTO userdata (userid, afk, offenses, nicknames, bans, bio) VALUES (${userid}, ${escape(afk2)}, ${escape(offenses || 0)}, ${escape(nicknames || "")}, ${escape(bans || 0)}, ${escape(bio || "")}) ON DUPLICATE KEY UPDATE afk = ${afk === "~~off~~" ? `${escape(afk2)}` : `COALESCE(${escape(afk2)}, afk)`}, offenses = COALESCE(${escape(offenses)}, offenses), nicknames = COALESCE(${escape(nicknames)}, nicknames), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio)`;
+            const sql = `INSERT INTO userdata (userid, afk, offenses, nicknames, bans, bio) VALUES (${escape(userid)}, ${escape(afk2)}, ${escape(offenses || 0)}, ${escape(nicknames || "")}, ${escape(bans || 0)}, ${escape(bio || "")}) ON DUPLICATE KEY UPDATE afk = ${afk === "~~off~~" ? `${escape(afk2)}` : `COALESCE(${escape(afk2)}, afk)`}, offenses = COALESCE(${escape(offenses)}, offenses), nicknames = COALESCE(${escape(nicknames)}, nicknames), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio)`;
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
                 return false;
@@ -1086,7 +1172,7 @@ export class DBManager {
             if (member) {
                 const roles = member.roles.cache.map(r => r.id);
                 const incl = m.applyRoles.some((r) => {
-                    return roles.includes(r);
+                    return isSnowflake(r) && roles.includes(r);
                 });
                 if (m.roleEffect === "ignore" && incl) {
                     return false;
@@ -1120,7 +1206,7 @@ export class DBManager {
         return false;
     }
 
-    async getGuildUserData(guildid: string, userid: string): Promise<GuildUserDataRow> {
+    async getGuildUserData(guildid: Snowflake, userid: Snowflake): Promise<GuildUserDataRow> {
         const defaults: GuildUserDataRow = {
             id: guildid + userid,
             userid: userid,
@@ -1153,9 +1239,9 @@ export class DBManager {
      */
     async updateGuildUserData(data: GuildUserDataRow): Promise<InsertionResult | false> {
         try {
-            const { guildid, userid, offenses, warnings, bans, bio, nicknames, modnote} = data;
+            const { guildid, userid, offenses, warnings, bans, bio, nicknames, modnote, roles} = data;
             if (!guildid || !userid) return false;
-            const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames, modnote) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(nicknames || "")}, ${escape(modnote)}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames), modnote = COALESCE(${escape(modnote)}, modnote)`;
+            const sql = `INSERT INTO guilduserdata (id, userid, guildid, offenses, warnings, bans, bio, nicknames, modnote, roles) VALUES (${escape(guildid + userid)}, ${escape(userid)}, ${escape(guildid)}, ${escape(offenses || 0)}, ${escape(warnings || 0)}, ${escape(bans || 0)}, ${escape(bio || "")}, ${escape(nicknames || "")}, ${escape(modnote)}, ${escape(roles)}) ON DUPLICATE KEY UPDATE offenses = COALESCE(${escape(offenses)}, offenses), warnings = COALESCE(${escape(warnings)}, warnings), bans = COALESCE(${escape(bans)}, bans), bio = COALESCE(${escape(bio)}, bio), nicknames = COALESCE(${escape(nicknames)}, nicknames), modnote = COALESCE(${escape(modnote)}, modnote), roles = COALESCE(${escape(roles)}, roles)`;
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
                 return false;
@@ -1172,6 +1258,7 @@ export class DBManager {
      */
     async getModActionByGuildCase(guildid: string, num: number): Promise<ModActionData | false> {
         try {
+            if (!Number.isSafeInteger(num)) return false;
             const rows = await <Promise<ModActionData[]>>this.query(`SELECT * FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${num}`);
             if (rows && rows.length > 0) {
                 return rows[0];
@@ -1331,19 +1418,18 @@ export class DBManager {
         try {
             const mvmGS = await this.getGuildSetting(guildid, "movement");
             if (!mvmGS || !mvmGS.value) {
-                return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+                return { add_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
             }
             const mvm = JSON.parse(mvmGS.value);
-            const movement: MovementData = { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} } };
+            const movement: MovementData = { add_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} } };
             if (mvm.add_channel) movement.add_channel = mvm.add_channel;
-            if (mvm.dm_channel) movement.dm_channel = mvm.dm_channel;
             if (mvm.depart_channel) movement.depart_channel = mvm.depart_channel;
-            if (mvm.depart_message) movement.depart_channel = mvm.depart_message;
-            if (mvm.dm_message) movement.depart_channel = mvm.dm_message;
-            if (mvm.add_message) movement.depart_channel = mvm.add_message;
+            if (mvm.depart_message) movement.depart_message = mvm.depart_message;
+            if (mvm.dm_message) movement.dm_message = mvm.dm_message;
+            if (mvm.add_message) movement.add_message = mvm.add_message;
             return movement;
         } catch (error) {
-            return { add_channel: "", dm_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
+            return { add_channel: "", depart_channel: "", depart_message: { outside: "", embed: {} }, dm_message: { outside: "", embed: {} }, add_message: { outside: "", embed: {} }};
         }
     }
 
@@ -1594,5 +1680,72 @@ export class DBManager {
             xlg.error(error);
             return false;
         }
+    }
+
+    async getStoredPresence(bypassDefault = false): Promise<StoredPresenceData> {
+        const r = await this.getGlobalSetting("presence");
+        const presenceDefault: StoredPresenceData = {
+            status: `online`,
+            type: `WATCHING`,
+            name: `${config.prefix} help | ${config.prefix} invite`,
+            useDefault: false,
+        };
+        if (r) {
+            const parsed = JSON.parse(r.value);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const isStoredPresence = (o: any): o is StoredPresenceData => {
+                return 'status' in o && 'type' in o && 'name' in o;
+            }
+            if (isStoredPresence(parsed)) {
+                if (!bypassDefault && parsed.useDefault) {
+                    return presenceDefault;
+                }
+                return parsed;
+            }
+        }
+        return presenceDefault;
+    }
+
+    async setStoredPresence(d: StoredPresenceData, updater: User): Promise<InsertionResult | false> {
+        if (!updater) return false;
+        const r = await this.editGlobalSettings('name', "presence", updater, JSON.stringify(d).escapeSpecialChars());
+        if (r.affectedRows) {
+            return r;
+        }
+        return false;
+    }
+
+    async getStarboardSetting(gid: Snowflake): Promise<Starboard> {
+        const r = await this.getGuildSetting(gid, "starboard");
+        if (r) {
+            const j = JSON.parse(r.value);// assuming that the data is a starboard setting
+            const s = new Starboard(j);
+            return s;
+        } else {
+            const s = new Starboard();
+            return s;
+        }
+    }
+
+    async setStarboard(gid: Snowflake, d: Starboard): Promise<InsertionResult> {
+        const r = await this.editGuildSetting(gid, "starboard", JSON.stringify(d).escapeSpecialChars());
+        return r;
+    }
+
+    async getStarredMessage(mid: Snowflake): Promise<StarredMessageData | false> {
+        const r = await <Promise<StarredMessageData[]>>this.query(`SELECT * FROM starboard WHERE messageid = ${escape(mid)}`);
+        if (r.length) {
+            const s1 = r[0];
+            return s1;
+        }
+        return false;
+    }
+
+    //TODO: add queryStarredMessages()
+
+    async setStarredMessage(d: StarredMessageData): Promise<InsertionResult> {
+        const { messageid, channelid, guildid, authorid, stars, nsfw, locked, postid, postchannel } = d;
+        const r = await <Promise<InsertionResult>>this.query(`INSERT INTO starboard (messageid, guildid, channelid, authorid, stars, nsfw, locked, postid, postchannel) VALUES (${escape(messageid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(authorid)}, ${escape(stars)}, ${escape(nsfw)}, ${escape(locked)}, ${escape(postid)}, ${escape(postchannel)}) ON DUPLICATE KEY UPDATE guildid = COALESCE(${escape(guildid)}, guildid), guildid = COALESCE(${escape(guildid)}, guildid), channelid = COALESCE(${escape(channelid)}, channelid), stars = COALESCE(${escape(stars)}, stars), nsfw = COALESCE(${nsfw}, nsfw), locked = COALESCE(${escape(locked)}, locked), postid = COALESCE(${escape(postid)}, postid), postchannel = COALESCE(${escape(postchannel)}, postchannel)`);
+        return r;
     }
 }

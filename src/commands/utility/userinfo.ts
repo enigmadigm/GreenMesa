@@ -2,16 +2,18 @@ import { Command, GuildMessageProps } from "src/gm";
 import moment from 'moment';
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
-import { Guild, GuildMember } from "discord.js";
+import { Guild, GuildMember, Snowflake } from "discord.js";
+import { isSnowflake } from "../../utils/specials";
 
-function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the user and the guild
-    if (!guild.member(ID)) return;// It will return undefined if the ID is not valid
+function getJoinRank(id: string | Snowflake, guild: Guild) {// Call it with the ID of the user and the guild
+    if (!isSnowflake(id)) return;
+    if (!guild.members.cache.get(id)) return;// It will return undefined if the ID is not valid
 
     const arr = guild.members.cache.array();// Create an array with every member
     arr.sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0));// Sort them by join date
 
     for (let i = 0; i < arr.length; i++) {// Loop though every element
-        if (arr[i].id == ID) return i;// When you find the user, return it's position
+        if (arr[i].id == id) return i;// When you find the user, return it's position
     }
 }
 
@@ -128,7 +130,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "XP",
-                            value: rank && xp ? `Rank: \`${rank.personal ? rank.personal.rank : 'none'}\`\nLevel: \`${xp.level}\`` : "none",
+                            value: rank && xp ? `Rank: ${rank.personal ? `\`${rank.personal.rank}\`/${rank.personal.totalcount}` : '`none`'}\nLevel: \`${xp.level}\`` : "none",
                             inline: true
                         },
                         {
@@ -137,8 +139,8 @@ export const command: Command<GuildMessageProps> = {
                             inline: true
                         },
                         {
-                            "name": `Roles [${roleCount}]`,
-                            "value": roles
+                            name: `Roles [${roleCount}]`,
+                            value: roles
                         }
                     ],
                     footer: {

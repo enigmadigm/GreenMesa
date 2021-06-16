@@ -1,8 +1,9 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, Role, User } from "discord.js";
-import { XClient } from "src/gm";
+import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, User } from "discord.js";
+import { CommandArgumentFlag, XClient } from "src/gm";
+import { isSnowflake } from "./specials";
 
 /**
  * Returns similarity value based on Levenshtein distance.
@@ -85,7 +86,7 @@ export function extractString(str: string, regex: RegExp): string | undefined {
 export async function stringToUser(client: XClient, text: string): Promise<User | undefined> {
     text = extractString(text, /<@!?(\d*)>/) || text;
     try {
-        return await client.users.fetch(text) || undefined;
+        return isSnowflake(text) ? await client.users.fetch(text) || undefined : undefined;
     } catch (e) {
         return undefined;
     }
@@ -115,7 +116,7 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
     guild.members.cache = await guild.members.fetch();
 
     // by id
-    let member = guild.members.cache.get(text);
+    let member = guild.members.cache.get(text as Snowflake);
     if (!member && byUsername)
     // by username
     member = guild.members.cache.find(x => x.user.username == text || x.user.tag == text);
@@ -157,7 +158,7 @@ export function stringToRole(guild: Guild, text: string, byName = true, bySimila
     text = extractString(text, /<@&(\d*)>/) || text;
 
     // by id
-    let role = guild.roles.cache.get(text);
+    let role = guild.roles.cache.get(text as Snowflake);
     if (!role && byName) {
         // by name
         role = guild.roles.cache.find(x => x.name == text);
@@ -191,7 +192,7 @@ export function stringToChannel(guild: Guild, text: string, byName = true, bySim
     if (!guild || !text) return undefined;
     text = extractString(text, /<#(\d*)>/) || text;
 
-    let channel = guild.channels.cache.get(text);
+    let channel = guild.channels.cache.get(text as Snowflake);
     if (!channel && byName) channel = guild.channels.cache.find(x => x.name == text);
     if (!channel && bySimilar) {
         // closest matching name
@@ -309,6 +310,9 @@ export function randomIntFromInterval(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+/**
+ * Parse hyphen flagged options that occur at the beginning of an options array
+ */
 export function parseOptions(opts: string[]): string[] {
     const n = opts.reduce((p, c, ci) => {
         const condition = (pcv: string) => pcv.startsWith("-") && pcv.length < 20;
@@ -320,6 +324,49 @@ export function parseOptions(opts: string[]): string[] {
     }, <string[]>[]);
     opts.splice(0, n.length);
     return n;
+}
+
+/**
+ * Parse hyphen flagged arguments that occur at the beginning of a string
+ *
+ * const flags = parseLongArgs(args);
+ * args = args.join(" ").slice(flags.taken.join(" ").length).trim().split(" ");// trim the provided argument array to disclude the parsed flags
+ * @param toParse the pre-split arguments (assuming space delimited) from commands
+ * @returns a list of specified options
+ */
+export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[], taken: string[] } {
+    const a = toParse.join(" ");
+    const opts: CommandArgumentFlag[] = [];
+    // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=("[\w\s<@#&!>$*()\-=+^%:';[\]{}\\|]*"|[\w<@#&!>$*()\-=+^%:';[\]{}\\|]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    let match;
+    let matchCycle = 0;
+    let currentStartingIndex = 0;
+    const taken: string[] = [];
+    while ((match = matcher.exec(a)) !== null) {
+        if (!matchCycle && match.index) {
+            break;
+        }
+        if (new RegExp(matcher).exec(a.slice(currentStartingIndex).trim())?.index) {
+            break;
+        }
+        const g1 = match[1] || "";
+        const g2 = match[2] ? match[2].replace(/^"(.*)"$/, "$1") : "";
+        const numVal = g2 && /^(?:[0-9]+(?:\.[0-9]+)?|0x[0-9A-Za-z]{6})$/.test(g2) ? /^[0-9]+(?:\.[0-9]+)?$/.test(g2) ? parseInt(g2, 10) : parseInt(g2, 16) : 0;
+        opts.push({
+            name: g1,
+            value: g2,
+            numberValue: numVal,
+        });
+        // a = a.slice(match.index + match[0].length)
+        taken.push(match[0]);
+        matchCycle++;
+        currentStartingIndex = match.index + match[0].length;
+    }
+    // toParse = toParse.slice(taken.join(" ").length - 1);// trim the provided argument array to disclude the parsed flags
+    // toParse = toParse.join(" ").slice(taken.join(" ").length).trim().split(" ");
+    // ^ apparently this reference ends at reassignment
+    return { flags: opts, taken: taken };
 }
 
 /**
@@ -381,36 +428,68 @@ export function ordinalSuffixOf(i: number): string {
 //     return isTitle && isDescription && isURL && isTimestamp && isColor && isFields;
 // }
 
-export function combineMessageText(m: Message): string {
+/**
+ * Turn a normal message from discord into a single string of text, this will join elements like strings in embeds together into a more parseable form
+ * @param m the message to parse
+ * @returns a string representing the entire message
+ */
+export function combineMessageText(m: Message, space = 0): string {
     let t = "";
     if (m.content) {
         t += m.content;
     }
     if (m.embeds && m.embeds.length && m.embeds[0]) {
         const e = m.embeds[0];
-        if (e.description) {
-            t += e.description;
+        const combinedEmbed = combineEmbedText(e, space);
+        if (combinedEmbed) {
+            t += combinedEmbed;
         }
-        if (e.footer) {
-            if (e.footer.text) {
-                t += e.footer.text;
+    }
+    return t;
+}
+
+export function combineEmbedText(e: MessageEmbedOptions | MessageEmbed, space = 0): string {
+    let t = "";
+    if (e.author && e.author.name) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
+        }
+        t += e.author.name;
+    }
+    if (e.title) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
+        }
+        t += e.title;
+    }
+    if (e.description) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
+        }
+        t += e.description;
+    }
+    if (e.fields && e.fields.length) {
+        e.fields.forEach(f => {
+            if (f.name) {
+                if (space) {
+                    t += space === 1 ? " " : "\n";
+                }
+                t += f.name;
             }
-        }
-        if (e.fields && e.fields.length) {
-            e.fields.forEach(f => {
-                if (f.name) {
-                    t += f.name;
+            if (f.value) {
+                if (space) {
+                    t += space === 1 ? " " : "\n";
                 }
-                if (f.value) {
-                    t += f.value;
-                }
-            })
-        }
-        if (e.author && e.author.name) {
-            t += e.author.name;
-        }
-        if (e.title) {
-            t += e.title;
+                t += f.value;
+            }
+        });
+    }
+    if (e.footer) {
+        if (e.footer.text) {
+            if (space) {
+                t += space === 1 ? " " : "\n";
+            }
+            t += e.footer.text;
         }
     }
     return t;

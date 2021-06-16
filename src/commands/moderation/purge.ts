@@ -1,3 +1,4 @@
+import { ChannelLogsQueryOptions } from 'discord.js';
 import moment from 'moment';
 import { Command, GuildMessageProps } from 'src/gm';
 import { permLevels } from '../../permissions';
@@ -27,14 +28,14 @@ export const command: Command<GuildMessageProps> = {
                 return;
             }
 
-            let opts = {
+            let opts: ChannelLogsQueryOptions = {
                 limit: (deleteCount < 100) ? deleteCount : 100,
                 before: message.id
             }
             if (target) {
                 opts = {
                     limit: 100,
-                    before: (target.user.lastMessage?.channel.id === message.channel.id) ? target.user.lastMessageID || "" : message.id
+                    before: (target.user.lastMessage?.channel.id === message.channel.id) ? target.user.lastMessageID || undefined : message.id
                 }
             }
 

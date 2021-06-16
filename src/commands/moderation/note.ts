@@ -1,10 +1,10 @@
-
 import { permLevels } from '../../permissions';
-import { Command, UserNote } from "src/gm";
+import { Command, GuildMessageProps, UserNote } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
 import moment from 'moment';
+const charlimit = 1000;
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "note",
     description: {
         short: "add a note to a user",
@@ -21,30 +21,32 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
             const target = await stringToMember(message.guild, args[0], true, true, true);
             if (!target) {
-                await client.specials?.sendError(message.channel, `Could not find target`);
+                await client.specials.sendError(message.channel, `Could not find target`);
                 return;
             }
             args.shift();
             if (!args.length) {
-                await client.specials?.sendError(message.channel, `You did not specify a note\n\`<user> <note>\``);
+                await client.specials.sendError(message.channel, `You did not specify a note\n\`<user> <note>\``);
                 return;
             }
             const gud = await client.database.getGuildUserData(message.guild.id, target.id);
             if (!gud) {
-                await client.specials?.sendError(message.channel, `Could not retrieve user info`);
+                await client.specials.sendError(message.channel, `Could not retrieve user info`);
                 return;
             }
             const notes: UserNote[] = gud.modnote && gud.modnote.length ? JSON.parse(gud.modnote) : [];
-            if (notes.length >= 10) {
-                client.specials?.sendError(message.channel, `No more than **10** notes are allowed per user.\n\nThis is to allow all notes to fit on one page without exceeding Discord's character limit.`)
-                return;
-            }
+
+            /* no longer restricting number of notes per user */
+            // if (notes.length >= 10) {
+            //     client.specials?.sendError(message.channel, `No more than **10** notes are allowed per user.\n\nThis is to allow all notes to fit on one page without exceeding Discord's character limit.`)
+            //     return;
+            // }
+
             const a = args.join(" ");
-            if (a.length > 500) {
-                client.specials?.sendError(message.channel, `You have exceeded the **500** character limit. You are over by **${a.length - 500}** characters.`)
+            if (a.length > charlimit) {
+                client.specials?.sendError(message.channel, `You have exceeded the **${charlimit}** character limit. You are over by **${a.length - charlimit}** characters.`)
                 return;
             }
             notes.push({
@@ -58,10 +60,10 @@ export const command: Command = {
 
             gud.modnote = JSON.stringify(notes).escapeSpecialChars();
             await client.database.updateGuildUserData(gud);
-            await client.specials?.sendInfo(message.channel, `Note added (ID: ${notes[notes.length - 1].id})`);
+            await client.specials.sendInfo(message.channel, `Note added (ID: ${notes[notes.length - 1].id})`);
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

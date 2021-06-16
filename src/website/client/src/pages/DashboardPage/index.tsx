@@ -1,14 +1,15 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { RESTAPIPartialCurrentUserGuild } from 'discord-api-types';
 import { host } from '../../index';
-import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashboardServerlog, DashboardTwitch, DashHeader } from '../../components';
+import { DashboardAutomod, DashboardAutorole, DashboardCommands, DashboardHome, DashboardLeveling, DashboardServerlog, DashboardTwitch, DashHeader, DashboardAppeals } from '../../components';
 import { Spinner, Center } from '@chakra-ui/react';
 import { Switch, Route, BrowserRouter as Router, RouteComponentProps, Link } from 'react-router-dom';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
-import { faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller } from '@fortawesome/pro-solid-svg-icons';
+import { faClipboardList, faHomeLgAlt, faLayerPlus, faLevelUpAlt, faPaintRoller, faTransporter1 } from '@fortawesome/pro-solid-svg-icons';
 import { faBadgeSheriff, faThList } from '@fortawesome/pro-duotone-svg-icons';
 import { faTwitch } from '@fortawesome/free-brands-svg-icons';
-//import { RouteComponentProps } from 'react-router-dom';
+// import { faTransporter1 } from '@fortawesome/pro-light-svg-icons';
+import { DashboardMovement } from '../../components/DashboardMovement';
 
 export interface IUser {
     guilds?: RESTAPIPartialCurrentUserGuild[];
@@ -148,6 +149,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                     <CustomNavItem to="autorole" text="Autorole" active={page === "autorole"} oc={setPage} ico={{ icon: faPaintRoller }} />
                                 </li>
                                 <li>
+                                    <CustomNavItem to="movement" text="Movement" active={page === "movement"} oc={setPage} ico={{ icon: faTransporter1 }} />
+                                </li>
+                                <li>
                                     <CustomNavItem to="serverlog" text="Serverlog" active={page === "serverlog"} oc={setPage} ico={{ icon: faThList }} />
                                 </li>
                                 <li>
@@ -155,6 +159,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                                 </li>
                                 <li>
                                     <CustomNavItem to="leveling" text="Leveling" active={page === "leveling"} oc={setPage} ico={{ icon: faLevelUpAlt }} />
+                                </li>
+                                <li>
+                                    <CustomNavItem to="appeals" text="Appeals" active={page === "appeals"} oc={setPage} ico={{ icon: faClipboardList }} />
                                 </li>
                             </ul>
                         </nav>
@@ -173,6 +180,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                             <Route exact path="/dash/:id/autorole" >
                                 <DashboardAutorole user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
+                            <Route exact path="/dash/:id/movement" >
+                                <DashboardMovement user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
                             <Route exact path="/dash/:id/serverlog" >
                                 <DashboardServerlog user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
@@ -181,6 +191,9 @@ export function DashboardPage({ match }: RouteComponentProps<MatchParams>) {
                             </Route>
                             <Route exact path="/dash/:id/twitch" >
                                 <DashboardTwitch user={user} meta={meta} status={status} setStatus={setStatus} />
+                            </Route>
+                            <Route exact path="/dash/:id/appeals" >
+                                <DashboardAppeals user={user} meta={meta} status={status} setStatus={setStatus} />
                             </Route>
                         </Switch>
                     </div>

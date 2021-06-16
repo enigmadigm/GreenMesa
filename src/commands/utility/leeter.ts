@@ -1,18 +1,16 @@
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import Leeter from '../../utils/leeter';
-const leeter = new Leeter(1, false);
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'leeter',
     args: true,
-    aliases: ['leetspeaker', 'leetify', 'leetspeakify', 'leet'],
+    aliases: ['leet', 'leetify'],
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            message.channel.send({
-                embed: {
-                    description: `\`${leeter.tol33t(args.join(" ")).replace(/\\/g, "\\\\")}\``
-                }
+            const leeter = new Leeter(1, false);
+            await message.channel.send({
+                content: `\`${leeter.tol33t(args.join(" ")).replace(/\\/g, "\\\\")}\``,
             });
         } catch (error) {
             xlg.error(error);

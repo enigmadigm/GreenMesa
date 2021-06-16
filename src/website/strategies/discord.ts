@@ -15,7 +15,7 @@ passport.deserializeUser<any>(async (obj, done) => {// this needs to search the 
         const user = await Bot.client.database.getDashUser(obj.id);
         return user ? done(null, user) : done(null, undefined);
     } catch (error) {
-        console.error(error);
+        xlg.error(error);
         done(error, undefined);
     }
     //done(null, obj);
@@ -51,7 +51,7 @@ passport.use(new DiscordStrategy({
                 //console.log("user not processed")
             }
         } catch (error) {
-            console.error(error);
+            xlg.error(error);
             return done(error, undefined);
         }
 }));

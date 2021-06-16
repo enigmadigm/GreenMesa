@@ -1,10 +1,8 @@
-
-//import { getGlobalSetting, getGuildSetting } from "../dbmanager";
 import { permLevels } from '../../permissions';
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { RoleData } from "discord.js";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: "mkrole",
     description: {
         short: "create a role",
@@ -21,15 +19,13 @@ export const command: Command = {
     permissions: ["MANAGE_ROLES"],
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-
             /*if (!message.guild.me?.hasPermission("MANAGE_ROLES")) {
                 await message.channel.send("I do not have the MANAGE_ROLES permission. I need that to create roles.");
                 return;
             }*/
             const param = args.join(" ").split(",");
             if (param[0] && param[0].length > 100) {// if the provided name is longer than the 100 character limit
-                await client.specials?.sendError(message.channel, "Role name cannot exceed 100 characters");
+                await client.specials.sendError(message.channel, "Role name cannot exceed 100 characters");
                 return;
             }
             const roleData: RoleData = { name: param[0] };
@@ -38,7 +34,7 @@ export const command: Command = {
                 roleData.color = parseInt(p1.replace(/#/g, ""), 16);
             }
             try {
-                const nrole = await message.guild.roles.create({ data: roleData, reason: "with mkrole command" });
+                const nrole = await message.guild.roles.create({ ...roleData, reason: "with mkrole command" });
                 await message.channel.send({
                     embed: {
                         color: await client.database.getColor("success"),
@@ -46,13 +42,12 @@ export const command: Command = {
                     }
                 });
             } catch (error) {
-                client.specials?.sendError(message.channel, "I couldn't create the role, I probably don't have the permissions to")
+                await client.specials.sendError(message.channel, "I couldn't create the role, I probably don't have the permissions to")
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel, "Failure while creating role");
+            await client.specials.sendError(message.channel, "Failure while creating role");
             return false;
         }
     }
 }
-

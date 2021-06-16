@@ -8,9 +8,9 @@ global.xlg = {
             return console.log(`[${now}]`, e.stack || e);
         }
     },
-    error(e, err) {
+    error(e, ...params) {
         if (e) {
-            return console.error(`[${now}]`, e.stack || e, err?.stack);
+            return console.error(`[${now}]`, e.stack || e, ...params);
         }
     }
 }

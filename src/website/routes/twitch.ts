@@ -169,7 +169,7 @@ export function twitchRouter(client: XClient): Router {
                                     const sub = subs[i];
                                     const diff = Math.abs(moment(req.body.data[0].started_at).diff(sub.laststream, "seconds"));
                                     if (diff < 100) continue;
-                                    const channels = await client.specials?.getAllChannels(client);
+                                    const channels = await client.specials.shards.getAllChannels();
                                     if (channels) {
                                         const channel = channels.find(c => c.id === sub.channelid);
                                         if (channel) {

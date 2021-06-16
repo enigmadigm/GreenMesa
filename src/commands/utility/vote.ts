@@ -1,8 +1,6 @@
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 
-//import { getGlobalSetting } from "../dbmanager";
-
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'vote',
     description: {
         short: "call a quick vote",
@@ -15,11 +13,15 @@ export const command: Command = {
             if (!args.length) {
                 await message.react('✅')
                     .catch(console.error);
-                message.react('❌')
+                await message.react('❌')
                     .catch(console.error);
                 return;
             }
-            message.delete().catch();
+            try {
+                message.delete();
+            } catch (error) {
+                //
+            }
             const info_embed_color = await client.database.getColor("info");
             const voteEmbed = await message.channel.send({
                 embed: {
@@ -44,4 +46,3 @@ export const command: Command = {
         }
     }
 }
-

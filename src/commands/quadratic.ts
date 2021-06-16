@@ -1,15 +1,16 @@
 import { Command } from "src/gm";
 
-//import { getGlobalSetting } from "../dbmanager";
-
 export const command: Command = {
     name: "quadratic",
     description: "find the 0s of a quadratic",
     usage: "<a> <b> <c>",
+    examples: [
+        "1 2 3",
+    ],
     args: 3,
     async execute(client, message, args) {
         try {
-            if (!(await client.specials?.argsMustBeNum(message.channel, args))) return false;
+            if (!(await client.specials.argsMustBeNum(message.channel, args))) return false;
     
             /* Thanks, this saved me time
              * https://www.programiz.com/javascript/examples/quadratic-roots
@@ -28,13 +29,13 @@ export const command: Command = {
                 root2 = (-b - Math.sqrt(discriminant)) / (2 * a);
     
                 // result
-                message.channel.send({
+                await message.channel.send({
                     embed: {
                         color: await client.database.getColor("darkgreen_embed_color"),
                         title: "Quadratic Solution: Two Real Roots",
                         description: `The roots of quadratic equation are \`${root1}\` and \`${root2}\``
                     }
-                }).catch(xlg.error);
+                });
             }
     
             // condition for real and equal roots
@@ -42,13 +43,13 @@ export const command: Command = {
                 root1 = root2 = -b / (2 * a);
     
                 // result
-                message.channel.send({
+                await message.channel.send({
                     embed: {
                         color: await client.database.getColor("darkgreen_embed_color"),
                         title: "Quadratic Solution: Double Root",
                         description: `The roots of quadratic equation are \`${root1}\` and \`${root2}\``
                     }
-                }).catch(xlg.error);
+                });
             }
     
             // if roots are not real
@@ -57,13 +58,13 @@ export const command: Command = {
                 const imagPart = (Math.sqrt(-discriminant) / (2 * a)).toFixed(2);
 
                 // result
-                message.channel.send({
+                await message.channel.send({
                     embed: {
                         color: await client.database.getColor("darkgreen_embed_color"),
                         title: "Quadratic Solution: Imaginary Roots",
                         description: `The roots of quadratic equation are \`${realPart} + ${imagPart}i\` and \`${realPart} - ${imagPart}i\``
                     }
-                }).catch(xlg.error);
+                });
             }
         } catch (error) {
             xlg.error(error);

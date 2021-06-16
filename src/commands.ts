@@ -69,13 +69,21 @@ export class Commands {
 
         for (const cmdfile of cmds) {
             const { command } = await import(`${dir}${cmdfile}`);
+            if (!command) {
+                console.log(`$ ${this.commandNumber} - \x1b[33mWARNING: \x1b[32mno command contained in this file, it will not work\x1b[0m`);
+                continue;
+            }
 
             if (!command.permissions) {//TODO: Requiring the SEND_MESSAGES perm by default, I may want to change this in the future
-                command.permissions = ["SEND_MESSAGES"];
-            } else if (!command.permissions.includes("SEND_MESSAGES")) {
+                command.permissions = ["SEND_MESSAGES", "EMBED_LINKS"];
+            }
+            if (!command.permissions.includes("SEND_MESSAGES")) {
                 command.permissions.push("SEND_MESSAGES");
             }
-            
+            if (!command.permissions.includes("EMBED_LINKS")) {
+                command.permissions.push("EMBED_LINKS");
+            }
+
             //const command = require(`./commands/${file}`);
 
             // ▲▲▲▲▲ for commands
@@ -121,14 +129,14 @@ export class Commands {
             // with the key as the command name and the value as the exported module
             this.commands.set(command.name, command);
 
-            let noName = '';
+            let warnText = '';
             if (command.name == "" || command.name == null) {
-                noName = ' \x1b[33mWARNING: \x1b[32mthis command has no name, it may not be configured properly\x1b[0m';
+                warnText = ' \x1b[33mWARNING: \x1b[32mthis command has no name, it may not be configured properly\x1b[0m';
             }
             if (!command.execute) {
-                noName = ' \x1b[33mWARNING: \x1b[32mthis command has no function, it may not be configured properly\x1b[0m';
+                warnText = ' \x1b[33mWARNING: \x1b[32mthis command has no function, it may not be configured properly\x1b[0m';
             }
-            console.log(`$ ${this.commandNumber} - %s$${command.name}%s has been loaded%s`, "\x1b[35m", "\x1b[0m", noName);
+            console.log(`$ ${this.commandNumber} - %s$${command.name}%s has been loaded%s`, "\x1b[35m", "\x1b[0m", warnText);
 
             this.commandNumber++;
         }

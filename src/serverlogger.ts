@@ -1,8 +1,6 @@
-//import { getGlobalSetting, getGuildSetting, editGuildSetting } from "./dbmanager";
-import { stringToChannel, capitalize } from './utils/parsers';
+import { stringToChannel, capitalize, combineMessageText } from './utils/parsers';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel } from 'discord.js';
 import moment from 'moment';
-
 import { Bot } from './bot';
 import { ServerlogData } from './gm';
 
@@ -116,24 +114,23 @@ export async function logMessageDelete(message: Message): Promise<void> {// add 
         if (message.author.id === message.client.user?.id) return;
         // shorten message if it's longer then 1024 (thank you bulletbot)
         let shortened = false;
-        let content = message.content;
+        let content = combineMessageText(message);
         if (content.length > 1024) {
             content = content.slice(0, 1020) + '...';
             shortened = true;
         }
-
         const embed: MessageEmbedOptions = {
             // "color": await Bot.client.database.getColor("fail") || 0xff0000,
             author: {
                 name: "Message Deleted",
-                icon_url: message.author.displayAvatarURL()
+                icon_url: message.author.displayAvatarURL(),
             },
             description: `by ${message.author} in ${message.channel}\ncreated ${moment(message.createdAt).utc().fromNow()}`,
             fields: [],
             timestamp: new Date(message.createdAt),
             footer: {
-                text: `Message ID: ${message.id} | Author ID: ${message.author.id}`
-            }
+                text: `Message ID: ${message.id} | Author ID: ${message.author.id}`,
+            },
         };
 
         if (message.attachments.size) {
@@ -149,15 +146,15 @@ export async function logMessageDelete(message: Message): Promise<void> {// add 
                     }
                     const name = a.name?.split(".");
                     return `[${a.height || a.width ? "Image" : "Attachment"} ${a.height || a.width ? images : other}](${a.url})${name ? ` (${name[name.length - 1]})` : ""}`;
-                })}`
-            })
+                })}`,
+            });
         }
 
         if (!embed.fields?.length || content) {
             embed.fields?.push({
                 name: 'Content' + (shortened ? ' (shortened)' : ''),
-                value: message.content.length > 0 ? content.escapeDiscord() : '*content unavailable*'
-            })
+                value: content.length > 0 ? content.escapeDiscord() : '*content unavailable*',
+            });
         }
 
         logChannel.send({ embed });
@@ -278,12 +275,50 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
                     color: deletion ? await Bot.client.database.getColor("fail") || 0xff0000 : await Bot.client.database.getColor("success"),
                     timestamp: deletion ? role.createdAt : new Date(),
                     footer: {
-                        text: "Role ID: " + role.id
-                    }
+                        text: `Role ID: ${role.id}`,
+                    },
                 }
             });
         } catch (e) {
-            return; // acording to bb devs: very likely just left the server and the bot specific role got deleted
+            return; // very likely occurring because this client just left the server and its bot specific role got deleted (which is what triggered this event)
+        }
+    } catch (err) {
+        xlg.error(err);
+    }
+}
+
+export async function logRoleUpdate(previousrole: Role, currentRole: Role): Promise<void> {
+    try {
+        const logChannel = await getLogChannel(currentRole.guild, LoggingFlags.OTHER_EVENTS, "server_channel");
+        if (!logChannel || logChannel.type !== 'text') return;
+
+        if (previousrole.name !== currentRole.name) {
+            await logChannel.send({
+                embed: {
+                    color: await Bot.client.database.getColor("warn_embed_color"),
+                    timestamp: new Date(),
+                    author: {
+                        name: `Role Name Updated`,
+                        iconURL: currentRole.guild.iconURL() || ""
+                    },
+                    description: `${currentRole}`,
+                    fields: [
+                        {
+                            name: `Previous`,
+                            value: `${previousrole.name}`,
+                            inline: true
+                        },
+                        {
+                            name: `Updated`,
+                            value: `${currentRole.name}`,
+                            inline: true
+                        }
+                    ],
+                    footer: {
+                        text: `Role ID: ${currentRole.id}`
+                    },
+                }
+            });
         }
     } catch (err) {
         xlg.error(err);
@@ -313,7 +348,10 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
     }
 }
 
-export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Promise<void> {// grouping of all types of change in channels
+/**
+ * grouping of all types of change in channels
+ */
+export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Promise<void> {//FIXME: this event is so incredibly broken, specifically the perms update
     try {
         const logChannel = await getLogChannel(nc.guild, LoggingFlags.CHANNEL_UPDATE, "server_channel", nc);
         if (!logChannel || !(logChannel instanceof Discord.TextChannel)) return;
@@ -399,7 +437,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                 };
                 
                 let didsomething = false;
-                if (oldBitfield.allow !== newBitfield.allow && newBitfield.allow !== 0) {
+                if (oldBitfield.allow !== newBitfield.allow && newBitfield.allow !== 0n) {
                     const flgs = new Discord.Permissions(newBitfield.allow).remove(oldBitfield.allow);
                     embed.description += `\n**Allowed:**\n${flgs.toArray().map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
                     didsomething = true;
@@ -411,7 +449,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                         
                     }*/
                 }
-                if (oldBitfield.deny !== newBitfield.deny && newBitfield.deny !== 0) {
+                if (oldBitfield.deny !== newBitfield.deny && newBitfield.deny !== 0n) {
                     const flgs = new Discord.Permissions(newBitfield.deny).remove(oldBitfield.deny);// i think newbit & oldbit would also work
                     embed.description += `\n**Denied:**\n${flgs.toArray().map(x => x.toLowerCase().replace("_", " ")).join(", ")}`;
                     didsomething = true;
