@@ -1,12 +1,12 @@
 import React from "react";
 import { Center, Heading, Text } from "@chakra-ui/react";
-import { RouteComponentProps, useLocation } from "react-router-dom";
+import { RouteComponentProps/* , useLocation */ } from "react-router-dom";
 import "./Appeal.css";
 import { MatchParams } from "../DashboardPage";
 
-function useQuery() {
-    return new URLSearchParams(useLocation().search);
-}
+// function useQuery() {
+//     return new URLSearchParams(useLocation().search);
+// }
 
 export function Appeal({ match }: RouteComponentProps<MatchParams>) {
     // const guildID = match.params.id;

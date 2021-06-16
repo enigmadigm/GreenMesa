@@ -301,7 +301,9 @@ export function assembleDashboardMessage(m: DashboardMessage): MC {
         timestamp: m.embed.timestamp,
         title: m.embed.title,
         description: m.embed.description,
-        fields: m.embed.fields,
+        fields: m.embed.fields?.map(x => {
+            return { name: x.name, value: x.value, inline: x.inline };
+        }),
         image: {
             url: m.embed.imageurl,
         },

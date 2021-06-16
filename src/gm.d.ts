@@ -795,6 +795,7 @@ export interface DashboardMessageEmbed {
     timestamp?: number;
     color?: number/*  | [number, number, number] */;
     fields?: {
+        order: number;
         name: string;
         value: string;
         inline?: boolean;

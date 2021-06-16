@@ -6,7 +6,7 @@ import { HomeProps } from '../../pages/DashboardPage';
 import { selectStylesMK1 } from '../DashboardAutomod/AutomoduleCard';
 import { isEqual } from 'lodash';
 import { SuperMessage } from '../SuperMessage';
-//TODO: add an accent color picker and make it a border that shows up along the entire left side of the builder (including close button)
+
 type PickByValueType<T, U> = {// https://github.com/microsoft/TypeScript/issues/38646
     [K in keyof T as T[K] extends U ? K : never]: T[K]
 }

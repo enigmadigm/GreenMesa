@@ -4,6 +4,9 @@ import { DashboardMessage } from "../../../../../gm";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowClose } from '@fortawesome/pro-duotone-svg-icons';
 import chroma from 'chroma-js';
+import { ColorResult } from 'react-color'
+import { ColorPicker } from '../ColorPicker';
+import { isEqual } from 'lodash';
 
 interface SuperMessageProps {
     value: DashboardMessage;
@@ -42,22 +45,6 @@ export function SuperMessage(props: SuperMessageProps) {
             set({
                 ...value,
                 outside: e.target.value
-            });
-        }
-    }
-
-    const handleColorAspectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        e.preventDefault();
-        const col = chroma(e.target.value);
-        const numform = col.num();
-        console.log(numform)
-        if (numform !== value.embed.color) {
-            set({
-                ...value,
-                embed: {
-                    ...value.embed,
-                    color: numform
-                }
             });
         }
     }
@@ -298,7 +285,7 @@ export function SuperMessage(props: SuperMessageProps) {
                     ...value.embed,
                     fields: [
                         ...(value.embed.fields ?? []),
-                        { name: "", value: "", inline: false }
+                        { name: "", value: "", inline: false, order: (value.embed.fields?.reduce((p, c) => p > c.order ? p : c.order, 0) ?? 0) + 1 }
                     ]
                 }
             });
@@ -313,7 +300,7 @@ export function SuperMessage(props: SuperMessageProps) {
         // set(m);
     }
 
-    const handleFieldNameChange = (e: React.ChangeEvent<HTMLInputElement>,id: number) => {
+    const handleFieldNameChange = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
         if (value.embed.fields && value.embed.fields.length && e.target.value.length <= 256) {
             set({
                 ...value,
@@ -321,7 +308,7 @@ export function SuperMessage(props: SuperMessageProps) {
                     ...value.embed,
                     fields: [
                         ...value.embed.fields.filter((x, i) => i !== id),
-                        { name: e.target.value, value: value.embed.fields[id].value, inline: value.embed.fields[id].inline }
+                        { name: e.target.value, value: value.embed.fields[id].value, inline: value.embed.fields[id].inline, order: value.embed.fields[id].order }
                     ]
                 }
             });
@@ -341,7 +328,7 @@ export function SuperMessage(props: SuperMessageProps) {
                     ...value.embed,
                     fields: [
                         ...value.embed.fields.filter((x, i) => i !== id),
-                        { name: value.embed.fields[id].name, value: e.target.value, inline: value.embed.fields[id].inline }
+                        { name: value.embed.fields[id].name, value: e.target.value, inline: value.embed.fields[id].inline, order: value.embed.fields[id].order }
                     ]
                 }
             });
@@ -361,7 +348,7 @@ export function SuperMessage(props: SuperMessageProps) {
                     ...value.embed,
                     fields: [
                         ...value.embed.fields.filter((x, i) => i !== id),
-                        { name: value.embed.fields[id].name, value: value.embed.fields[id].value, inline: e.target.checked }
+                        { name: value.embed.fields[id].name, value: value.embed.fields[id].value, inline: e.target.checked, order: value.embed.fields[id].order }
                     ]
                 }
             });
@@ -390,11 +377,47 @@ export function SuperMessage(props: SuperMessageProps) {
         }
     };
 
+    const resetEmbed = () => {
+        set({
+            ...value,
+            embed: {},
+        });
+    }
+
+    // const handleColorAspectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     e.preventDefault();
+    //     const col = chroma(e.target.value);
+    //     const numform = col.num();
+    //     console.log(numform)
+    //     if (numform !== value.embed.color) {
+    //         set({
+    //             ...value,
+    //             embed: {
+    //                 ...value.embed,
+    //                 color: numform
+    //             }
+    //         });
+    //     }
+    // }
+    const handleColorAspectChange = (color: ColorResult, event: React.ChangeEvent<HTMLInputElement>) => {
+        const col = chroma(color.hex);
+        const numform = col.num();
+        if (numform !== value.embed.color) {
+            set({
+                ...value,
+                embed: {
+                    ...value.embed,
+                    color: numform
+                }
+            });
+        }
+    }
+
     return (
         <div>
-            <button className={`sm-opener card-footer-button ${mc ? "sm-opener-blend" : ""}`} style={{ borderLeft: mc && value.embed.color ? `solid 10px ${chroma(value.embed.color).hex()}` : undefined}} onClick={handleShowClick}>{showing ? "Close Creator" : "Supermessage Creator"}</button>
+            <button className={`sm-opener card-footer-button ${mc ? "sm-opener-blend" : ""}`} style={{ borderLeft: mc && showing && value.embed.color ? `solid 7px ${chroma(value.embed.color).hex()}` : undefined}} onClick={handleShowClick}>{showing ? "Close Creator" : "Supermessage Creator"}</button>
             {showing ? (
-                <div className={`sm-super ${mc}`} style={{ borderLeft: mc && value.embed.color ? `solid 10px ${chroma(value.embed.color).hex()}` : undefined }}>
+                <div className={`sm-super ${mc}`} style={{ borderLeft: mc && value.embed.color ? `solid 7px ${chroma(value.embed.color).hex()}` : undefined }}>
                     <div className="sm-form-container">
                         {em && (
                             <div className="inline-error">
@@ -403,16 +426,24 @@ export function SuperMessage(props: SuperMessageProps) {
                         )}
                         {/* <br style={{ height: 5 }} /> */}
                         <textarea className="sm-txta"
-                            rows={3}
+                            rows={2}
                             placeholder="normal message content"
                             value={value.outside}
                             onChange={handleOutsideChange}
                         ></textarea>
-                        <div className="sm-input-group">
-                            <div className="sm-iholder" style={{ display: "flex", flexWrap: "nowrap" }}>
+                        <hr style={{ marginTop: 5, borderTop: "1px solid #464e58" }} />
+                        <div className="sm-input-group sm-group-menu" style={{marginTop:7}}>
+                            <div style={{ display: "flex", flexWrap: "nowrap" }}>
                                 <span style={{ marginRight: 5 }}>Accent:</span>
-                                <input type="color" name="smcolor" value={value.embed.color ?? 0x000000} onChange={handleColorAspectChange} />
+                                {/* <input type="color" name="smcolor" value={value.embed.color ?? 0x000000} onChange={handleColorAspectChange} /> */}
+                                {/* <TwitterPicker color={chroma(value.embed.color ?? 0x000000).hex()} onChangeComplete={handleColorAspectChange} /> */}
+                                <ColorPicker color={chroma(value.embed.color ?? 0x000000).hex()} onChangeComplete={handleColorAspectChange} />
                             </div>
+                            <div className="sm-embed-reset">
+                                <button onClick={resetEmbed} disabled={isEqual({}, value.embed)}>Reset</button>
+                            </div>
+                        </div>
+                        <div className="sm-input-group">
                             <div className="sm-iholder">
                                 <input type="text" name="smicon" id="" placeholder="icon url" value={value.embed.authoricon ?? ""} onChange={handleIconChange} />
                             </div>
@@ -450,12 +481,12 @@ export function SuperMessage(props: SuperMessageProps) {
                         <div>
                             <button onClick={handleFieldAdd} className="sm-add-field">Add Field</button>
                             {value.embed.fields?.length ? (
-                                <span style={{opacity:0.5, marginLeft:7}}>{value.embed.fields.length} field{value.embed.fields.length > 1 ? "s" : ""} of 20</span>
+                                <span style={{opacity:0.5, marginLeft:7}}>{value.embed.fields.length} field{value.embed.fields.length > 1 ? "s" : ""} of 25</span>
                             ) : null}
                         </div>
                         <div className="sm-input-group">
                             <div className="sm-fields">
-                                {value.embed.fields?.map((field, i) => (
+                                {value.embed.fields?.sort((a, b) => a.order - b.order).map((field, i) => (
                                     <div className="sm-field" key={`field-${i}`}>
                                         <div style={{ display: "flex", flexWrap: "nowrap" }}>
                                             <input className="sm-field-text" type="text" name={`smfieldname-${i}`} id="" placeholder="name" value={field.name} onChange={(e) => handleFieldNameChange(e, i)} />
