@@ -355,7 +355,7 @@ export function SuperMessage(props: SuperMessageProps) {
         }
     }
     
-    const handleFieldDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
+    const handleFieldDelete = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: number) => {
         // const m = Object.assign({}, value);
         // if (m.embed.fields && m.embed.fields.length) {
         //     m.embed.fields.splice(id, 1);
