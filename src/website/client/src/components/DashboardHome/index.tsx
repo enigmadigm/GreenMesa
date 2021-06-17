@@ -57,36 +57,6 @@ export function DashboardHome(props: HomeProps) {
         prefix: yup.string().required()
     });
 
-    const handleAccessMessageClicked = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let am = false;
-        if (e.target.checked) {
-            am = true;
-        }
-        const hdrs = new Headers();
-        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
-        const fd = new URLSearchParams();
-        fd.append("permnotif", `${am}`);
-        const obj = {
-            method: 'PUT',
-            headers: hdrs,
-            body: fd
-        };
-        try {
-            fetch(`/api/discord/guilds/${props.meta.id}/permnotif`, obj)
-                .then(x => x.json())
-                .then((d: { guild: { id: string, permNotif: string } }) => {
-                    if (d.guild && d.guild.permNotif === `${am}`) {
-                        setStatus({ msg: "Saved.", success: true });
-                    } else {
-                        setStatus({ msg: "Failed to save.", success: false });
-                    }
-                })
-        } catch (error) {
-            console.error(error);
-            setStatus({ msg: "Failed to save.", success: false });
-        }
-    }
-
     return loaded ? (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
