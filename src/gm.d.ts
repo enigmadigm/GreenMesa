@@ -935,7 +935,7 @@ export interface CmdHistoryRow {
     invocation_time: string;
 }
 
-export interface InvitedData {// data for the people that have joined and were tracked by an invite
+export interface InvitedUserData {// data for the people that have joined and were tracked by an invite
     id: number;
     guildid: Snowflake;
     inviteat: string;
@@ -958,6 +958,7 @@ export interface InviteStateData {
     guildid: Snowflake;
     invites: InviteData[];
     rewards?: Record<number, InviteLevelReward>;
+    reset_at?: string;
 }
 
 export interface InviteLevelReward {
