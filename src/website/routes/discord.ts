@@ -1,5 +1,5 @@
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, HomeEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
@@ -180,21 +180,14 @@ export default function routerBuild (client: XClient): express.Router {
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
 
-        const amRes = await client.database.getGuildSetting(id, 'access_message');
-        let am = false;
-        if (amRes && amRes.value === "enabled") {
-            am = true;
-        }
         try {
-            res.send({
+            const toSend: HomeEndpointData = {
                 guild: {
                     id,
                     name: g.name,
                 },
-                home: {
-                    permNotif: am
-                }
-            });
+            };
+            res.send(toSend);
         } catch (e) {
             xlg.error(e);
             res.sendStatus(500);
@@ -786,43 +779,6 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
-    router.put("/guilds/:id/permnotif", async (req, res) => {
-        const { permnotif } = req.body;
-        if (!permnotif || typeof permnotif !== "string" || (permnotif !== "true" && permnotif !== "false")) {
-            return res.status(400).send("Invalid permnotif");
-        }
-        const { id } = req.params;
-        if (typeof id !== "string" || !isSnowflake(id)) {
-            return res.status(400).send("Bad id");
-        }
-        if (!req.user) {
-            return res.sendStatus(401);
-        }
-        const allGuilds = await client.specials.shards.getAllGuilds();
-        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-        if (!mg.find(x => x.id && x.id === id)) {
-            return res.sendStatus(401);
-        }
-        try {
-            const g = await client.guilds.fetch(id);
-            if (permnotif === "true") {
-                await client.database.editGuildSetting(g, "access_message", "enabled");
-            } else {
-                await client.database.editGuildSetting(g, "access_message", undefined, true);
-            }
-            res.send({
-                guild: {
-                    id,
-                    permNotif: permnotif
-                },
-                user: req.user,
-            });
-        } catch (e) {
-            xlg.error(e);
-            res.sendStatus(500);
-        }
-    });
-
     router.put("/guilds/:id/automod", async (req, res) => {
         const { module, data } = req.body;
         const allMods = client.services?.automods || [];
@@ -1176,13 +1132,14 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.patch("/guilds/:id/commands", async (req, res) => {
         try {
-            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore, delete_overwrites, respond} = req.body;
+            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore, delete_overwrites, respond, perm_notif} = req.body;
             // these type checks used to be one big if block, but it was harder to read
             if ((!Array.isArray(apply) || !isStringArray(apply)) ||
                 (typeof enabled !== "boolean") ||
                 (typeof level !== "undefined" && typeof level !== "number") ||
                 (typeof delete_overwrites !== "undefined" && typeof delete_overwrites !== "boolean") || 
                 (typeof respond !== "undefined" && typeof respond !== "boolean") || 
+                (typeof perm_notif !== "undefined" && typeof perm_notif !== "boolean") || 
                 (typeof channel_mode !== "undefined" && typeof channel_mode !== "boolean") || 
                 (typeof role_mode !== "undefined" && typeof role_mode !== "boolean") ||
                 (typeof channels !== "undefined" && (!Array.isArray(channels) || !isStringArray(channels))) ||
@@ -1308,6 +1265,9 @@ export default function routerBuild (client: XClient): express.Router {
                 }
                 if (typeof respond === "boolean") {
                     glob.respond = respond;
+                }
+                if (typeof perm_notif === "boolean") {
+                    glob.perm_notif = perm_notif;
                 }
 
                 // const r = await client.database.editGuildSetting(id, "commandconf", JSON.stringify(conf));

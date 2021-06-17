@@ -469,6 +469,13 @@ export interface GuildUserDataRow {
     modnote?: string;
 }
 
+export interface HomeEndpointData {
+    guild: {
+        id: string;
+        name: string;
+    };
+}
+
 export interface AutomoduleEndpointData extends GuildsEndpointBase {
     automodule: AutomoduleData;
 }
@@ -859,6 +866,10 @@ export interface CommandsGlobalConf {
      * Send that the command is disabled in chat
      */
     respond?: boolean;
+    /**
+     * notify the user if they don't have the internal permissions to run the command
+     */
+    perm_notif?: boolean;
 }
 
 export interface CommandConf {

@@ -462,8 +462,8 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         if (permLevel < pl) {// check if the user has the permissions needed to run the command
             // the access message is a setting for guilds, if disabled members will not be notified of missing permissions
-            const accessMessage = message.guild ? await client.database.getGuildSetting(message.guild, "access_message") : { value: "enabled" };
-            if (accessMessage && accessMessage.value === "enabled") {
+            // const accessMessage = message.guild ? await client.database.getGuildSetting(message.guild, "access_message") : { value: "enabled" };
+            if (!gc || typeof gc.perm_notif === "undefined" || gc.perm_notif) {
                 await message.channel.send("You lack the permissions required to use this command");
             }
             return;
