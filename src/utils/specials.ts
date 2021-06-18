@@ -1,54 +1,38 @@
 import moment from 'moment';
 import { ClientValuesGuild, DashboardMessage, SkeletonGuildObject, XClient } from '../gm';
-import { Channel, MessageEmbed, MessageEmbedOptions, Snowflake, TextChannel } from 'discord.js';
+import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Snowflake, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 import Client from '../struct/Client';
 import { combineEmbedText } from './parsers';
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
-    try {
-        if (!channel.isText() || !('guild' in channel)) return;
-        const fail_embed_color = await Bot.client.database.getColor("fail");
-        channel.send({
-            embed: {
-                color: fail_embed_color,
-                description: `Server moderation in ${channel.guild.name.escapeDiscord()} is currently disabled. Admins must enable moderation features with \`settings moderation enable\`.`
-            }
-        });
-    } catch (error) {
-        xlg.error(error);
-    }
+    if (!channel.isText() || !('guild' in channel)) return;
+    const fail_embed_color = await Bot.client.database.getColor("fail");
+    await channel.send({
+        embed: {
+            color: fail_embed_color,
+            description: `Server moderation in ${channel.guild.name.escapeDiscord()} is currently disabled. Admins must enable moderation features with \`settings moderation enable\`.`
+        }
+    });
 }
 
-export async function sendError(channel: Channel, message?: string, errorTitle: string | boolean = false): Promise<void> {
-    try {
-        if (!channel.isText()) return;
-        await channel.send({
-            embed: {
-                color: await Bot.client.database.getColor("fail") || 16711680,
-                title: errorTitle ? typeof errorTitle === "string" ? errorTitle : "Error" : undefined,
-                description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
-            }
-        });
-        return;
-    } catch (error) {
-        xlg.error(error);
-    }
+export async function sendError(channel: TextChannel | DMChannel | NewsChannel, message?: string, errorTitle: string | boolean = false): Promise<Message> {
+    return await channel.send({
+        embed: {
+            color: await Bot.client.database.getColor("fail") || 16711680,
+            title: errorTitle ? typeof errorTitle === "string" ? errorTitle : "Error" : undefined,
+            description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
+        }
+    });
 }
 
-export async function sendInfo(channel: Channel, message: string): Promise<void> {
-    try {
-        if (!channel.isText()) return;
-        channel.send({
-            embed: {
-                color: 0x337fd5/* await Bot.client.database.getColor("info") */,
-                description: `<:sminfo:818342088088354866> ${message}`
-            }
-        });
-        return;
-    } catch (error) {
-        xlg.error(error);
-    }
+export async function sendInfo(channel: TextChannel | DMChannel | NewsChannel, message: string): Promise<Message> {
+    return await channel.send({
+        embed: {
+            color: 0x337fd5/* await Bot.client.database.getColor("info") */,
+            description: `<:sminfo:818342088088354866> ${message}`
+        }
+    });
 }
 
 export async function argsNumRequire(channel: Channel, args: string[], num: number): Promise<boolean> {
@@ -106,7 +90,30 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
     }
 }
 
-export function timedMessagesHandler(client: XClient): void {
+export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel, acceptFrom: Snowflake[], text = "Please confirm"): Promise<boolean> {
+    const cm = await channel.send({
+        embed: {
+            color: 0x337fd5/* await Bot.client.database.getColor("info") */,
+            description: `<:sminfo:818342088088354866> ${text}`
+        },
+        components: [new MessageActionRow().addComponents(new MessageButton({ customID: "yes", label: "Yes", style: "SUCCESS" }), new MessageButton({ customID: "no", label: "No", style: "DANGER" }))],
+    });
+    const pushFilter: CollectorFilter<[MessageComponentInteraction]> = (inter) => acceptFrom.includes(inter.user.id);
+    const pushes = await cm.awaitMessageComponentInteractions(pushFilter, { max: 1, time: 10 * 1000 });
+    const buttonOption = pushes.first();
+    if (!buttonOption) {
+        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`No confirmation`).setColor(await Bot.client.database.getColor("fail")), components: [] });
+        return false;
+    }
+    if (buttonOption.customID === "yes") {
+        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`Confirmed`).setColor(await Bot.client.database.getColor("success")), components: [] });
+        return true;
+    }
+    await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`Aborted`).setColor(await Bot.client.database.getColor("fail")), components: [] });
+    return false;
+}
+
+export function timedMessagesHandler(client: XClient): void {//TODO: make this a real handler, integrate with cronjobs or timedactions or something
     setInterval(async () => {
         if (moment().utcOffset(-5).format('M/D HH:mm') == "9/26 21:30") {
             const pcr = await client.database.getGlobalSetting('primchan');

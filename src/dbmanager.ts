@@ -114,7 +114,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `bans` int(11) DEFAULT 0, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `roles` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `banned` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'false', `modnote` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `usertag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `endtime` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `agent` text COLLATE utf8mb4_unicode_ci NOT NULL, `agenttag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `usertag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `endtime` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `agent` text COLLATE utf8mb4_unicode_ci NOT NULL, `agenttag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `notified` tinyint(1) NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
             this.query("CREATE TABLE IF NOT EXISTS `cmdhistory` ( `invocation_id` int(11) NOT NULL AUTO_INCREMENT, `command_name` text COLLATE utf8mb4_unicode_ci NOT NULL, `message_content` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `userid` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL, `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `invocation_time` timestamp NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`invocation_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `invitetracking` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `inviteat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `invitee` text COLLATE utf8mb4_unicode_ci NOT NULL, `inviteename` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `inviter` text COLLATE utf8mb4_unicode_ci NOT NULL, `invitername` text COLLATE utf8mb4_unicode_ci NOT NULL, `code` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -1678,6 +1678,24 @@ export class DBManager {
                 return result;
             }
             return false;
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    async deleteInvites(query: Partial<InvitedUserData>): Promise<InsertionResult | false> {
+        try {
+            const queryOptions = <(keyof Partial<InvitedUserData>)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `DELETE FROM invitetracking WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<InsertionResult>>this.query(`${sql}`);
+            return result;
         } catch (error) {
             xlg.error(error);
             return false;
