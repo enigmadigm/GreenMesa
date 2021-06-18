@@ -90,7 +90,7 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
     }
 }
 
-export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel, acceptFrom: Snowflake[], text = "Please confirm"): Promise<boolean> {
+export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**"): Promise<boolean> {
     const cm = await channel.send({
         embed: {
             color: 0x337fd5/* await Bot.client.database.getColor("info") */,
@@ -102,14 +102,14 @@ export async function getUserConfirmation(channel: TextChannel | DMChannel | New
     const pushes = await cm.awaitMessageComponentInteractions(pushFilter, { max: 1, time: 10 * 1000 });
     const buttonOption = pushes.first();
     if (!buttonOption) {
-        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`No confirmation`).setColor(await Bot.client.database.getColor("fail")), components: [] });
+        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`**No confirmation**`).setColor(await Bot.client.database.getColor("fail")), components: [] });
         return false;
     }
     if (buttonOption.customID === "yes") {
-        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`Confirmed`).setColor(await Bot.client.database.getColor("success")), components: [] });
+        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(confirmationMessage).setColor(await Bot.client.database.getColor("success")), components: [] });
         return true;
     }
-    await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`Aborted`).setColor(await Bot.client.database.getColor("fail")), components: [] });
+    await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(rejectionMessage).setColor(await Bot.client.database.getColor("fail")), components: [] });
     return false;
 }
 
