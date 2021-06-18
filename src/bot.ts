@@ -522,8 +522,12 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (command.permissions && command.permissions.length) {
             const lacking: PermissionString[] = [];
             for (const perm of command.permissions) {// check if a needed permission is not met, injects the embed_links perm if it isn't already specified
-                if (!message.guild?.me?.permissions.has(perm) ||
-                    (message.channel instanceof GuildChannel && !message.channel.permissionsFor(message.guild?.me || "")?.has(Permissions.FLAGS[perm]))) {
+                if (message.channel instanceof GuildChannel &&
+                    (
+                        !message.guild?.me?.permissions.has(perm) ||
+                        !message.channel.permissionsFor(message.guild?.me ?? "")?.has(Permissions.FLAGS[perm])
+                    )
+                ) {
                     lacking.push(perm);
                 }
             }
