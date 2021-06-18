@@ -11,7 +11,7 @@ import { getFriendlyUptime } from "./time";
 // }
 
 export class Contraventions {//TODO: get rid of this class and just export all of the inner methods or export them as an object
-    public static async logWarn(u: GuildMember, agent: GuildMember | string, reason = ""): Promise<void> {
+    public static async logWarn(u: GuildMember, agent: GuildMember | string, reason = "", nonotify = false): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const d: ModActionEditData = {
@@ -21,12 +21,13 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             agent: modId,
             agenttag: modTag,
             summary: reason,
-            type: "warn"
+            type: "warn",
+            notified: nonotify ? 0 : 1
         };
         await this.logOne(d, -1);
     }
 
-    public static async logKick(u: GuildMember, agent: GuildMember | string, reason = ""): Promise<void> {
+    public static async logKick(u: GuildMember, agent: GuildMember | string, reason = "", nonotify = false): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const d: ModActionEditData = {
@@ -36,12 +37,13 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             agent: modId,
             agenttag: modTag,
             summary: reason,
-            type: "kick"
+            type: "kick",
+            notified: nonotify ? 0 : 1
         };
         await this.logOne(d, -1);
     }
 
-    public static async logBan(u: GuildMember, agent: GuildMember | string, reason = "", duration = 0): Promise<void> {// 0xff8282
+    public static async logBan(u: GuildMember, agent: GuildMember | string, reason = "", duration = 0, nonotify = false): Promise<void> {// 0xff8282
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const d: ModActionEditData = {
@@ -52,6 +54,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             agenttag: modTag,
             summary: reason,
             type: "ban",
+            notified: nonotify ? 0 : 1
         };
         if (duration) {
             d.endtime = moment().add(duration, "ms").toISOString();
@@ -59,7 +62,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         await this.logOne(d, -1, duration);
     }
 
-    public static async logUnban(guildid: Snowflake, u: GuildMember | Snowflake, agent: GuildMember | string, reason = "", utag?: string): Promise<void> {
+    public static async logUnban(guildid: Snowflake, u: GuildMember | Snowflake, agent: GuildMember | string, reason = "", utag?: string, nonotify = false): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const userId = typeof u === "string" ? u : u.id;
@@ -71,12 +74,13 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             agent: modId,
             agenttag: modTag,
             summary: reason,
-            type: "unban"
+            type: "unban",
+            notified: nonotify ? 0 : 1
         };
         await this.logOne(d);
     }
 
-    public static async logMute(u: GuildMember, duration: number, agent: GuildMember | string, reason = "", remute = false): Promise<void> {
+    public static async logMute(u: GuildMember, duration: number, agent: GuildMember | string, reason = "", remute = false, nonotify = false): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const d: ModActionEditData = {
@@ -87,12 +91,13 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             agent: modId,
             agenttag: modTag,
             summary: remute ? "Attempted mute evasion; automatically remuting to counter." : reason,
-            type: remute ? "remute" : "mute"
+            type: remute ? "remute" : "mute",
+            notified: nonotify ? 0 : 1
         };
         await this.logOne(d, -1, duration);
     }
 
-    public static async logUnmute(u: GuildMember, agent: GuildMember | string, reason = ""): Promise<void> {
+    public static async logUnmute(u: GuildMember, agent: GuildMember | string, reason = "", nonotify = false): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const d: ModActionEditData = {
@@ -102,7 +107,8 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             agent: modId,
             agenttag: modTag,
             summary: reason,
-            type: "unmute"
+            type: "unmute",
+            notified: nonotify ? 0 : 1
         };
         await this.logOne(d);
     }
@@ -115,7 +121,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         // if (!u) return;//TODO: finding the user should not be necessary, the last known tag of the user should be stored with the mod action data in the db
         const m = isSnowflake(data.agent) ? Bot.client.users.cache.get(data.agent) || await Bot.client.users.fetch(data.agent) : "anonymous";
         const action = data.type;
-        const embed = await this.constructEmbed(u, m, num, action, color, data.summary, duration, data.endtime, u instanceof User ? undefined : data.usertag);
+        const embed = await this.constructEmbed(u, m, num, action, color, data.summary, duration, data.endtime, u instanceof User ? undefined : data.usertag, undefined, !data.notified);
         const r = await Bot.client.database.getGuildSetting(data.guildid, "modlog");// get the case channel
         if (r && r.value && isSnowflake(r.value)) {// try to send the message to the channel
             // Bot.client.specials.sendMessageAll({ embed }, r.value);
@@ -143,7 +149,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
      * @param modtag the tag of the mod
      * @returns embed data
      */
-    public static async constructEmbed(target: User | string, mod: User | string, casenum: number, action = "log", color: number, reason = "", duration = 0, endat = "", usertag?: string, modtag?: string): Promise<MessageEmbed> {
+    public static async constructEmbed(target: User | string, mod: User | string, casenum: number, action = "log", color: number, reason = "", duration = 0, endat = "", usertag?: string, modtag?: string, nonotify = false): Promise<MessageEmbed> {
         const modTag = mod instanceof User ? mod.tag : typeof modtag === "string" ? modtag : `unknown#0000`;
         const modId = mod instanceof User ? mod.id : "none";
         const targTag = target instanceof User ? target.tag : typeof usertag === "string" ? usertag : `unknown#0000`;
@@ -201,6 +207,9 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             });
             const joinedtt = tt.join("");
             embed.description += `\n**Period:** ${joinedtt} (ends at ${moment(endat).format('M/D/Y HH:mm:ss')})`;
+        }
+        if (nonotify) {
+            embed.description += `\n🔕`;// **Unable to notify** <- original message
         }
         return embed;
     }

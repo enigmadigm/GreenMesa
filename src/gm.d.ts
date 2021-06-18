@@ -631,6 +631,10 @@ export interface ModActionData {
      * The given reason/case summary for the incident
      */
     summary: string;
+    /**
+     * A boolean representing whether or not the user was notified of the action taken against them, if necessary
+     */
+    notified: number;
 }
 
 export type ModActionEditData<R = 'guildid' | 'agent' | 'userid'> = Required<Pick<ModActionData, R>> & Partial<Omit<ModActionData, R>>;

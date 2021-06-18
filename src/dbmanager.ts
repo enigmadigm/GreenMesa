@@ -3,7 +3,7 @@ import config, { db_config } from "../auth.json";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedUserData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -1367,7 +1367,7 @@ export class DBManager {
      */
     async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
         try {
-            const { guildid, userid, casenumber, type, endtime, agent, summary } = data;// get provided data to log
+            const { guildid, userid, casenumber, type, endtime, agent, summary, notified } = data;// get provided data to log
             let { superid, usertag, agenttag } = data;// make superid mutable
             if (!guildid || !userid || typeof casenumber !== "number") return false;
             const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid || "");// see if there is a preexisting case with sid or casenumber
@@ -1377,7 +1377,7 @@ export class DBManager {
 
             let sql = ``;
             if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
-                sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), endtime = COALESCE(${escape(endtime)}, endtime), agent = COALESCE(${escape(agent)}, agent), summary = COALESCE(${escape(summary)}, summary), usertag = COALESCE(${escape(usertag)}, usertag), agenttag = COALESCE(${escape(agenttag)}, agenttag) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+                sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), endtime = COALESCE(${escape(endtime)}, endtime), agent = COALESCE(${escape(agent)}, agent), summary = COALESCE(${escape(summary)}, summary), usertag = COALESCE(${escape(usertag)}, usertag), agenttag = COALESCE(${escape(agenttag)}, agenttag), notified = COALESCE(${escape(notified)}, notified) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
             } else {// else create a new case
                 if (!usertag) {
                     usertag = "";
@@ -1385,7 +1385,7 @@ export class DBManager {
                 if (!agenttag) {
                     agenttag = "";
                 }
-                sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, endtime, agent, summary, usertag, agenttag) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(endtime)}, ${escape(agent)}, ${escape(summary)}, ${escape(usertag)}, ${escape(agenttag)})`;
+                sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, endtime, agent, summary, usertag, agenttag, notified) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(endtime)}, ${escape(agent)}, ${escape(summary)}, ${escape(usertag)}, ${escape(agenttag)}, ${escape(notified)})`;
             }
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
@@ -1632,9 +1632,9 @@ export class DBManager {
     //     }
     // }
 
-    async getInvites(query: Partial<InvitedData>): Promise<InvitedData[]> {
+    async getInvites(query: Partial<InvitedUserData>): Promise<InvitedUserData[]> {
         try {
-            const queryOptions = <(keyof Partial<InvitedData>)[]>Object.keys(query);
+            const queryOptions = <(keyof Partial<InvitedUserData>)[]>Object.keys(query);
             if (!queryOptions.length) return [];
             let sql = `SELECT * FROM invitetracking WHERE`;
             for (let i = 0; i < queryOptions.length; i++) {
@@ -1643,7 +1643,7 @@ export class DBManager {
                 sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
             }
             sql += ` ORDER BY inviteat DESC`;
-            const result = await <Promise<InvitedData[]>>this.query(`${sql}`);
+            const result = await <Promise<InvitedUserData[]>>this.query(`${sql}`);
             if (result.length) {
                 return result;
             }

@@ -55,7 +55,7 @@ export const command: Command<GuildMessageProps> = {
             await toMute.roles.remove(mutedRole, `unmuted by ${message.author.tag}`);
             if (toMute.voice.connection && toMute.voice.mute) toMute.voice.setMute(false).catch(console.error);
 
-            Contraventions.logUnmute(toMute, message.member);
+            await Contraventions.logUnmute(toMute, message.member);
 
             message.channel.send(`\\✅ Unmuted ${toMute.user.tag}`).catch(console.error);
         } catch (error) {
