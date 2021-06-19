@@ -1,7 +1,7 @@
 import { getPermLevel, permLevels } from '../../permissions';
 import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
 import { getFriendlyUptime } from "../../utils/time";
-import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, MessageReaction, User, Permissions } from "discord.js";
+import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, Permissions, MessageActionRow, MessageButton, MessageComponentInteraction } from "discord.js";
 import { Command, GuildMessageProps } from "src/gm";
 
 const roleDelay = 1000;
@@ -23,10 +23,16 @@ export const command: Command<GuildMessageProps> = {
     },
     usage: "<target: [+-]all | [+-]@member | [+-]@role> <role: @role>",
     args: true,
+    flags: [
+        {
+            f: "f",
+            d: "force the operation (skip confirmation)"
+        },
+    ],
     permLevel: permLevels.member,
     guildOnly: true,
     moderation: true,
-    async execute(client, message, args) {
+    async execute(client, message, args, flags) {
         try {
             if (args.join(" ").toLocaleLowerCase() === "cancel") {
                 const op = activeOps.get(`${message.author.id}${message.guild.id}`);
@@ -108,11 +114,11 @@ export const command: Command<GuildMessageProps> = {
                     await client.specials.sendError(message.channel, `**Failure:** No members to ${add ? "give this role to" : "remove this role from"}`);
                     return;
                 }
+                if (targets.length > 10 && !flags.find(f => f.name === "f") && !(await client.specials.getUserConfirmation(message.channel, [message.author.id], `Are you sure you want to proceed?\nThis action affects ${targets.length} users.`, "", undefined, true))) {
+                    return;
+                }
 
                 const loop = delayedLoop(0, targets.length, 1, roleDelay);
-                const cancelOp = () => {
-                    loop.return();
-                }
                 const d = targets.length * roleDelay + 500;
                 const t = getFriendlyUptime(d);
                 const fu = parseFriendlyUptime(t);
@@ -121,28 +127,43 @@ export const command: Command<GuildMessageProps> = {
                         color: await client.database.getColor("info"),
                         description: `**ETA:**\n${fu ? fu : "*should take no time at all*"}`,
                         footer: {
-                            text: `React 🔴 to cancel`,
+                            text: `Click 🔴 to cancel`,
                         },
-                    }
+                    },
+                    components: [
+                        new MessageActionRow().addComponents(
+                            new MessageButton({ customID: "abort", style: "SECONDARY" }).setEmoji("🔴")
+                        )
+                    ],
                 });
+                const cancelOp = () => {
+                    loop.return();
+                }
 
                 // listener for the cancel button
-                const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => u.id !== client.user?.id &&
-                    (r.emoji.name === '🔴') &&
-                    (message.guild.members.cache.get(u.id)?.permissions.has(Permissions.FLAGS.ADMINISTRATOR) || u.id === message.author.id);
-                const collector = etaMessage.createReactionCollector(filter, {
+                const filter: CollectorFilter<[MessageComponentInteraction]> = (inter) => {
+                    if (inter.user.id !== client.user?.id &&
+                        inter.customID === 'abort' &&
+                        (inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & Permissions.FLAGS.ADMINISTRATOR) === Permissions.FLAGS.ADMINISTRATOR || inter.user.id === message.author.id)) {
+                        return true;
+                    }
+                    return false;
+                };
+                const collector = etaMessage.createMessageComponentInteractionCollector(filter, {
                     time: d,
                     maxUsers: 1,
                 });
-                await etaMessage.react("🔴");
+                // await etaMessage.react("🔴");
 
-                collector.on('collect', () => {
+                collector.on('collect', async () => {
+                    // const e = new MessageEmbed(etaMessage.embeds[0]).setColor(await client.database.getColor("fail"));
+                    // await etaMessage.edit(e);
                     cancelOp();
                 });
-                
+
                 collector.on('end', async () => {
                     const e = new MessageEmbed(etaMessage.embeds[0]).setFooter("");
-                    await etaMessage.edit(e);
+                    await etaMessage.edit({ embed: e, components: [] });
                     cancelOp();
                 });
 
