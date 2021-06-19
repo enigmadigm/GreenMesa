@@ -3,6 +3,7 @@ import moment from 'moment';
 import { Command, GuildMessageProps } from 'src/gm';
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
+import { argsMustBeNum } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
     name: "purge",
@@ -13,18 +14,28 @@ export const command: Command<GuildMessageProps> = {
     aliases: ['clear'],
     usage: "<# of messages to delete> [@target]",
     args: true,
+    flags: [
+        {
+            f: "r",
+            d: "show receipt"
+        }
+    ],
     guildOnly: true,
     permLevel: permLevels.mod,
     moderation: true,
-    async execute(client, message, args) {
+    async execute(client, message, args, flags) {
         try {
+            if (!(await argsMustBeNum(message.channel, [args[0]]))) {// check to make sure first argument is a number (any number)
+                return;
+            }
             const deleteCount = parseInt(args[0], 10); // get the delete count, as an actual number.
             args.shift();
-            const target = await stringToMember(message.guild, args.join(" "));
+            const a = args.join(" ");
+            const target = await stringToMember(message.guild, a);
 
             // Ooooh nice, combined conditions. <3
             if (!deleteCount || deleteCount < 2) {
-                await client.specials?.sendError(message.channel, "Provide a number (2-100) for the number of messages to delete.");
+                await client.specials.sendError(message.channel, "Provide a number (2-100) for the number of messages to delete.");
                 return;
             }
 
@@ -41,7 +52,7 @@ export const command: Command<GuildMessageProps> = {
 
             // Get messages and delete them. Simple enough, right?
             const messages = await message.channel.messages.fetch(opts);
-            let c = 0;
+            let c = 0;// the number of messages to be deleted (after they are fetched and filtered)
             if (target) {
                 if (target.user.lastMessage?.channel.id === message.channel.id) {
                     messages.set(target.user.lastMessage.id, target.user.lastMessage);
@@ -68,12 +79,12 @@ export const command: Command<GuildMessageProps> = {
                 await message.channel.bulkDelete(mc);
             }
 
-            if (args.join(" ").endsWith("-m")) {
+            if (flags.find(x => x.name === "r")) {// if receipt flag is provided, send deletion receipt
                 await message.channel.send(`Purged ${c} messages`);// People don't seem to like that it says a message at the end.
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
