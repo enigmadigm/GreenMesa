@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { ClientValuesGuild, DashboardMessage, SkeletonGuildObject, XClient } from '../gm';
-import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Snowflake, TextChannel } from 'discord.js';
+import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel } from 'discord.js';
 import { Bot } from "../bot";
 import Client from '../struct/Client';
 import { combineEmbedText } from './parsers';
@@ -90,7 +90,17 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
     }
 }
 
-export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**"): Promise<boolean> {
+/**
+ * Send a confirmation message that uses buttons to draw a positive negative response
+ * @param channel The channel to send the confirmation message in
+ * @param acceptFrom A list of user IDs that should be accepted from responses
+ * @param text The confirmation question text (overrides default)
+ * @param confirmationMessage The text on positive confirmation (overrides default)
+ * @param rejectionMessage The text on negative confirmation (overrides default)
+ * @param adminOverride Should admin permissions override  (default False)
+ * @returns the result of the confirmation
+ */
+export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**", adminOverride = false): Promise<boolean> {
     const cm = await channel.send({
         embed: {
             color: 0x337fd5/* await Bot.client.database.getColor("info") */,
@@ -98,7 +108,26 @@ export async function getUserConfirmation(channel: TextChannel | DMChannel | New
         },
         components: [new MessageActionRow().addComponents(new MessageButton({ customID: "yes", label: "Yes", style: "SUCCESS" }), new MessageButton({ customID: "no", label: "No", style: "DANGER" }))],
     });
-    const pushFilter: CollectorFilter<[MessageComponentInteraction]> = (inter) => acceptFrom.includes(inter.user.id);
+    const alreadyShovedOff: Snowflake[] = [];
+    const pushFilter: CollectorFilter<[MessageComponentInteraction]> = async (inter) => {
+        if (
+            acceptFrom.includes(inter.user.id) ||
+            (adminOverride && inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & 0x8n) === 0x8n)
+        ) {
+            return true;
+        } else {
+            if (!alreadyShovedOff.includes(inter.user.id)) {
+                await inter.reply({
+                    content: `Mommy says I'm not supposed to talk to you`,
+                    ephemeral: true,
+                });
+                alreadyShovedOff.push(inter.user.id);
+            } else {
+                await inter.deferUpdate();
+            }
+            return false;
+        }
+    };
     const pushes = await cm.awaitMessageComponentInteractions(pushFilter, { max: 1, time: 10 * 1000 });
     const buttonOption = pushes.first();
     if (!buttonOption) {
@@ -106,10 +135,18 @@ export async function getUserConfirmation(channel: TextChannel | DMChannel | New
         return false;
     }
     if (buttonOption.customID === "yes") {
-        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(confirmationMessage).setColor(await Bot.client.database.getColor("success")), components: [] });
+        if (confirmationMessage) {
+            await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(confirmationMessage).setColor(await Bot.client.database.getColor("success")), components: [] });
+        } else if (cm.deletable) {
+            await cm.delete();
+        }
         return true;
     }
-    await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(rejectionMessage).setColor(await Bot.client.database.getColor("fail")), components: [] });
+    if (rejectionMessage) {
+        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(rejectionMessage).setColor(await Bot.client.database.getColor("fail")), components: [] });
+    } else if (cm.deletable) {
+        await cm.delete();
+    }
     return false;
 }
 
