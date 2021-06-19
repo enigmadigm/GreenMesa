@@ -834,16 +834,13 @@ export class DBManager {
         }
     }
 
-    async incrementTwitchNotified(guildid: string, started?: string): Promise<InsertionResult | false> {
-        try {
-            if (!guildid) return false;
-            const t = started || new Date().toISOString();
-            const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE guildid = ${escape(guildid)}`);
-            return result;
-        } catch (error) {
-            xlg.error(error);
-            return false;
-        }
+    /**
+     * Increment the notified column of all twitch subscriptions under an id
+     */
+    async incrementTwitchNotified(streamid: string, started?: string): Promise<InsertionResult | false> {
+        const t = started || new Date().toISOString();
+        const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE streamerid = ${escape(streamid)}`);
+        return result;
     }
 
     /**
@@ -1363,14 +1360,14 @@ export class DBManager {
     }
 
     /**
-     * Update a user's data. This is global data (opposed to guild data).
+     * Update the data for a modaction. This uses strictly guildid and casenumber to find the action
      */
-    async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
+    async setModAction(data: ModActionEditData<"guildid" | "userid" | "agent">): Promise<InsertionResult | false> {
         try {
             const { guildid, userid, casenumber, type, endtime, agent, summary, notified } = data;// get provided data to log
             let { superid, usertag, agenttag } = data;// make superid mutable
-            if (!guildid || !userid || typeof casenumber !== "number") return false;
-            const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid || "");// see if there is a preexisting case with sid or casenumber
+            if (!guildid || !userid || typeof casenumber !== "number") return false;// i was going to have it be ModActionEditData<"guildid" | "userid" | "agent" | "casenumber"> so i wouldn't have to check for the type here, but i realized that the casenumber is added later on in the data construction process so it would be a pain to assign the casenumber right away
+            const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid ?? "");// see if there is a preexisting case with sid or casenumber
             if (!superid) {
                 superid = uniquid();// generate sid if none is provided
             }
@@ -1392,6 +1389,43 @@ export class DBManager {
                 return false;
             }
             return result;
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Update a user's data. This is global data (opposed to guild data).
+     */
+    async delModActions(query: ModActionEditData<"guildid">): Promise<InsertionResult | false> {
+        try {
+            const queryOptions = <(keyof ModActionEditData<"guildid">)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `DELETE FROM invitetracking WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<InsertionResult>>this.query(sql);
+            if (!result || !result.affectedRows) {
+                return false;
+            }
+            return result;
+            // const { guildid, userid, casenumber, superid } = query;// get provided data to log
+            // if (!guildid || !userid) return false;
+            // const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid ?? "");// see if there is a preexisting case with sid or casenumber
+
+            // let sql = ``;
+            // if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
+            //     sql = `DELETE FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+            // }
+            // const result = await <Promise<InsertionResult>>this.query(sql);
+            // if (!result || !result.affectedRows) {
+            //     return false;
+            // }
+            // return result;
         } catch (error) {
             xlg.error(error);
             return false;

@@ -283,14 +283,41 @@ export interface CmdTrackingRow {
 
 export interface TwitchHookRow {
     id: string;
+    /**
+     * The channel ID of the streamer
+     */
     streamerid: string;
+    /**
+     * The ID of the guild to which this sub belongs
+     */
     guildid: Snowflake;
+    /**
+     * The ID of the channel in which notifications should be sent
+     */
     channelid: Snowflake;
+    /**
+     * The UID of the streamer
+     */
     streamerlogin: string;
+    /**
+     * The message to be sent in a notification
+     */
     message: string;
+    /**
+     * The date at which this stream will expire
+     */
     expires: string;
+    /**
+     * The configured number of streams the sub should be deleted after
+     */
     delafter: number;
+    /**
+     * Number of notifications received
+     */
     notified: number;
+    /**
+     * The date of the last notification received (not necessarily successfully sent)
+     */
     laststream: string;
 }
 
