@@ -122,8 +122,19 @@ export interface CommandFlagDefinition {
      */
     v?: string;
     // aliases?: string[];
+    /**
+     * Specify if the value must be a number, the command will not be executed if a number value is not provided
+     */
     isNumber?: boolean;
+    /**
+     * Specify if the flag cannot be sent without a value, the command will not be executed if a value is not provided
+     */
     notEmpty?: boolean;
+    /**
+     * A custom filter to validate input
+     * If the filter does not match input, the command will not be executed, and a generic "invalid value" error will be displayed
+     */
+    filter?: RegExp;
 }
 
 export interface CommandArgumentFlag {

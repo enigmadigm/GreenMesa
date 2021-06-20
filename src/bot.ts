@@ -613,6 +613,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                             if (flagDef.isNumber && (/* !f.value ||  */!/^(?:[0-9]+(?:\.[0-9]+)?|0x[0-9A-Za-z]{6})$/.test(f.value))) {
                                 throw `You must provide a number value to the flag \`${flagDef.f}\`.`;
                             }
+                            if (flagDef.filter && !flagDef.filter.test(f.value)) {
+                                throw `You passed an invalid value to flag \`${flagDef.f}\`.`;
+                            }
                         }
                     }
                 } catch (error) {
