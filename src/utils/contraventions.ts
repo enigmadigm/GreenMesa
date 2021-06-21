@@ -166,6 +166,8 @@ export class Contraventions {//TODO: get rid of this class and just export all o
                 color = await Bot.client.database.getColor("success");
             } else if (action === "warn") {
                 color = await Bot.client.database.getColor("warn");
+            } else if (action.match(/^(?:d-|h-).*$/)) {
+                color = await Bot.client.database.getColor("normal");// #202225
             } else {
                 color = await Bot.client.database.getColor("info");
             }
@@ -173,7 +175,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         const e = {
             color,
             timestamp: new Date(),
-            title: `Case ${casenum} ● ${titleCase(action)} ● ${targTag.escapeDiscord()}`,// 💼
+            title: `Case ${casenum} ● ${titleCase(action, /[- ]/)} ● ${targTag.escapeDiscord()}`,// 💼
             description: `**Perpetrator:** ${targTag.escapeDiscord()} ${targUser}\n**Marshal:** ${modTag.escapeDiscord()} ${mod instanceof User ? mod : null}`,
             footer: {
                 text: `User: ${targId} Mod: ${modId}`

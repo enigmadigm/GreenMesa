@@ -152,6 +152,9 @@ export class DBManager {
         if (name === "embed") {
             return 0x2F3136;
         }
+        if (name === "normal") {
+            return 0x202225;
+        }
         if (!name.endsWith("_embed_color")) {
             name += "_embed_color";
         }
@@ -1402,7 +1405,7 @@ export class DBManager {
         try {
             const queryOptions = <(keyof ModActionEditData<"guildid">)[]>Object.keys(query);
             if (!queryOptions.length) return false;
-            let sql = `DELETE FROM invitetracking WHERE`;
+            let sql = `DELETE FROM modactions WHERE`;
             for (let i = 0; i < queryOptions.length; i++) {
                 const opt = queryOptions[i];
                 const val = query[opt];
@@ -1430,6 +1433,47 @@ export class DBManager {
             xlg.error(error);
             return false;
         }
+    }
+
+    /**
+     * Update a user's data. This is global data (opposed to guild data).
+     */
+    async massUpdateModActions(query: Partial<ModActionEditData>, values: Partial<ModActionEditData>): Promise<InsertionResult | false> {
+        const updateValues = <(keyof ModActionEditData)[]>Object.keys(values);
+        if (!updateValues.length) return false;
+        let sql = `UPDATE modactions SET`;
+        for (let i = 0; i < updateValues.length; i++) {
+            const opt = updateValues[i];
+            const val = values[opt];
+            sql += `${i === 0 ? "" : ","} \`${opt}\` = ${escape(val)}`;
+        }
+        sql += ` WHERE `;
+        const queryOptions = <(keyof ModActionEditData)[]>Object.keys(query);
+        if (!queryOptions.length) return false;
+        for (let i = 0; i < queryOptions.length; i++) {
+            const opt = queryOptions[i];
+            const val = query[opt];
+            sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+        }
+        console.log(sql)
+        const result = await <Promise<InsertionResult>>this.query(sql);
+        if (!result || !result.affectedRows) {
+            return false;
+        }
+        return result;
+        // const { guildid, userid, casenumber, superid } = query;// get provided data to log
+        // if (!guildid || !userid) return false;
+        // const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid ?? "");// see if there is a preexisting case with sid or casenumber
+
+        // let sql = ``;
+        // if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
+        //     sql = `DELETE FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+        // }
+        // const result = await <Promise<InsertionResult>>this.query(sql);
+        // if (!result || !result.affectedRows) {
+        //     return false;
+        // }
+        // return result;
     }
 
     /**
