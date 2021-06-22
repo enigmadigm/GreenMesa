@@ -130,13 +130,13 @@ export const Z = {
         return len ? Math.floor(Math.random() * len + 1) - 1 : Math.random();
     },
     generate(str: string): string {
-        const str_arr = str.split(''),
-            output = str_arr.map(function (a) {
-                if (a == " ") return a;
-                for (let i = 0, l = Z.random(16); i < l; i++) {
-                    const rand = <0 | 1 | 2>Z.random(3);
-                    a += Z.chars[rand][
-                        Z.random(Z.chars[rand].length)
+        const str_arr = str.split(''),// convert conversion text into character array
+            output = str_arr.map(function (a) {// remap this array into zalgo
+                if (a == " ") return a;// if the character is a space, return it
+                for (let i = 0, l = Z.random(16); i < l; i++) {// for a random number of iterations (up to 16)
+                    const rand = <0 | 1 | 2>Z.random(3);// a number from 0-2, represents which position to append
+                    a += Z.chars[rand][// append these random characters to the given character
+                        Z.random(Z.chars[rand].length)// select a random character from the character position (3 positions, up to the number of characters in that position)
                     ];
                 }
                 return a;
