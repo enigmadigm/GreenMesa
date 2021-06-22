@@ -58,7 +58,7 @@ export const command: Command<GuildMessageProps> = {
                 return;
             }
 
-            if (args.join(" ") == target?.nickname) {
+            if (args.join(" ") == target.nickname) {
                 await message.channel.send(`\`${a}\` is already the target's nickname`);
                 return;
             }
