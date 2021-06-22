@@ -125,7 +125,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "Designation",
-                            value: `${permLevelName}\n[Wʰᵃᵗ ᶦˢ ᵗʰᶦˢ?](https://enigmadigm.com/status/Designation/A%20property%20the%20bot%20gives%20you/It%20is%20used%20when%20checking%20for%20required%20or%20missing%20permissions)`,// How the bot internally sees the member in terms of permissions
+                            value: `${permLevelName}\n[ᵂʰᵃᵗ ⁱˢ ᵗʰⁱˢˀ](https://enigmadigm.com/status/Designation/A%20property%20the%20bot%20gives%20you/It%20is%20used%20when%20checking%20for%20required%20or%20missing%20permissions)`,// How the bot internally sees the member in terms of permissions
                             inline: true,
                         },
                         {
