@@ -13,14 +13,14 @@ function makeStarpost(starboard: Starboard, msg: Message, nsfw: boolean, count: 
         embed: {
             color: starboard.color ? starboard.color : 0xffd500,
             title: `\\⭐ Starpost`,
-            description: `**Stargazers:** ${count}${starboard.jumpLink ? `**[${capitalize(jumpSynonyms[Math.floor(Math.random() * jumpSynonyms.length)])} to message](${msg.url})**` : ""}`,
+            description: `${starboard.jumpLink ? `**[${capitalize(jumpSynonyms[Math.floor(Math.random() * jumpSynonyms.length)])} to message](${msg.url})**\n\n` : ""}`,
             footer: {
                 text: `ID: ${msg.id}${nsfw ? " · nsfw" : ""}`,
             }
         },
     };
 
-    const contentLimited = `\n\n${msg.content.slice(0, (2048 - (e.embed.description?.length ?? 0) - 7))}${msg.content.length > (2048 - (e.embed.description?.length ?? 0) - 7) ? "..." : ""}`;
+    const contentLimited = `${msg.content.slice(0, (2048 - (e.embed.description?.length ?? 0) - 7))}${msg.content.length > (2048 - (e.embed.description?.length ?? 0) - 7) ? "..." : ""}`;
     if (e.embed.description) {
         e.embed.description += contentLimited;
     }
@@ -52,6 +52,7 @@ export const service: MessageService = {
     async execute(client, event, m: (Message & GuildMessageProps) | MessageReaction, user?: User) {
         try {
             if (user?.bot) return;// unnecessary logic, but just to be safe
+            // changes to bot-starred messages (like stars on starposts) won't show up changed in their starposts because they won't make it past the check above
             if (event === "messageUpdate" && m instanceof Message && !m.partial) {// if it is an edited message, meaning a starpost could have been updated
                 const starPost = await client.database.getStarredMessage(m.id);
                 if (starPost && !starPost.locked && starPost.postid) {// if it is actually a post
@@ -72,7 +73,27 @@ export const service: MessageService = {
                 if (!msg.partial && msg.guild && msg.channel instanceof GuildChannel) {
                     const starboard = await client.database.getStarboardSetting(msg.guild.id);// getting the starboard settings
                     const count = (m.count || 0);
-                    if (!starboard.locked && starboard.channel && count >= starboard.threshold && (starboard.allowSelf || msg.author.id !== user.id) && starboard.emoji.length && (starboard.emoji.includes(m.emoji.name ?? "") || starboard.emoji.includes(m.emoji.id ?? "")) && !starboard.ignoredChannels.includes(msg.channel.id)) {// if the channel isn't locked, the id is present and not an empty string, the threshold is met, and the emoji is the right emoji
+                    console.log(m.emoji)
+                    if (
+                        !starboard.locked &&
+                        starboard.channel &&
+                        count >= starboard.threshold &&
+                        (starboard.allowSelf || msg.author.id !== user.id) &&
+                        starboard.emoji.length &&
+                        (starboard.emoji.find((e) => {
+                            const emojiKey = m.emoji.id ?? m.emoji.name ?? "";
+                            // console.log("emojikey", emojiKey)
+                            // console.log("emoji", e)
+                            const r = "^<(a)?:\\w{1,100}:" + emojiKey + ">$"
+                            // console.log("r", r)
+                            if (emojiKey === e || e.match(new RegExp(r))) {
+                                return true;
+                            }
+                            return false;
+                        })) &&
+                        !starboard.ignoredChannels.includes(msg.channel.id)
+                    ) {// if the channel isn't locked, the id is present and not an empty string, the threshold is met, and the emoji is the right emoji
+                        console.log("past emoji check")
                         const mid = msg.id;
                         const starPost = await client.database.getStarredMessage(mid);
                         const starChannel = msg.guild.channels.cache.get(starboard.channel);
