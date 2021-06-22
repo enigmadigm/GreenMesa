@@ -122,8 +122,19 @@ export interface CommandFlagDefinition {
      */
     v?: string;
     // aliases?: string[];
+    /**
+     * Specify if the value must be a number, the command will not be executed if a number value is not provided
+     */
     isNumber?: boolean;
+    /**
+     * Specify if the flag cannot be sent without a value, the command will not be executed if a value is not provided
+     */
     notEmpty?: boolean;
+    /**
+     * A custom filter to validate input
+     * If the filter does not match input, the command will not be executed, and a generic "invalid value" error will be displayed
+     */
+    filter?: RegExp;
 }
 
 export interface CommandArgumentFlag {
@@ -283,14 +294,41 @@ export interface CmdTrackingRow {
 
 export interface TwitchHookRow {
     id: string;
+    /**
+     * The channel ID of the streamer
+     */
     streamerid: string;
+    /**
+     * The ID of the guild to which this sub belongs
+     */
     guildid: Snowflake;
+    /**
+     * The ID of the channel in which notifications should be sent
+     */
     channelid: Snowflake;
+    /**
+     * The UID of the streamer
+     */
     streamerlogin: string;
+    /**
+     * The message to be sent in a notification
+     */
     message: string;
+    /**
+     * The date at which this stream will expire
+     */
     expires: string;
+    /**
+     * The configured number of streams the sub should be deleted after
+     */
     delafter: number;
+    /**
+     * Number of notifications received
+     */
     notified: number;
+    /**
+     * The date of the last notification received (not necessarily successfully sent)
+     */
     laststream: string;
 }
 
@@ -469,6 +507,13 @@ export interface GuildUserDataRow {
     modnote?: string;
 }
 
+export interface HomeEndpointData {
+    guild: {
+        id: string;
+        name: string;
+    };
+}
+
 export interface AutomoduleEndpointData extends GuildsEndpointBase {
     automodule: AutomoduleData;
 }
@@ -624,6 +669,10 @@ export interface ModActionData {
      * The given reason/case summary for the incident
      */
     summary: string;
+    /**
+     * A boolean representing whether or not the user was notified of the action taken against them, if necessary
+     */
+    notified: number;
 }
 
 export type ModActionEditData<R = 'guildid' | 'agent' | 'userid'> = Required<Pick<ModActionData, R>> & Partial<Omit<ModActionData, R>>;
@@ -859,6 +908,10 @@ export interface CommandsGlobalConf {
      * Send that the command is disabled in chat
      */
     respond?: boolean;
+    /**
+     * notify the user if they don't have the internal permissions to run the command
+     */
+    perm_notif?: boolean;
 }
 
 export interface CommandConf {
@@ -924,7 +977,7 @@ export interface CmdHistoryRow {
     invocation_time: string;
 }
 
-export interface InvitedData {// data for the people that have joined and were tracked by an invite
+export interface InvitedUserData {// data for the people that have joined and were tracked by an invite
     id: number;
     guildid: Snowflake;
     inviteat: string;
@@ -947,6 +1000,7 @@ export interface InviteStateData {
     guildid: Snowflake;
     invites: InviteData[];
     rewards?: Record<number, InviteLevelReward>;
+    reset_at?: string;
 }
 
 export interface InviteLevelReward {

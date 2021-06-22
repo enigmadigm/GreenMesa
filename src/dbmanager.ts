@@ -3,7 +3,7 @@ import config, { db_config } from "../auth.json";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedUserData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -114,7 +114,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `bans` int(11) DEFAULT 0, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `guilduserdata` ( `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `offenses` int(11) NOT NULL DEFAULT 0, `warnings` int(11) NOT NULL DEFAULT 0, `bans` int(11) NOT NULL DEFAULT 0, `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `roles` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `banned` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'false', `modnote` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `usertag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `endtime` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `agent` text COLLATE utf8mb4_unicode_ci NOT NULL, `agenttag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `modactions` ( `id` int(11) NOT NULL AUTO_INCREMENT, `superid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `usertag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `type` tinytext COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'log', `created` timestamp NOT NULL DEFAULT current_timestamp(), `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `endtime` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `agent` text COLLATE utf8mb4_unicode_ci NOT NULL, `agenttag` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `summary` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `notified` tinyint(1) NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE KEY `superid` (`superid`)) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             //async function dbInit() {}
             this.query("CREATE TABLE IF NOT EXISTS `cmdhistory` ( `invocation_id` int(11) NOT NULL AUTO_INCREMENT, `command_name` text COLLATE utf8mb4_unicode_ci NOT NULL, `message_content` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `userid` varchar(18) COLLATE utf8mb4_unicode_ci DEFAULT NULL, `messageid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `invocation_time` timestamp NOT NULL DEFAULT current_timestamp(), PRIMARY KEY (`invocation_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `invitetracking` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `inviteat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `invitee` text COLLATE utf8mb4_unicode_ci NOT NULL, `inviteename` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `inviter` text COLLATE utf8mb4_unicode_ci NOT NULL, `invitername` text COLLATE utf8mb4_unicode_ci NOT NULL, `code` text COLLATE utf8mb4_unicode_ci NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -151,6 +151,9 @@ export class DBManager {
     async getColor(name: string): Promise<number> {
         if (name === "embed") {
             return 0x2F3136;
+        }
+        if (name === "normal") {
+            return 0x202225;
         }
         if (!name.endsWith("_embed_color")) {
             name += "_embed_color";
@@ -834,16 +837,13 @@ export class DBManager {
         }
     }
 
-    async incrementTwitchNotified(guildid: string, started?: string): Promise<InsertionResult | false> {
-        try {
-            if (!guildid) return false;
-            const t = started || new Date().toISOString();
-            const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE guildid = ${escape(guildid)}`);
-            return result;
-        } catch (error) {
-            xlg.error(error);
-            return false;
-        }
+    /**
+     * Increment the notified column of all twitch subscriptions under an id
+     */
+    async incrementTwitchNotified(streamid: string, started?: string): Promise<InsertionResult | false> {
+        const t = started || new Date().toISOString();
+        const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE streamerid = ${escape(streamid)}`);
+        return result;
     }
 
     /**
@@ -1363,21 +1363,21 @@ export class DBManager {
     }
 
     /**
-     * Update a user's data. This is global data (opposed to guild data).
+     * Update the data for a modaction. This uses strictly guildid and casenumber to find the action
      */
-    async setModAction(data: ModActionEditData): Promise<InsertionResult | false> {
+    async setModAction(data: ModActionEditData<"guildid" | "userid" | "agent">): Promise<InsertionResult | false> {
         try {
-            const { guildid, userid, casenumber, type, endtime, agent, summary } = data;// get provided data to log
+            const { guildid, userid, casenumber, type, endtime, agent, summary, notified } = data;// get provided data to log
             let { superid, usertag, agenttag } = data;// make superid mutable
-            if (!guildid || !userid || typeof casenumber !== "number") return false;
-            const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid || "");// see if there is a preexisting case with sid or casenumber
+            if (!guildid || !userid || typeof casenumber !== "number") return false;// i was going to have it be ModActionEditData<"guildid" | "userid" | "agent" | "casenumber"> so i wouldn't have to check for the type here, but i realized that the casenumber is added later on in the data construction process so it would be a pain to assign the casenumber right away
+            const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid ?? "");// see if there is a preexisting case with sid or casenumber
             if (!superid) {
                 superid = uniquid();// generate sid if none is provided
             }
 
             let sql = ``;
             if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
-                sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), endtime = COALESCE(${escape(endtime)}, endtime), agent = COALESCE(${escape(agent)}, agent), summary = COALESCE(${escape(summary)}, summary), usertag = COALESCE(${escape(usertag)}, usertag), agenttag = COALESCE(${escape(agenttag)}, agenttag) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+                sql = `UPDATE modactions SET superid = COALESCE(${escape(superid)}, superid), type = COALESCE(${escape(type)}, type), endtime = COALESCE(${escape(endtime)}, endtime), agent = COALESCE(${escape(agent)}, agent), summary = COALESCE(${escape(summary)}, summary), usertag = COALESCE(${escape(usertag)}, usertag), agenttag = COALESCE(${escape(agenttag)}, agenttag), notified = COALESCE(${escape(notified)}, notified) WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
             } else {// else create a new case
                 if (!usertag) {
                     usertag = "";
@@ -1385,7 +1385,7 @@ export class DBManager {
                 if (!agenttag) {
                     agenttag = "";
                 }
-                sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, endtime, agent, summary, usertag, agenttag) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(endtime)}, ${escape(agent)}, ${escape(summary)}, ${escape(usertag)}, ${escape(agenttag)})`;
+                sql = `INSERT INTO modactions (superid, guildid, userid, casenumber, type, endtime, agent, summary, usertag, agenttag, notified) VALUES (${escape(superid)}, ${escape(guildid)}, ${escape(userid)}, ${escape(casenumber)}, ${escape(type)}, ${escape(endtime)}, ${escape(agent)}, ${escape(summary)}, ${escape(usertag)}, ${escape(agenttag)}, ${escape(notified)})`;
             }
             const result = await <Promise<InsertionResult>>this.query(sql);
             if (!result || !result.affectedRows) {
@@ -1396,6 +1396,84 @@ export class DBManager {
             xlg.error(error);
             return false;
         }
+    }
+
+    /**
+     * Update a user's data. This is global data (opposed to guild data).
+     */
+    async delModActions(query: ModActionEditData<"guildid">): Promise<InsertionResult | false> {
+        try {
+            const queryOptions = <(keyof ModActionEditData<"guildid">)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `DELETE FROM modactions WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<InsertionResult>>this.query(sql);
+            if (!result || !result.affectedRows) {
+                return false;
+            }
+            return result;
+            // const { guildid, userid, casenumber, superid } = query;// get provided data to log
+            // if (!guildid || !userid) return false;
+            // const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid ?? "");// see if there is a preexisting case with sid or casenumber
+
+            // let sql = ``;
+            // if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
+            //     sql = `DELETE FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+            // }
+            // const result = await <Promise<InsertionResult>>this.query(sql);
+            // if (!result || !result.affectedRows) {
+            //     return false;
+            // }
+            // return result;
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Update a user's data. This is global data (opposed to guild data).
+     */
+    async massUpdateModActions(query: Partial<ModActionEditData>, values: Partial<ModActionEditData>): Promise<InsertionResult | false> {
+        const updateValues = <(keyof ModActionEditData)[]>Object.keys(values);
+        if (!updateValues.length) return false;
+        let sql = `UPDATE modactions SET`;
+        for (let i = 0; i < updateValues.length; i++) {
+            const opt = updateValues[i];
+            const val = values[opt];
+            sql += `${i === 0 ? "" : ","} \`${opt}\` = ${escape(val)}`;
+        }
+        sql += ` WHERE `;
+        const queryOptions = <(keyof ModActionEditData)[]>Object.keys(query);
+        if (!queryOptions.length) return false;
+        for (let i = 0; i < queryOptions.length; i++) {
+            const opt = queryOptions[i];
+            const val = query[opt];
+            sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+        }
+        console.log(sql)
+        const result = await <Promise<InsertionResult>>this.query(sql);
+        if (!result || !result.affectedRows) {
+            return false;
+        }
+        return result;
+        // const { guildid, userid, casenumber, superid } = query;// get provided data to log
+        // if (!guildid || !userid) return false;
+        // const e = await this.getModActionByGuildCase(guildid, casenumber) || await this.getModActionBySuperId(superid ?? "");// see if there is a preexisting case with sid or casenumber
+
+        // let sql = ``;
+        // if (e && e.casenumber === casenumber) {// if a preexisting case was found, edit it
+        //     sql = `DELETE FROM modactions WHERE guildid = ${escape(guildid)} AND casenumber = ${escape(casenumber)}`;
+        // }
+        // const result = await <Promise<InsertionResult>>this.query(sql);
+        // if (!result || !result.affectedRows) {
+        //     return false;
+        // }
+        // return result;
     }
 
     /**
@@ -1632,9 +1710,9 @@ export class DBManager {
     //     }
     // }
 
-    async getInvites(query: Partial<InvitedData>): Promise<InvitedData[]> {
+    async getInvites(query: Partial<InvitedUserData>): Promise<InvitedUserData[]> {
         try {
-            const queryOptions = <(keyof Partial<InvitedData>)[]>Object.keys(query);
+            const queryOptions = <(keyof Partial<InvitedUserData>)[]>Object.keys(query);
             if (!queryOptions.length) return [];
             let sql = `SELECT * FROM invitetracking WHERE`;
             for (let i = 0; i < queryOptions.length; i++) {
@@ -1643,7 +1721,7 @@ export class DBManager {
                 sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
             }
             sql += ` ORDER BY inviteat DESC`;
-            const result = await <Promise<InvitedData[]>>this.query(`${sql}`);
+            const result = await <Promise<InvitedUserData[]>>this.query(`${sql}`);
             if (result.length) {
                 return result;
             }
@@ -1678,6 +1756,24 @@ export class DBManager {
                 return result;
             }
             return false;
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
+    async deleteInvites(query: Partial<InvitedUserData>): Promise<InsertionResult | false> {
+        try {
+            const queryOptions = <(keyof Partial<InvitedUserData>)[]>Object.keys(query);
+            if (!queryOptions.length) return false;
+            let sql = `DELETE FROM invitetracking WHERE`;
+            for (let i = 0; i < queryOptions.length; i++) {
+                const opt = queryOptions[i];
+                const val = query[opt];
+                sql += `${i === 0 ? "" : " AND"} \`${opt}\` = ${escape(val)}`;
+            }
+            const result = await <Promise<InsertionResult>>this.query(`${sql}`);
+            return result;
         } catch (error) {
             xlg.error(error);
             return false;

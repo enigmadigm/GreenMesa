@@ -1,5 +1,5 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps, InvitedData } from "src/gm";
+import { Command, GuildMessageProps, InvitedUserData } from "src/gm";
 import { MessageEmbed, MessageEmbedOptions, Snowflake } from "discord.js";
 import { PaginationExecutor } from '../../utils/pagination';
 import { getDashboardLink } from '../../utils/specials';
@@ -20,11 +20,11 @@ export const command: Command<GuildMessageProps> = {
         try {
             const data = await client.database.getInvites({ guildid: message.guild.id });
             if (!data.length) {
-                client.specials.sendError(message.channel)
+                await client.specials.sendError(message.channel)
                 return;
             }
-            const groupings: { user: Snowflake, invites: InvitedData[] }[] = [];
-            for (const invite of data) {
+            const groupings: { user: Snowflake, invites: InvitedUserData[] }[] = [];// an array of members and their invites data, it only includes member who have an invite count
+            for (const invite of data) {// for each invite in the guild, assign it to a grouping (grouping = member)
                 const pre = groupings.find(x => x.user === invite.inviter);
                 if (pre) {
                     pre.invites.push(invite);
@@ -34,6 +34,10 @@ export const command: Command<GuildMessageProps> = {
                         invites: [invite],
                     });
                 }
+            }
+            if (!groupings.length) {// if there were no invites to assign to userids
+                await client.specials.sendError(message.channel, `No invite data to show`, true);
+                return;
             }
             const embed: MessageEmbedOptions = {
                 color: await client.database.getColor("info"),
@@ -57,10 +61,10 @@ export const command: Command<GuildMessageProps> = {
             for (const page of pages) {
                 embeds.push(new MessageEmbed(embed).setDescription(embed.description + page));
             }
-            PaginationExecutor.createEmbed(message, embeds, undefined, true);
+            await PaginationExecutor.createEmbed(message, embeds, undefined, true);
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

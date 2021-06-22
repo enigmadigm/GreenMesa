@@ -462,9 +462,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         if (permLevel < pl) {// check if the user has the permissions needed to run the command
             // the access message is a setting for guilds, if disabled members will not be notified of missing permissions
-            const accessMessage = message.guild ? await client.database.getGuildSetting(message.guild, "access_message") : { value: "enabled" };
-            if (accessMessage && accessMessage.value === "enabled") {
-                await message.channel.send("You lack the permissions required to use this command");
+            // const accessMessage = message.guild ? await client.database.getGuildSetting(message.guild, "access_message") : { value: "enabled" };
+            if (!gc || typeof gc.perm_notif === "undefined" || gc.perm_notif) {
+                await message.channel.send("You lack the authority to use this command");
             }
             return;
         }
@@ -522,8 +522,12 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (command.permissions && command.permissions.length) {
             const lacking: PermissionString[] = [];
             for (const perm of command.permissions) {// check if a needed permission is not met, injects the embed_links perm if it isn't already specified
-                if (!message.guild?.me?.permissions.has(perm) ||
-                    (message.channel instanceof GuildChannel && !message.channel.permissionsFor(message.guild?.me || "")?.has(Permissions.FLAGS[perm]))) {
+                if (message.channel instanceof GuildChannel &&
+                    (
+                        !message.guild?.me?.permissions.has(perm) ||
+                        !message.channel.permissionsFor(message.guild?.me ?? "")?.has(Permissions.FLAGS[perm])
+                    )
+                ) {
                     lacking.push(perm);
                 }
             }
@@ -608,6 +612,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                             }
                             if (flagDef.isNumber && (/* !f.value ||  */!/^(?:[0-9]+(?:\.[0-9]+)?|0x[0-9A-Za-z]{6})$/.test(f.value))) {
                                 throw `You must provide a number value to the flag \`${flagDef.f}\`.`;
+                            }
+                            if (flagDef.filter && !flagDef.filter.test(f.value)) {
+                                throw `You passed an invalid value to flag \`${flagDef.f}\`.`;
                             }
                         }
                     }

@@ -6320,6 +6320,14 @@
         "description": "Meaning \"What's up?\""
     },
     {
+        "acronym": "TF",
+        "description": "The f*ck"
+    },
+    {
+        "acronym": "LGTM",
+        "description": "Looks good to me"
+    },
+    {
         "acronym": "ZZZZ",
         "description": "Sleeping (or bored)"
     }

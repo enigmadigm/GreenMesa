@@ -11,12 +11,14 @@ function constructMessage(content: string, flags: CommandArgumentFlag[], atts: C
     }
     if (flags.length) {
         for (const flag of flags) {
-            if (!fin.embed) fin.embed = new MessageEmbed();
-            fin.embed.setDescription("");
+            if (!fin.embed) {
+                fin.embed = new MessageEmbed();
+                fin.embed.setDescription("");
+            }
             if ((flag.name === "description" || flag.name === "desc") && flag.value) {
                 fin.embed.setDescription(flag.value);
             }
-            if ((flag.name === "color" || flag.name === "clr") && flag.value) {
+            if ((flag.name === "color" || flag.name === "colour" || flag.name === "clr") && flag.value) {
                 if (parseInt(flag.value, 10) && parseInt(flag.value, 10) <= 16777215) {
                     fin.embed.setColor(parseInt(flag.value, 10));
                 } else {

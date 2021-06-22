@@ -1,7 +1,8 @@
 import { permLevels } from '../../permissions';
 import { Command, GuildMessageProps } from "src/gm";
 import { stringToChannel } from '../../utils/parsers';
-import { MessageActionRow, MessageButton, MessageEmbedOptions } from 'discord.js';
+import { CollectorFilter, GuildChannel, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, Permissions } from 'discord.js';
+import Starboard from '../../struct/Starboard';
 
 export const command: Command<GuildMessageProps> = {
     name: "starboard",
@@ -72,7 +73,7 @@ export const command: Command<GuildMessageProps> = {
         },
     ],
     examples: [
-        "--channel=000000000000000000 --nsfw=1 --self=0"
+        "--channel=000000000000000000 --nsfw=1 --self=0",
     ],
     usage: "<...options>",
     args: false,
@@ -164,7 +165,7 @@ export const command: Command<GuildMessageProps> = {
                 const selfFlag = flags.find(x => x.name === "self");
                 if (selfFlag) {
                     if (!selfFlag.numberValue.between(0, 1, true)) {
-                        await client.specials.sendError(message.channel, `Value must be zero (0) or one (1)\nSelf-star status unchanged`);
+                        await client.specials.sendError(message.channel, `Value must be zero (0) or one (1)\nSelf-star setting unchanged`);
                         return;
                     }
                     sb.allowSelf = !!selfFlag.numberValue;
@@ -173,11 +174,11 @@ export const command: Command<GuildMessageProps> = {
                 const starFlag = flags.find(x => x.name === "star");
                 if (starFlag) {
                     if (!starFlag.numberValue.between(0, 1, true)) {
-                        await client.specials.sendError(message.channel, `Value must be zero (0) or one (1)\nPost-star status unchanged`);
+                        await client.specials.sendError(message.channel, `Value must be zero (0) or one (1)\nPost-star setting unchanged`);
                         return;
                     }
                     sb.starStarred = !!starFlag.numberValue;
-                    changes.push(`= post-star status now ${starFlag.numberValue == 1 ? "on" : "off"}`);
+                    changes.push(`= post starring now ${sb.starStarred ? "enabled" : "disabled"}`);
                 }
                 const emojiFlag = flags.find(x => x.name === "emoji");
                 if (emojiFlag) {
@@ -192,10 +193,10 @@ export const command: Command<GuildMessageProps> = {
                 const colorFlag = flags.find(x => x.name === "color");
                 if (colorFlag) {
                     if (!colorFlag.numberValue.between(0, 16777216, true)) {
-                        await client.specials.sendError(message.channel, `Color value must be within range: 0-16777216\nPost-star status unchanged`);
+                        await client.specials.sendError(message.channel, `Color value must be within range: 0-16777216\nColor unchanged`);
                         return;
                     }
-                    sb.starStarred = !!colorFlag.numberValue;
+                    sb.color = colorFlag.numberValue;
                     changes.push(`= accent color set to ${colorFlag.numberValue == 1 ? "on" : "off"}`);
                 }
                 await client.database.setStarboard(message.guild.id, sb);
@@ -210,79 +211,143 @@ export const command: Command<GuildMessageProps> = {
                 return;// could also get rid of this and make it display updated values right after
             }
             const starboardChannel = sb.channel ? message.guild.channels.cache.get(sb.channel) : undefined;
-            const e: MessageEmbedOptions = {
-                color: await client.database.getColor("info"),
-                title: `\`⭐\` Starboard`,
-                description: `Summary configuration of the starboard service${!starboardChannel ? `\n\\⚠️ **A channel is not set, the starboard will not work without one**` : ""}${sb.locked ? `\n\\⚠️ **The starboard is locked, no new posts will be added**` : ""}`,
-                fields: [
-                    {
-                        name: `Channel`,
-                        value: `${starboardChannel ? starboardChannel : "not set"}`,
-                        inline: true,
+            const makeSbEmbed = async (sb: Starboard, starboardChannel?: GuildChannel): Promise<{ e: MessageEmbed, comp: MessageActionRow[] }> => {
+                const e: MessageEmbedOptions = {
+                    color: await client.database.getColor("info"),
+                    title: `\`⭐\` Starboard`,
+                    description: `Summary configuration of the starboard service${!starboardChannel ? `\n\\⚠️ **A channel is not set, the starboard will not work without one**` : ""}${sb.locked ? `\n\\⚠️ **The starboard is locked, no new posts will be added**` : ""}`,
+                    fields: [
+                        {
+                            name: `Channel`,
+                            value: `${starboardChannel ? starboardChannel : "not set"}`,
+                            inline: true,
+                        },
+                        {
+                            name: `Lock Status`,
+                            value: `${sb.locked ? "🔒" : "🔓"}`,
+                            inline: true,
+                        },
+                        {
+                            name: `Emoji`,
+                            value: `${sb.emoji}`,
+                            inline: true,
+                        },
+                        {
+                            name: `Threshold`,
+                            value: `\`${sb.threshold}\` stars`,
+                            inline: true,
+                        },
+                        {
+                            name: `Show Jump Link`,
+                            value: `${sb.jumpLink ? "✅" : "❌"}`,
+                            inline: true,
+                        },
+                        {
+                            name: `NSFW`,
+                            value: `${sb.allowSensitive ? "✅" : "🚫"}`,
+                            inline: true,
+                        },
+                        {
+                            name: `Self Starring`,
+                            value: `${sb.allowSelf ? "✅" : "❌"}`,
+                            inline: true,
+                        },
+                        {
+                            name: `Add Star`,
+                            value: `${sb.starStarred ? "✅" : "❌"}`,
+                            inline: true,
+                        },
+                        {
+                            name: `Ignored ${sb.ignoredChannels.length ? `(${sb.ignoredChannels.length})` : ""}`,
+                            value: `${!sb.ignoredChannels.length ? "none" : `${sb.ignoredChannels.slice(0, 5).map(x => {//TODO: starboard: actually map this out properly, and don't just do it one-liner style
+                                const c = message.guild.channels.cache.get(x);
+                                return c;
+                            })}`}`,
+                        },
+                    ],
+                    footer: {
+                        text: `configure options using flags (${message.gprefix} ${this.name} --help)`,
                     },
-                    {
-                        name: `Lock Status`,
-                        value: `${sb.locked ? "locked/off" : "unlocked/watching"}`,
-                        inline: true,
-                    },
-                    {
-                        name: `Emoji`,
-                        value: `${sb.emoji}`,
-                        inline: true,
-                    },
-                    {
-                        name: `Threshold`,
-                        value: `\`${sb.threshold}\` stars`,
-                        inline: true,
-                    },
-                    {
-                        name: `Jump Link`,
-                        value: `${sb.jumpLink ? "will show" : "won't show"}`,
-                        inline: true,
-                    },
-                    {
-                        name: `NSFW`,
-                        value: `${sb.allowSensitive ? "sensitive content allowed" : "prohibited"}`,
-                        inline: true,
-                    },
-                    {
-                        name: `Self Starring`,
-                        value: `${sb.allowSelf ? "sure" : "nope"}`,
-                        inline: true,
-                    },
-                    {
-                        name: `Add Star`,
-                        value: `${sb.starStarred ? "sure" : "nope"}`,
-                        inline: true,
-                    },
-                    {
-                        name: `Ignored ${sb.ignoredChannels.length ? `(${sb.ignoredChannels.length})` : ""}`,
-                        value: `${!sb.ignoredChannels.length ? "none" : `${sb.ignoredChannels.slice(0, 5).map(x => {//TODO: starboard: actually map this out properly, and don't just do it one-liner style
-                            const c = message.guild.channels.cache.get(x);
-                            return c;
-                        })}`}`,
-                    },
-                ],
-                footer: {
-                    text: `configure options using flags (${message.gprefix} ${this.name} --help)`,
-                },
-            };
-            const row1 = new MessageActionRow()
-                .addComponents(
-                    new MessageButton().setDisabled(true).setLabel(`Threshold`).setStyle("PRIMARY").setCustomID("thresh"),
-                    new MessageButton().setDisabled(true).setLabel(`Emoji`).setStyle("PRIMARY").setCustomID("emoj"),
-                    new MessageButton().setDisabled(true).setLabel(`Jump`).setStyle("PRIMARY").setCustomID("jump"),
-                    new MessageButton().setDisabled(true).setLabel(`NSFW`).setStyle("DANGER").setCustomID("nsfw"),
-            );
-            const row2 = new MessageActionRow()
-                .addComponents(
-                    new MessageButton().setDisabled(true).setLabel(`Add Ignored`).setStyle("PRIMARY").setCustomID("aigno"),
-                    new MessageButton().setDisabled(true).setLabel(`Remove Ignored`).setStyle("PRIMARY").setCustomID("rigno"),
-                    new MessageButton().setDisabled(true).setLabel(`Clear Ignored`).setStyle("DANGER").setCustomID("cigno"),
-                )
-            await message.channel.send({
+                };
+                // 🔗
+                const row1 = new MessageActionRow()
+                    .addComponents(
+                        new MessageButton().setDisabled(true).setLabel(`Set Threshold`).setStyle("PRIMARY").setCustomID("thresh"),
+                        new MessageButton().setDisabled(true).setLabel(`Set Emoji`).setStyle("PRIMARY").setCustomID("emoj"),
+                        new MessageButton().setDisabled(false).setLabel(`Jump Link ${sb.jumpLink ? "✖" : "✔"}`).setStyle("PRIMARY").setCustomID("jump"),
+                        new MessageButton().setDisabled(false).setLabel(`NSFW ${sb.allowSensitive ? "✖" : "✔"}`).setStyle("DANGER").setCustomID("nsfw"),
+                    );
+                const row2 = new MessageActionRow()
+                    .addComponents(
+                        new MessageButton().setDisabled(true).setLabel(`+ Ignored`).setStyle("PRIMARY").setCustomID("aigno"),
+                        new MessageButton().setDisabled(true).setLabel(`- Ignored`).setStyle("PRIMARY").setCustomID("rigno"),
+                        new MessageButton().setDisabled(false).setLabel(`Clear Ignored`).setStyle("DANGER").setCustomID("cigno"),
+                    )
+                return { e: new MessageEmbed(e), comp: [row1, row2] };
+            }
+            const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+            const confMsg = await message.channel.send({
                 embed: e,
-                components: [row1, row2],
+                components: comp,
+            });
+            const filter: CollectorFilter<[MessageComponentInteraction]> = (inter) => {
+                if (inter.user.id === message.author.id ||
+                    (inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & 0x8n) === 0x8n)
+                ) {
+                    return true;
+                }
+                return false;
+            }
+            const confButtonCollector = confMsg.createMessageComponentInteractionCollector(filter, {
+                time: 1000 * 120,
+            });
+
+            confButtonCollector.on("collect", async (inter) => {
+                switch (inter.customID) {
+                    case "cigno": {
+                        if (sb.ignoredChannels.length) {
+                            sb.ignoredChannels = [];
+                            const { e } = await makeSbEmbed(sb, starboardChannel);
+                            await inter.update(e);
+                            // await confMsg.edit(e);
+                        } else {
+                            await inter.deferUpdate();
+                        }
+                        break;
+                    }
+                    case "jump": {
+                        sb.jumpLink = !sb.jumpLink;
+                        const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                        await confMsg.edit({
+                            components: comp,
+                        });
+                        await inter.update(e);
+                        break;
+                    }
+                    case "nsfw": {
+                        sb.allowSensitive = !sb.allowSensitive;
+                        const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                        await confMsg.edit({
+                            components: comp,
+                        });
+                        await inter.update(e);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            });
+
+            confButtonCollector.on("end", async () => {
+                // if (confMsg.deletable) {
+                //     await confMsg.delete();
+                // }
+                if (confMsg.editable) {
+                    await confMsg.edit({
+                        // embed: new MessageEmbed(confMsg.embeds[0]),
+                        components: [],
+                    });
+                }
             })
         } catch (error) {
             xlg.error(error);

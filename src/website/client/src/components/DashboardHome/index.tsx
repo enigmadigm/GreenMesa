@@ -1,15 +1,11 @@
 import React from 'react';
-import { /*Input, Button, Container*/ Switch, FormControl, FormLabel, Center, Spinner } from '@chakra-ui/react';
+import { Switch, FormControl, FormLabel, Center, Spinner } from '@chakra-ui/react';
 import { Formik, ErrorMessage } from "formik";
 import { HomeProps } from '../../pages/DashboardPage';
 import * as yup from 'yup';
+import { HomeEndpointData } from '../../../../../gm';
 
-/*function ModSwitch(event: React.ChangeEvent<HTMLInputElement>) {
-    console.log(event)
-}*/
-
-export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<MatchParams> */) {
-    const [permNotif, setPermNotif] = React.useState<boolean>(false)
+export function DashboardHome(props: HomeProps) {
     const [moderation, setModeration] = React.useState(props.meta.moderation || false);
     const firstMod = React.useRef(true);
     const { setStatus } = props;
@@ -18,9 +14,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
     React.useEffect(() => {
         fetch(`/api/discord/guilds/${props.meta.id}/home`)
             .then(x => x.json())
-            .then(d => {
-                //console.log(d)
-                setPermNotif(d.home.permNotif);
+            .then((d: HomeEndpointData) => {
                 setLoaded(true);
             })
             .catch(e => {
@@ -63,37 +57,6 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
         prefix: yup.string().required()
     });
 
-    const handleAccessMessageClicked = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e);
-        let am = false;
-        if (e.target.checked) {
-            am = true;
-        }
-        const hdrs = new Headers();
-        hdrs.append("Content-Type", "application/x-www-form-urlencoded");
-        const fd = new URLSearchParams();
-        fd.append("permnotif", `${am}`);
-        const obj = {
-            method: 'PUT',
-            headers: hdrs,
-            body: fd
-        };
-        try {
-            fetch(`/api/discord/guilds/${props.meta.id}/permnotif`, obj)
-                .then(x => x.json())
-                .then((d: { guild: { id: string, permNotif: string } }) => {
-                    if (d.guild && d.guild.permNotif === `${am}`) {
-                        setStatus({ msg: "Saved.", success: true });
-                    } else {
-                        setStatus({ msg: "Failed to save.", success: false });
-                    }
-                })
-        } catch (error) {
-            console.error(error);
-            setStatus({ msg: "Failed to save.", success: false });
-        }
-    }
-
     return loaded ? (
         <div style={{ width: "100%", padding: "0 15px", marginLeft: "auto", marginRight: "auto" }}>
             <br />
@@ -123,7 +86,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                 </FormLabel>
                                 <Switch id="enable-moderation-all" onChange={(e) => setModeration(e.target.checked)} defaultChecked={props.meta.moderation} />
                             </FormControl>
-                            <hr style={{ marginTop: 10, marginBottom: 15 }} />
+                            {/* <hr style={{ marginTop: 10, marginBottom: 15 }} />
                             <h4 className="cardsubtitle">No Perms Access Message</h4>
                             <p style={{ marginBottom: "1rem" }}>Toggle the option to notify users that they don't have the required permissions when they use an elevated command.</p>
                             <FormControl display="flex" alignItems="center">
@@ -131,7 +94,7 @@ export function DashboardHome(props: HomeProps/* {match}: RouteComponentProps<Ma
                                         Enable Access Message
                                 </FormLabel>
                                 <Switch id="enable-permnotif" onChange={handleAccessMessageClicked} defaultChecked={permNotif} />
-                            </FormControl>
+                            </FormControl> */}
                             {/*status && status.module === "moderation" && (
                                 <>
                                     <br />

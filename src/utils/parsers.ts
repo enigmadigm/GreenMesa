@@ -279,11 +279,17 @@ export function parseFriendlyUptime(t: { hours: number, minutes: number, seconds
     return tt.join("");
 }
 
-export function titleCase(str: string): string {
+/**
+ * Convert a string to title case (capitalize every word split by a delimiter)
+ * @param str The string to onvert to title case
+ * @param altDelim A delimiter regex to use contrary to the default " "
+ * @returns A string in titlecase
+ */
+export function titleCase(str: string, altDelim?: RegExp): string {
     if (str === "nsfw") {
         return "NSFW";
     }
-    const splitStr = str.toLowerCase().split(' ');
+    const splitStr = str.toLowerCase().split(altDelim ?? ' ');
     for (let i = 0; i < splitStr.length; i++) {
         // You do not need to check if i is larger than splitStr length, as your for does that for you
         // Assign it back to the array
@@ -335,19 +341,23 @@ export function parseOptions(opts: string[]): string[] {
  * @returns a list of specified options
  */
 export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[], taken: string[] } {
+    // a side effect of the regex i chose to use is the possible return of flag values wrapped in double quotations
+    // the fat is trimmed below in the exec loop
     const a = toParse.join(" ");
     const opts: CommandArgumentFlag[] = [];
     // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
     const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=("[\w\s<@#&!>$*()\-=+^%:';[\]{}\\|]*"|[\w<@#&!>$*()\-=+^%:';[\]{}\\|]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    // const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=(?:"([\w\s<@#&!>$*()\-=+^%:';[\]{}\\|]*)"|([\w<@#&!>$*()\-=+^%:';[\]{}\\|]+)))?(?![^\s])/g;// this regex will not return any flag values wrapped in  
     let match;
     let matchCycle = 0;
     let currentStartingIndex = 0;
     const taken: string[] = [];
-    while ((match = matcher.exec(a)) !== null) {
-        if (!matchCycle && match.index) {
+    while ((match = matcher.exec(a)) !== null) {// getting the next flag match
+        if (!matchCycle && match.index) {// if the match begins at a non-zero index, but there have not been previous matches in front of it
             break;
         }
-        if (new RegExp(matcher).exec(a.slice(currentStartingIndex).trim())?.index) {
+        if (new RegExp(matcher).exec(a.slice(currentStartingIndex).trim())?.index) {// if the current match does not begin after some non-matching material
+            // (i assume, i did not write down the process when i initially scripted this)
             break;
         }
         const g1 = match[1] || "";

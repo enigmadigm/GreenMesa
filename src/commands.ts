@@ -70,7 +70,7 @@ export class Commands {
         for (const cmdfile of cmds) {
             const { command } = await import(`${dir}${cmdfile}`);
             if (!command) {
-                console.log(`$ ${this.commandNumber} - \x1b[33mWARNING: \x1b[32mno command contained in this file, it will not work\x1b[0m`);
+                console.log(`$ ${this.commandNumber} - $${cmdfile} \x1b[33mWARNING: \x1b[32mno command contained in this file, it will not work\x1b[0m`);
                 continue;
             }
 

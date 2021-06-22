@@ -2,7 +2,7 @@ import { permLevels } from '../../permissions';
 import { Command, GuildMessageProps, XClient, XKCDEndpointResponse } from "src/gm";
 import fetch from 'node-fetch';
 import { randomIntFromInterval } from "../../utils/parsers";
-import { CollectorFilter, DMChannel, GuildChannel, MessageAttachment, MessageEmbed, MessageReaction, NewsChannel, TextChannel, User } from "discord.js";
+import { CollectorFilter, DMChannel, MessageAttachment, MessageEmbed, MessageReaction, NewsChannel, TextChannel, User } from "discord.js";
 
 const HOST = "http://xkcd.com/";
 
@@ -13,14 +13,6 @@ async function getComic(number: number): Promise<XKCDEndpointResponse | number> 
     }
     const j: XKCDEndpointResponse = await r.json();
     return j;
-}
-
-function checkFilePerms(c: GuildChannel) {
-    if (!c.isText() || !c.guild.me) return false;
-    if (!c.permissionsFor(c.guild.me)?.has("ATTACH_FILES")) {
-        return false;
-    }
-    return true;
 }
 
 async function sendById(client: XClient, channel: TextChannel | DMChannel | NewsChannel, num: number, wid = "") {
@@ -99,11 +91,10 @@ random
                 });
                 return;
             }
-            await message.channel.startTyping();
+            message.channel.startTyping();
             let ai = 0;
             switch (args[ai].toLowerCase()) {
                 case "latest": {
-                    if (!checkFilePerms(message.channel)) break;
                     ai++;
                     const o = args[ai];
                     if (o) {
@@ -123,7 +114,6 @@ random
                     break;
                 }
                 case "byid": {
-                    if (!checkFilePerms(message.channel)) break;
                     ai++;
                     const o = args[ai];
                     if (!o) {
@@ -143,7 +133,6 @@ random
                     break;
                 }
                 case "random": {
-                    if (!checkFilePerms(message.channel)) break;
                     ai++;
                     const o = args[ai];
                     if (o) {
@@ -153,12 +142,11 @@ random
                     const r = await fetch(`${HOST}/info.0.json`);
                     const j: XKCDEndpointResponse = await r.json();
                     const currentNumber = j.num;
-
+                    
                     await sendById(client, message.channel, randomIntFromInterval(1, currentNumber), message.author.id);
                     break;
                 }
                 case "search": {
-                    if (!checkFilePerms(message.channel)) break;
                     ai++;
                     const o = args.slice(1, args.length).join("+");
                     if (!o) {
@@ -178,7 +166,6 @@ random
                     // ai++;
                     const o = args[ai];
                     if (o && /^[0-9]+$/.test(o)) {
-                        if (!checkFilePerms(message.channel)) break;
                         const pi = parseInt(o, 10);
                         await sendById(client, message.channel, pi, message.author.id);
                         break;
