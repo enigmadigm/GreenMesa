@@ -1843,7 +1843,8 @@ export class DBManager {
 
     async setStarredMessage(d: StarredMessageData): Promise<InsertionResult> {
         const { messageid, channelid, guildid, authorid, stars, nsfw, locked, postid, postchannel } = d;
-        const r = await <Promise<InsertionResult>>this.query(`INSERT INTO starboard (messageid, guildid, channelid, authorid, stars, nsfw, locked, postid, postchannel) VALUES (${escape(messageid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(authorid)}, ${escape(stars)}, ${escape(nsfw)}, ${escape(locked)}, ${escape(postid)}, ${escape(postchannel)}) ON DUPLICATE KEY UPDATE guildid = COALESCE(${escape(guildid)}, guildid), guildid = COALESCE(${escape(guildid)}, guildid), channelid = COALESCE(${escape(channelid)}, channelid), stars = COALESCE(${escape(stars)}, stars), nsfw = COALESCE(${nsfw}, nsfw), locked = COALESCE(${escape(locked)}, locked), postid = COALESCE(${escape(postid)}, postid), postchannel = COALESCE(${escape(postchannel)}, postchannel)`);
+        const sql = `INSERT INTO starboard (messageid, guildid, channelid, authorid, stars, nsfw, locked, postid, postchannel) VALUES (${escape(messageid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(authorid)}, ${escape(stars)}, ${escape(nsfw)}, ${escape(locked)}, ${escape(postid)}, ${escape(postchannel)}) ON DUPLICATE KEY UPDATE guildid = COALESCE(${escape(guildid)}, guildid), authorid = COALESCE(${escape(authorid)}, authorid), channelid = COALESCE(${escape(channelid)}, channelid), stars = COALESCE(${escape(stars)}, stars), nsfw = COALESCE(${nsfw}, nsfw), locked = COALESCE(${escape(locked)}, locked), postid = COALESCE(${escape(postid)}, postid), postchannel = COALESCE(${escape(postchannel)}, postchannel)`;
+        const r = await <Promise<InsertionResult>>this.query(sql);
         return r;
     }
 }

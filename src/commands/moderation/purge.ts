@@ -23,6 +23,7 @@ export const command: Command<GuildMessageProps> = {
     guildOnly: true,
     permLevel: permLevels.mod,
     moderation: true,
+    permissions: ["MANAGE_MESSAGES"],
     async execute(client, message, args, flags) {
         try {
             if (!(await argsMustBeNum(message.channel, [args[0]]))) {// check to make sure first argument is a number (any number)

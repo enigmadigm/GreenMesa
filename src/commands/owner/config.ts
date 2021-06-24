@@ -86,7 +86,7 @@ export const command: Command = {
                         message.channel.send("Please retry and supply:```\nSELECTOR : SELECTOR VALUE : NEW VALUE\n```");
                         return false;
                     }
-                    const status = await client.database.editGlobalSettings(args[argIndex] === "name" ? "name" : "category", args[argIndex + 1], message.author, args.slice(argIndex + 2).join("_"));
+                    const status = await client.database.editGlobalSettings(args[argIndex] === "category" ? "category" : "name", args[argIndex + 1], message.author, args.slice(argIndex + 2).join("_"));
                     if (!status) {
                         client.specials?.sendError(message.channel);
                         return;
