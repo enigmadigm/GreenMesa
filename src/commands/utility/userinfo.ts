@@ -27,16 +27,20 @@ function getPresenceEmoji(target: GuildMember) {
 
 export const command: Command<GuildMessageProps> = {
     name: "userinfo",
-    description: "get info on any member",
+    description: {
+        short: "get info on any member",
+        long: "Get detailed information on any provided member."
+    },
     aliases: ["ui"],
     cooldown: 3,
     guildOnly: true,
-    permissions: ["EMBED_LINKS"],
     async execute(client, message, args) {
         try {
             message.channel.startTyping();
-            const target = await stringToMember(message.guild, args.join(" ")) || message.member;
-            if (target.id === message.author.id && args.length) {
+            const a = args.join(" ");
+            const memberFind = await stringToMember(message.guild, a);
+            const target = memberFind ?? message.member;
+            if (!memberFind && args.length) {
                 await client.specials.sendError(message.channel, `That user could not be found`);
                 message.channel.stopTyping();
                 return;
