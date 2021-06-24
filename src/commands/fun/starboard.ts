@@ -1,7 +1,7 @@
 import { permLevels } from '../../permissions';
 import { Command, GuildMessageProps } from "src/gm";
 import { stringToChannel } from '../../utils/parsers';
-import { CollectorFilter, GuildChannel, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, Permissions } from 'discord.js';
+import { CollectorFilter, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, Permissions } from 'discord.js';
 import Starboard from '../../struct/Starboard';
 
 export const command: Command<GuildMessageProps> = {
@@ -183,6 +183,7 @@ export const command: Command<GuildMessageProps> = {
                 const emojiFlag = flags.find(x => x.name === "emoji");
                 if (emojiFlag) {
                     // may or may not be a reliable emoji test
+                    // i have a more thorough emoji test in the flag parser, so 🤷‍♂️
                     if (!/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]|<a?:\w{1,100}:[0-9]{18}>)/.test(emojiFlag.value)) {
                         await client.specials.sendError(message.channel, `Value is not an emoji\nEmoji unchanged`);
                         return;
@@ -212,6 +213,13 @@ export const command: Command<GuildMessageProps> = {
             }
             const starboardChannel = sb.channel ? message.guild.channels.cache.get(sb.channel) : undefined;
             const makeSbEmbed = async (sb: Starboard, starboardChannel?: GuildChannel): Promise<{ e: MessageEmbed, comp: MessageActionRow[] }> => {
+                const ignoredChannels = sb.ignoredChannels.map(x => {
+                    return message.guild.channels.cache.get(x);
+                }).filter(x => !!x);
+                while (ignoredChannels.map((x) => `${x}`).join(", ").length > 1024) {
+                    ignoredChannels.pop();
+                }
+                // ^^^^^^^^ this part could be reduced to a one-liner in the embed options as a array#reduce() function
                 const e: MessageEmbedOptions = {
                     color: await client.database.getColor("info"),
                     title: `\`⭐\` Starboard`,
@@ -220,7 +228,7 @@ export const command: Command<GuildMessageProps> = {
                         {
                             name: `Channel`,
                             value: `${starboardChannel ? starboardChannel : "not set"}`,
-                            inline: true,
+                            // inline: true,
                         },
                         {
                             name: `Lock Status`,
@@ -243,11 +251,6 @@ export const command: Command<GuildMessageProps> = {
                             inline: true,
                         },
                         {
-                            name: `NSFW`,
-                            value: `${sb.allowSensitive ? "✅" : "🚫"}`,
-                            inline: true,
-                        },
-                        {
                             name: `Self Starring`,
                             value: `${sb.allowSelf ? "✅" : "❌"}`,
                             inline: true,
@@ -258,11 +261,13 @@ export const command: Command<GuildMessageProps> = {
                             inline: true,
                         },
                         {
-                            name: `Ignored ${sb.ignoredChannels.length ? `(${sb.ignoredChannels.length})` : ""}`,
-                            value: `${!sb.ignoredChannels.length ? "none" : `${sb.ignoredChannels.slice(0, 5).map(x => {//TODO: starboard: actually map this out properly, and don't just do it one-liner style
-                                const c = message.guild.channels.cache.get(x);
-                                return c;
-                            })}`}`,
+                            name: `NSFW`,
+                            value: `${sb.allowSensitive ? "✅" : "🚫"}`,
+                            inline: true,
+                        },
+                        {
+                            name: `Ignored Channels ${sb.ignoredChannels.length ? `(${sb.ignoredChannels.length})` : ""}`,
+                            value: `${ignoredChannels.length ? ignoredChannels.map((x) => `${x}`).join(", ") : "none"}`,
                         },
                     ],
                     footer: {
@@ -270,20 +275,28 @@ export const command: Command<GuildMessageProps> = {
                     },
                 };
                 // 🔗
-                const row1 = new MessageActionRow()
-                    .addComponents(
-                        new MessageButton().setDisabled(true).setLabel(`Set Threshold`).setStyle("PRIMARY").setCustomID("thresh"),
-                        new MessageButton().setDisabled(true).setLabel(`Set Emoji`).setStyle("PRIMARY").setCustomID("emoj"),
-                        new MessageButton().setDisabled(false).setLabel(`Jump Link ${sb.jumpLink ? "✖" : "✔"}`).setStyle("PRIMARY").setCustomID("jump"),
-                        new MessageButton().setDisabled(false).setLabel(`NSFW ${sb.allowSensitive ? "✖" : "✔"}`).setStyle("DANGER").setCustomID("nsfw"),
-                    );
-                const row2 = new MessageActionRow()
-                    .addComponents(
-                        new MessageButton().setDisabled(true).setLabel(`+ Ignored`).setStyle("PRIMARY").setCustomID("aigno"),
-                        new MessageButton().setDisabled(true).setLabel(`- Ignored`).setStyle("PRIMARY").setCustomID("rigno"),
-                        new MessageButton().setDisabled(false).setLabel(`Clear Ignored`).setStyle("DANGER").setCustomID("cigno"),
-                    )
-                return { e: new MessageEmbed(e), comp: [row1, row2] };
+                return {
+                    e: new MessageEmbed(e), comp: [
+                        new MessageActionRow()
+                            .addComponents(
+                                new MessageButton().setDisabled(false).setLabel(`${sb.jumpLink ? "✖" : "✔"} Jump Link`).setStyle("PRIMARY").setCustomID("jump"),
+                                new MessageButton().setDisabled(false).setLabel(`${sb.allowSensitive ? "✖" : "✔"} NSFW`).setStyle("PRIMARY").setCustomID("nsfw"),
+                                new MessageButton().setDisabled(false).setLabel(`${sb.allowSelf ? "✖" : "✔"} Self`).setStyle("PRIMARY").setCustomID("self"),
+                                new MessageButton().setDisabled(false).setLabel(`${sb.starStarred ? "✖" : "✔"} After-Star`).setStyle("PRIMARY").setCustomID("pstar"),
+                            ),
+                        new MessageActionRow()
+                            .addComponents(
+                                new MessageButton().setDisabled(false).setLabel(`Set Threshold`).setStyle("PRIMARY").setCustomID("thresh"),
+                                new MessageButton().setDisabled(false).setLabel(`Set Emoji`).setStyle("PRIMARY").setCustomID("emoj"),
+                        ),
+                        new MessageActionRow()
+                            .addComponents(
+                                new MessageButton().setDisabled(false).setLabel(`+ Ignored`).setStyle("PRIMARY").setCustomID("aigno"),
+                                new MessageButton().setDisabled(!sb.ignoredChannels.length).setLabel(`- Ignored`).setStyle("PRIMARY").setCustomID("rigno"),
+                                new MessageButton().setDisabled(!sb.ignoredChannels.length).setLabel(`Clear Ignored`).setStyle("DANGER").setCustomID("cigno"),
+                            ),
+                    ]
+                };
             }
             const { e, comp } = await makeSbEmbed(sb, starboardChannel);
             const confMsg = await message.channel.send({
@@ -303,13 +316,16 @@ export const command: Command<GuildMessageProps> = {
             });
 
             confButtonCollector.on("collect", async (inter) => {
+                const secondStepFilter: CollectorFilter<[Message]> = (m) => m.author.id === inter.user.id;
                 switch (inter.customID) {
                     case "cigno": {
                         if (sb.ignoredChannels.length) {
                             sb.ignoredChannels = [];
-                            const { e } = await makeSbEmbed(sb, starboardChannel);
+                            const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                            await confMsg.edit({
+                                components: comp,
+                            });
                             await inter.update(e);
-                            // await confMsg.edit(e);
                         } else {
                             await inter.deferUpdate();
                         }
@@ -333,9 +349,194 @@ export const command: Command<GuildMessageProps> = {
                         await inter.update(e);
                         break;
                     }
-                    default:
+                    case "self": {
+                        sb.allowSelf = !sb.allowSelf;
+                        const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                        await confMsg.edit({
+                            components: comp,
+                        });
+                        await inter.update(e);
                         break;
+                    }
+                    case "pstar": {
+                        sb.starStarred = !sb.starStarred;
+                        const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                        await confMsg.edit({
+                            components: comp,
+                        });
+                        await inter.update(e);
+                        break;
+                    }
+                    case "emoj": {
+                        await inter.reply({
+                            content: `Send an emoji`,
+                            ephemeral: true,
+                        });
+                        const emojiSubs = await confMsg.channel.awaitMessages(secondStepFilter, { max: 1, time: 1000 * 10 });
+                        const emojiMessage = emojiSubs.first();
+                        if (emojiMessage) {
+                            if (!/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]|<a?:\w{1,100}:[0-9]{18}>)/.test(emojiMessage.content)) {
+                                await inter.followUp({
+                                    content: `You did not give a valid emoji`,
+                                    ephemeral: true,
+                                });
+                                return;
+                            }
+                            // if (inter.replied) {
+                            //     await inter.deleteReply();// cannot delete an ephemeral message
+                            // }
+                            const newEmoji = emojiMessage.content;
+                            sb.emoji = [newEmoji];
+                            if (emojiMessage.deletable) {
+                                await emojiMessage.delete();
+                            }
+                            const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                            await confMsg.edit({
+                                components: comp,
+                            });
+                            await confMsg.edit(e);
+                            await inter.followUp({
+                                content: `The Starboard will now watch for ${newEmoji}`,
+                                ephemeral: true,
+                            });
+                        } else {
+                            await inter.editReply({
+                                content: `You didn't send an emoji`,
+                            });
+                        }
+                        break;
+                    }
+                    case "thresh": {
+                        await inter.reply({
+                            content: `Send the new threshold (number)`,
+                            ephemeral: true,
+                        });
+                        const collected = await confMsg.channel.awaitMessages(secondStepFilter, { max: 1, time: 1000 * 10 });
+                        const threshMessage = collected.first();
+                        if (threshMessage) {
+                            if (!/[0-9]+/.test(threshMessage.content)) {
+                                await inter.followUp({
+                                    content: `You did not give a valid number for a threshold`,
+                                    ephemeral: true,
+                                });
+                                return;
+                            }
+                            const n = parseInt(threshMessage.content, 10);
+                            if (!n.between(1, 100, true)) {
+                                await inter.followUp({
+                                    content: `Threshold value must be between 1 and 100 inclusive`,
+                                    ephemeral: true,
+                                });
+                                return;
+                            }
+                            sb.threshold = n;
+                            if (threshMessage.deletable) {
+                                await threshMessage.delete();
+                            }
+                            const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                            await confMsg.edit({
+                                components: comp,
+                            });
+                            await confMsg.edit(e);
+                            await inter.followUp({
+                                content: `The Starboard will now wait for ${n} reactions before posting new entries`,
+                                ephemeral: true,
+                            });
+                        } else {
+                            await inter.editReply({
+                                content: `You didn't send a number`,
+                            });
+                        }
+                        break;
+                    }
+                    case "rigno": {
+                        if (sb.ignoredChannels.length) {
+                            await inter.reply({
+                                content: `Send the channel you would like to remove`,
+                                ephemeral: true,
+                            });
+                            const collected = await confMsg.channel.awaitMessages(secondStepFilter, { max: 1, time: 1000 * 10 });
+                            const channelString = collected.first();
+                            if (channelString) {
+                                const channel = stringToChannel(message.guild, channelString.content, true, true);
+                                if (!channel) {
+                                    await inter.followUp({
+                                        content: `That is not a known channel`,
+                                        ephemeral: true,
+                                    });
+                                    return;
+                                }
+                                const ind = sb.ignoredChannels.findIndex(x => x === channel.id);
+                                if (ind < 0) {
+                                    await inter.followUp({
+                                        content: `${channel} isn't on the ignore list (which means I can't remove it, obviously)`,
+                                        ephemeral: true,
+                                    });
+                                    return;
+                                }
+                                sb.ignoredChannels.splice(ind, 1);
+                                if (channelString.deletable) {
+                                    await channelString.delete();
+                                }
+                                const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                                await confMsg.edit({
+                                    components: comp,
+                                });
+                                await confMsg.edit(e);
+                                await inter.followUp({
+                                    content: `The channel ${channel} has been removed from the Starboard's list of ignored channels.\nReactions in this channel can now affect the Starboard.`,
+                                    ephemeral: true,
+                                });
+                            } else {
+                                await inter.editReply({
+                                    content: `You didn't send anything (don't worry, administrating isn't for everyone)`,
+                                });
+                            }
+                        } else {
+                            await inter.deferUpdate();
+                        }
+                        break;
+                    }
+                    case "aigno": {
+                        await inter.reply({
+                            content: `Send the channel you would like to add`,
+                            ephemeral: true,
+                        });
+                        const collected = await confMsg.channel.awaitMessages(secondStepFilter, { max: 1, time: 1000 * 10 });
+                        const channelString = collected.first();
+                        if (channelString) {
+                            const channel = stringToChannel(message.guild, channelString.content, true, true);
+                            if (!channel) {
+                                await inter.followUp({
+                                    content: `That is not a known channel`,
+                                    ephemeral: true,
+                                });
+                                return;
+                            }
+                            sb.ignoredChannels.push(channel.id);
+                            if (channelString.deletable) {
+                                await channelString.delete();
+                            }
+                            const { e, comp } = await makeSbEmbed(sb, starboardChannel);
+                            await confMsg.edit({
+                                components: comp,
+                            });
+                            await confMsg.edit(e);
+                            await inter.followUp({
+                                content: `The channel ${channel} has been added to the Starboard's list of ignored channels.\nReactions in this channel will not result in a posting.`,
+                                ephemeral: true,
+                            });
+                        } else {
+                            await inter.editReply({
+                                content: `You didn't send anything (don't worry, administrating isn't for everyone)`,
+                            });
+                        }
+                        break;
+                    }
+                    default:
+                        return;
                 }
+                await client.database.setStarboard(message.guild.id, sb);
             });
 
             confButtonCollector.on("end", async () => {
