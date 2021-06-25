@@ -22,11 +22,19 @@ export const command: Command<GuildMessageProps> = {
         long: "Toggles a role on a member or all members.\nThis command can be used by any members with role management permissions. Members will only be able to toggle roles on themselves that are below the highest one they have.\nSend 'all' or '+all' to give the role to everyone.\n'-all' will remove it from everyone.\nSpecify @member or +@member to give the role to a member.\n-@member will remove the role\nYou can even specify @role, +@role, or -@role to toggle the role on everyone with that role.",
     },
     usage: "<target: [+-]all | [+-]@member | [+-]@role> <role: @role>",
+    examples: [
+        "+all some role",
+    ],
     args: true,
     flags: [
         {
             f: "f",
             d: "force the operation (skip confirmation)"
+        },
+        {
+            f: "x",
+            d: "users to not apply to",
+            v: "user1,user2,user3",
         },
     ],
     permLevel: permLevels.member,
@@ -100,7 +108,16 @@ export const command: Command<GuildMessageProps> = {
             }
 
             if (target === "all" || target instanceof Role) {
+                const exFlag = flags.find(x => x.name === "x");
+                const toExclude: ({ id: string })[] = [];
+                if (exFlag) {
+                    for await (const x of exFlag.value.split(",")) {
+                        const m = await stringToMember(message.guild, x, true, false, false);
+                        toExclude.push(m ? m : { id: "" });
+                    }
+                }
                 const targets = g.members.cache.filter((m) => {
+                    if (toExclude.find(x => x.id === m.id)) return false;
                     if (target instanceof Role) {
                         return !!m.roles.cache.get(target.id);
                     }
