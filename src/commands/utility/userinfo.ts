@@ -68,7 +68,7 @@ export const command: Command<GuildMessageProps> = {
             if (joinRank === "1" || joinRank === "0") {
                 joinRank = 'oldest member';
             } else {
-                joinRank = ordinalSuffixOf(parseInt(joinRank, 10)) + ' member joined';
+                joinRank = ordinalSuffixOf(parseInt(joinRank, 10));
             }
 
             // designator
@@ -85,7 +85,7 @@ export const command: Command<GuildMessageProps> = {
             // last message
             const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
 
-            message.channel.send({
+            await message.channel.send({
                 embed: {
                     color: target.roles.hoist && target.roles.hoist.color != 0x000000 ? target.roles.hoist.color : await client.database.getColor("info"),
                     author: {
