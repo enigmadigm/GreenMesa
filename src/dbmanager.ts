@@ -108,7 +108,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `guildsettings` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `value` longtext COLLATE utf8mb4_unicode_ci NOT NULL, `previousvalue` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `levelroles` (`id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`roleid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`level` int(11) NOT NULL DEFAULT 1,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` (`id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL,`streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,`message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,`expires` timestamp NOT NULL DEFAULT current_timestamp(),PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` ( `id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL, `streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `expires` timestamp NOT NULL DEFAULT current_timestamp(), `delafter` int(11) NOT NULL DEFAULT -1, `notified` int(11) NOT NULL DEFAULT 0, `laststream` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `bans` int(11) DEFAULT 0, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -305,6 +305,7 @@ export class DBManager {
         const pointsLevelNow = this.getPointsForLevel(xpData.level);
         const pointsLevelNext = this.getPointsForLevel(xpData.level + 1);
         const toGo = this.getCumulativePointsForLevel(xpData.level + 1) - xp;
+        const relFromLevel = pointsLevelNext - toGo;
         const last = new Date(xpData.timeUpdated);
         const first = new Date(xpData.timeAdded);
         return {
@@ -314,6 +315,7 @@ export class DBManager {
             level,
             pointsLevelNext,
             pointsToGo: toGo,
+            pointsInLevel: relFromLevel,
             pointsLevelNow,
             firstCounted: first,
             lastGained: last,
@@ -841,8 +843,10 @@ export class DBManager {
      * Increment the notified column of all twitch subscriptions under an id
      */
     async incrementTwitchNotified(streamid: string, started?: string): Promise<InsertionResult | false> {
-        const t = started || new Date().toISOString();
-        const result = await <Promise<InsertionResult>>this.query(`UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE streamerid = ${escape(streamid)}`);
+        const t = started ?? new Date().toISOString();
+        const sql = `UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE streamerid = ${escape(streamid)}`;
+        console.log(sql);
+        const result = await <Promise<InsertionResult>>this.query(sql);
         return result;
     }
 

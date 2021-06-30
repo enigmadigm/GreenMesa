@@ -756,14 +756,39 @@ export interface TwitchSearchChannelsReturns {
 }
 
 export interface FullPointsData {
-    guild: string;
-    user: string;
+    guild: Snowflake;
+    user: Snowflake;
+    /**
+     * The current CUMULATIVE TOTAL of points
+     */
     points: number;
+    /**
+     * The current number of RELATIVE POINTS from the last level
+     */
+    pointsInLevel: number;
+    /**
+     * The current level
+     */
     level: number;
+    /**
+     * When the first points were earned by this user
+     */
     firstCounted: Date;
+    /**
+     * When points were last earned by this user
+     */
     lastGained: Date;
+    /**
+     * The relative points still needed to go from the current point in the current level to the next level
+     */
     pointsToGo: number;
+    /**
+     * The relative points required to get to the next level from the current level (cum next level) - (cum this level) = (relative to next level)
+     */
     pointsLevelNext: number;
+    /**
+     * The relative points required to level to the current level from the previous level
+     */
     pointsLevelNow: number;
 }
 
