@@ -807,6 +807,17 @@ export class DBManager {
         }
     }
 
+    async removeAllTwitchStreamerSubscriptions(streamerid: string): Promise<InsertionResult | false> {
+        try {
+            if (!streamerid) return false;
+            const delresult = await <Promise<InsertionResult>>this.query(`DELETE FROM twitchhooks WHERE streamerid = ${escape(streamerid)}`);
+            return delresult;
+        } catch (error) {
+            xlg.error(error);
+            return false;
+        }
+    }
+
     /**
      * get a list of database entries that use a specified streamer id
      * @param {string} streamerid twitch id of streamer
@@ -845,7 +856,6 @@ export class DBManager {
     async incrementTwitchNotified(streamid: string, started?: string): Promise<InsertionResult | false> {
         const t = started ?? new Date().toISOString();
         const sql = `UPDATE twitchhooks SET notified = notified + 1, laststream = ${escape(t)} WHERE streamerid = ${escape(streamid)}`;
-        console.log(sql);
         const result = await <Promise<InsertionResult>>this.query(sql);
         return result;
     }

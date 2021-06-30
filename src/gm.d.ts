@@ -316,6 +316,7 @@ export interface TwitchHookRow {
     message: string;
     /**
      * The date at which this stream will expire
+     * @deprecated subscriptions no longer expire so this is not used
      */
     expires: string;
     /**
