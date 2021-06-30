@@ -61,7 +61,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "Created",
-                            value: `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
+                            value: `<t:${createdAt.unix()}:R>`,
                             inline: true
                         },
                         {
@@ -81,13 +81,13 @@ export const command: Command<GuildMessageProps> = {
                         },
                     ],
                     footer: {
-                        text: "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
+                        text: `ID: ${message.guild.id} ● Region: ${message.guild.region} ● all dates in utc`,
                     },
                 }
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

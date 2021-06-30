@@ -2,8 +2,10 @@ import { Command, GuildMessageProps } from "src/gm";
 import moment from 'moment';
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
-import { Guild, GuildMember, Snowflake } from "discord.js";
+import { Guild, GuildMember, Permissions, Snowflake } from "discord.js";
 import { isSnowflake } from "../../utils/specials";
+
+// ●
 
 function getJoinRank(id: string | Snowflake, guild: Guild) {// Call it with the ID of the user and the guild
     if (!isSnowflake(id)) return;
@@ -80,7 +82,7 @@ export const command: Command<GuildMessageProps> = {
 
             // invites
             const data = await client.database.getInvites({ guildid: message.guild.id, inviter: target.id });
-            const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png) ⟵`;
+            const invitesTotal = message.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD) ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png) ⟵`;
 
             // last message
             const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
@@ -109,22 +111,22 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: 'Nitro Boosting',
-                            value: `${target.premiumSince ? `since ${moment(target.premiumSince).format('ddd M/D/Y HH:mm:ss')}` : 'no'}`,
+                            value: `${target.premiumSince ? `since <t:${moment(target.premiumSince).unix()}:R>` : 'sadly not'}`,
                             inline: true,
                         },
                         {
                             name: 'Joined',
-                            value: `${joinedAt.format('ddd M/D/Y HH:mm:ss')}\n(${joinedAt.fromNow()})`,
+                            value: `<t:${joinedAt.unix()}:R>`,
                             inline: true,
                         },
                         {
                             name: 'Created',
-                            value: `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
+                            value: `<t:${createdAt.unix()}:R>`,
                             inline: true,
                         },
                         {
                             name: "Last Message",
-                            value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
+                            value: lastCreated && target.lastMessage ? `[<t:${lastCreated.unix()}:R>](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
                             inline: true,
                         },
                         {
@@ -148,7 +150,7 @@ export const command: Command<GuildMessageProps> = {
                         }
                     ],
                     footer: {
-                        text: 'All dates in UTC ● mm/dd/yyyy'
+                        text: 'All dates in UTC'
                     }
                 }
             });
@@ -157,7 +159,7 @@ export const command: Command<GuildMessageProps> = {
         } catch (error) {
             xlg.error(error);
             message.channel.stopTyping(true);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
