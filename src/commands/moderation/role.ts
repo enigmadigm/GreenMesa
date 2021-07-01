@@ -34,10 +34,11 @@ export const command: Command<GuildMessageProps> = {
         {
             f: "x",
             d: "users to not apply to",
-            v: "user1,user2,user3",
+            v: "userid1,userid2,userid3",
         },
     ],
     permLevel: permLevels.member,
+    permissions: ["MANAGE_ROLES"],
     guildOnly: true,
     moderation: true,
     async execute(client, message, args, flags) {
@@ -142,7 +143,7 @@ export const command: Command<GuildMessageProps> = {
                 const etaMessage = await message.channel.send({
                     embed: {
                         color: await client.database.getColor("info"),
-                        description: `**ETA:**\n${fu ? fu : "*should take no time at all*"}`,
+                        description: `**Target:** ${target}\n**${add ? "Giving": "Removing"}:** ${targetRole} (max ${targets.length} members)\n**ETA:** ${fu ? fu : "*should take no time at all*"}`,
                         footer: {
                             text: `Click 🔴 to cancel`,
                         },
