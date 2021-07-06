@@ -583,9 +583,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 }],
             });
             return;
-        } else if (command.args === 0 && args.length !== command.args) {
+        } else if (typeof command.args === "number" && args.length !== command.args) {
             let reply: string;
-            if (command.args === 0) {
+            // because of the above condition block, if the command args property isn't 0, it should already be handled above
+            if (command.args === 0) {// therefore, this will always be true
                 reply = "**No arguments** are allowed for this command.";
             } else {
                 reply = `Incorrect arguments. Please provide ${command.args} arguments.`;
@@ -659,7 +660,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         try {
             client.database.logCmdUsage(commandName, message);
-            const ret = command.guildOnly ? (isGuildMessage(message) ? await command.execute(client, message, args, flags.flags) : void function() {null}) : await command.execute(client, message, args, flags.flags);
+            const ret = command.guildOnly ? (isGuildMessage(message) ? await command.execute(client, message, args, flags.flags) : void 0) : await command.execute(client, message, args, flags.flags);
             // i realized i could just add a catchall stopTyping() here in case
             // it is never called at the end of some command or it never makes it that far
             message.channel.stopTyping();
