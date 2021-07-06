@@ -1,6 +1,7 @@
+//TODO: redo this whole service
 import { GuildMessageProps, MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
-import { Message, NewsChannel, TextChannel } from "discord.js";
+import { Message, NewsChannel, TextChannel, ThreadChannel } from "discord.js";
 import moment from "moment";
 
 interface SpamCacheData {
@@ -45,9 +46,9 @@ const deletionQueue: Message[] = [];
 /*async function enqueueDeletion(channel: TextChannel, c: Message[]): Promise<void> {
 
 }*/
-let deleting = false;
 
-async function deleteMessages(msgs: Message[], channel: TextChannel | NewsChannel) {
+let deleting = false;
+async function deleteMessages(msgs: Message[], channel: TextChannel | NewsChannel | ThreadChannel) {
     try {
         const toBulk = msgs.filter(x => !deleted.find(x1 => x1.id === x.id));
         if (toBulk.length > 1) {
@@ -78,7 +79,7 @@ async function deleteMessages(msgs: Message[], channel: TextChannel | NewsChanne
                     time: new Date()
                 });
             } catch (error) {
-                xlg.log(`antispam could not delete ${m.id}`)
+                xlg.error(`antispam could not delete ${m.id}`)
             }
         }
         deletionQueue.shift();
@@ -145,7 +146,7 @@ export const service: MessageService = {//TODO: redo this, refer to gaius i gues
             }*/
             //updateCache(cache);
             if (flag) {
-                await client.services?.punish<XMessage>(modResult, message.member, message);
+                await client.services.punish<XMessage>(modResult, message.member, message);
             }
         } catch (error) {
             xlg.error(error);

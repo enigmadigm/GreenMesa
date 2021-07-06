@@ -47,7 +47,6 @@ function makeStarpost(starboard: Starboard, msg: Message, nsfw: boolean, count: 
 }
 
 export const service: MessageService = {
-    guildOnly: true,
     events: ["messageUpdate", "messageReactionAdd", "messageReactionRemove"],
     async execute(client, event, m: (Message & GuildMessageProps) | MessageReaction, user?: User) {
         try {
@@ -70,7 +69,7 @@ export const service: MessageService = {
                 }
             } else if ((event === "messageReactionAdd" || event === "messageReactionRemove") && m instanceof MessageReaction && user instanceof User && !m.partial) {
                 const msg = m.message;
-                if (!msg.partial && msg.guild && msg.channel instanceof GuildChannel) {
+                if (!msg.partial && !msg.deleted && msg.guild && msg.channel instanceof GuildChannel) {
                     const starboard = await client.database.getStarboardSetting(msg.guild.id);// getting the starboard settings
                     const reactedUsers = await m.users.fetch();
                     const count = reactedUsers.filter(u => u.id !== client.user?.id).size;// try to get an accurate number of users who reacted with the current emoji

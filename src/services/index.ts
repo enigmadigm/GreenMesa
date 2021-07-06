@@ -1,5 +1,5 @@
 import { AutomoduleData, MessageService, XClient, XMessage } from "../gm";
-import { ClientEvents, Collection, GuildChannel, GuildMember, Message, MessageEmbedOptions, MessageReaction, User } from "discord.js";
+import { ClientEvents, Collection, DMChannel, GuildChannel, GuildMember, Message, MessageEmbedOptions, MessageReaction, User } from "discord.js";
 import fs from "fs";
 import { Bot } from "../bot";
 import { ordinalSuffixOf } from "../utils/parsers";
@@ -52,17 +52,25 @@ export class MessageServices {
             for (const [,service] of this.services) {
                 if (service.events.includes(event) &&
                     !service.disabled &&
-                    !(service.name?.startsWith("automod_") &&
-                        (!(data[0] instanceof Message) ||
-                            data[0].author.id === Bot.client.user.id)) &&
-                    (service.allowNonUser ||
+                    !(
+                        service.name?.startsWith("automod_") &&
+                        data.some(d => (d instanceof Message && (d.author.id === Bot.client.user?.id || d.channel instanceof DMChannel)) || (d instanceof MessageReaction && (d.message.channel instanceof DMChannel || d.message.author?.id === Bot.client.user?.id)))
+                    ) &&
+                    (
+                        service.allowNonUser ||
                         !((data[0] instanceof Message &&
                             (data[0].author.bot ||
                                 data[0].author.system ||
                                 data[0].webhookID)) ||
-                            (data[0] instanceof MessageReaction && data[1] instanceof User && (data[1].bot || data[1].system)))) &&
-                    (!service.guildOnly ||
-                        ('guild' in data[0] || (data[0] instanceof Message && data[0].guild) || (data[0] instanceof MessageReaction && data[0].message.guild)))) {
+                            (data[1] instanceof User && (data[1].bot || data[1].system)))
+                    ) &&
+                    (
+                        !service.allowDM ||
+                        (
+                            !data.some(d => 'guild' in d || (d instanceof MessageReaction && (d.message.channel instanceof DMChannel || d.message.author?.id === Bot.client.user?.id))) || (data[0] instanceof Message && !data[0].guild) || (data[0] instanceof MessageReaction && !data[0].message.guild)
+                        )
+                    )
+                ) {
                     service.execute(Bot.client, event, ...data);
                 }
             }
@@ -129,15 +137,15 @@ export class MessageServices {
                     switch (action) {
                         case "channelMessage": {
                             try {
-                                if (mod.text && data instanceof Message && data.channel instanceof GuildChannel) {
-                                    if (data.channel.permissionsFor(data.client.user || "")?.has("EMBED_LINKS")) {
+                                if (mod.text && data instanceof Message && data.channel instanceof GuildChannel && data.guild?.me) {
+                                    if (data.channel.permissionsFor(data.guild.me).has("EMBED_LINKS")) {
                                         await data.channel.send({
                                             content: `${target}`,
-                                            embed: {
+                                            embeds: [{
                                                 color: await Bot.client.database.getColor("warn_embed_color"),
                                                 title: `Automod Alert`,
                                                 description: `${target} was flagged by the **${mod.name}** module.${!ud.offenses ? "" : `\n**${ordinalSuffixOf(ud.offenses)}** offense`}`
-                                            }
+                                            }]
                                         });
                                     } else {
                                         await data.channel.send({
@@ -157,7 +165,7 @@ export class MessageServices {
                                     title: `Automod Violation`,
                                     description: `**Server:** ${target.guild.name.escapeDiscord()}\nYou have been found in violation of the ${mod.name} module.${!ud.offenses ? "" : `\n**${ordinalSuffixOf(ud.offenses)}** offense.`}${mod.punishment ? `\n**Punishment:** \`${!pastOffset ? "warn" : mod.punishment}\`` : ""}`,
                                 }
-                                await target.send({ embed: e });
+                                await target.send({ embeds: [e] });
                             } catch (error) {
                                 //
                             }
