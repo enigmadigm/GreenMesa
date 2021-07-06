@@ -559,10 +559,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
         }
 
-        if (command.args && (typeof command.args === "boolean" || command.args > 0) && (!args.length || (typeof command.args === "number" && args.length < command.args))) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
+        if (command.args && (typeof command.args === "boolean" || command.args > 0) && (!args.length || (typeof command.args === "number" && (args.length < command.args || args.length > command.args)))) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
             const fec_gs = await client.database.getColor("fail");
 
-            let reply = `Arguments are needed to make that work!`;
+            let reply = command.args === true ? `Arguments are needed to make that work!` : `\`${args.length < command.args ? command.args - args.length : args.length - command.args}\` ${args.length < command.args ? `more` : `less`} argument${(args.length < command.args ? command.args - args.length : args.length - command.args) > 1 ? `s` : ``} required for this command`;
             if (command.usage) {
                 reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
             }
@@ -583,7 +583,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 }],
             });
             return;
-        } else if ((command.args || command.args === 0) && typeof command.args === "number" && args.length !== command.args) {
+        } else if (command.args === 0 && args.length !== command.args) {
             let reply: string;
             if (command.args === 0) {
                 reply = "**No arguments** are allowed for this command.";
