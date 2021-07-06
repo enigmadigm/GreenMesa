@@ -54,8 +54,12 @@ export const command: Command = {
 
             // Remove the mentioned users role "mutedRole" and notify command sender
             await toMute.roles.remove(mutedRole, `unmuted by ${message.author.tag}`);
-            if (toMute.voice.mute) {
-                await toMute.voice.setMute(false).catch(xlg.error);
+            if (toMute.voice.channel && toMute.voice.mute) {
+                try {
+                    await toMute.voice.setMute(false)
+                } catch (error) {
+                    xlg.error("unmute: error undoing voice mute", error)
+                }
             }
 
             await Contraventions.logUnmute(toMute, message.member);
