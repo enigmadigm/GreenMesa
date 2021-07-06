@@ -34,6 +34,11 @@ export async function sendInfo(channel: TextChannel | DMChannel | NewsChannel | 
     });
 }
 
+/**
+ * Ensure that the specified number of args is provided by the user. Returns false if not and sends a message in the given channel.
+ * 
+ * @deprecated Use built-in command feature instead
+ */
 export async function argsNumRequire(channel: Channel, args: string[], num: number): Promise<boolean> {
     try {
         if (!channel.isText()) return false;
