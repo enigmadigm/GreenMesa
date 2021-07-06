@@ -1,6 +1,6 @@
 import { ClientValuesGuild, DashboardMessage, SkeletonGuildObject, XClient } from '../gm';
 import moment from 'moment';
-import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel, Client, ThreadChannel } from 'discord.js';
+import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
 import { Bot } from "../bot";
 import { combineEmbedText } from './parsers';
 
@@ -299,22 +299,39 @@ export const shards = {
         if (!Bot.client.shard) {
             return false;
         }
-        const getMutual = async function (c: Client, id: Snowflake): Promise<SkeletonGuildObject[] | void> {
+        // const getMutual = function (c: Client): SkeletonGuildObject[] | void {
+        //     try {
+        //         console.log("called:",uid)
+        //         const mutualGuilds: SkeletonGuildObject[] = c.guilds.cache.filter(x => !!x.members.cache.get(uid)).map(x => {
+        //             return {
+        //                 name: x.name,
+        //                 id: x.id,
+        //                 icon: x.iconURL(),
+        //                 owner: x.ownerID,
+        //             }
+        //         });
+        //         return mutualGuilds;
+        //     } catch (error) {
+        //         //
+        //     }
+        // };
+        const r: (SkeletonGuildObject[] | void)[] = await Bot.client.shard.broadcastEval((client, id) => {
             try {
-                const mutualGuilds: SkeletonGuildObject[] = c.guilds.cache.filter(x => !!x.members.cache.get(id)).map(x => {
-                    return {
-                        name: x.name,
-                        id: x.id,
-                        icon: x.iconURL(),
-                        owner: x.ownerID,
-                    }
+                const mutualGuilds: SkeletonGuildObject[] = client.guilds.cache
+                    .filter(x => !!x.members.cache.get(id))
+                    .map(x => {
+                        return {
+                            name: x.name,
+                            id: x.id,
+                            icon: x.iconURL(),
+                            owner: x.ownerID,
+                        }
                 });
                 return mutualGuilds;
             } catch (error) {
                 //
             }
-        };
-        const r: (SkeletonGuildObject[] | void)[] = await Bot.client.shard.broadcastEval((client) => getMutual(client, uid));
+        }, { context: uid });
         const mut: SkeletonGuildObject[] = [];
         for (const ga of r) {
             if (ga) {

@@ -1,6 +1,7 @@
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToUser } from '../../utils/parsers';
+import { Util } from 'discord.js';
 
 export const command: Command = {
     name: 'mutualcount',
@@ -25,13 +26,12 @@ export const command: Command = {
             for (const g of guildList) {
                 formatted += `\n${g}`;
             }
-            await message.channel.send({
-                content: formatted,
-                split: {
-                    char: "\n",
-                },
-                code: true,
-            });
+            const splut = Util.splitMessage(formatted, { char: "\n" });
+            for await (const s of splut) {
+                await message.channel.send({
+                    content: `\`\`\`${Util.cleanCodeBlockContent(s)}\`\`\``,
+                });
+            }
         } catch (e) {
             xlg.error(e);
             await client.specials.sendError(message.channel, `🔴 Execution Error:\n\`\`\`${e}\`\`\``);
