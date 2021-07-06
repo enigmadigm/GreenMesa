@@ -1,37 +1,36 @@
-import moment from 'moment';
 import { ClientValuesGuild, DashboardMessage, SkeletonGuildObject, XClient } from '../gm';
-import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel } from 'discord.js';
+import moment from 'moment';
+import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel, Client, ThreadChannel } from 'discord.js';
 import { Bot } from "../bot";
-import Client from '../struct/Client';
 import { combineEmbedText } from './parsers';
 
 export async function sendModerationDisabled(channel: Channel): Promise<void> {
     if (!channel.isText() || !('guild' in channel)) return;
     const fail_embed_color = await Bot.client.database.getColor("fail");
     await channel.send({
-        embed: {
+        embeds: [{
             color: fail_embed_color,
             description: `Server moderation in ${channel.guild.name.escapeDiscord()} is currently disabled. Admins must enable moderation features with \`settings moderation enable\`.`
-        }
+        }]
     });
 }
 
-export async function sendError(channel: TextChannel | DMChannel | NewsChannel, message?: string, errorTitle: string | boolean = false): Promise<Message> {
+export async function sendError(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, message?: string, errorTitle: string | boolean = false): Promise<Message> {
     return await channel.send({
-        embed: {
+        embeds: [{
             color: await Bot.client.database.getColor("fail") || 16711680,
             title: errorTitle ? typeof errorTitle === "string" ? errorTitle : "Error" : undefined,
             description: (message && message.length) ? message : "Something went wrong. ¯\\_(ツ)_/¯"
-        }
+        }]
     });
 }
 
-export async function sendInfo(channel: TextChannel | DMChannel | NewsChannel, message: string): Promise<Message> {
+export async function sendInfo(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, message: string): Promise<Message> {
     return await channel.send({
-        embed: {
+        embeds: [{
             color: 0x337fd5/* await Bot.client.database.getColor("info") */,
             description: `<:sminfo:818342088088354866> ${message}`
-        }
+        }]
     });
 }
 
@@ -41,10 +40,10 @@ export async function argsNumRequire(channel: Channel, args: string[], num: numb
         if (args.length == num) return true;
         const fail_embed_color = await Bot.client.database.getColor("fail");
         channel.send({
-            embed: {
+            embeds: [{
                 color: fail_embed_color,
                 description: `The wrong number of arguments was provided.\nThis command requires \` ${num} \` arguments.`
-            }
+            }]
         });
         return false;
     } catch (error) {
@@ -75,11 +74,11 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
         }
         if (!forResult) {
             await channel.send({
-                embed: {
+                embeds: [{
                     color: await Bot.client.database.getColor("fail"),
                     title: "Invalid Arguments",
                     description: `Some or all arguments must be numbers (floating or integer)\nYou sent: \` ${invalid.map(x => x.escapeDiscord()).join(", ")} \``,
-                }
+                }]
             });
             return false;
         }
@@ -100,50 +99,54 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
  * @param adminOverride Should admin permissions override  (default False)
  * @returns the result of the confirmation
  */
-export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**", adminOverride = false): Promise<boolean> {
+export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**", adminOverride = false): Promise<boolean> {
     const cm = await channel.send({
-        embed: {
+        embeds: [{
             color: 0x337fd5/* await Bot.client.database.getColor("info") */,
             description: `<:sminfo:818342088088354866> ${text}`
-        },
+        }],
         components: [new MessageActionRow().addComponents(new MessageButton({ customID: "yes", label: "Yes", style: "SUCCESS" }), new MessageButton({ customID: "no", label: "No", style: "DANGER" }))],
     });
     const alreadyShovedOff: Snowflake[] = [];
     const pushFilter: CollectorFilter<[MessageComponentInteraction]> = async (inter) => {
-        if (
-            acceptFrom.includes(inter.user.id) ||
-            (adminOverride && inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & 0x8n) === 0x8n)
-        ) {
-            return true;
-        } else {
-            if (!alreadyShovedOff.includes(inter.user.id)) {
-                await inter.reply({
-                    content: `Mommy says I'm not supposed to talk to you`,
-                    ephemeral: true,
-                });
-                alreadyShovedOff.push(inter.user.id);
+        if (inter.isButton()) {
+            if (
+                acceptFrom.includes(inter.user.id) ||
+                (adminOverride && inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & 0x8n) === 0x8n)
+            ) {
+                return true;
             } else {
-                await inter.deferUpdate();
+                if (!alreadyShovedOff.includes(inter.user.id)) {
+                    await inter.reply({
+                        content: `Mommy says I'm not supposed to talk to you`,
+                        ephemeral: true,
+                    });
+                    alreadyShovedOff.push(inter.user.id);
+                } else {
+                    await inter.deferUpdate();
+                }
+                return false;
             }
+        } else {
             return false;
         }
     };
-    const pushes = await cm.awaitMessageComponentInteractions(pushFilter, { max: 1, time: 10 * 1000 });
-    const buttonOption = pushes.first();
+    // const pushes = await cm.awaitMessageComponentInteraction({filter: pushFilter, time: 10 * 1000});
+    const buttonOption = await cm.awaitMessageComponentInteraction({ filter: pushFilter, time: 10 * 1000 }).catch(() => undefined);
     if (!buttonOption) {
-        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(`**No confirmation**`).setColor(await Bot.client.database.getColor("fail")), components: [] });
+        await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(`**No confirmation**`).setColor(await Bot.client.database.getColor("fail"))], components: [] });
         return false;
     }
     if (buttonOption.customID === "yes") {
         if (confirmationMessage) {
-            await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(confirmationMessage).setColor(await Bot.client.database.getColor("success")), components: [] });
+            await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(confirmationMessage).setColor(await Bot.client.database.getColor("success"))], components: [] });
         } else if (cm.deletable) {
             await cm.delete();
         }
         return true;
     }
     if (rejectionMessage) {
-        await cm.edit({ embed: new MessageEmbed(cm.embeds[0]).setDescription(rejectionMessage).setColor(await Bot.client.database.getColor("fail")), components: [] });
+        await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(rejectionMessage).setColor(await Bot.client.database.getColor("fail"))], components: [] });
     } else if (cm.deletable) {
         await cm.delete();
     }
@@ -238,13 +241,13 @@ export const shards = {
      * Send a message through all of the sharded clients that will send from the client that has the desired channel
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendMessageAll(m: Record < string, any >, cid: string): void {
-        Bot.client.shard?.broadcastEval(`
-const c = this.channels.cache.get('${cid}');
-if (c && c.send) {
-    c.send(${JSON.stringify(m)})
-}
-    `);
+    sendMessageAll(m: Record < string, any >, cid: Snowflake): void {
+        Bot.client.shard?.broadcastEval((client) => {
+            const c = client.channels.cache.get(cid);
+            if (c && c.isText()) {
+                c.send(JSON.stringify(m))
+            }
+        });
     },
     /**
      * Retrieves all of the guilds that belonging to a client if the client is sharded. It will asynchronously fetch all guilds from each of the shards and reduce them to one array. The values returned from the shards are not normal guild objects. They are reduced guild object.
@@ -306,7 +309,7 @@ if (c && c.send) {
                 //
             }
         };
-        const r: (SkeletonGuildObject[] | void)[] = await Bot.client.shard.broadcastEval(`(${getMutual})(this, '${uid}')`);
+        const r: (SkeletonGuildObject[] | void)[] = await Bot.client.shard.broadcastEval((client) => getMutual(client, uid));
         const mut: SkeletonGuildObject[] = [];
         for (const ga of r) {
             if (ga) {

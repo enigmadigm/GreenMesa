@@ -11,6 +11,16 @@ const log = (a: any) => {
 
 const manager = new ShardingManager('./dist/bot.js', { token: config.token });
 
+// process.on("SIGHUP", () => {
+//     for (const shard of manager.shards.array()) {
+//         xlg.log("Killing shard:",shard.id)
+//         if (shard.process) {
+//             shard.process.kill("SIGUSR2");
+//         }
+//     }
+//     process.kill(process.pid);
+// })
+
 manager.on('shardCreate', shard => {
     log(`Launched shard ${shard.id}`);
     let timer: NodeJS.Timeout;
@@ -23,4 +33,5 @@ manager.on('shardCreate', shard => {
         }
     });
 });
+
 manager.spawn();

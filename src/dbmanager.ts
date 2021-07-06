@@ -1,9 +1,9 @@
+import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedUserData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import mysql, { escape } from "mysql";
 import config, { db_config } from "../auth.json";
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
-import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedUserData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
@@ -13,43 +13,43 @@ import Starboard from "./struct/Starboard";
 const levelRoles = [
     {
         level: 70,
-        name: 'Mega Divine Active Member',
-        color: '#9F2292'
+        name: "Mega Divine Active Member",
+        color: 0x9F2292,
     },
     {
         level: 60,
-        name: 'Active x10⁹⁹',
-        color: '#943246'
+        name: "Active x10⁹⁹",
+        color: 0x943246,
     },
     {
         level: 50,
-        name: 'Super Hyper Active Member',
-        color: '#3F62CC'
+        name: "Super Hyper Active Member",
+        color: 0x3F62CC
     },
     {
         level: 40,
-        name: 'Hyper Active Member',
-        color: '#1F8B4B'
+        name: "Hyper Active Member",
+        color: 0x1F8B4B,
     },
     {
         level: 25,
-        name: 'Very Active Member',
-        color: '#BA342A'
+        name: "Very Active Member",
+        color: 0xBA342A,
     },
     {
         level: 10,
-        name: 'Active Member',
-        color: '#BB3DA8'
+        name: "Active Member",
+        color: 0xBB3DA8,
     },
     {
         level: 5,
-        name: 'Not-An-Alt Level',
-        color: '#a886f1'
+        name: "Not-An-Alt Level",
+        color: 0xa886f1,
     },
     {
         level: 1,
-        name: 'Noob Level',
-        color: '#99AAB1'
+        name: "Noob Level",
+        color: 0x99AAB1,
     }
 ];
 
@@ -350,7 +350,7 @@ export class DBManager {
                     if (r) {
                         if (member.guild.me && r.comparePositionTo(member.guild.me.roles.highest) < 0) {
                             if (!member.roles.cache.find(ro => ro.id === r.id)) {
-                                member.roles.add(r, 'levelling up').catch(console.error);
+                                member.roles.add(r, 'levelling up').catch(xlg.error);
                             }
                         }
                     }

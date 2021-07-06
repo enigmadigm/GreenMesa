@@ -1,4 +1,4 @@
-import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel } from "discord.js";
+import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel, ThreadChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -16,8 +16,10 @@ export interface XClient extends Client {
 }
 
 // export type Command<T = Record<string, any>> = NormalCommand<T> | GuildCommand<T>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface Command<T = Record<string, any>> {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Command<T = {}> = BaseCommand<T> | GuildOnlyCommand<T>;
+
+export interface BaseCommand<T> {
     name: string;
     /**
      * Alternate names to use to call the command
@@ -66,7 +68,9 @@ export interface Command<T = Record<string, any>> {
     cooldown?: number;
     /**
      * The security level required on the user to execute the
-     * command (higher meaning a greater amount of access needed)
+     * command (higher meaning a greater amount of access needed).
+     * 
+     * Defaults to `'member'` level in guilds and `'trustedMember'` level in DMs.
      */
     permLevel?: number;
     /**
@@ -77,11 +81,11 @@ export interface Command<T = Record<string, any>> {
      */
     moderation?: boolean;
     /**
-     * Whether the command should only by allowed to execute
-     * in guilds (the {@type GuildMessageProps} type parameter
-     * should still be provided to the command interface type)
+     * Whether the command should only by allowed to execute in guilds
+     * 
+     * Uses the {@link GuildMessageProps} type to accommodate for a message object that will definitely include guild info
      */
-    guildOnly?: boolean;
+    guildOnly?: false;
     /**
      * @deprecated
      */
@@ -101,12 +105,17 @@ export interface Command<T = Record<string, any>> {
     execute(client: XClient, message: XMessage & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 }
 
+export interface GuildOnlyCommand<T> extends BaseCommand<T> {
+    guildOnly: true;
+    execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
+}
+
 // export interface GuildCommand<T> extends NormalCommand<T> {
 //     guildOnly: true;
 //     execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 // }
 
-export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel };
+export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel | ThreadChannel };
 
 export interface CommandFlagDefinition {
     /**
@@ -349,7 +358,7 @@ export interface MessageService {
     name?: string;
     disabled?: true;
     allowNonUser?: true;
-    guildOnly?: boolean;
+    allowDM?: true;
     events: (keyof ClientEvents)[];
     getInformation?(client: XClient, guildid: string): Promise<string>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

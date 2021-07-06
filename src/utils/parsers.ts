@@ -1,7 +1,7 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, User } from "discord.js";
+import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, ThreadChannel, User } from "discord.js";
 import { CommandArgumentFlag, XClient } from "src/gm";
 import { isSnowflake } from "./specials";
 
@@ -188,7 +188,7 @@ export function stringToRole(guild: Guild, text: string, byName = true, bySimila
  * @param text string to parse
  * @returns
  */
-export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): GuildChannel | undefined {
+export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): GuildChannel | ThreadChannel | undefined {
     if (!guild || !text) return undefined;
     text = extractString(text, /<#(\d*)>/) || text;
 
