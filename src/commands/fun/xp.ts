@@ -1,7 +1,7 @@
 // NOTE: This whole xp system is in long-term development and needs work. The updates will probably come with a web console if there ever is one.
 import { MessageAttachment, Permissions } from "discord.js";
 import fetch from "node-fetch";
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
 
 const verbs = [
@@ -13,7 +13,7 @@ const verbs = [
     "banked",
 ];
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: 'xp',
     description: {
         short: "get someone's xp stats",
@@ -22,7 +22,6 @@ export const command: Command<GuildMessageProps> = {
     aliases: ['rank', 'level'],
     usage: "[other user]",
     guildOnly: true,
-    permissions: ["EMBED_LINKS"],
     async execute(client, message, args) {
         try {
             const a = args.join(" ");
@@ -36,11 +35,11 @@ export const command: Command<GuildMessageProps> = {
             const xp = await client.database.getFullPointsData(target);
             if (!xp) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         title: "This user has no XP on record.",
                         description: "To gain XP send messages in chat.",
                         color: await client.database.getColor("warn"),
-                    }
+                    }],
                 });
                 return;
             }
@@ -55,7 +54,7 @@ export const command: Command<GuildMessageProps> = {
             const pointsFromLevel = xp.pointsLevelNext - xp.pointsToGo;
             const pointsLevelNext = xp.pointsLevelNext;
             const pointsToNext = xp.pointsToGo;
-            if (message.channel.permissionsFor(message.guild.me || "")?.has(Permissions.FLAGS.ATTACH_FILES)) {
+            if (message.guild.me && message.channel.permissionsFor(message.guild.me).has(Permissions.FLAGS.ATTACH_FILES)) {
                 // const r = await fetch(`https://vacefron.nl/api/rankcard?username=${encodeURIComponent(target.user.tag)}&avatar=${encodeURIComponent(target.user.displayAvatarURL())}&currentxp=${xp.pointsInLevel}&nextlevelxp=${xp.pointsLevelNext}&previouslevelxp=${0}&level=${xp.level}&rank=${personal ? personal.rank : "undefined"}&custombg=${bgColor}&xpcolor=${xpColor}&isboosting=${target.premiumSince ? "true" : "false"}&circleavatar=true`);
                 const r = await fetch(`https://vacefron.nl/api/rankcard?username=${encodeURIComponent(target.user.tag)}&avatar=${encodeURIComponent(target.user.displayAvatarURL())}&currentxp=${xp.points}&nextlevelxp=${client.database.getCumulativePointsForLevel(xp.level + 1)}&previouslevelxp=${client.database.getCumulativePointsForLevel(xp.level)}&level=${xp.level}&rank=${personal ? personal.rank : "undefined"}&custombg=${bgColor}&xpcolor=${xpColor}&isboosting=${target.premiumSince ? "true" : "false"}&circleavatar=true`);
                 if (r.status !== 200) {
@@ -67,10 +66,10 @@ export const command: Command<GuildMessageProps> = {
                 await message.channel.send({ files: [att] });
             } else {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("info"),
                         description: `**${target.displayName}** has ${verbs[Math.floor(Math.random() * verbs.length)]} **${sym}** \`${xp.points}\` total\n**Level:** \`${xp.level}\`\n**${sym}** \`${pointsToNext}\` more is needed for level \`${xp.level + 1}\`\n\`${pointsFromLevel}\` / \`${pointsLevelNext}\` (\`${percentToNext}\`%)`,
-                    }
+                    }],
                 });
             }
         } catch (error) {

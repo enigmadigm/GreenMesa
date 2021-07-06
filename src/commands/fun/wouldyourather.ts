@@ -1,8 +1,6 @@
-
 import fetch from 'node-fetch';
 import jsdom from 'jsdom';
 import { Command } from "src/gm";
-// import { getGlobalSetting } from "../dbmanager";
 
 export const command: Command = {
     name: 'wouldyourather',
@@ -21,21 +19,20 @@ export const command: Command = {
             const ae = dom.window.document.querySelector('div.result.result-1 > .option-text');
             const be = dom.window.document.querySelector('div.result.result-2 > .option-text');
             const msg = await message.channel.send({
-                embed: {
+                embeds: [{
                     color: await client.database.getColor("info"),
-                    description: `Would you rather:\n**🅰 | ${ae.textContent}**\nor\n**🅱 | ${be.textContent}**`
-                }
+                    description: `Would you rather:\n**🅰 | ${ae.textContent}**\nor\n**🅱 | ${be.textContent}**`,
+                }],
             });
             await msg.react('🇦');
-            msg.react('🇧');
+            await msg.react('🇧');
 
             message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel, `An error occurred while thinking of a WYR:\n\`${error.message}\``);
+            message.channel.stopTyping();
+            await client.specials.sendError(message.channel, `An error occurred while thinking of a WYR:\n\`${error.message}\``);
             return false;
         }
-
     }
 }
-

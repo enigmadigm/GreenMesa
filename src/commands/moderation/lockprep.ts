@@ -1,5 +1,5 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -10,18 +10,16 @@ async function* delayedLoop(start: number, end: number, increment: number, delay
     }
 }
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "lockprep",
     description: {
         short: "prepare the lock command",
         long: "Use to prepare usage of the `lock` and `lockall` commands. This tries to disable the Send Messages privilege for all roles in a server. Obviously, this will not work for roles outside of the access of the bot's permissions."
     },
     usage: "",
-    args: false,
     cooldown: 1,
     permLevel: permLevels.admin,
     guildOnly: true,
-    ownerOnly: false,
     moderation: true,
     async execute(client, message) {
         try {
@@ -32,7 +30,6 @@ export const command: Command<GuildMessageProps> = {
                 const loop = delayedLoop(0, roles.size, 1, 200);
 
                 const rolesArray = roles.array();
-
                 for await (const i of loop) {
                     const r = rolesArray[i];
                     /*const everyone = g.roles.cache.find(x => x.position === 0);
@@ -48,10 +45,10 @@ export const command: Command<GuildMessageProps> = {
             }
 
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: await client.database.getColor("success"),
-                    description: `Updated permissions of ${roles.size} roles`
-                }
+                    description: `Updated permissions of ${roles.size} roles`,
+                }],
             });
         } catch (error) {
             xlg.error(error);

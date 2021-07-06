@@ -1,6 +1,3 @@
-//import { getGlobalSetting, getGuildSetting, getXP, checkForLevelRoles } from "../dbmanager";
-
-//const moment = require("moment");
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 
@@ -17,22 +14,21 @@ export const command: Command = {
     cooldown: 5,
     async execute(client, message) {
         try {
-            if (!message.guild || !message.member) return;
             const warn_embed_color = await client.database.getColor("warn_embed_color");
             const levellingEnabled = await client.database.getGuildSetting(message.guild, 'xp_levels');
             if (!levellingEnabled || levellingEnabled.value === 'disabled') {
-                message.channel.send({
-                    embed: {
+                await message.channel.send({
+                    embeds: [{
                         color: warn_embed_color,
                         description: `Levelling is disabled. Enable by sending \`settings levels enable\`.`
-                    }
+                    }]
                 });
                 return;
             }
             const levelRows = await client.database.checkForLevelRoles(message.guild);
             const targetRow = await client.database.getXP(message.member);
             if (!levelRows || !targetRow) {
-                client.specials?.sendError(message.channel);
+                await client.specials.sendError(message.channel);
                 return;
             }
             const targetLevel = targetRow.level;
@@ -47,18 +43,17 @@ export const command: Command = {
             });
 
             const info_embed_color = await client.database.getColor("info");
-            message.channel.send({
-                embed: {
+            await message.channel.send({
+                embeds: [{
                     color: info_embed_color,
                     title: 'Level Roles',
-                    description: `Each level and its role:\n${joinedLevels.join("\n")}`
-                }
+                    description: `Each level and its role:\n${joinedLevels.join("\n")}`,
+                }],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

@@ -3,8 +3,6 @@ import getColors from 'get-image-colors';
 import { stringToMember } from '../../utils/parsers';
 import chroma from 'chroma-js';
 import { MessageEmbedOptions } from 'discord.js';
-// import FileType from 'file-type';
-// import fetch from 'node-fetch';
 
 export const command: Command = {
     name: 'avatar',
@@ -54,16 +52,13 @@ export const command: Command = {
                 },
                 footer: {
                     text: `Primary Color: ${unsupported ? `Unsupported avatar type` : chroma(col).hex()}`,
-                }
+                },
             };
-            message.channel.send({
-                embed
-            });
+            await message.channel.send({ embeds: [embed] });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

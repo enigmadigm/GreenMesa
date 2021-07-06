@@ -1,8 +1,8 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { stringToRole } from "../../utils/parsers";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "roleinfo",
     aliases: ["ri"],
     description: {
@@ -18,11 +18,11 @@ export const command: Command<GuildMessageProps> = {
         try {
             const role = stringToRole(message.guild, args.join(" "), true, true);
             if (!role) {
-                await client.specials?.sendError(message.channel, "A valid role could not be found");
+                await client.specials.sendError(message.channel, "A valid role could not be found");
                 return;
             }
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: role.color > 150 ? role.color : await client.database.getColor("info"), 
                     description:
 `Role info for ${role}
@@ -33,11 +33,11 @@ export const command: Command<GuildMessageProps> = {
 **Permissions Int:** ${role.permissions.bitfield}
 **Color Hex:** ${role.hexColor}
 `
-                }
+                }]
             })
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

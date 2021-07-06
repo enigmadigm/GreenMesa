@@ -23,8 +23,7 @@ export const command: Command = {
     aliases: ['sm', 'emotion', 'saltiness'],
     usage: "<message id to process / text content to process>",
     args: true,
-    cooldown: 4,
-    ownerOnly: false,
+    cooldown: 3,
     async execute(client, message, args) {
         try {
             let msgContent: string;
@@ -45,13 +44,13 @@ export const command: Command = {
                 }
             }
 
-            const wMsg = await message.channel.send('Analyzing...');
+            const wMsg = await message.channel.send({ content: "Analyzing..." });
 
             try {
                 const analysisResults = await naturalLanguageUnderstanding.analyze(analyzeParams)
                 const emotionsResults = analysisResults.result.emotion?.document?.emotion;
                 if (!emotionsResults) {
-                    wMsg.edit("No analysis result.");
+                    await wMsg.edit("No analysis result.");
                     return;
                 }
                 const emotions = [];
@@ -60,8 +59,8 @@ export const command: Command = {
                 }
 
                 await wMsg.edit({
-                    content: "",
-                    embed: {
+                    content: null,
+                    embeds: [{
                         description: "Use an AI to tell you all about your text.",
                         color: 9860623,
                         fields: [{
@@ -72,12 +71,12 @@ export const command: Command = {
                         {
                             name: "Sentiment",
                             value: `${analysisResults.result.sentiment?.document?.label}`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Score",
                             value: ((analysisResults.result.sentiment?.document?.score || 0) * 100).toString() + "%",
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Emotion Analysis",
@@ -86,19 +85,18 @@ export const command: Command = {
                         }
                         ],
                         footer: {
-                            text: "Watson Natural Language Processing"
-                        }
-                    }
+                            text: "Watson Natural Language Processing",
+                        },
+                    }],
                 });
             } catch (err) {
-                wMsg.edit('**FAILED** *please note* that you cannot send an id of an embed, they are not compatible.');
                 xlg.error('Sentiment File Error:', err);
+                await wMsg.edit('**FAILED** *please note* that you cannot send an id of an embed, they are not compatible.');
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

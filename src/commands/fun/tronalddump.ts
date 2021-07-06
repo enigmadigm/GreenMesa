@@ -1,6 +1,6 @@
+// NOTE: The database that this command is built upon seems to be kind of done with updates
 import fetch from 'node-fetch';
 import { Command } from 'src/gm';
-// NOTE: The database that this command is built on seems to be kind of done with updates
 
 export const command: Command = {
     name: 'tronalddump',
@@ -15,66 +15,65 @@ export const command: Command = {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const allTags: any = [];
-            const tagInfo = await fetch('https://api.tronalddump.io/tag')
-                .then(res => res.json())
-                .then(j => {
-                    for (let i = 0; i < j._embedded.tag.length; i++) {
-                        allTags.push(j._embedded.tag[i].value);
-                    }
-                    return {
-                        count: j.total,
-                        tags: allTags
-                    };
-                });
-    
+            const r = await fetch('https://api.tronalddump.io/tag')
+            const j = await r.json();
+            for (let i = 0; i < j._embedded.tag.length; i++) {
+                allTags.push(j._embedded.tag[i].value);
+            }
+            const tagInfo = {
+                count: j.total,
+                tags: allTags
+            };
+
             if (!args.length) {
                 const r = await fetch('https://api.tronalddump.io/random/quote')
                 const j = await r.json();
-                message.channel.send({
-                    embed: {
-                        "title": "Donald Trump",
-                        "url": j._links.self.href,
-                        "description": j.value,
-                        "color": Math.floor(Math.random() * 16777215),
-                        "timestamp": j.appeared_at,
-                        "footer": {
-                            "text": "Tronald Dump: " + j.tags[0] + " | " + j.quote_id
-                        }
-                    }
+                await message.channel.send({
+                    embeds: [{
+                        title: "Donald Trump",
+                        url: j._links.self.href,
+                        description: j.value,
+                        color: Math.floor(Math.random() * 16777215),
+                        timestamp: j.appeared_at,
+                        footer: {
+                            text: `Tronald Dump: ${j.tags[0]} | ${j.quote_id}`,
+                        },
+                    }],
                 });
                 return;
             }
+
             if (args.length == 1 && args.join(" ").length === 22) {// search for a quote by its id (displayed in the embed)
                 const r = await fetch(`https://api.tronalddump.io/quote/${args[0]}`);
                 const j = await r.json();
                 if (j.status === 404) {
-                    message.channel.send(`Quote not found`);
+                    await message.channel.send(`Quote not found`);
                     return;
                 }
-                message.channel.send({
-                    embed: {
-                        "title": "Donald Trump",
-                        "url": j._links.self.href,
-                        "description": j.value,
-                        "color": Math.floor(Math.random() * 16777215),
-                        "timestamp": j.appeared_at,
-                        "footer": {
-                            "text": "Tronald Dump: " + j.tags[0] + " | " + j.quote_id
-                        }
-                    }
+                await message.channel.send({
+                    embeds: [{
+                        title: "Donald Trump",
+                        url: j._links.self.href,
+                        description: j.value,
+                        color: Math.floor(Math.random() * 16777215),
+                        timestamp: j.appeared_at,
+                        footer: {
+                            text: `Tronald Dump: ${j.tags[0]} | ${j.quote_id}`,
+                        },
+                    }],
                 });
                 return;
             }
             if (args[0] == "tags" || args[0] == "subjects" || args[0] == "list") {
-                message.channel.send({
-                    embed: {
-                        "title": "Donald Trump: Tags",
-                        "description": `${tagInfo.count} total tags.\n**All Available Tags:**\n${tagInfo.tags.join('\n')}\n***NOTE: tags are case sensitive***`,
-                        "timestamp": new Date(),
-                        "footer": {
-                            "text": "tronalddump Tag List"
-                        }
-                    }
+                await message.channel.send({
+                    embeds: [{
+                        title: "Donald Trump: Tags",
+                        description: `${tagInfo.count} total tags.\n**All Available Tags:**\n${tagInfo.tags.join('\n')}\n***NOTE: tags are case sensitive***`,
+                        timestamp: new Date(),
+                        footer: {
+                            text: "tronalddump Tag List",
+                        },
+                    }],
                 });
                 return;
             }
@@ -88,25 +87,25 @@ export const command: Command = {
                     const r = await fetch(`https://api.tronalddump.io/search/quote?tag=${encodeURIComponent(args.join(" "))}&query=`)
                     let j = await r.json();
                     j = j._embedded.quotes[Math.floor(Math.random() * j.count)];
-                    message.channel.send({
-                        embed: {
-                            "title": "Donald Trump",
-                            "url": j._links.self.href,
-                            "description": j.value,
-                            "color": Math.floor(Math.random() * 16777215),
-                            "timestamp": j.appeared_at,
-                            "footer": {
-                                "text": "Tronald Dump: " + j.tags[0] + " | " + j.quote_id
-                            }
-                        }
+                    await message.channel.send({
+                        embeds: [{
+                            title: "Donald Trump",
+                            url: j._links.self.href,
+                            description: j.value,
+                            color: Math.floor(Math.random() * 16777215),
+                            timestamp: j.appeared_at,
+                            footer: {
+                                text: `Tronald Dump: ${j.tags[0]} | ${j.quote_id}`,
+                            },
+                        }],
                     });
                 } else {
-                    message.channel.send(`ERROR. You probably sent an invalid tag: ${args.join(" ").toLowerCase()}.\n***NOTE: tags are case sensitive***`);
+                    await message.channel.send(`ERROR. You probably sent an invalid tag: ${args.join(" ").toLowerCase()}.\n***NOTE: tags are case sensitive***`);
                 }
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

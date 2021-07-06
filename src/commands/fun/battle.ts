@@ -1,9 +1,9 @@
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { stringToMember } from '../../utils/parsers';
 
 const actions = ['shoot', 'punch', 'kick', 'drop', 'choke', 'torture', 'shoot', 'superhero battle', 'cleave', 'cgi fight', 'electrocute', 'nuke', 'SCP-3125', 'clobber', 'decimate', 'humiliate'];
 
-export const command: Command<GuildMessageProps> = {//TODO: make a play-by-play visualization of each contest
+export const command: Command = {//TODO: make a play-by-play visualization of each contest
     name: 'battle',
     aliases: ['fight'],
     description: {
@@ -22,27 +22,29 @@ export const command: Command<GuildMessageProps> = {//TODO: make a play-by-play 
 
             if (!target) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("info"),
-                        description: `Pick a contestant, will you?`
-                    }
+                        description: `Pick a contestant, will you?`,
+                    }],
                 });
                 return;
             }
+
             if (target.id === message.author.id) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("fail"),
-                        description: `whilst trying to fight with itself, ${target} passes out after ${[message.guild.me, await message.guild.fetchOwner()][Math.floor(Math.random() * 2)]} ${action}s it`
-                    }
+                        description: `whilst trying to fight with itself, ${target} passes out after ${[message.guild.me, await message.guild.fetchOwner()][Math.floor(Math.random() * 2)]} ${action}s it`,
+                    }],
                 });
                 return;
             }
+
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: outcome ? await client.database.getColor("success") : await client.database.getColor("fail"),
                     description: `You ${!outcome ? 'die' : 'win'} after you, ${message.author}, ${outcome ? 'successfully' : 'completely fail to'} ${action} ${target}${outcome ? ` ${Math.floor(Math.random() * 500)} times` : ''}.`,
-                }
+                }],
             });
         } catch (error) {
             xlg.error(error);

@@ -71,10 +71,10 @@ export const command: Command = {
             }
             if (mappedText.length < 1) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("fail"),
                         description: "no emojifiable content",
-                    }
+                    }],
                 });
                 return;
             }
@@ -82,7 +82,7 @@ export const command: Command = {
             await message.channel.send(mappedText.join(""));
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

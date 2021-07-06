@@ -1,7 +1,5 @@
-
 import apppkg from '../../package.json';
 import { Command } from "src/gm";
-//import { getGlobalSetting } from "../dbmanager";
 
 export const command: Command = {
     name: 'info',
@@ -11,8 +9,8 @@ export const command: Command = {
     },
     async execute(client, message) {
         try {
-            message.channel.send({
-                embed: {
+            await message.channel.send({
+                embeds: [{
                     color: await client.database.getColor("info"),
                     title: "GreenMesa Info",
                     url: "https://enigmadigm.com/apps/greenmesa/help",
@@ -21,65 +19,64 @@ export const command: Command = {
                         {
                             "name": "Architect",
                             "value": "ComradeRooskie#6969",
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Vote!",
                             "value": "[d.b.l](https://top.gg/bot/560223567967551519)",
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Invite",
                             "value": `\`${message.gprefix}invite\``,
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Library",
                             "value": "discord.js",
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Version",
                             "value": apppkg.version,
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Served by",
                             "value": "🚫",
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Website",
                             "value": "[stratum.hauge.rocks](https://stratum.hauge.rocks)",
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Repo",
                             "value": "🚫",
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Shard",
                             "value": `Current: ${message.guild?.shardID || client.shard?.ids[0]}\nTotal: ${client.shard?.count}`,
-                            "inline": true
+                            "inline": true,
                         },
                         {
                             "name": "Resources",
-                            "value": `\`\`\`prolog\n${client.specials?.memoryUsage()}\n\`\`\``
-                        }
+                            "value": `\`\`\`prolog\n${client.specials?.memoryUsage()}\n\`\`\``,
+                        },
                     ],
                     footer: {
                         icon_url: client.user?.avatarURL() || undefined,
-                        text: `Information / Información / معلومات | 👀 ${message.gprefix}uptime`
-                    }
-                }
+                        text: `Information / Información / معلومات | 👀 ${message.gprefix}uptime`,
+                    },
+                }],
             });
 
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-
