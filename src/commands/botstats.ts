@@ -96,7 +96,6 @@ export const command: Command = {
             const fileToAttach = new Discord.MessageAttachment('./media/usernumber-graph.png');
 
             const definedTotal = config.wordsDefined.length;
-
             const executionTotal = ((await client.database.getTotalCmdUsage()) || [{ used: 0 }])[0].used;
 
             const embed: MessageEmbed = new MessageEmbed({
@@ -141,7 +140,7 @@ export const command: Command = {
 
             await message.channel.send({
                 files: [fileToAttach],
-                embed,
+                embeds: [embed],
             });
         } catch (error) {
             xlg.error(error);
