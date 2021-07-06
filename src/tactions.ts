@@ -71,8 +71,12 @@ export class TimedActionsSubsystem {
 
                     // Remove the mentioned users role and make notation in audit log
                     await m.roles.remove(d.roleid, `unmuting automatically after ${d.duration}`);
-                    if (m.voice.connection && m.voice.mute) {
-                        m.voice.setMute(false);
+                    if (m.voice.serverMute) {
+                        try {
+                            await m.voice.setMute(false);
+                        } catch (error) {
+                            xlg.error("tactions error removing voice mute", error)
+                        }
                     }
                     await Contraventions.logUnmute(m, m.guild.me || "", `Automatic unmute after ${d.duration}`);//Automic
                     await Bot.client.database.deleteAction(action.id);

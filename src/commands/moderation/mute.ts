@@ -1,10 +1,10 @@
-import { Command } from "src/gm";
+import { Command, GuildMessageProps } from "src/gm";
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
 import { stringToDuration } from '../../utils/time';
 import { mute } from "../../utils/modactions";
 
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'mute',
     description: {
         short: 'fully mute a member',
@@ -18,8 +18,6 @@ export const command: Command = {
     permissions: ["MANAGE_ROLES", "MUTE_MEMBERS"],
     async execute(client, message, args) {
         try {
-            if (!message.guild || !message.member) return;
-
             const toMute = await stringToMember(message.guild, args[0], false, false, false);
             // Check perms, self, rank, etc
             if (!toMute) {
@@ -62,7 +60,7 @@ export const command: Command = {
             }
         } catch (e) {
             xlg.error(e);
-            await client.specials?.sendError(message.channel, `\\🆘 Error while muting`);
+            await client.specials.sendError(message.channel, `\\🆘 Error while muting`);
             return false;
         }
     }
