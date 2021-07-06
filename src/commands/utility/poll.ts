@@ -1,8 +1,8 @@
 import { MessageEmbedOptions } from "discord.js";
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { delayedLoop } from "../../utils/time";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: 'poll',
     description: {
         short: "call a quick poll, or more (see help)",
@@ -28,7 +28,7 @@ export const command: Command<GuildMessageProps> = {
     ],
     guildOnly: true,
     args: true,
-    permissions: ["ADD_REACTIONS"],
+    permissions: ["ADD_REACTIONS", "MANAGE_MESSAGES"],
     async execute(client, message, args, flags) {
         try {
             let title = `Poll`;
@@ -65,7 +65,7 @@ export const command: Command<GuildMessageProps> = {
                 await client.specials.sendError(message.channel, `A maximum of **10** options are allowed. ${opts.length} provided.`);
                 return;
             }
-            const emojis = message.channel.permissionsFor(message.guild.me || "")?.has("USE_EXTERNAL_EMOJIS") ? ["<:1_:815735504825221121>", "<:2_:815735505047257119>", "<:3_:815735505085005835>", "<:4_:815735505085792327>", "<:5_:815735505538777108>", "<:6_:815735505642586152>", "<:7_:815735505961615391>", "<:8_:815735505982849054>", "<:9_:815735505664737321>", "<:10:815735505760682035>"] : ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+            const emojis = message.guild.me && message.channel.permissionsFor(message.guild.me).has("USE_EXTERNAL_EMOJIS") ? ["<:1_:815735504825221121>", "<:2_:815735505047257119>", "<:3_:815735505085005835>", "<:4_:815735505085792327>", "<:5_:815735505538777108>", "<:6_:815735505642586152>", "<:7_:815735505961615391>", "<:8_:815735505982849054>", "<:9_:815735505664737321>", "<:10:815735505760682035>"] : ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
             //const optEmojis: string[] = [];
             const options = opts.map((w, i) => {
                 //optEmojis.push(emojis[i]);
@@ -85,7 +85,7 @@ export const command: Command<GuildMessageProps> = {
                     url: message.attachments.first()?.url
                 }
             }
-            const voteEmbed = await message.channel.send({ embed });
+            const voteEmbed = await message.channel.send({ embeds: [embed] });
             const loop = delayedLoop(0, options.length, 1, 1500);
             for await (const i of loop) {
                 try {

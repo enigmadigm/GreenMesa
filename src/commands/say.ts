@@ -1,5 +1,5 @@
 import { Collection, MessageAttachment, MessageEmbed } from "discord.js";
-import { Command, CommandArgumentFlag, GuildMessageProps } from "src/gm";
+import { Command, CommandArgumentFlag } from "src/gm";
 import { permLevels } from "../permissions";
 import { stringToChannel } from "../utils/parsers";
 
@@ -45,13 +45,13 @@ function constructMessage(content: string, flags: CommandArgumentFlag[], atts: C
     return fin;
 }
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: 'say',
     description: {
         short: "message through the bot",
         long: "Make the bot send something in chat. Embeds can also be sent through this command using argument flags (e.g. --description=\"guess who\")."
     },
-    flags: [],
+    flags: [],// any arguments
     usage: "[channel] <bot message>",
     examples: [
         "--description=\"description content\" #channel outside message content",
