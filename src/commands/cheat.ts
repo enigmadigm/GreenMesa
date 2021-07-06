@@ -1,4 +1,3 @@
-
 import { permLevels } from '../permissions';
 import { Command } from "src/gm";
 import fetch from "node-fetch";
@@ -20,7 +19,6 @@ export const command: Command = {
     args: true,
     cooldown: 2,
     permLevel: permLevels.member,
-    guildOnly: false,
     async execute(client, message, args) {
         try {
             const a = args.join(" ");
@@ -36,8 +34,9 @@ export const command: Command = {
             const t = await r.text();
 
             const lang = parts.length > 1 ? parts[0] : "";
+            const cheatAttachment = new MessageAttachment(Buffer.from(t, 'utf-8'), `cheat_sheet.${lang && lang.length < 20 ? lang : "txt"}`);
             await message.channel.send({
-                files: [new MessageAttachment(Buffer.from(t, 'utf-8'), `cheat_sheet.${lang && lang.length < 20 ? lang : "txt"}`)],
+                files: [cheatAttachment],
             });
             // const lines = t.split("\n");
             // const groups: string[][] = [[]];
