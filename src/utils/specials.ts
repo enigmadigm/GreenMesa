@@ -60,7 +60,7 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
         const invalid: string[] = [];// there should only really be one or zero entries
         for (let i = 0; i < args.length; i++) {
             const arg = args[i];
-            if (!/^[0-9]+(?:\.[0-9]+)?$/.test(arg)) {
+            if (!/^-?[0-9]+(?:\.[0-9]+)?$/.test(arg)) {
                 forResult = false;
                 invalid.push(arg);
                 break;
@@ -78,7 +78,7 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
                     color: await Bot.client.database.getColor("fail"),
                     title: "Invalid Arguments",
                     description: `Some or all arguments must be numbers (floating or integer)\nYou sent: \` ${invalid.map(x => x.escapeDiscord()).join(", ")} \``,
-                }]
+                }],
             });
             return false;
         }
