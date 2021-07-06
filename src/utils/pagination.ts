@@ -61,7 +61,7 @@ export class PaginationExecutor {
             pages.push(embed);
         }
         if (pages.length < 2) {
-            const current = await message.channel.send(pages[0]);
+            const current = await message.channel.send({ embeds: [pages[0]] });
             if (closeable) {
                 // await current.react(this.closeEmoji);
                 await this.addCloseListener(current);
@@ -69,7 +69,7 @@ export class PaginationExecutor {
             return current;
         } else {
             const p = new MessageEmbed(pages[0]);
-            const current = await message.channel.send(p.setFooter(`1 of ${pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`));
+            const current = await message.channel.send({ embeds: [p.setFooter(`1 of ${pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`)] });
             await current.react(this.emojiLeft);
             await current.react(this.emojiRight);
             if (closeable) {
@@ -113,7 +113,7 @@ export class PaginationExecutor {
             pager.currentPageNumber = (pager.currentPageNumber + direction) > -1 ? (pager.currentPageNumber + direction) % pager.pages.length : pager.pages.length - 1;
             const p = new MessageEmbed(pager.pages[pager.currentPageNumber]);
             if (reaction.message.editable) {
-                await reaction.message.edit(p.setFooter(`${pager.currentPageNumber + 1} of ${pager.pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`));
+                await reaction.message.edit({ embeds: [p.setFooter(`${pager.currentPageNumber + 1} of ${pager.pages.length}${p.footer?.text ? ` | ${p.footer.text}` : ""}`)] });
             }
             // await reaction.users.remove(user);
         } catch (error) {
