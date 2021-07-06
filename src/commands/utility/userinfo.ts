@@ -88,7 +88,7 @@ export const command: Command<GuildMessageProps> = {
             const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
 
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: target.roles.hoist && target.roles.hoist.color != 0x000000 ? target.roles.hoist.color : await client.database.getColor("info"),
                     author: {
                         name: `Info for ${target.user.tag} ${rank && xp ? `${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}` : ""}`,
@@ -152,7 +152,7 @@ export const command: Command<GuildMessageProps> = {
                     footer: {
                         text: 'All dates in UTC'
                     }
-                }
+                }],
             });
 
             message.channel.stopTyping();
