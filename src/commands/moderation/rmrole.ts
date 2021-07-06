@@ -1,8 +1,8 @@
 import { stringToRole } from '../../utils/parsers';
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "rmrole",
     description: {
         short: "remove a role or cleanup roles",
@@ -90,10 +90,10 @@ export const command: Command<GuildMessageProps> = {
                 }
                 await target.delete();
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("success"),
-                        description: `Role \`${target.name.escapeDiscord()}\` removed successfully`
-                    }
+                        description: `Role \`${target.name.escapeDiscord()}\` removed successfully`,
+                    }],
                 });
             } else {
                 await client.specials.sendError(message.channel, `Arguments or flags are required for this command`);

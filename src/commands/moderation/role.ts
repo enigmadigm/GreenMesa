@@ -2,7 +2,7 @@ import { getPermLevel, permLevels } from '../../permissions';
 import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
 import { getFriendlyUptime } from "../../utils/time";
 import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, Permissions, MessageActionRow, MessageButton, MessageComponentInteraction } from "discord.js";
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 
 const roleDelay = 1000;
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -15,7 +15,7 @@ async function* delayedLoop(start: number, end: number, increment: number, delay
 
 const activeOps = new Collection<string, () => void>();
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "role",
     description: {
         short: "toggle roles on members",
@@ -141,13 +141,13 @@ export const command: Command<GuildMessageProps> = {
                 const t = getFriendlyUptime(d);
                 const fu = parseFriendlyUptime(t);
                 const etaMessage = await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("info"),
                         description: `**Target:** ${target}\n**${add ? "Giving": "Removing"}:** ${targetRole} (max ${targets.length} members)\n**ETA:** ${fu ? fu : "*should take no time at all*"}`,
                         footer: {
                             text: `Click 🔴 to cancel`,
                         },
-                    },
+                    }],
                     components: [
                         new MessageActionRow().addComponents(
                             new MessageButton({ customID: "abort", style: "SECONDARY" }).setEmoji("🔴")
@@ -167,10 +167,7 @@ export const command: Command<GuildMessageProps> = {
                     }
                     return false;
                 };
-                const collector = etaMessage.createMessageComponentInteractionCollector(filter, {
-                    time: d,
-                    maxUsers: 1,
-                });
+                const collector = etaMessage.createMessageComponentInteractionCollector({ filter, time: d, maxUsers: 1 });
                 // await etaMessage.react("🔴");
 
                 collector.on('collect', async () => {
@@ -181,7 +178,7 @@ export const command: Command<GuildMessageProps> = {
 
                 collector.on('end', async () => {
                     const e = new MessageEmbed(etaMessage.embeds[0]).setFooter("");
-                    await etaMessage.edit({ embed: e, components: [] });
+                    await etaMessage.edit({ embeds: [e], components: [] });
                     cancelOp();
                 });
 
@@ -214,10 +211,10 @@ export const command: Command<GuildMessageProps> = {
                 activeOps.delete(`${message.author.id}${message.guild.id}`);
                 if (affected) {
                     await message.channel.send({
-                        embed: {
+                        embeds: [{
                             color: await client.database.getColor("success"),
                             description: `${targetRole} ${add ? "given to" : "removed from"} ${affected} member(s)`
-                        }
+                        }],
                     });
                 } else {
                     await client.specials.sendError(message.channel, `**Failure:** No members were ${add ? "given" : "removed"} ${targetRole}`);
@@ -230,10 +227,10 @@ export const command: Command<GuildMessageProps> = {
                     }
                     await target.roles.remove(targetRole);
                     await message.channel.send({
-                        embed: {
+                        embeds: [{
                             color: await client.database.getColor("success"),
                             description: `${targetRole} removed from ${target}`
-                        }
+                        }],
                     });
                 } else {
                     if (!add) {
@@ -242,10 +239,10 @@ export const command: Command<GuildMessageProps> = {
                     }
                     await target.roles.add(targetRole);
                     await message.channel.send({
-                        embed: {
+                        embeds: [{
                             color: await client.database.getColor("success"),
                             description: `${targetRole} given to ${target}`
-                        }
+                        }],
                     });
                 }
             }/*  else {
@@ -258,4 +255,3 @@ export const command: Command<GuildMessageProps> = {
         }
     }
 }
-

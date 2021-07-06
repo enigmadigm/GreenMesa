@@ -17,14 +17,14 @@ export const command: Command = {
             const fail_embed_color = await client.database.getColor("fail");
             if (!args.length) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         title: "Global Configuration Editing",
                         description: "This command allows for the editing of various configuration variables in the database from the text-line. For it to work, you must supply arguments like `view` or `edit` along with their various selectors. In order to use this command you must be a sys admin.",
                         color: fail_embed_color || 0,
                         footer: {
-                            text: "*GlobalSettings"
-                        }
-                    }
+                            text: "*GlobalSettings",
+                        },
+                    }],
                 });
                 return;
             }
@@ -44,10 +44,10 @@ export const command: Command = {
                     }
 
                     await message.channel.send({
-                        embed: {
+                        embeds: [{
                             author: {
                                 name: 'Settings',
-                                icon_url: client.user?.displayAvatarURL()
+                                icon_url: client.user?.displayAvatarURL(),
                             },
                             title: `${setting.name}`,
                             description: `${setting.value}`,
@@ -55,40 +55,40 @@ export const command: Command = {
                                 {
                                     name: "Description",
                                     value: `${setting.description}`,
-                                    inline: true
+                                    inline: true,
                                 },
                                 {
                                     name: "Previous",
                                     value: `${setting.previousvalue || "none"}`,
-                                    inline: true
+                                    inline: true,
                                 },
                                 {
                                     name: "Last Updated",
-                                    value: `${moment(setting.lastupdated).format()}`
+                                    value: `${moment(setting.lastupdated).format()}`,
                                 },
                                 {
                                     name: "Updated By",
-                                    value: `<@${setting.updatedby}>`
-                                }
+                                    value: `<@${setting.updatedby}>`,
+                                },
                             ],
                             color: info_embed_color || 0,
                             footer: {
                                 text: 'Viewing GlobalSettings',
                                 icon_url: message.author.displayAvatarURL(),
-                            }
-                        }
+                            },
+                        }],
                     });
                     break;
                 }
                 case 'edit': {
                     argIndex++;
                     if (!args[argIndex] || !args[argIndex + 2]) {
-                        message.channel.send("Please retry and supply:```\nSELECTOR : SELECTOR VALUE : NEW VALUE\n```");
+                        await message.channel.send("Please retry and supply:```\nSELECTOR : SELECTOR VALUE : NEW VALUE\n```");
                         return false;
                     }
                     const status = await client.database.editGlobalSettings(args[argIndex] === "category" ? "category" : "name", args[argIndex + 1], message.author, args.slice(argIndex + 2).join("_"));
                     if (!status) {
-                        client.specials?.sendError(message.channel);
+                        await client.specials.sendError(message.channel);
                         return;
                     }
                     let changed = "Updated Setting"
@@ -96,10 +96,10 @@ export const command: Command = {
                         changed = "Inserted Setting";
                     }
                     await message.channel.send({
-                        embed: {
+                        embeds: [{
                             author: {
                                 name: 'Settings',
-                                icon_url: client.user?.displayAvatarURL()
+                                icon_url: client.user?.displayAvatarURL(),
                             },
                             title: changed,
                             description: status.affectedRows + ' settings affected',
@@ -108,7 +108,7 @@ export const command: Command = {
                                 text: 'Viewing GlobalSettings',
                                 icon_url: message.author.displayAvatarURL(),
                             }
-                        }
+                        }],
                     });
                     break;
                 }
@@ -118,7 +118,7 @@ export const command: Command = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

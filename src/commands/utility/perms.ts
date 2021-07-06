@@ -1,8 +1,6 @@
-
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
-//import { getGlobalSetting } from "../dbmanager";
 
 export const command: Command = {
     name: 'perms',
@@ -13,15 +11,14 @@ export const command: Command = {
     permLevel: permLevels.trustedMember,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
             const target = await stringToMember(message.guild, args.join(" "), true, true, true) || message.member || false;
             if (!target) {
-                client.specials?.sendError(message.channel, "Invalid target.");
+                client.specials.sendError(message.channel, "Invalid target.");
                 return;
             }
 
-            message.channel.send({
-                embed: {
+            await message.channel.send({
+                embeds: [{
                     color: await client.database.getColor("info"),
                     author: {
                         name: `${target.user.tag}`,
@@ -31,13 +28,12 @@ export const command: Command = {
                     footer: {
                         text: `Perm int: ${target.permissionsIn(message.channel).bitfield}`
                     }
-                }
+                }],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-
