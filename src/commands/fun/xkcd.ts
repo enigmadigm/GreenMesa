@@ -1,8 +1,8 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps, XClient, XKCDEndpointResponse } from "src/gm";
+import { Command, XClient, XKCDEndpointResponse } from "src/gm";
 import fetch from 'node-fetch';
 import { randomIntFromInterval } from "../../utils/parsers";
-import { CollectorFilter, DMChannel, MessageAttachment, MessageEmbed, MessageReaction, NewsChannel, TextChannel, User } from "discord.js";
+import { CollectorFilter, DMChannel, MessageAttachment, MessageEmbed, MessageReaction, NewsChannel, TextChannel, ThreadChannel, User } from "discord.js";
 
 const HOST = "http://xkcd.com/";
 
@@ -15,7 +15,7 @@ async function getComic(number: number): Promise<XKCDEndpointResponse | number> 
     return j;
 }
 
-async function sendById(client: XClient, channel: TextChannel | DMChannel | NewsChannel, num: number, wid = "") {
+async function sendById(client: XClient, channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, num: number, wid = "") {
     try {
         const c = await getComic(num);
         if (c === 404) {
@@ -36,27 +36,28 @@ async function sendById(client: XClient, channel: TextChannel | DMChannel | News
     }
 }
 
-async function sendComic(channel: TextChannel | DMChannel | NewsChannel, title: string, att: MessageAttachment, desc = "", issue: number, wid = "") {
+async function sendComic(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, title: string, att: MessageAttachment, desc = "", issue: number, wid = "") {
     const s = await channel.send({
-        embed: new MessageEmbed().setTitle(`${title}`).setImage(`${att.attachment}`).setColor("#2f3136").setFooter(`#${issue} ● caption hidden`)
+        embeds: [new MessageEmbed().setTitle(`${title}`).setImage(`${att.attachment}`).setColor("#2f3136").setFooter(`#${issue} ● caption hidden`)]
     });
     await s.react("<:eye_2:830536828884221992>").catch(xlg.error);
 
     const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => r.emoji.id === '830536828884221992' && u.id === wid;
-    const collected = await s.awaitReactions(filter, {
+    const collector = s.createReactionCollector({
+        filter,
         max: 1,
         time: 60000
     });
-    if (collected && collected.size) {
+    collector.on("collect", async () => {
         s.embeds[0].description = `${desc ? `${desc}` : "*no caption*"}`;
         if (s.embeds[0].footer) {
             s.embeds[0].footer.text = `#${issue}`;
         }
-        await s.edit(new MessageEmbed(s.embeds[0]));
-    }
+        await s.edit({ embeds: [new MessageEmbed(s.embeds[0])] }).catch(xlg.error);
+    });
 }
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "xkcd",
     description: {
         short: "get xkcd comics",
@@ -72,13 +73,12 @@ export const command: Command<GuildMessageProps> = {
     cooldown: 1,
     permLevel: permLevels.member,
     guildOnly: true,
-    ownerOnly: false,
-    permissions: ["ADD_REACTIONS", "ATTACH_FILES", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
+    permissions: ["ADD_REACTIONS", "ATTACH_FILES", "USE_EXTERNAL_EMOJIS"],
     async execute(client, message, args) {
         try {
             if (!args.length) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("info"),
                         title: "xkcd comics",
                         description: `A command that lets you view xkcd comics.\nYou can use the following subcommands:
@@ -87,7 +87,7 @@ latest
 byid
 random
 \`\`\``
-                    }
+                    }],
                 });
                 return;
             }
