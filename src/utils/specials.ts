@@ -1,6 +1,6 @@
-import { ClientValuesGuild, DashboardMessage, SkeletonGuildObject, XClient } from '../gm';
+import { ClientValuesGuild, DashboardMessage, GuildMessageProps, SkeletonGuildObject, XClient, XMessage } from '../gm';
 import moment from 'moment';
-import { Channel, CollectorFilter, DMChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
+import { ButtonInteraction, Channel, CollectorFilter, DMChannel, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
 import { Bot } from "../bot";
 import { combineEmbedText } from './parsers';
 
@@ -104,7 +104,7 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
  * @param adminOverride Should admin permissions override  (default False)
  * @returns the result of the confirmation
  */
-export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**", adminOverride = false): Promise<boolean> {
+export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**", adminOverride = false): Promise<{ end: boolean, msg: Message | null, inter: ButtonInteraction | null }> {
     const cm = await channel.send({
         embeds: [{
             color: 0x337fd5/* await Bot.client.database.getColor("info") */,
@@ -138,9 +138,9 @@ export async function getUserConfirmation(channel: TextChannel | DMChannel | New
     };
     // const pushes = await cm.awaitMessageComponentInteraction({filter: pushFilter, time: 10 * 1000});
     const buttonOption = await cm.awaitMessageComponentInteraction({ filter: pushFilter, time: 10 * 1000 }).catch(() => undefined);
-    if (!buttonOption) {
+    if (!buttonOption || !buttonOption.isButton()) {
         await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(`**No confirmation**`).setColor(await Bot.client.database.getColor("fail"))], components: [] });
-        return false;
+        return { end: false, msg: cm.deleted ? cm : null, inter: null };
     }
     if (buttonOption.customID === "yes") {
         if (confirmationMessage) {
@@ -148,14 +148,14 @@ export async function getUserConfirmation(channel: TextChannel | DMChannel | New
         } else if (cm.deletable) {
             await cm.delete();
         }
-        return true;
+        return { end: true, msg: cm.deleted ? cm : null, inter: buttonOption };
     }
     if (rejectionMessage) {
         await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(rejectionMessage).setColor(await Bot.client.database.getColor("fail"))], components: [] });
     } else if (cm.deletable) {
         await cm.delete();
     }
-    return false;
+    return { end: false, msg: cm.deleted ? cm : null, inter: buttonOption };
 }
 
 export function timedMessagesHandler(client: XClient): void {//TODO: make this a real handler, integrate with cronjobs or timedactions or something
@@ -237,8 +237,18 @@ export function getSupportServer(embed = false): string {
     return embed ? `[support server](${link})` : `${link}`;
 }
 
+/**
+ * Tests whether a string is a stringified 18 character BigInt
+ */
 export function isSnowflake(o: string): o is Snowflake {
     return (/^[0-9]{18}$/.test(o));
+}
+
+/**
+ * Tests whether a message has the properties identifying it as inside a guild
+ */
+export function isGuildMessage (o: XMessage): o is XMessage & GuildMessageProps {
+    return o.channel instanceof GuildChannel || o.channel instanceof ThreadChannel;
 }
 
 export const shards = {

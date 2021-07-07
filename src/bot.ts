@@ -41,7 +41,7 @@ import config from "../auth.json"; // Loading app config file
 import { permLevels, getPermLevel } from "./permissions";
 import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger';
 import MesaWebsite from "./website/app";
-import { Command, GuildMessageProps, XClient, XMessage } from "./gm";
+import { Command, XClient, XMessage } from "./gm";
 import { TimedActionsSubsystem } from "./tactions";
 import { PaginationExecutor } from "./utils/pagination";
 import Client from "./struct/Client";
@@ -49,6 +49,7 @@ import "./xlogger";
 import { combineMessageText, parseLongArgs } from './utils/parsers';
 import cron from 'node-cron';
 import exitHook from 'exit-hook';
+import { isGuildMessage } from './utils/specials';
 
 String.prototype.escapeSpecialChars = function () {
     return this.replace(/(?<!\\)\\n/g, "\\n")
@@ -445,10 +446,6 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const cs = cc && message.guild ? await client.database.getCommand(message.guild.id, command.name, cc) : false;
         const gc = cc && message.guild ? cc.conf : false;
         const disabled = cs ? !!(!cs.enabled || (!cs.channel_mode && cs.channels.includes(message.channel.id)) || (cs.channel_mode && !cs.channels.includes(message.channel.id)) || (message.member && ((cs.role_mode && !message.member.roles.cache.find(x => cs.roles.includes(x.id))) || (!cs.role_mode && message.member.roles.cache.find(x => cs.roles.includes(x.id)))))) : false;
-
-        const isGuildMessage = (o: XMessage): o is XMessage & GuildMessageProps => {
-            return message.channel instanceof GuildChannel;
-        }
 
         if (command.guildOnly) {// command is configured to only execute outside of dms
             if (!isGuildMessage(message)) {

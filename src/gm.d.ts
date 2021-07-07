@@ -1102,8 +1102,8 @@ export interface StarredMessageData {
     channelid: Snowflake;
     authorid: Snowflake;
     stars: number;
-    locked: number;
-    nsfw: number;
+    locked: 0 | 1;
+    nsfw: 0 | 1;
     postid: string;
     postchannel: string;
 }

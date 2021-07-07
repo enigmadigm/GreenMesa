@@ -42,6 +42,7 @@ export default class MesaWebsite {
         this.app.use(passport.initialize());
         this.app.use(passport.session());
         this.app.use(function (req, res, next) {
+            // xlg.log("forwarded ip", req.headers['x-forwarded-for'] || req.socket.remoteAddress)
             res.header("x-powered-by", "Sadness")
             next();
         });

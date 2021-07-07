@@ -132,8 +132,11 @@ export const command: Command = {
                     await client.specials.sendError(message.channel, `**Failure:** No members to ${add ? "give this role to" : "remove this role from"}`);
                     return;
                 }
-                if (targets.length > 10 && !flags.find(f => f.name === "f") && !(await client.specials.getUserConfirmation(message.channel, [message.author.id], `Are you sure you want to proceed?\nThis action affects ${targets.length} users.`, "", undefined, true))) {
-                    return;
+                if (targets.length > 10 && !flags.find(f => f.name === "f")) {
+                    const { end: confirm } = await client.specials.getUserConfirmation(message.channel, [message.author.id], `Are you sure you want to proceed?\nThis action affects ${targets.length} users.`, "", undefined, true);
+                    if (!confirm) {
+                        return;
+                    }
                 }
 
                 const loop = delayedLoop(0, targets.length, 1, roleDelay);

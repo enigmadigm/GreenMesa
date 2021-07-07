@@ -1,4 +1,4 @@
-import { GuildChannel, Message, MessageEmbedOptions, MessageReaction, Permissions, User } from "discord.js";
+import { GuildChannel, Message, MessageEmbedOptions, MessageReaction, Permissions, ThreadChannel, User } from "discord.js";
 import { GuildMessageProps, MessageService } from "../gm";
 import Starboard from "../struct/Starboard";
 import { capitalize } from "../utils/parsers";
@@ -6,23 +6,23 @@ import { isSnowflake } from "../utils/specials";
 
 const jumpSynonyms = ["leap", "spring", "bound", "hop", "bounce", "skip", "bob", "dance", "prance", "frolic"];
 
-type skMdat = { content: string, embed: MessageEmbedOptions };
+type skMdat = { content: string, embeds: MessageEmbedOptions[] };
 function makeStarpost(starboard: Starboard, msg: Message, nsfw: boolean, count: number): skMdat {
     const e: skMdat = {
         content: `${count} ⭐ in ${msg.channel} for ${msg.author}`,
-        embed: {
+        embeds: [{
             color: starboard.color ? starboard.color : 0xffd500,
             title: `\\⭐ Starpost`,
             description: `${starboard.jumpLink ? `**[${capitalize(jumpSynonyms[Math.floor(Math.random() * jumpSynonyms.length)])} to message](${msg.url})**\n\n` : ""}`,
             footer: {
                 text: `ID: ${msg.id}${nsfw ? " · nsfw" : ""}`,
             }
-        },
+        }],
     };
 
-    const contentLimited = `${msg.content.slice(0, (2048 - (e.embed.description?.length ?? 0) - 7))}${msg.content.length > (2048 - (e.embed.description?.length ?? 0) - 7) ? "..." : ""}`;
-    if (e.embed.description) {
-        e.embed.description += contentLimited;
+    const contentLimited = `${msg.content.slice(0, (2048 - (e.embeds[0].description?.length ?? 0) - 7))}${msg.content.length > (2048 - (e.embeds[0].description?.length ?? 0) - 7) ? "..." : ""}`;
+    if (e.embeds[0].description) {
+        e.embeds[0].description += contentLimited;
     }
 
     let imageLink = "";
@@ -39,7 +39,7 @@ function makeStarpost(starboard: Starboard, msg: Message, nsfw: boolean, count: 
         }
     }
     if (imageLink) {
-        e.embed.image = {
+        e.embeds[0].image = {
             url: imageLink,
         };
     }
@@ -69,7 +69,7 @@ export const service: MessageService = {
                 }
             } else if ((event === "messageReactionAdd" || event === "messageReactionRemove") && m instanceof MessageReaction && user instanceof User && !m.partial) {
                 const msg = m.message;
-                if (!msg.partial && !msg.deleted && msg.guild && msg.channel instanceof GuildChannel) {
+                if (!msg.partial && !msg.deleted && msg.guild && (msg.channel instanceof GuildChannel || msg.channel instanceof ThreadChannel)) {
                     const starboard = await client.database.getStarboardSetting(msg.guild.id);// getting the starboard settings
                     const reactedUsers = await m.users.fetch();
                     const count = reactedUsers.filter(u => u.id !== client.user?.id).size;// try to get an accurate number of users who reacted with the current emoji
@@ -91,7 +91,7 @@ export const service: MessageService = {
                         const mid = msg.id;
                         const starPost = await client.database.getStarredMessage(mid);
                         const starChannel = msg.guild.channels.cache.get(starboard.channel);
-                        const nsfw = !starPost ? msg.channel.nsfw : !!starPost.nsfw;
+                        const nsfw = !starPost ? msg.channel instanceof ThreadChannel ? !!msg.channel.parent?.nsfw : msg.channel.nsfw : !!starPost.nsfw;
                         if (starboard.allowSensitive || !nsfw) {
                             if (!starPost || !starPost.postid) {// if there is already a starboard entry for this message
                                 if (count >= starboard.threshold) {// if the post has the necessary number of reactions
