@@ -340,6 +340,7 @@ export interface TwitchHookRow {
      * The date of the last notification received (not necessarily successfully sent)
      */
     laststream: string;
+    subscriptionid: string;
 }
 
 export type PartialGuildObject = DiscordStrategy.GuildInfo & {

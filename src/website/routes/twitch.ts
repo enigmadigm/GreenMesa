@@ -183,7 +183,7 @@ export function twitchRouter(client: XClient): Router {
 
     // Routes
     router.get('/', (req, res) => {
-        console.log("GET request", JSON.stringify(req.body, null, 2))
+        // console.log("GET request", JSON.stringify(req.body, null, 2))
         xlg.log('Incoming Get request on /api/twitch\nApparent unauthorized request at API endpoint for Twitch');
         res.sendStatus(401);// it is unauthorized, so treating it as such
     });
@@ -238,7 +238,7 @@ export function twitchRouter(client: XClient): Router {
                                 // xlg.log("Definitely an online event")
                                 const subs = await Bot.client.database.getTwitchSubsForID(dat.event.broadcaster_user_id);
                                 xlg.log("sub", subs)
-                                if (subs) {
+                                if (subs && subs.length) {
                                     for (let i = 0; i < subs.length; i++) {
                                         const sub = subs[i];
                                         const diff = Math.abs(moment(dat.event.started_at).diff(sub.laststream, "seconds"));
@@ -268,12 +268,12 @@ export function twitchRouter(client: XClient): Router {
                                                 const game = "";// *
                                                 const title = "";// *
                                                 const message = `${msg.replace(/\{name\}/g, name).replace(/\{link\}/g, link).replace(/\{game\}/g, game).replace(/\{title\}/g, title) || `${name} just went live!`}${!/\{link\}/g.exec(msg)?.length ? `\n${link}` : ""}`;
-                                                client.shard?.broadcastEval(`
-                                            const c = this.channels.cache.get('${sub.channelid}');
-                                            if (c && c.send) {
-                                                c.send(\`${message}\`);
-                                            }
-                                            `);
+                                                client.shard?.broadcastEval((client) => {
+                                                    const c = client.channels.cache.get(sub.channelid);
+                                                    if (c && c.isText()) {
+                                                        c.send(`${message}`);
+                                                    }
+                                                });
                                                 // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
                                                 //channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
                                                 if (sub.delafter > -1 && sub.delafter <= sub.notified) {
@@ -316,7 +316,6 @@ export function twitchRouter(client: XClient): Router {
 
 export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string, editing = false, delafter = -1): Promise<boolean | 'ID_NOT_FOUND' | 'ALREADY_EXISTS'> {
     //if (!token) token = (await getOAuth()).access_token;
-    console.log("adding webhook")
     //if (!token) return false;
     await getOAuth();
     let uid;
@@ -330,26 +329,24 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
     let preexists = false;
     if (guildid) {
         const existingSubs = await Bot.client.database.getTwitchSubsForID(uid.data[0].id);
-        if (existingSubs && existingSubs.length > 0) {
+        if (existingSubs && existingSubs.length) {
             for (let i = 0; i < existingSubs.length; i++) {
                 const sub = existingSubs[i];
                 if (sub.streamerid === id && guildid === sub.guildid) {
                     if (sub.laststream && Math.abs(moment().diff(sub.laststream, "ms")) < 1000 * 60 * 60 * 24 * 10) {//FIXME: this "retry for inactivity" practice can draw a lot of 409 errors
-                        console.log("less enough")
                         preexists = true;
                         if (!editing) {
                             await addTwitchWebhook(id, true);
                             return "ALREADY_EXISTS";
                         }
                     } else {
-                        console.log("too long without stream")
                         break;
                     }
                 }
             }
         }
     }
-    console.log("continuing")
+    let subid = "";
     if (!preexists) {
         const res = await fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
             method: 'POST',
@@ -374,13 +371,14 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
             }
         });
         const j = await res.json();
-        console.log(JSON.stringify(j, null, 2))
-        console.log("registering new")
+        if (`${res.status}`.startsWith("2") && j.data[0].id) {
+            subid = j.data[0].id
+        }
         if (!res) return false;
     }
 
     if (guildid && targetChannel && targetChannel instanceof TextChannel) {
-        const subRes = await Bot.client.database.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login, delafter);
+        const subRes = await Bot.client.database.addTwitchSubscription(uid.data[0].id, guildid, targetChannel.id, 864000 * 1000, message, uid.data[0].display_name || uid.data[0].login, delafter, 0, subid);
         if (!subRes) return false;
         if (uid.data[0].display_name || uid.data[0].login) {
             targetChannel.send(`This is a test message for the set Twitch notification.\nhttps://twitch.tv/${uid.data[0].display_name || uid.data[0].login}`);
@@ -408,7 +406,6 @@ export async function unregisterTwitchWebhook(id: string): Promise<Response> {
             "Client-ID": `${config.client_id}`
         }
     });
-    xlg.log("del res", res)
     return res;
 }
 
@@ -432,14 +429,14 @@ export async function unsubscribeTwitchSubscription(username: string, guildid: s
         return false;
     }*/
     const id = uid.data[0].id;
+    const subid = await Bot.client.database.getTwitchSubIDForStreamerID(id);
     const remres = await Bot.client.database.removeTwitchSubscription(id, guildid)
     if ((remres || remres === 0) && remres < 1) {
         return "NO_SUBSCRIPTION";
     }
     const allSubscriptions = await Bot.client.database.getTwitchSubsForID(id);
-    xlg.log("allsubs", allSubscriptions)
-    if (allSubscriptions && !allSubscriptions.length) {
-        await unregisterTwitchWebhook(uid.data[0].id);
+    if (allSubscriptions && !allSubscriptions.length && subid) {
+        await unregisterTwitchWebhook(subid);
     }
     return true;
 }

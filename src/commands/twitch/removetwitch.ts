@@ -1,9 +1,9 @@
 import { permLevels } from '../../permissions';
 import { unsubscribeTwitchSubscription } from "../../website/routes/twitch";
 import { MessageEmbed } from "discord.js";
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "removetwitch",
     aliases: ["rmtwitch"],
     description: {
@@ -19,7 +19,7 @@ export const command: Command<GuildMessageProps> = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            const confirmation = await client.specials.getUserConfirmation(message.channel, [message.author.id], `This will completely remove your Twitch notifier, continue?`, ``, `Aborted deletion process`, true);
+            const { end: confirmation } = await client.specials.getUserConfirmation(message.channel, [message.author.id], `This will completely remove your Twitch notifier, continue?`, ``, `Aborted deletion process`, true);
 
             if (!confirmation) {
                 return;
@@ -51,7 +51,7 @@ export const command: Command<GuildMessageProps> = {
                         .setDescription(`Your notifier could not be removed.`)
                         .setFooter(`Try using the dashboard instead`);
                 }
-                await message.channel.send(finishMessage);
+                await message.channel.send({ embeds: [finishMessage] });
             }
         } catch (error) {
             xlg.error(error);

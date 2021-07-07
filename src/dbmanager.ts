@@ -81,6 +81,7 @@ export class DBManager {
                 xlg.log("Connected to database");
             });
             conn.on('error', (err) => {
+                this.connected = false;
                 //console.log('db error', err);
                 if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET' || err.code === 'ER_DATA_TOO_LONG') {
                     this.handleDisconnect();
@@ -108,7 +109,7 @@ export class DBManager {
             this.query("CREATE TABLE IF NOT EXISTS `guildsettings` ( `id` int(11) NOT NULL AUTO_INCREMENT, `guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `property` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `value` longtext COLLATE utf8mb4_unicode_ci NOT NULL, `previousvalue` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `levelroles` (`id` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`roleid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`level` int(11) NOT NULL DEFAULT 1,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `prefix` (`guildid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,`prefix` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`guildid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-            this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` ( `id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL, `streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `expires` timestamp NOT NULL DEFAULT current_timestamp(), `delafter` int(11) NOT NULL DEFAULT -1, `notified` int(11) NOT NULL DEFAULT 0, `laststream` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            this.query("CREATE TABLE IF NOT EXISTS `twitchhooks` ( `id` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL, `streamerid` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL, `guildid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `channelid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `streamerlogin` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL, `message` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `expires` timestamp NOT NULL DEFAULT current_timestamp(), `delafter` int(11) NOT NULL DEFAULT -1, `notified` int(11) NOT NULL DEFAULT 0, `laststream` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `subscriptionid` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `dashusers` ( `userid` VARCHAR(18) NOT NULL , `tag` TINYTEXT NOT NULL , `avatar` TEXT NOT NULL , `guilds` MEDIUMTEXT NOT NULL , PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
             this.query("CREATE TABLE IF NOT EXISTS `timedactions` ( `actionid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `exectime` timestamp NULL DEFAULT current_timestamp(), `actiontype` tinytext COLLATE utf8mb4_unicode_ci NOT NULL, `actiondata` text COLLATE utf8mb4_unicode_ci NOT NULL, `casenumber` int(11) NOT NULL DEFAULT 0, PRIMARY KEY (`actionid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
             this.query("CREATE TABLE IF NOT EXISTS `userdata` ( `userid` varchar(18) COLLATE utf8mb4_unicode_ci NOT NULL, `createdat` timestamp NOT NULL DEFAULT current_timestamp(), `updatedat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(), `bio` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `afk` text COLLATE utf8mb4_unicode_ci DEFAULT NULL, `offenses` int(11) DEFAULT 0, `nicknames` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '', `bans` int(11) DEFAULT 0, PRIMARY KEY (`userid`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -763,23 +764,23 @@ export class DBManager {
      * @param expiredate a parseable date to be used to sort by timestamps for renewal
      * @param message (optional) the message that will be sent with the discord notification
      */
-    async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string, delafter = -1, notified = 0): Promise<boolean> {
+    async addTwitchSubscription(streamerid: string, guildid: string, channelid: string, expiredate: moment.DurationInputArg1, message = "", name: string, delafter = -1, notified = 0, subscriptionid: string): Promise<boolean> {
         try {
             if (!streamerid || !guildid || !channelid || !expiredate || !name) return false;
             const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = '${streamerid}' AND guildid = '${guildid}'`);
             const expiresTimestamp = moment().add(expiredate).format('YYYY-MM-DD HH:mm:ss');
             if (!result || !result[0]) {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin, delafter, notified) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)})`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, expires, streamerlogin, delafter, notified, subscriptionid) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)}, ${escape(subscriptionid)})`);
                 } else {
-                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin, delafter, notified) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)})`);
+                    await this.query(`INSERT INTO twitchhooks (id, streamerid, guildid, channelid, message, expires, streamerlogin, delafter, notified, subscriptionid) VALUES (${escape(`${streamerid}${guildid}`)}, ${escape(streamerid)}, ${escape(guildid)}, ${escape(channelid)}, ${escape(message)}, ${escape(expiresTimestamp)}, ${escape(name)}, ${escape(delafter)}, ${escape(notified)}, ${escape(subscriptionid)})`);
                 }
                 return true;
             } else {
                 if (!message || !message.length || typeof message !== "string") {
-                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)}, delafter = ${escape(delafter)}, notified = ${escape(notified)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = ${escape(name)}, delafter = ${escape(delafter)}, notified = ${escape(notified)}, subscriptionid = ${escape(subscriptionid)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 } else {
-                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)}, delafter = ${escape(delafter)}, notified = ${escape(notified)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
+                    await this.query(`UPDATE twitchhooks SET expires = ${escape(expiresTimestamp)}, channelid = ${escape(channelid)}, streamerlogin = '${name}', message = ${escape(message)}, delafter = ${escape(delafter)}, notified = ${escape(notified)}, subscriptionid = ${escape(subscriptionid)} WHERE id = ${escape(`${streamerid}${guildid}`)}`);
                 }
                 return true;
             }
@@ -826,7 +827,6 @@ export class DBManager {
         try {
             if (!streamerid) return false;
             const result = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = ${escape(streamerid)}`);
-            if (!result.length) return false;
             return result;
         } catch (error) {
             xlg.error(error);
@@ -848,6 +848,23 @@ export class DBManager {
             xlg.error(error);
             return false;
         }
+    }
+
+    async getUniqueTwitchSubscriptions(): Promise<{ streamerid: string, streamerlogin: string }[]> {
+        const rows = await <Promise<{ streamerid: string, streamerlogin: string }[]>>this.query(`SELECT streamerid, streamerlogin FROM twitchhooks GROUP BY streamerid`);
+        xlg.log("rows:", rows)
+        return rows;
+    }
+
+    async getTwitchSubIDForStreamerID(streamerid: string): Promise<string | false> {
+        const rows = await <Promise<TwitchHookRow[]>>this.query(`SELECT * FROM twitchhooks WHERE streamerid = ${escape(streamerid)}`);
+        if (rows.length) {
+            const id = rows.reduce((p, c) => p.subscriptionid ? p : c).subscriptionid;
+            if (id) {
+                return id;
+            }
+        }
+        return false;
     }
 
     /**

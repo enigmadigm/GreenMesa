@@ -84,7 +84,6 @@ export const command: Command = {
     cooldown: 2,
     permLevel: permLevels.admin,
     guildOnly: true,
-    ownerOnly: false,
     permissions: [],
     async execute(client, message, args, flags) {
         try {
