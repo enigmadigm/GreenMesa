@@ -32,7 +32,7 @@ export const command: Command = {
 
             const u = client.users.cache.get(file.userid);
             const agent = isSnowflake(file.agent) ? client.users.cache.get(file.agent) : undefined;
-            const e = await Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, -1, file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime, file.usertag);// reconstruct the case embed from the retrieved data
+            const e = await Contraventions.constructEmbed(u || file.userid, agent || file.agent, file.casenumber, file.type, -1, file.summary, file.endtime ? Math.abs(moment(file.created).diff(file.endtime, "ms")) : 0, file.endtime, file.usertag, undefined, !file.notified);// reconstruct the case embed from the retrieved data
             // send the retrieved infraction data
             await message.channel.send({
                 embeds: [
