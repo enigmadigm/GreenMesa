@@ -316,6 +316,7 @@ export function twitchRouter(client: XClient): Router {
 
 export async function addTwitchWebhook(username: string, isID = false, guildid?: string, targetChannel?: Channel, message?: string, editing = false, delafter = -1): Promise<boolean | 'ID_NOT_FOUND' | 'ALREADY_EXISTS'> {
     //if (!token) token = (await getOAuth()).access_token;
+    xlg.log("adding")
     //if (!token) return false;
     await getOAuth();
     let uid;
@@ -326,8 +327,10 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
     }
     const id: string = !uid || !uid.data || !uid.data[0] || !uid.data[0].id ? null : uid.data[0].id
     if (!id) return "ID_NOT_FOUND";
+    xlg.log("had id")
     let preexists = false;
     if (guildid) {
+        xlg.log("no guild")
         const existingSubs = await Bot.client.database.getTwitchSubsForID(uid.data[0].id);
         if (existingSubs && existingSubs.length) {
             for (let i = 0; i < existingSubs.length; i++) {
@@ -346,8 +349,10 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
             }
         }
     }
+    xlg.log("continuing")
     let subid = "";
     if (!preexists) {
+        xlg.log("creating")
         const res = await fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
             method: 'POST',
             body: JSON.stringify({
@@ -370,6 +375,7 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
                 "Client-ID": `${config.client_id}`
             }
         });
+        xlg.log("creation response:",res.status)
         const j = await res.json();
         if (`${res.status}`.startsWith("2") && j.data[0].id) {
             subid = j.data[0].id
