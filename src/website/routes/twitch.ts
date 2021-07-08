@@ -266,12 +266,14 @@ export function twitchRouter(client: XClient): Router {
                                                 const game = "";// *
                                                 const title = "";// *
                                                 const message = `${msg.replace(/\{name\}/g, name).replace(/\{link\}/g, link).replace(/\{game\}/g, game).replace(/\{title\}/g, title) || `${name} just went live!`}${!/\{link\}/g.exec(msg)?.length ? `\n${link}` : ""}`;
-                                                client.shard?.broadcastEval((client) => {
-                                                    const c = client.channels.cache.get(sub.channelid);
-                                                    if (c && c.isText()) {
-                                                        c.send(`${message}`);
-                                                    }
-                                                });
+                                                if (client.shard) {
+                                                    await client.shard.broadcastEval((client, { sub, message }) => {
+                                                        const c = client.channels.cache.get(sub.channelid);
+                                                        if (c && c.isText()) {
+                                                            c.send(`${message}`);
+                                                        }
+                                                    }, { context: { sub, message } });
+                                                }
                                                 // channel.send(\`${ sub.message || `${req.body.data[0].user_name} just went live!` }\nhttps://twitch.tv/${req.body.data[0].user_name}\`)
                                                 //channel.send(`${sub.message || `${req.body.data[0].user_name} just went live!`}\nhttps://twitch.tv/${req.body.data[0].user_name}`)
                                                 if (sub.delafter > -1 && sub.delafter <= sub.notified) {
