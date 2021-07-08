@@ -1,16 +1,16 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { stringToMember } from '../../utils/parsers';
 
-export const command: Command<GuildMessageProps> = {
-    name: "invreset",
+export const command: Command = {
+    name: "invwipe",
     description: {
-        short: "reset all invites data",
+        short: "wipe all invites data",
         long: "Reset all stored invites."
     },
     usage: "[@member]",
     cooldown: 15,
-    permLevel: permLevels.member,
+    permLevel: permLevels.admin,
     guildOnly: true,
     permissions: ["MANAGE_GUILD"],
     async execute(client, message, args) {
@@ -19,7 +19,7 @@ export const command: Command<GuildMessageProps> = {
                 const a = args.join(" ");
                 const target = await stringToMember(message.guild, a, true, true, true);
                 if (target) {
-                    const confirm = await client.specials.getUserConfirmation(message.channel, [message.author.id], `Please confirm deletion of invites data for ${target}`);
+                    const { end: confirm } = await client.specials.getUserConfirmation(message.channel, [message.author.id], `Please confirm deletion of invites data for ${target}`);
                     if (confirm) {
                         await client.invites.resetInvites(message.guild.id, target.id);
                     }
@@ -27,7 +27,7 @@ export const command: Command<GuildMessageProps> = {
                     await client.specials.sendError(message.channel, `That is an invalid target`);
                 }
             } else {
-                const confirm = await client.specials.getUserConfirmation(message.channel, [message.author.id], `Please confirm deletion of all invites data`);
+                const { end: confirm } = await client.specials.getUserConfirmation(message.channel, [message.author.id], `Please confirm deletion of all invites data`);
                 if (confirm) {
                     await client.invites.resetInvites(message.guild.id);
                 }
