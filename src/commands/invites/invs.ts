@@ -1,11 +1,11 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { stringToMember } from "../../utils/parsers";
 import { MessageEmbed, MessageEmbedOptions } from "discord.js";
 import { PaginationExecutor } from "../../utils/pagination";
 import { isSnowflake } from '../../utils/specials';
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "invs",
     description: {
         short: "inviter stats",
@@ -13,7 +13,7 @@ export const command: Command<GuildMessageProps> = {
     },
     usage: "<@member> [count|list|users|inviter]",
     args: false,
-    cooldown: 3,
+    cooldown: 2,
     permLevel: permLevels.member,
     guildOnly: true,
     permissions: ["MANAGE_GUILD"],
@@ -27,7 +27,7 @@ export const command: Command<GuildMessageProps> = {
                 args.shift();
             }
             const data = await client.database.getInvites({ guildid: g.id, inviter: target.id });
-            if (!args.length) args.push("count");
+            if (!args.length) args.push("count");// default to the `count` option for viewing information
             const selector =  args[0];
             args.shift();
             switch (selector) {
@@ -71,8 +71,7 @@ export const command: Command<GuildMessageProps> = {
                             overflowPages.push(new MessageEmbed(embed).setDescription(page));
                         }
                     }
-                    PaginationExecutor.createEmbed(message, overflowPages, [message.author.id], true);
-                    // await message.channel.send({ embed });
+                    await PaginationExecutor.createEmbed(message, overflowPages, [message.author.id], true);
                     break;
                 }
                 case "invitees":
@@ -115,7 +114,7 @@ export const command: Command<GuildMessageProps> = {
                             overflowPages.push(new MessageEmbed(embed).setDescription(page));
                         }
                     }
-                    PaginationExecutor.createEmbed(message, overflowPages, [message.author.id], true);
+                    await PaginationExecutor.createEmbed(message, overflowPages, [message.author.id], true);
                     break;
                 }
                 case "inviter": {
@@ -138,7 +137,7 @@ export const command: Command<GuildMessageProps> = {
                             text: `Inviter ID: ${invite.inviter}`,
                         };
                     }
-                    await message.channel.send({ embed });
+                    await message.channel.send({ embeds: [embed] });
                     break;
                 }
                 case "count":
@@ -162,7 +161,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         description: `**Valid:** \` ${equated} \` **(**total: \`${total}\`**,** (-) left: \`${hasLeft.length}\`**,** (-) fake: \`${fake.length}\`**)**`,
                     }
-                    await message.channel.send({ embed });
+                    await message.channel.send({ embeds: [embed] });
                     break;
                 }
             }
