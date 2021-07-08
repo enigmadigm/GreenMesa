@@ -1176,7 +1176,7 @@ export class DBManager {
                             return !!allChannels.find(x2 => x2.id === x);
                         });
                     }
-                    if (parsed.applyRoles && parsed.applyRoles.length) {
+                    if (parsed.applyRoles.length) {
                         parsed.applyRoles = parsed.applyRoles.filter((x: string) => {
                             return !!guildRoles.find(x2 => x2.id === x);
                         });

@@ -431,6 +431,8 @@ export interface AutomoduleData {
     enableAll: boolean;
     /**
      * channel ids to apply channel effect to
+     * 
+     * this is an optional property because it will only exist on text modules
      */
     channels?: string[];
     /**

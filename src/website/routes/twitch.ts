@@ -374,7 +374,7 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
         if (`${res.status}`.startsWith("2") && j.data[0].id) {
             subid = j.data[0].id
         }
-        if (!res) return false;
+        // if (!res) return false;// commenting this out to remark that this what null-checked to return failure if the sub wasn't created, but that would actually be checked if a response code of 4xx was received
     }
 
     if (guildid && targetChannel && targetChannel instanceof TextChannel) {
