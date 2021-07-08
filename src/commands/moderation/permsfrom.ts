@@ -1,9 +1,9 @@
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { permLevels } from '../../permissions';
 import { stringToChannel, stringToMember } from "../../utils/parsers";
-import { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
+import { Collection, MessageEmbedOptions, Permissions, PermissionString, TextChannel, ThreadChannel } from "discord.js";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "permsfrom",
     aliases: ["pf"],
     description: {
@@ -56,7 +56,7 @@ export const command: Command<GuildMessageProps> = {
             const originatingRoles = tRoles.filter(x => {
                 return ((x.permissions.bitfield & bit) === bit);
             });
-            const relevantOverwrites = channel.permissionOverwrites.filter(x => (x.allow.has(bit) || x.deny.has(bit)) && (x.type === "member" ? x.id === target.id : target.roles.cache.has(x.id)));
+            const relevantOverwrites = (channel instanceof ThreadChannel ? channel.parent?.permissionOverwrites : channel.permissionOverwrites)?.filter(x => (x.allow.has(bit) || x.deny.has(bit)) && (x.type === "member" ? x.id === target.id : target.roles.cache.has(x.id))) ?? new Collection();
             const originatingOverwrites = relevantOverwrites.filter(x => x.allow.has(bit));
             const disallowingOverwrites = relevantOverwrites.filter(x => x.deny.has(bit));
             const embed: MessageEmbedOptions = {
@@ -88,10 +88,10 @@ export const command: Command<GuildMessageProps> = {
                     });
                 }
             }
-            await message.channel.send({ embed });
+            await message.channel.send({ embeds: [embed] });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

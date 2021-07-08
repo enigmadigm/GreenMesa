@@ -1,11 +1,11 @@
 import { stringToRole } from "../../utils/parsers";
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from 'src/gm';
+import { Command } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';
 import { PaginationExecutor } from '../../utils/pagination';
 const maxlen = 15;
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: 'inrole',
     description: {
         short: `list members with a role`,
@@ -26,7 +26,7 @@ export const command: Command<GuildMessageProps> = {
             const g = await message.guild.fetch();
             const target = stringToRole(g, args.join(" "), true, true);
             if (!target) {
-                await client.specials?.sendError(message.channel, "That role could not be found.")
+                await client.specials.sendError(message.channel, "That role could not be found.")
                 message.channel.stopTyping();
                 return;
             }
@@ -96,13 +96,13 @@ export const command: Command<GuildMessageProps> = {
                 pages.push(e);
             }
 
-            PaginationExecutor.createEmbed(message, pages);
+            await PaginationExecutor.createEmbed(message, pages);
 
             message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
             message.channel.stopTyping(true);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

@@ -1,97 +1,61 @@
 import { permLevels } from '../../permissions';
-import { unsubscribeTwitchWebhook } from "../../website/routes/twitch";
-import Discord, { CollectorFilter, MessageReaction, Permissions, User } from "discord.js";
-import { Command, GuildMessageProps } from "src/gm";
+import { unsubscribeTwitchSubscription } from "../../website/routes/twitch";
+import { MessageEmbed } from "discord.js";
+import { Command } from "src/gm";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "removetwitch",
     aliases: ["rmtwitch"],
     description: {
         short: "remove an existing twitch notifier",
-        long: "Remove a Twitch Notifier subscription. You will be prompted to destroy the notifier.",
+        long: "Remove a Twitch Notifier subscription. You will be prompted to destroy the notifier before the check for its existence. If you do not have a notifier under that UID, you will be told so after clicking confirm.",
     },
     usage: "<streamer>",
-    args: true,
+    examples: [
+        "enigmadigm",
+    ],
+    args: 1,
     permLevel: permLevels.admin,
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            const confMsg = await message.channel.send({
-                embed: {
-                    color: await client.database.getColor("info"),
-                    title: "Confirm",
-                    description: `This will completely remove your Twitch notifier, continue?`
-                }
-            });
-            await confMsg.react("🟢").catch(xlg.error);
-            await confMsg.react("🚫").catch(xlg.error);
+            const { end: confirmation } = await client.specials.getUserConfirmation(message.channel, [message.author.id], `This will completely remove your Twitch notifier, continue?`, ``, `Aborted deletion process`, true);
 
-            const filter: CollectorFilter<[MessageReaction, User]> = (r, u) => (r.emoji.name === '🟢' || r.emoji.name === '🚫') && (message.guild?.members.cache.get(u.id)?.permissions.has(Permissions.FLAGS.ADMINISTRATOR) || u.id === message.author.id);
-            const collected = await confMsg.awaitReactions(filter, {
-                max: 1,
-                time: 60000
-            });
-            if (!collected || !collected.size || collected.first()?.emoji.name === "🚫") {
-                confMsg.embeds[0].color = await client.database.getColor("fail") || null;
-                confMsg.embeds[0].title = null;
-                confMsg.embeds[0].description = "Aborted deletion process.";
-                await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0])).catch(xlg.error);
-
-                const reactsToRemove = confMsg.reactions.cache.filter(r => !!(client.user && r.users.cache.has(client.user.id)));
-                try {
-                    for (const reaction of reactsToRemove.values()) {
-                        await reaction.users.remove(client.user?.id);
-                    }
-                } catch (error) {
-                    xlg.error("could not remove my reactions");
-                }
+            if (!confirmation) {
+                return;
             } else {
-                const unsubres = await unsubscribeTwitchWebhook(args.join(" "), message.guild.id);
+                const unsubres = await unsubscribeTwitchSubscription(args.join(" "), message.guild.id);
+                const finishMessage = new MessageEmbed();
                 if (unsubres === true) {
-                    confMsg.embeds[0].color = await client.database.getColor("success") || null;
-                    confMsg.embeds[0].title = null;
-                    confMsg.embeds[0].description = `Your notifier has been removed.`;
-                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    finishMessage.setColor(await client.database.getColor("success"))
+                        .setDescription(`Your notifier has been removed.`);
                 } else if (unsubres === "NO_DATA") {
-                    confMsg.embeds[0].color = await client.database.getColor("fail") || null;
-                    confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `Twitch is not responding, please try again later.`;
-                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    finishMessage.setColor(await client.database.getColor("fail"))
+                        .setTitle(`Error`)
+                        .setDescription(`Twitch is not responding, please try again later.`);
                 } else if (unsubres === "NO_USER") {
-                    confMsg.embeds[0].color = await client.database.getColor("fail") || null;
-                    confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `That streamer does not exist.\nQuickly remove streamer with the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`;
-                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    finishMessage.setColor(await client.database.getColor("fail"))
+                        .setTitle(`Error`)
+                        .setDescription(`That streamer does not exist.\nQuickly remove streamer with the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`);
                 } else if (unsubres === "INVALID") {
-                    confMsg.embeds[0].color = await client.database.getColor("fail") || null;
-                    confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `Invalid input.`;
-                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    finishMessage.setColor(await client.database.getColor("fail"))
+                        .setTitle(`Error`)
+                        .setDescription(`Invalid input.`);
                 } else if (unsubres === "NO_SUBSCRIPTION") {
-                    confMsg.embeds[0].color = await client.database.getColor("fail") || null;
-                    confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `Your notifier could not be removed, it may not exist.\nView subscriptions from the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`;
-                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    finishMessage.setColor(await client.database.getColor("fail"))
+                        .setTitle(`Error`)
+                        .setDescription(`Your notifier could not be removed, it may not exist.\nView subscriptions from the [dashboard](${client.specials.getDashboardLink(message.guild.id, "twitch")}).`);
                 } else {
-                    confMsg.content = `Try using the dashboard instead: https://stratum.hauge.rocks`;
-                    confMsg.embeds[0].color = await client.database.getColor("fail") || null;
-                    confMsg.embeds[0].title = "Error";
-                    confMsg.embeds[0].description = `Your notifier could not be removed.`;
-                    await confMsg.edit(new Discord.MessageEmbed(confMsg.embeds[0]));
+                    finishMessage.setColor(await client.database.getColor("fail"))
+                        .setTitle(`Error`)
+                        .setDescription(`Your notifier could not be removed.`)
+                        .setFooter(`Try using the dashboard instead`);
                 }
-
-                const reactsToRemove = confMsg.reactions.cache.filter(r => !!(client.user && r.users.cache.has(client.user.id)));
-                try {
-                    for (const reaction of reactsToRemove.values()) {
-                        await reaction.users.remove(client.user?.id);
-                    }
-                } catch (error) {
-                    xlg.error("could not remove my reactions");
-                }
+                await message.channel.send({ embeds: [finishMessage] });
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

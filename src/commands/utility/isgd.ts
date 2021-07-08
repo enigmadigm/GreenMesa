@@ -1,12 +1,9 @@
-
 import { permLevels } from '../../permissions';
-//import { getGlobalSetting } from "../dbmanager";
 import fetch from "node-fetch";
 import { Command } from "src/gm";
 
 export const command: Command = {
     name: "isgd",
-    //aliases: [""],
     description: {
         short: "shorten a link with is.gd",
         long: "This command will take any valid link and shorten it to the public domain [is.gd](https://is.gd). URLs should not contain whitespace, and may be limited in length."
@@ -37,11 +34,13 @@ export const command: Command = {
                     return;
                 }
             }
-            message.channel.send({
-                embed: {
+
+            await message.channel.send({
+                embeds: [{
                     color: await client.database.getColor("info"),
                     title: "🔗 Link Shortener",
-                    fields: [{
+                    fields: [
+                        {
                             name: "Input",
                             value: `${url}`
                         },
@@ -53,7 +52,7 @@ export const command: Command = {
                     footer: {
                         text: "is.gd"
                     }
-                }
+                }]
             });
         } catch (error) {
             xlg.error(error);

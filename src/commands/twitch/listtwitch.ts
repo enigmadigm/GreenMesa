@@ -1,8 +1,5 @@
-
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
-//import { getTwitchSubsGuild, getGlobalSetting } from "../dbmanager";
-//const { twitchIDLookup } = require("../website/routes/twitch");
 
 export const command: Command = {
     name: "listtwitch",
@@ -13,13 +10,11 @@ export const command: Command = {
     },
     permLevel: permLevels.member,
     guildOnly: true,
-    ownerOnly: false,
     async execute(client, message) {
         try {
-            if (!message.guild) return;
             const subs = await client.database.getTwitchSubsGuild(message.guild.id);
             if (!subs) {
-                client.specials?.sendError(message.channel, "No subscriptions found.");
+                client.specials.sendError(message.channel, "No subscriptions found.");
                 return false;
             }
 
@@ -32,19 +27,18 @@ export const command: Command = {
             })
 
             const iec = await client.database.getColor("info");
-            message.channel.send({
-                embed: {
+            await message.channel.send({
+                embeds: [{
                     color: iec,
                     title: "Twitch Subscriptions",
                     url: client.specials.getDashboardLink(message.guild.id, "twitch"),
-                    description: `${streamers.join("\n")}\n`
-                }
+                    description: `${streamers.join("\n")}\n`,
+                }],
             })
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

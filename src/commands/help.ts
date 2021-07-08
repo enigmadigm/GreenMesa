@@ -28,8 +28,7 @@ export const command: Command = {
     cooldown: 2,
     async execute(client, message, args) {
         try {
-            const { commands } = client;
-            const { categories } = client;
+            const { commands, categories } = client;
             //const cats = categories.map(c => c.name);
 
             // kind of an unnecessary and stupid part, this will rename any categories with the key being the original and the value being the new name
@@ -170,7 +169,7 @@ export const command: Command = {
                     });
                 }
 
-                await message.channel.send({ embed });
+                await message.channel.send({ embeds: [embed] });
             } else if (category) {// if help was requested for a specific category
                 if (category.name === "owner") {
                     message.channel.send("That is a hidden category");
@@ -195,24 +194,24 @@ export const command: Command = {
                 data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
                 const cmdcount = commands.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
                         color: await client.database.getColor("darkred_embed_color"),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
-                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
-                        }
-                    }
+                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`,
+                        },
+                    }],
                 });
             } else {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("fail"),
                         description: `\` ${name.escapeDiscord()} \` is not a valid command or category`,
                         footer: {
-                            text: `an nlp command assistant is in the works`
-                        }
-                    }
+                            text: `an nlp command assistant is in the works`,
+                        },
+                    }],
                 });
                 return;
             }
@@ -223,4 +222,3 @@ export const command: Command = {
         }
     }
 }
-

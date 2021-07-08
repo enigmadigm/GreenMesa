@@ -1,4 +1,4 @@
-import { GuildChannel, Message, MessageEmbedOptions, MessageReaction, Permissions, User } from "discord.js";
+import { GuildChannel, Message, MessageEmbedOptions, MessageReaction, Permissions, ThreadChannel, User } from "discord.js";
 import { GuildMessageProps, MessageService } from "../gm";
 import Starboard from "../struct/Starboard";
 import { capitalize } from "../utils/parsers";
@@ -6,23 +6,23 @@ import { isSnowflake } from "../utils/specials";
 
 const jumpSynonyms = ["leap", "spring", "bound", "hop", "bounce", "skip", "bob", "dance", "prance", "frolic"];
 
-type skMdat = { content: string, embed: MessageEmbedOptions };
+type skMdat = { content: string, embeds: MessageEmbedOptions[] };
 function makeStarpost(starboard: Starboard, msg: Message, nsfw: boolean, count: number): skMdat {
     const e: skMdat = {
         content: `${count} ⭐ in ${msg.channel} for ${msg.author}`,
-        embed: {
+        embeds: [{
             color: starboard.color ? starboard.color : 0xffd500,
             title: `\\⭐ Starpost`,
             description: `${starboard.jumpLink ? `**[${capitalize(jumpSynonyms[Math.floor(Math.random() * jumpSynonyms.length)])} to message](${msg.url})**\n\n` : ""}`,
             footer: {
                 text: `ID: ${msg.id}${nsfw ? " · nsfw" : ""}`,
             }
-        },
+        }],
     };
 
-    const contentLimited = `${msg.content.slice(0, (2048 - (e.embed.description?.length ?? 0) - 7))}${msg.content.length > (2048 - (e.embed.description?.length ?? 0) - 7) ? "..." : ""}`;
-    if (e.embed.description) {
-        e.embed.description += contentLimited;
+    const contentLimited = `${msg.content.slice(0, (2048 - (e.embeds[0].description?.length ?? 0) - 7))}${msg.content.length > (2048 - (e.embeds[0].description?.length ?? 0) - 7) ? "..." : ""}`;
+    if (e.embeds[0].description) {
+        e.embeds[0].description += contentLimited;
     }
 
     let imageLink = "";
@@ -39,7 +39,7 @@ function makeStarpost(starboard: Starboard, msg: Message, nsfw: boolean, count: 
         }
     }
     if (imageLink) {
-        e.embed.image = {
+        e.embeds[0].image = {
             url: imageLink,
         };
     }
@@ -47,7 +47,6 @@ function makeStarpost(starboard: Starboard, msg: Message, nsfw: boolean, count: 
 }
 
 export const service: MessageService = {
-    guildOnly: true,
     events: ["messageUpdate", "messageReactionAdd", "messageReactionRemove"],
     async execute(client, event, m: (Message & GuildMessageProps) | MessageReaction, user?: User) {
         try {
@@ -70,10 +69,10 @@ export const service: MessageService = {
                 }
             } else if ((event === "messageReactionAdd" || event === "messageReactionRemove") && m instanceof MessageReaction && user instanceof User && !m.partial) {
                 const msg = m.message;
-                if (!msg.partial && msg.guild && msg.channel instanceof GuildChannel) {
+                if (!msg.partial && !msg.deleted && msg.guild && (msg.channel instanceof GuildChannel || msg.channel instanceof ThreadChannel)) {
                     const starboard = await client.database.getStarboardSetting(msg.guild.id);// getting the starboard settings
-                    const count = (m.users.cache.filter(u => u.id !== client.user?.id).size);// try to get an accurate number of users who reacted with the current emoji
-                    // console.log("emoji:", m.emoji.id ?? m.emoji.name ?? "")
+                    const reactedUsers = await m.users.fetch();
+                    const count = reactedUsers.filter(u => u.id !== client.user?.id).size;// try to get an accurate number of users who reacted with the current emoji
                     if (
                         !starboard.locked &&
                         starboard.channel &&
@@ -81,10 +80,7 @@ export const service: MessageService = {
                         starboard.emoji.length &&
                         (starboard.emoji.find((e) => {
                             const emojiKey = m.emoji.id ?? m.emoji.name ?? "";
-                            // console.log("emojikey", emojiKey)
-                            // console.log("emoji", e)
                             const r = "^<(a)?:\\w{1,100}:" + emojiKey + ">$"
-                            // console.log("r", r)
                             if (emojiKey === e || e.match(new RegExp(r))) {
                                 return true;
                             }
@@ -92,11 +88,10 @@ export const service: MessageService = {
                         })) &&
                         !starboard.ignoredChannels.includes(msg.channel.id)
                     ) {// if the channel isn't locked, the id is present and not an empty string, the threshold is met, and the emoji is the right emoji=
-                        // console.log("past emoji check")
                         const mid = msg.id;
                         const starPost = await client.database.getStarredMessage(mid);
                         const starChannel = msg.guild.channels.cache.get(starboard.channel);
-                        const nsfw = !starPost ? msg.channel.nsfw : !!starPost.nsfw;
+                        const nsfw = !starPost ? msg.channel instanceof ThreadChannel ? !!msg.channel.parent?.nsfw : msg.channel.nsfw : !!starPost.nsfw;
                         if (starboard.allowSensitive || !nsfw) {
                             if (!starPost || !starPost.postid) {// if there is already a starboard entry for this message
                                 if (count >= starboard.threshold) {// if the post has the necessary number of reactions
@@ -126,11 +121,8 @@ export const service: MessageService = {
                                     });
                                 }
                             } else {// if an entry may need to be made
-                                // console.log("found existing message")
                                 if (starChannel && starChannel.isText() && client.user && starChannel.permissionsFor(client.user)?.has([Permissions.FLAGS.SEND_MESSAGES, Permissions.FLAGS.EMBED_LINKS, Permissions.FLAGS.ATTACH_FILES])) {// the starboard channel is set and messages can be sent in it
-                                    // console.log("passed msg perm check:", starPost.postid)
                                     if (starChannel.id === starPost.postchannel && isSnowflake(starPost.postid)/*  && count !== starPost.stars */) {// checks to make sure the postid is valid and that the channel of the post is in the starboard channel, since it may have changed
-                                        // console.log("secondary check:", count)
                                         if (count === 0) {
                                             const post = await starChannel.messages.fetch(starPost.postid).catch(() => {
                                                 starPost.postchannel = "";

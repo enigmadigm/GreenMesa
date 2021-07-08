@@ -1,8 +1,7 @@
-
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToChannel } from "../../utils/parsers";
-import { GuildChannel, MessageEmbedOptions, VoiceChannel } from "discord.js";
+import { GuildChannel, MessageEmbedOptions, Permissions, ThreadChannel, VoiceChannel } from "discord.js";
 import moment from 'moment';
 
 export const command: Command = {
@@ -22,11 +21,11 @@ export const command: Command = {
             const a = args.join(" ");
             const channel = stringToChannel(message.guild, a, true, true) || message.channel;
             const createdAt = moment(channel.createdAt).utc();
-            const type = channel.type;
+            const channelType = channel.type;
             const e: MessageEmbedOptions = {
                 color: await client.database.getColor("info"),
                 title: `Channel Info`,
-                description: `**Channel:** ${channel} (\\#${channel.name})\n**ID:** ${channel.id}\n**Type:** ${type}\n`,
+                description: `**Channel:** ${channel} (\\#${channel.name})\n**ID:** ${channel.id}\n**Type:** ${channelType}\n`,
                 footer: {
                     text: `ID: ${channel.id}`
                 }
@@ -36,8 +35,10 @@ export const command: Command = {
                 e.description += `\n**Joined:** ${channel.members.size} members`;
                 e.description += "\n";
             }
-            e.description += `\n**Position:** ${channel.position}`;
-            if (channel.permissionsLocked) {
+            if (channel instanceof GuildChannel) {
+                e.description += `\n**Position:** ${channel.position}`;
+            }
+            if (channel.permissionsFor(channel.guild.roles.everyone).has(Permissions.FLAGS.VIEW_CHANNEL)) {// i had `(channel.permissionsLocked)` here before, not sure what my logic was or if i just forgot to change the condition
                 e.description += `\n**Viewable By Everyone:** yes`;
             } else {
                 e.description += `\n**Viewable By Everyone:** no`;
@@ -46,7 +47,7 @@ export const command: Command = {
                 e.description += `\n**Has Parent:** no`;
             } else {
                 e.description += `\n**Has Parent:** yes (${channel.parent})`;
-                if (channel.permissionsLocked) {
+                if ((channel instanceof GuildChannel && channel.permissionsLocked) || channel instanceof ThreadChannel) {
                     e.description += `\n**Synced w/ Parent:** yes`;
                 } else {
                     e.description += `\n**Synced w/ Parent:** no`;
@@ -54,10 +55,10 @@ export const command: Command = {
             }
             e.description += `\n\n**Created:**\n${createdAt.format('ddd M/D/Y HH:mm:ss')} (${createdAt.fromNow()})`;
 
-            message.channel.send({ embed: e });
+            await message.channel.send({ embeds: [e] });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

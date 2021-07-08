@@ -20,7 +20,7 @@ export const command: Command<GuildMessageProps> = {
             const searchName = args[0].toLowerCase();
             const conf = await client.database.getCommands(message.guild.id, true);
             if (!conf) {
-                client.specials.sendError(message.channel, "Something ate sh*t", true);
+                await client.specials.sendError(message.channel, "Something ate sh*t", true);
                 return;
             }
             const commands = conf.commands;
@@ -110,26 +110,26 @@ export const command: Command<GuildMessageProps> = {
                 }
                 if (already === applyTo.length) {
                     await message.channel.send({
-                        embed: {
+                        embeds: [{
                             color: await client.database.getColor("warn_embed_color"),
                             description: `${catMatch ? "Category" : "Command"} \` ${name} \` is already disabled ${spec instanceof GuildChannel ? "in" : "for"} ${spec}`,
                             footer: {
-                                text: `module debosser`
-                            }
-                        }
+                                text: `module debosser`,
+                            },
+                        }],
                     });
                     return;
                 }
                 
             } else {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("warn_embed_color"),
                         description: `${catMatch ? "Category" : "Command"} \` ${name} \` is already disabled`,
                         footer: {
-                            text: `module debosser`
-                        }
-                    }
+                            text: `module debosser`,
+                        },
+                    }]
                 });
                 return;
             }
@@ -137,29 +137,29 @@ export const command: Command<GuildMessageProps> = {
             const r = await client.database.editCommands(message.guild.id, applyTo);
             if (!r) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("fail"),
                         description: `Failed to disable ${catMatch ? "group" : "command"}`,
                         footer: {
-                            text: `module debosser`
-                        }
-                    }
+                            text: `module debosser`,
+                        },
+                    }],
                 });
                 return;
             }
 
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: await client.database.getColor("success"),
                     description: `${catMatch ? "Category" : "Command"} \` ${name} \` **disabled**${spec ? ` ${spec instanceof GuildChannel ? "in" : "for"} ${spec}` : ""}${unchanged.length ? `\n\n[One or more commands](${getDashboardLink(message.guild.id, "commands")}?select=${unchanged.join(",")}) may not have changed how you wanted because of conflicting options. Go to the dashboard to confirm and fix.` : ""}`,
                     footer: {
-                        text: `module debosser`
-                    }
-                }
+                        text: `module debosser`,
+                    },
+                }],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

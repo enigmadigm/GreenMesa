@@ -1,5 +1,6 @@
 import acronyms from '../../../acronyms.json';
 import { Command } from 'src/gm';
+
 const commonAcronyms = [
     {
         acronym: 'brb',
@@ -81,46 +82,37 @@ export const command: Command = {
     description: 'get a list of common messaging acronyms or search over 1550',
     usage: '[acronym]',
     async execute(client, message, args) {
-        try {
-            const fail_embed_color = await client.database.getColor("fail");
-            const darkred_embed_color = await client.database.getColor("darkred_embed_color");
-
-            const acronymNames = acronyms.map((acro: {acronym: string, description: string}) => acro.acronym);
-            if (args.length) {
-                if (acronymNames.includes(args.join(" ").toUpperCase())) {
-                    const reqAcro = acronyms[acronymNames.indexOf(args.join(" ").toUpperCase())];
-                    message.channel.send({
-                        embed: {
-                            color: darkred_embed_color,
-                            description: `\`${reqAcro.acronym}\` 🔹 ${reqAcro.description}`
-                        }
-                    });
-                    return;
-                } else {
-                    message.channel.send({
-                        embed: {
-                            color: fail_embed_color,
-                            description: 'that acronym could not be found <3'
-                        }
-                    });
-                    return;
-                }
+        const acronymNames = acronyms.map((acro: { acronym: string, description: string }) => acro.acronym);
+        if (args.length) {
+            if (acronymNames.includes(args.join(" ").toUpperCase())) {
+                const reqAcro = acronyms[acronymNames.indexOf(args.join(" ").toUpperCase())];
+                await message.channel.send({
+                    embeds: [{
+                        color: await client.database.getColor("darkred_embed_color"),
+                        description: `\`${reqAcro.acronym}\` 🔹 ${reqAcro.description}`,
+                    }],
+                });
+                return;
+            } else {
+                await message.channel.send({
+                    embeds: [{
+                        color: await client.database.getColor("fail"),
+                        description: `that acronym could not be found <3`,
+                    }],
+                });
+                return;
             }
-            message.channel.send({
-                embed: {
-                    color: darkred_embed_color,
-                    title: 'what your child is texting',
-                    description: commonAcronyms.map(acro => `🔹 \`${acro.acronym}\` ⁞ ${acro.description}`).join("\n"),
-                    footer: {
-                        text: 'pog common acronyms'
-                    }
-                }
-            });
-        } catch (error) {
-            xlg.error(error);
-            await client.specials?.sendError(message.channel);
-            return false;
         }
+
+        await message.channel.send({
+            embeds: [{
+                color: await client.database.getColor("darkred_embed_color"),
+                title: `what your child is texting`,
+                description: commonAcronyms.map(acro => `🔹 \`${acro.acronym}\` ⁞ ${acro.description}`).join("\n"),
+                footer: {
+                    text: `pog common acronyms`,
+                },
+            }],
+        });
     }
 }
-

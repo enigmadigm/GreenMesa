@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer';
-import Discord, { DMChannel, MessageEmbedOptions } from 'discord.js';
+import Discord, { DMChannel, MessageEmbedOptions, ThreadChannel } from 'discord.js';
 import { Command } from 'src/gm';
 import { PaginationExecutor } from '../../utils/pagination';
 
@@ -139,7 +139,7 @@ export const command: Command = {
             if (!flags.length || (!flags.find(x => x.name === "e") && !flags.find(x => x.name === "t"))) {
                 plainText = false;
                 message.channel.startTyping();
-                const { page, browser } = await goMarionette(`https://${sengine}?q=${sterms}${(!(message.channel instanceof DMChannel) && message.channel.nsfw) ? "" : "&safe=active"}&hl=en`);
+                const { page, browser } = await goMarionette(`https://${sengine}?q=${sterms}${(!(message.channel instanceof DMChannel) && (message.channel instanceof ThreadChannel ? !!message.channel.parent?.nsfw : message.channel.nsfw)) ? "" : "&safe=active"}&hl=en`);
                 const voiceElement = await page.$$('[aria-label*="Search by voice"],.clear-button,.gb_Xd');
                 voiceElement.forEach((e) => {
                     e.evaluate(node => node.style.display = 'none');
@@ -173,20 +173,20 @@ export const command: Command = {
                             url: 'attachment://screenshot.png'
                         },
                         footer: {
-                            text: (!(message.channel instanceof DMChannel) && message.channel.nsfw) ? undefined : "Safe Search On"
+                            text: (!(message.channel instanceof DMChannel) && (message.channel instanceof ThreadChannel ? !!message.channel.parent?.nsfw : message.channel.nsfw)) ? undefined : "Safe Search On"
                         }
                     }
                     const scfile = new Discord.MessageAttachment(sc, 'screenshot.png');
-                    const response = await message.channel.send({ files: [scfile], embed: embed });
+                    const response = await message.channel.send({ files: [scfile], embeds: [embed] });
                     PaginationExecutor.addCloseListener(response);
                     message.channel.stopTyping();
                     return;
                 }
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         description: `[Let Me Google That For You](https://${sengine}?q=${sterms}${iie})`,
                         color: 0xF4B400
-                    }
+                    }],
                 });
             }
         } catch (error) {

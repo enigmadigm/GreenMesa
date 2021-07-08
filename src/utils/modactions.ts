@@ -162,7 +162,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
 
         // Prevent the user from sending messages or reacting to messages
         target.guild.channels.cache.each(async (channel) => {
-            if (mutedRole) {
+            if (mutedRole && !channel.isThread()) {
                 await channel.updateOverwrite(mutedRole, {
                     SEND_MESSAGES: false,
                     ADD_REACTIONS: false
@@ -184,8 +184,12 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
     }
 
     await target.roles.add(mutedRole, `Requested by ${modtag}${reason ? ` for ${reason}` : ""}`).catch(e => console.log(e.stack));
-    if (target.voice.connection && !target.voice.mute) {
-        await target.voice.setMute(true);
+    if (target.voice.channel && !target.voice.serverMute) {
+        try {
+            await target.voice.setMute(true);
+        } catch (error) {
+            xlg.error("modactions error setting voice mute", error)
+        }
     }
     let duration = "";
     let mendm = "";
@@ -222,7 +226,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
                 description: `**Re:** \`${target.guild.name.escapeDiscord()}\`\nYou either intentionally or unintentionally tried to evade your mute. It has been reinstated.`,
             };
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
     } catch (error) {
         noNotify = true;
     }
@@ -290,9 +294,9 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
             embed.fields?.push({
                 name: "Moderator",
                 value: `${modtag}`,
-            })
+            });
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
         
     } catch (error) {
         noNotify = true;
@@ -310,7 +314,7 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
             guildid: target.guild.id,
             userid: target.id,
             duration: duration,
-        }
+        };
         
         if (client.database) {
             const t = moment().add(time, "ms").toDate();
@@ -366,7 +370,7 @@ export async function kick(client: XClient, target: GuildMember, mod: GuildMembe
                 value: `${modtag}`,
             });
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
     } catch (error) {
         noNotify = true;
     }
@@ -402,7 +406,7 @@ export async function warn(client: XClient, target: GuildMember, mod: GuildMembe
                 value: `${modtag}`,
             });
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
     } catch (error) {
         noNotify = true;
     }

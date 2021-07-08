@@ -1,4 +1,4 @@
-import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel } from "discord.js";
+import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel, ThreadChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -16,8 +16,10 @@ export interface XClient extends Client {
 }
 
 // export type Command<T = Record<string, any>> = NormalCommand<T> | GuildCommand<T>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface Command<T = Record<string, any>> {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Command<T = {}> = BaseCommand<T> | GuildOnlyCommand<T>;
+
+export interface BaseCommand<T> {
     name: string;
     /**
      * Alternate names to use to call the command
@@ -66,7 +68,9 @@ export interface Command<T = Record<string, any>> {
     cooldown?: number;
     /**
      * The security level required on the user to execute the
-     * command (higher meaning a greater amount of access needed)
+     * command (higher meaning a greater amount of access needed).
+     * 
+     * Defaults to `'member'` level in guilds and `'trustedMember'` level in DMs.
      */
     permLevel?: number;
     /**
@@ -77,11 +81,11 @@ export interface Command<T = Record<string, any>> {
      */
     moderation?: boolean;
     /**
-     * Whether the command should only by allowed to execute
-     * in guilds (the {@type GuildMessageProps} type parameter
-     * should still be provided to the command interface type)
+     * Whether the command should only by allowed to execute in guilds
+     * 
+     * Uses the {@link GuildMessageProps} type to accommodate for a message object that will definitely include guild info
      */
-    guildOnly?: boolean;
+    guildOnly?: false;
     /**
      * @deprecated
      */
@@ -101,12 +105,17 @@ export interface Command<T = Record<string, any>> {
     execute(client: XClient, message: XMessage & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 }
 
+export interface GuildOnlyCommand<T> extends BaseCommand<T> {
+    guildOnly: true;
+    execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
+}
+
 // export interface GuildCommand<T> extends NormalCommand<T> {
 //     guildOnly: true;
 //     execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 // }
 
-export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel };
+export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel | ThreadChannel };
 
 export interface CommandFlagDefinition {
     /**
@@ -316,6 +325,7 @@ export interface TwitchHookRow {
     message: string;
     /**
      * The date at which this stream will expire
+     * @deprecated subscriptions no longer expire so this is not used
      */
     expires: string;
     /**
@@ -330,6 +340,7 @@ export interface TwitchHookRow {
      * The date of the last notification received (not necessarily successfully sent)
      */
     laststream: string;
+    subscriptionid: string;
 }
 
 export type PartialGuildObject = DiscordStrategy.GuildInfo & {
@@ -348,7 +359,7 @@ export interface MessageService {
     name?: string;
     disabled?: true;
     allowNonUser?: true;
-    guildOnly?: boolean;
+    allowDM?: true;
     events: (keyof ClientEvents)[];
     getInformation?(client: XClient, guildid: string): Promise<string>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -420,6 +431,8 @@ export interface AutomoduleData {
     enableAll: boolean;
     /**
      * channel ids to apply channel effect to
+     * 
+     * this is an optional property because it will only exist on text modules
      */
     channels?: string[];
     /**
@@ -756,14 +769,39 @@ export interface TwitchSearchChannelsReturns {
 }
 
 export interface FullPointsData {
-    guild: string;
-    user: string;
+    guild: Snowflake;
+    user: Snowflake;
+    /**
+     * The current CUMULATIVE TOTAL of points
+     */
     points: number;
+    /**
+     * The current number of RELATIVE POINTS from the last level
+     */
+    pointsInLevel: number;
+    /**
+     * The current level
+     */
     level: number;
+    /**
+     * When the first points were earned by this user
+     */
     firstCounted: Date;
+    /**
+     * When points were last earned by this user
+     */
     lastGained: Date;
+    /**
+     * The relative points still needed to go from the current point in the current level to the next level
+     */
     pointsToGo: number;
+    /**
+     * The relative points required to get to the next level from the current level (cum next level) - (cum this level) = (relative to next level)
+     */
     pointsLevelNext: number;
+    /**
+     * The relative points required to level to the current level from the previous level
+     */
     pointsLevelNow: number;
 }
 
@@ -1041,6 +1079,18 @@ export interface SkeletonGuildObject {
     ownerName?: string;
 }
 
+export interface SkeletonRole {
+    id: Snowflake;
+    color: number;
+    hexColor: string;
+    position: number;
+    hoist: boolean;
+    createdTimestamp: number;
+    editable: boolean;
+    name: string;
+    mentionable: boolean;
+}
+
 // export interface SkeletonUserObject {// i literally accidentally made this, it isn't currently being used but it could be in the future for other broadcast methods
 //     id: Snowflake;
 //     tag: string;
@@ -1067,8 +1117,8 @@ export interface StarredMessageData {
     channelid: Snowflake;
     authorid: Snowflake;
     stars: number;
-    locked: number;
-    nsfw: number;
+    locked: 0 | 1;
+    nsfw: 0 | 1;
     postid: string;
     postchannel: string;
 }

@@ -1,11 +1,10 @@
 import { default as fetch } from "node-fetch";
-
 import { validURL } from '../../utils/urls';
-//import { getGlobalSetting } from "../dbmanager";
 import { Command } from "src/gm";
 
 export const command: Command = {
     name: 'changemymind',
+    aliases: ["cmm"],
     description: {
         short: 'make an image',
         long: 'Use to make a change my mind image with custom text.'
@@ -16,40 +15,39 @@ export const command: Command = {
         try {
             message.channel.startTyping();
             if (args.length > 1000) {
-                message.channel.send({
-                    embed: {
+                await message.channel.send({
+                    embeds: [{
                         color: await client.database.getColor("fail"),
                         title: "Nope",
-                        description: "I will not accept text longer than 1000 characters."
-                    }
+                        description: "I will not accept text longer than 1000 characters.",
+                    }],
                 });
                 message.channel.stopTyping();
                 return false;
             }
+
             const url = `https://nekobot.xyz/api/imagegen?type=changemymind&text=${encodeURIComponent(args.join(" "))}`;
-            await fetch(url)
-                .then(res => res.json())
-                .then(async j => {
-                    if (j.status == 200 && j.success && j.message && validURL(j.message)) {
-                        message.channel.send({
-                            embed: {
-                                color: await client.database.getColor("info"),
-                                image: {
-                                    url: j.message
-                                },
-                                footer: {
-                                    text: "changemymind | neko"
-                                }
-                            }
-                        }).catch(xlg.log);
-                    }
-                })
+            const r = await fetch(url)
+            const j = await r.json();
+            if (j.status == 200 && j.success && j.message && validURL(j.message)) {
+                await message.channel.send({
+                    embeds: [{
+                        color: await client.database.getColor("info"),
+                        image: {
+                            url: j.message
+                        },
+                        footer: {
+                            text: "changemymind | neko",
+                        },
+                    }],
+                });
+            }
+
             message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
             message.channel.stopTyping();
-            client.specials?.sendError(message.channel, "Failure while generating image");
+            await client.specials.sendError(message.channel, `Failure while generating image`);
         }
     }
 }
-

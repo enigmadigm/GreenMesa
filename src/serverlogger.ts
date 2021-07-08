@@ -1,5 +1,5 @@
 import { stringToChannel, capitalize, combineMessageText } from './utils/parsers';
-import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel } from 'discord.js';
+import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel, ThreadChannel } from 'discord.js';
 import moment from 'moment';
 import { Bot } from './bot';
 import { ServerlogData } from './gm';
@@ -29,7 +29,7 @@ const LoggingFlags = {
     // _: 1n << 20n,
 };
 
-async function getLogChannel(guild: Guild, address: number, category: 'log_channel' | 'member_channel' | 'server_channel' | 'voice_channel' | 'messages_channel' | 'movement_channel', channel?: GuildChannel): Promise<TextChannel | false> {
+async function getLogChannel(guild: Guild, address: number, category: 'log_channel' | 'member_channel' | 'server_channel' | 'voice_channel' | 'messages_channel' | 'movement_channel', channel?: GuildChannel | ThreadChannel): Promise<TextChannel | false> {
     try {
         if (!guild) return false;
         const logValue = await Bot.client.database.getGuildSetting(guild, 'serverlog');
@@ -78,27 +78,27 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
 
         
         // "color": joining ? 0x00ff00 : 0xff0000,
-        logChannel.send({
-            embed: {
-                "author": {
-                    "name": `Member ${joining ? 'Joined' : 'Left'}`,
-                    "iconURL": member.user.displayAvatarURL()
+        await logChannel.send({
+            embeds: [{
+                author: {
+                    name: `Member ${joining ? 'Joined' : 'Left'}`,
+                    iconURL: member.user.displayAvatarURL()
                 },
-                "description": `${member.user.tag.escapeDiscord()} (${member})${!joining ? `\n ${member.nickname ? member.nickname.escapeDiscord() : "***No nickname***"}` : ''}`,
-                "fields": [
+                description: `${member.user.tag.escapeDiscord()} (${member})${!joining ? `\n ${member.nickname ? member.nickname.escapeDiscord() : "***No nickname***"}` : ''}`,
+                fields: [
                     {
-                        "name": `${joining ? 'Created' : 'Joined'}`,
-                        "value": `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`,
-                        inline: false
-                    }
+                        name: `${joining ? 'Created' : 'Joined'}`,
+                        value: `(${joining ? moment(member.user.createdAt).utc().format('ddd M/D/Y HH:mm:ss') : moment(member.joinedAt).utc().format('ddd M/D/Y HH:mm:ss')}) **${joining ? moment(member.user.createdAt).utc().fromNow() : moment(member.joinedAt).utc().fromNow()}**`,
+                        inline: false,
+                    },
                 ],
-                "color": joining ? await Bot.client.database.getColor("success") : await Bot.client.database.getColor("fail"),
-                "timestamp": joining ? member.joinedAt?.getTime() || new Date().getTime() : new Date().getTime(),
-                "footer": {
-                    "text": `ID: ${member.id}`
+                color: joining ? await Bot.client.database.getColor("success") : await Bot.client.database.getColor("fail"),
+                timestamp: joining ? member.joinedAt?.getTime() || new Date().getTime() : new Date().getTime(),
+                footer: {
+                    text: `ID: ${member.id}`
                 }
-            }
-        }).catch(console.error);
+            }]
+        })
     } catch (err) {
         xlg.error(err)
     }
@@ -157,7 +157,7 @@ export async function logMessageDelete(message: Message): Promise<void> {// add 
             });
         }
 
-        logChannel.send({ embed });
+        logChannel.send({ embeds: [embed] });
     } catch (err) {
         xlg.error(err);
     }
@@ -183,16 +183,16 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
         }
         const attachment = new Discord.MessageAttachment(Buffer.from(humanLog, 'utf-8'), 'DeletedMessages.txt');
     
-        const logMessage = await logChannel.send(attachment);
-        logMessage.edit({
-            embed: {
-                "color": await Bot.client.database.getColor("warn_embed_color") || 0xff0000,
-                "author": {
-                    "name": `${first.channel.name}`,
-                    "icon_url": first.guild.iconURL() || ""
+        const logMessage = await logChannel.send({ files: [attachment] });
+        await logMessage.edit({
+            embeds: [{
+                color: await Bot.client.database.getColor("warn_embed_color") || 0xff0000,
+                author: {
+                    name: `${first.channel.name}`,
+                    icon_url: first.guild.iconURL() || ""
                 },
-                "timestamp": new Date(),
-                "description": `**Bulk deleted messages in ${first.channel.toString()}**`,
+                timestamp: new Date(),
+                description: `**Bulk deleted messages in ${first.channel.toString()}**`,
                 fields: [
                     {
                         name: 'Message Count',
@@ -203,7 +203,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
                         value: `[view](https://txt.discord.website/?txt=${logChannel.id}/${logMessage.attachments.first()?.id}/DeletedMessages)`
                     }
                 ]
-            }
+            }]
         });
     } catch (err) {
         xlg.error(err);
@@ -233,7 +233,7 @@ export async function logMessageUpdate(omessage: Message, nmessage: Message): Pr
         }
 
         logChannel.send({
-            embed: {
+            embeds: [{
                 author: {
                     name: "Message Edited",
                     icon_url: nmessage.author.displayAvatarURL()
@@ -252,7 +252,7 @@ export async function logMessageUpdate(omessage: Message, nmessage: Message): Pr
                 footer: {
                     text: `Msg ID: ${nmessage.id} | Author ID: ${nmessage.author.id}`
                 }
-            }
+            }]
         });
     } catch (err) {
         xlg.error(err);
@@ -266,7 +266,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
     
         try {
             await logChannel.send({
-                embed: {
+                embeds: [{
                     author: {
                         name: `Role ${deletion ? 'Deleted' : 'Created'}`,
                         iconURL: role.guild.iconURL() || ""
@@ -277,7 +277,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
                     footer: {
                         text: `Role ID: ${role.id}`,
                     },
-                }
+                }]
             });
         } catch (e) {
             return; // very likely occurring because this client just left the server and its bot specific role got deleted (which is what triggered this event)
@@ -294,7 +294,7 @@ export async function logRoleUpdate(previousrole: Role, currentRole: Role): Prom
 
         if (previousrole.name !== currentRole.name) {
             await logChannel.send({
-                embed: {
+                embeds: [{
                     color: await Bot.client.database.getColor("warn_embed_color"),
                     timestamp: new Date(),
                     author: {
@@ -317,7 +317,7 @@ export async function logRoleUpdate(previousrole: Role, currentRole: Role): Prom
                     footer: {
                         text: `Role ID: ${currentRole.id}`
                     },
-                }
+                }]
             });
         }
     } catch (err) {
@@ -333,7 +333,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
         const titletyperef = channel.type !== "category" ? `${capitalize(channel.type)} ` : "";
 
         await logChannel.send({
-            embed: {
+            embeds: [{
                 title: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type === "voice" ? "<:voice_channel:828153551154315275>" : (channel.type === "text" ? "<:text_channel:828153514315612230>" : ""))} ${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
                 color: deletion ? await Bot.client.database.getColor("fail") || 0xff0000 : await Bot.client.database.getColor("success"),
@@ -341,7 +341,7 @@ export async function logChannelState(channel: GuildChannel, deletion = false): 
                 footer: {
                     text: "Channel ID: " + channel.id
                 }
-            }
+            }]
         });
     } catch (err) {
         xlg.error(err);
@@ -359,7 +359,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
 
         if (oc.name !== nc.name) {//change of channel name
             await logChannel.send({
-                embed: {
+                embeds: [{
                     color: await Bot.client.database.getColor("warn_embed_color"),
                     timestamp: new Date(),
                     author: {
@@ -379,7 +379,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                             inline: true
                         }
                     ]
-                }
+                }]
             });
         }
 
@@ -462,7 +462,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
                 }*/
 
                 if (didsomething) {
-                    await logChannel.send({ embed });
+                    await logChannel.send({ embeds: [embed] });
                 }
             }
         }
@@ -482,7 +482,7 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
         }
 
         await logChannel.send({
-            embed: {
+            embeds: [{
                 author: {
                     name: `Emoji ${deletion ? 'Removed' : 'Added'}`,
                     iconURL: logChannel.guild.iconURL() || ""
@@ -496,7 +496,7 @@ export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promis
                     text: `Usage: :${emoji.name}:`
                 },
                 timestamp: deletion ? emoji.createdAt : new Date(),
-            }
+            }]
         });
     } catch (err) {
         xlg.error(err);
@@ -524,7 +524,7 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
         if (!logChannel) return;
     
         await logChannel.send({
-            embed: {
+            embeds: [{
                 author: {
                     name: `Nickname Changed`,
                     iconURL: logChannel.guild.iconURL() || ""
@@ -547,7 +547,7 @@ export async function logNickname(oldMember: GuildMember, newMember: GuildMember
                     text: `ID: ${newMember.id}`
                 },
                 timestamp: new Date(),
-            }
+            }]
         });
         
     } catch (error) {
@@ -565,7 +565,7 @@ export async function logAutoBan(member: GuildMember): Promise<void> {
         if (!logChannel) return;
 
         await logChannel.send({
-            embed: {
+            embeds: [{
                 author: {
                     name: `Member Autobanned`,
                     iconURL: logChannel.guild.iconURL() || ""
@@ -573,7 +573,7 @@ export async function logAutoBan(member: GuildMember): Promise<void> {
                 color: await Bot.client.database.getColor("info"),
                 description: `Autoban has been activated on ${member.user.tag} (${member.id}).\nThey are now banned permanently.`,
                 timestamp: new Date(),
-            }
+            }]
         });
     } catch (error) {
         xlg.error(error);

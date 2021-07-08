@@ -3,11 +3,14 @@ import moment from 'moment';
 import { Command, GuildMessageProps } from 'src/gm';
 
 export const command: Command<GuildMessageProps> = {
-    name: 'serverinfo',
-    description: 'get info on the current server',
+    name: "serverinfo",
+    description: {
+        short: "detailed server info",
+        long: "Get detailed information on the current server. This command may also save you a trip to server settings.",
+    },
     aliases: ['server', 'si'],
     guildOnly: true,
-    cooldown: 4,
+    cooldown: 3,
     async execute(client, message) {
         try {
             const createdAt = moment(message.guild.createdAt).utc();
@@ -19,17 +22,21 @@ export const command: Command<GuildMessageProps> = {
                 `Text: ${message.guild.channels.cache.filter(x => x.type == 'text').size}`,
                 `Voice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`
             ]
-            if (message.guild.channels.cache.filter(x => x.type == 'news').size) channels.push(`News: ${message.guild.channels.cache.filter(x => x.type == 'news').size}`);
-            if (message.guild.channels.cache.filter(x => x.type == 'store').size) channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
+            if (message.guild.channels.cache.filter(x => x.type == 'news').size) {
+                channels.push(`News: ${message.guild.channels.cache.filter(x => x.type == 'news').size}`);
+            }
+            if (message.guild.channels.cache.filter(x => x.type == 'store').size) {
+                channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
+            }
 
             let invites: boolean | Invite[] = false;
             if (message.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
                 const invitesCollection = await message.guild.fetchInvites();
                 invites = invitesCollection.array();
             }
-            const owner = await message.guild.fetchOwner(); 
+            const owner = await message.guild.fetchOwner();
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: await client.database.getColor("info"),
                     thumbnail: {
                         url: message.guild.iconURL() || ""
@@ -42,52 +49,52 @@ export const command: Command<GuildMessageProps> = {
                         {
                             name: "Owner",
                             value: `${owner}\n${owner.id}`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Members",
                             value: `🎰 ${memberCount}\n👥 ${memberCount - botCount}\n🤖 ${botCount}`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Online <:736903507436896313:752118506950230067>",
                             value: `${mems.filter(member => (member.presence.status == 'online' || member.presence.status == 'idle') && !member.user.bot).size} human`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: `Channels (${message.guild.channels.cache.size - message.guild.channels.cache.filter(x => x.type == 'category').size})`,
                             value: `${channels.join("\n") || 'none'}`,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Created",
-                            value: `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
-                            inline: true
+                            value: `<t:${createdAt.unix()}:R>`,
+                            inline: true,
                         },
                         {
                             name: "Emojis 😏",
-                            value: `Total: ${message.guild.emojis.cache.size}\nAnimated: ${message.guild.emojis.cache.filter(e => e.animated).size}\n<:giflabel1:757354173086957608>`,
-                            inline: true
+                            value: `Total: ${message.guild.emojis.cache.size}\nAnimated: ${message.guild.emojis.cache.filter(e => !!e.animated).size}\n<:giflabel1:757354173086957608>`,
+                            inline: true,
                         },
                         {
                             name: "Roles <:atsign_1:757386730960584815>",
                             value: `\`${message.guild.roles.cache.size}\``,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: "Open Invites",
                             value: `\`${invites ? invites.length : "NO PERMS"}\``,
-                            inline: true
+                            inline: true,
                         },
                     ],
                     footer: {
-                        text: "ID: " + message.guild.id + ' | Region: ' + message.guild.region + ' | All dates in UTC'
+                        text: `ID: ${message.guild.id} ● all dates in utc`,
                     },
-                }
+                }],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

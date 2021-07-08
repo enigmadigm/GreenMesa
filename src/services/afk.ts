@@ -1,10 +1,10 @@
-import { GuildMember, Message, NewsChannel, Snowflake, TextChannel } from "discord.js";
+import { GuildMember, Message, NewsChannel, Snowflake, TextChannel, ThreadChannel, Util } from "discord.js";
 import { Bot } from "../bot";
 import { GuildMessageProps, MessageService } from "../gm";
 import { stringToMember } from "../utils/parsers";
 
-async function sendAfk(m: string, c: TextChannel | NewsChannel, t: GuildMember) {
-    const text = m.replace(/@everyone/g, "@​everyone").replace(/@here/g, "@​here").replace(/<@&(\d*)>/g, "`@​role`");
+async function sendAfk(m: string, c: TextChannel | NewsChannel | ThreadChannel, t: GuildMember) {
+    const text = Util.removeMentions(m);
     // for (let word of afk.afk.split(" ")) {
     //     // const ext = extractString(afk.afk, /<@&(\d*)>/);
     //     const ext = stringToRole(message.guild, word, false, false);
@@ -26,7 +26,6 @@ async function sendAfk(m: string, c: TextChannel | NewsChannel, t: GuildMember) 
 
 export const service: MessageService = {
     events: ["message", "messageUpdate"],
-    guildOnly: true,
     async execute(client, event, message: Message & GuildMessageProps) {
         try {
             if (!message.guild || message.author.id === client.user?.id) return;

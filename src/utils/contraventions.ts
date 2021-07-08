@@ -127,7 +127,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             // Bot.client.specials.sendMessageAll({ embed }, r.value);
             const c = Bot.client.channels.cache.get(r.value);
             if (c && c instanceof TextChannel && c.permissionsFor(Bot.client.user)?.has("SEND_MESSAGES")) {
-                const m = c.permissionsFor(Bot.client.user)?.has("EMBED_LINKS") ? await c.send({ embed }) : await c.send({ content: `${combineEmbedText(embed, 2)}` });//TODO: I should probably format the fallback message separately
+                const m = c.permissionsFor(Bot.client.user)?.has("EMBED_LINKS") ? await c.send({ embeds: [embed] }) : await c.send({ content: `${combineEmbedText(embed, 2)}` });//TODO: I should probably format the fallback message separately
                 data.superid = m.id;//NOTE: superid column used for editing the info embed in the case logs (when it is a snowflake, it is attempted to be fetched)
             }
         }
@@ -141,7 +141,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
      * @param mod the moderator who executed the action
      * @param casenum the identifier for the entry
      * @param action the type of entry/action
-     * @param color the embed flare color
+     * @param color the embed flare color (set to less than zero to use default color codes)
      * @param reason case summary
      * @param duration if the action had a duration, the duration in ms
      * @param endat the formatted time/date the action will end at
@@ -152,7 +152,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
     public static async constructEmbed(target: User | string, mod: User | string, casenum: number, action = "log", color: number, reason = "", duration = 0, endat = "", usertag?: string, modtag?: string, nonotify = false): Promise<MessageEmbed> {
         const modTag = mod instanceof User ? mod.tag : typeof modtag === "string" ? modtag : `unknown#0000`;
         const modId = mod instanceof User ? mod.id : "none";
-        const targTag = target instanceof User ? target.tag : typeof usertag === "string" ? usertag : `unknown#0000`;
+        const targTag = target instanceof User ? target.tag || "unknown#0000" : typeof usertag === "string" && usertag ? usertag : `unknown#0000`;
         const targId = target instanceof User ? target.id : target;
         const targUser = target instanceof User ? target : targId;
         if (color < 0) {// assign default color if no color was given
@@ -178,9 +178,9 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             title: `Case ${casenum} ● ${titleCase(action, /[- ]/)} ● ${targTag.escapeDiscord()}`,// 💼
             description: `**Perpetrator:** ${targTag.escapeDiscord()} ${targUser}\n**Marshal:** ${modTag.escapeDiscord()} ${mod instanceof User ? mod : null}`,
             footer: {
-                text: `User: ${targId} Mod: ${modId}`
-            }
-        }
+                text: `User: ${targId} • Mod: ${modId}`,
+            },
+        };
         const embed = new MessageEmbed(e);
         if (reason) {
             const rt = reason.length < 1500 ? reason : reason.substr(0, 1496) + "...";

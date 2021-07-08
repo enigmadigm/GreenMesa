@@ -17,15 +17,10 @@
  */
 'use strict';
 
-// To all for `import - from '-'` and `export async function function() {}` in modules I must change the eslint sourcetype to module
-// and change the package.json tyope to module, then replace all require()s and exports.method/module.exports with the types of
-// statements above. mayve one day I could do it because it might look better.
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('source-map-support').install();
-//require('./website/app');
 
 process.on('uncaughtException', function (e) {
     xlg.log(e);
@@ -53,6 +48,8 @@ import Client from "./struct/Client";
 import "./xlogger";
 import { combineMessageText, parseLongArgs } from './utils/parsers';
 import cron from 'node-cron';
+import exitHook from 'exit-hook';
+import { isGuildMessage } from './utils/specials';
 
 String.prototype.escapeSpecialChars = function () {
     return this.replace(/(?<!\\)\\n/g, "\\n")
@@ -82,11 +79,21 @@ export class Bot {
     static client: XClient;
     static tas: TimedActionsSubsystem;
     // static cm: Contraventions;
+    static website: MesaWebsite | null;
 
-    static init(client: XClient, tas: TimedActionsSubsystem): void {
+    static init(client: XClient, tas: TimedActionsSubsystem, website?: MesaWebsite): void {
         this.client = client;
         this.tas = tas;
         // this.cm = cm;
+        this.website = website ? website : null;
+        if (this.website) {
+            exitHook(() => {
+                this.website?.server.close((err) => {
+                    xlg.error("Error closing HTTP server:", err);
+                });
+                xlg.log("Closed HTTP server");
+            });
+        }
     }
 }
 
@@ -113,7 +120,9 @@ const botStatCron = cron.schedule('0 0-23 * * *', async () => {
 //const chalk = require('chalk');
 
 // ▼▼▼▼▼ command cooldowns section
-const cooldowns: Discord.Collection<Command["name"], Discord.Collection<string, number>> = new Discord.Collection();
+const cooldowns: Discord.Collection<Command["name"], Discord.Collection<string, number>> = new Discord.Collection();//TODO: make cooldowns redis or something
+
+client.on('error', xlg.error);
 
 client.on("ready", async () => {// This event will run if the bot starts, and logs in, successfully.
     const tas = new TimedActionsSubsystem();
@@ -171,10 +180,12 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
         xlg.error(e);
     }
 
+    let web;
     if (client.shard?.ids.includes(0)) {
-        new MesaWebsite(client);
+        web = new MesaWebsite(client);
     }
-    Bot.init(client, tas);
+
+    Bot.init(client, tas, web);
     xlg.log("Bot initialized")
 });
 
@@ -398,10 +409,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                 if (message.channel instanceof GuildChannel) {
                     if (message.channel.permissionsFor(client.user)?.has(Permissions.FLAGS.EMBED_LINKS)) {
                         await message.channel.send({
-                            embed: {
+                            embeds: [{
                                 description: `${message.guild?.me?.nickname || client.user.username}'s prefix for **${message.guild?.name}** is **${message.gprefix.escapeDiscord()}**`,
                                 color: await client.database.getColor("info")
-                            }
+                            }],
                         });
                     } else {
                         await message.channel.send(`Use \`${message.gprefix.escapeDiscord()}\` or ${client.user} as my prefix.\nBy the way, it seems I cannot send embeds in this channel, that may break some features.`);
@@ -436,10 +447,13 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         const gc = cc && message.guild ? cc.conf : false;
         const disabled = cs ? !!(!cs.enabled || (!cs.channel_mode && cs.channels.includes(message.channel.id)) || (cs.channel_mode && !cs.channels.includes(message.channel.id)) || (message.member && ((cs.role_mode && !message.member.roles.cache.find(x => cs.roles.includes(x.id))) || (!cs.role_mode && message.member.roles.cache.find(x => cs.roles.includes(x.id)))))) : false;
 
-        if (command.guildOnly && !(message.channel instanceof GuildChannel)) {// command is configured to only execute outside of dms
-            await message.channel.send(`This command cannot be used in DM's`);
-            return;
+        if (command.guildOnly) {// command is configured to only execute outside of dms
+            if (!isGuildMessage(message)) {
+                await message.channel.send(`This command cannot be used in DMs`);
+                return;
+            }
         }
+
         if (command.ownerOnly && message.author.id !== config.ownerID) {// command is configured to be owner executable only, THIS IS AN OUTDATED PROPERTY BUT IS STILL USED
             xlg.log(`${message.author.tag} attempted ownerOnly`);
             return;
@@ -453,9 +467,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         } else {
             botmasters = [];
         }
-        if (message.channel.isText()) { // gets perm level of member if message isn't from dms
+        if ('guild' in message.channel) { // gets perm level of member if message isn't from dms
             permLevel = await getPermLevel(message.member || message.author);
-        } else if (botmasters.includes(message.author.id)) { // bot masters
+        } else if (botmasters.includes(message.author.id)) {// if the message is in a dm
             permLevel = permLevels.botMaster;
         }
         const pl = cs ? cs.level || permLevels.member : command.permLevel || permLevels.member;// get the required permission level needed to run the command
@@ -475,13 +489,13 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             if (command.name === "h") return;
             if (!gc || (typeof gc.respond === "undefined" || gc.respond)) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         title: `Command Disabled`,
                         description: `\`${commandName}\` has been disabled ${!disabled ? "**globally**" : "here"}.${commandEnabledGlobal && commandEnabledGlobal.value !== 'true' ? `\n\n**Message:** ${commandEnabledGlobal.value.replace(/_/g, " ")}` : ""}`,
                         footer: {
                             text: `${disabledGlobal ? "Sorry, please be patient" : ""}`,
                         },
-                    }
+                    }],
                 });
             }
             return;
@@ -533,7 +547,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
             if (lacking.length) {
                 const textToSend = `I don't have the permissions needed to execute this command. I am missing: ${lacking.map(x => `**${x.toLowerCase().replace(/_/g, " ")}**`).join(", ")}.`;
-                if (message.guild?.me?.permissionsIn(message.channel).has("SEND_MESSAGES")) {
+                if ('guild' in message.channel && message.channel.guild.me?.permissionsIn(message.channel).has([Permissions.FLAGS.SEND_MESSAGES, Permissions.FLAGS.EMBED_LINKS])) {
                     await message.channel.send(textToSend);
                 } else {
                     await message.author.send(textToSend);
@@ -542,10 +556,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
         }
 
-        if (command.args && (typeof command.args === "boolean" || command.args > 0) && (!args.length || (typeof command.args === "number" && args.length < command.args))) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
+        if (command.args && (typeof command.args === "boolean" || command.args > 0) && (!args.length || (typeof command.args === "number" && (args.length < command.args || args.length > command.args)))) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
             const fec_gs = await client.database.getColor("fail");
 
-            let reply = `Arguments are needed to make that work!`;
+            let reply = command.args === true ? `Arguments are needed to make that work!` : `\`${args.length < command.args ? command.args - args.length : args.length - command.args}\` ${args.length < command.args ? `more` : `less`} argument${(args.length < command.args ? command.args - args.length : args.length - command.args) > 1 ? `s` : ``} required for this command`;
             if (command.usage) {
                 reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
             }
@@ -557,18 +571,19 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
 
             await message.channel.send({
-                embed: {
+                embeds: [{
                     description: reply,
                     color: fec_gs,
                     footer: {
                         text: ['tip: separate arguments with spaces', 'tip: [] means optional, <> means required\nreplace these with your arguments'][Math.floor(Math.random() * 2)]
                     }
-                }
+                }],
             });
             return;
-        } else if ((command.args || command.args === 0) && typeof command.args === "number" && args.length !== command.args) {
+        } else if (typeof command.args === "number" && args.length !== command.args) {
             let reply: string;
-            if (command.args === 0) {
+            // because of the above condition block, if the command args property isn't 0, it should already be handled above
+            if (command.args === 0) {// therefore, this will always be true
                 reply = "**No arguments** are allowed for this command.";
             } else {
                 reply = `Incorrect arguments. Please provide ${command.args} arguments.`;
@@ -631,7 +646,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         if (flags.flags.find(x => x.name === "help")) {// if the help flag has been specified
             if (flags.flags.length === 1 && !args.length) {// if it was the only flag and there are no standard arguments
                 const helpCommand = client.commands.find(x => x.name === "help");
-                if (helpCommand) {
+                if (helpCommand && !helpCommand.guildOnly) {
                     await helpCommand.execute(client, message, [command.name], flags.flags);
                     return;
                 }
@@ -642,7 +657,10 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         try {
             client.database.logCmdUsage(commandName, message);
-            const ret = await command.execute(client, message, args, flags.flags);
+            const ret = command.guildOnly ? (isGuildMessage(message) ? await command.execute(client, message, args, flags.flags) : void 0) : await command.execute(client, message, args, flags.flags);
+            // i realized i could just add a catchall stopTyping() here in case
+            // it is never called at the end of some command or it never makes it that far
+            message.channel.stopTyping();
 
             if (ret && ret !== true) {
                 if (ret.error) {
@@ -653,7 +671,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
                             color: ret.color || await client.database.getColor("info"),
                             description: ret.content,
                         }
-                        await message.channel.send({ embed });
+                        await message.channel.send({ embeds: [embed] });
                     } else {
                         await message.channel.send(ret.content);
                     }
@@ -670,7 +688,5 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
     }
 });
-
-client.on('error', xlg.error);
 
 client.login(config.token);

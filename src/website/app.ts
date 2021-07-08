@@ -7,6 +7,7 @@ import routes from './routes';
 import session from "express-session";
 import mstore from 'express-mysql-session';
 import { isSnowflake } from "../utils/specials";
+import * as http from 'http';
 require('./strategies/discord');
 
 const PORT = process.env.WEBSITE_PORT || 3002;
@@ -18,6 +19,7 @@ const MySQLStore = mstore(<any>session);
 export default class MesaWebsite {
 	public client: XClient;
 	public app: express.Application;
+    public server: http.Server;
 
     constructor(client: XClient) {
         this.client = client;
@@ -40,6 +42,7 @@ export default class MesaWebsite {
         this.app.use(passport.initialize());
         this.app.use(passport.session());
         this.app.use(function (req, res, next) {
+            // xlg.log("forwarded ip", req.headers['x-forwarded-for'] || req.socket.remoteAddress)
             res.header("x-powered-by", "Sadness")
             next();
         });
@@ -141,7 +144,7 @@ export default class MesaWebsite {
             // default to plain-text. send()
             res.type('txt').send('Not found');
         });
-        this.app.listen(PORT, () => {
+        this.server = this.app.listen(PORT, () => {
             xlg.log(`Website running on port ${PORT}${client.shard ? ` in shard ${client.shard.ids[0]}` : ""}`);
         });
     }

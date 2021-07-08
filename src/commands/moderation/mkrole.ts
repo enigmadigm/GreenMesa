@@ -1,8 +1,8 @@
 import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps } from "src/gm";
+import { Command } from "src/gm";
 import { RoleData } from "discord.js";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "mkrole",
     description: {
         short: "create a role",
@@ -19,10 +19,6 @@ export const command: Command<GuildMessageProps> = {
     permissions: ["MANAGE_ROLES"],
     async execute(client, message, args) {
         try {
-            /*if (!message.guild.me?.hasPermission("MANAGE_ROLES")) {
-                await message.channel.send("I do not have the MANAGE_ROLES permission. I need that to create roles.");
-                return;
-            }*/
             const param = args.join(" ").split(",");
             if (param[0] && param[0].length > 100) {// if the provided name is longer than the 100 character limit
                 await client.specials.sendError(message.channel, "Role name cannot exceed 100 characters");
@@ -36,10 +32,10 @@ export const command: Command<GuildMessageProps> = {
             try {
                 const nrole = await message.guild.roles.create({ ...roleData, reason: "with mkrole command" });
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("success"),
-                        description: `Role ${nrole} created successfully`
-                    }
+                        description: `Role ${nrole} created successfully`,
+                    }],
                 });
             } catch (error) {
                 await client.specials.sendError(message.channel, "I couldn't create the role, I probably don't have the permissions to")
