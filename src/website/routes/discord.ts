@@ -1,11 +1,10 @@
-import express from 'express';
 import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, HomeEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
+import express from 'express';
 import { Bot } from '../../bot';
 import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
 import { isSnowflake } from '../../utils/specials';
-//const { token } = require("../../auth.json");
-//const fetch = require("node-fetch");
+import { Collection, GuildChannel } from 'discord.js';
 
 export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
@@ -210,7 +209,7 @@ export default function routerBuild (client: XClient): express.Router {
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
 
-        const channels = g.channels.cache.map((c) => {
+        const channels = (g.channels.cache.filter(x => x instanceof GuildChannel) as Collection<string, GuildChannel>).map((c) => {
             const data: ChannelData = {
                 id: c.id,
                 name: c.name,
@@ -585,9 +584,10 @@ export default function routerBuild (client: XClient): express.Router {
             }
 
             try {
-                const g = client.guilds.cache.get(id);//TODO: make this able to work with shards
+                const g = client.guilds.cache.get(id);//TODO: make this able to work with shards (apply to all uses of this)
                 if (!g) return res.sendStatus(404);
-                const channels = g.channels.cache.map((c) => {
+                //TODO: it isn't necessary to have two filter calls in this statement, the text channel filter can be applied in the first
+                const channels = (g.channels.cache.filter(x => x instanceof GuildChannel) as Collection<string, GuildChannel>).map((c) => {
                     const data: ChannelData = {
                         id: c.id,
                         name: c.name,
@@ -601,7 +601,7 @@ export default function routerBuild (client: XClient): express.Router {
                         data.topic = c.topic || "";
                     }
                     return data;
-                }).filter(c => c.type === "text").sort((a, b) => a.position - b.position);
+                }).filter(c => c && c.type === "text").sort((a, b) => a.position - b.position);
 
                 const mvm = await client.database.getMovementData(id);
 
@@ -635,7 +635,7 @@ export default function routerBuild (client: XClient): express.Router {
             const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
             if (!g) return res.sendStatus(404);
 
-            const channels = g.channels.cache.map((c) => {
+            const channels = (g.channels.cache.filter(x => x instanceof GuildChannel) as Collection<string, GuildChannel>).map((c) => {
                 const data: ChannelData = {
                     id: c.id,
                     name: c.name,
@@ -681,33 +681,6 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(500);
         }
     });
-
-    // router.get("/guilds/:id/modrole", async (req, res) => {//FIXME: this is unused at the moment
-    //     try {
-    //         const { id } = req.params;
-    //         if (!isSnowflake(id)) {
-    //             return res.status(400).send("Bad id");
-    //         }
-    //         if (!req.user) {
-    //             return res.sendStatus(401);
-    //         }
-    //         const allGuilds = await client.specials.getAllGuilds();
-    //         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-    //         if (!mg.find(x => x.id && x.id === id)) {
-    //             return res.sendStatus(401);
-    //         }
-
-    //         try {
-    //             res.send("nothing");
-    //         } catch (e) {
-    //             xlg.error(e);
-    //             res.sendStatus(500);
-    //         }
-    //     } catch (error) {
-    //         xlg.error(error)
-    //         return res.sendStatus(500);
-    //     }
-    // });
 
     // PUTters
 

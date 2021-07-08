@@ -7,7 +7,7 @@ import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Sno
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
-import { isSnowflake } from "./utils/specials";
+import { isSnowflake, shards } from "./utils/specials";
 import Starboard from "./struct/Starboard";
 
 const levelRoles = [
@@ -1140,7 +1140,7 @@ export class DBManager {
     /**
      * Get an automodule for a guild, or create one from the default values.
      */
-    async getAutoModule(guildid: string, mod: string, row?: GuildSettingsRow): Promise<AutomoduleData> {
+    async getAutoModule(guildid: Snowflake, mod: string, row?: GuildSettingsRow): Promise<AutomoduleData> {
         const defaults: AutomoduleData = {
             name: mod,
             text: false,
@@ -1149,40 +1149,60 @@ export class DBManager {
             roleEffect: 'ignore',
             offensesOffset: 0,
         }
-        defaults.text = Bot.client.services?.isText(`automod_${mod}`) || false;
-        if (defaults.text) {
+        defaults.text = Bot.client.services.isText(`automod_${mod}`);
+        if (defaults.text) {// 
             defaults.channels = [];
             defaults.channelEffect = 'enable';
         }
-        const safeParseAM = (r: GuildSettingsRow) => {
+        // VV this is a final check for the presence of argument data; for instance, if an actual module name is not provided, defaults should just be returned
+        if (!guildid || !mod) return defaults;// if the guild was not provided or the mod name was not provided return default
+        //TODO: make a method like the getGuildRoles() method below for the channels to avoid fetching so much data that has to be parsed
+        const allChannels = await shards.getAllChannels();// get all channels to check the module channels against in order to filter out deleted channels
+        if (!allChannels) {
+            return defaults;
+        }
+        const guildRoles = await shards.getGuildRoles(guildid);// get all roles to check the module applyRoles against in order to filter out deleted roles
+        if (!guildRoles) {
+            return defaults;
+        }
+        const safeParseAM = (r: GuildSettingsRow): AutomoduleData => {
             try {
                 const parsed = JSON.parse(r.value);
-                if (typeof parsed.name !== "string" || typeof parsed.text !== "boolean" || typeof parsed.enableAll !== "boolean" || typeof parsed.applyRoles !== "object" || typeof parsed.roleEffect !== "string" || (defaults.text && (typeof parsed.channels !== "object" || typeof parsed.channelEffect !== "string"))) {
+                if (typeof parsed.name !== "string" || typeof parsed.text !== "boolean" || typeof parsed.enableAll !== "boolean" || !Array.isArray(parsed.applyRoles) || typeof parsed.roleEffect !== "string" || (defaults.text && (!Array.isArray(parsed.channels) || typeof parsed.channelEffect !== "string"))) {
                     return defaults;
                 } else {
+                    if (parsed.channels && parsed.channels.length) {
+                        parsed.channels = parsed.channels.filter((x: string) => {
+                            return !!allChannels.find(x2 => x2.id === x);
+                        });
+                    }
+                    if (parsed.applyRoles && parsed.applyRoles.length) {
+                        parsed.applyRoles = parsed.applyRoles.filter((x: string) => {
+                            return !!guildRoles.find(x2 => x2.id === x);
+                        });
+                    }
                     return parsed;
                 }
             } catch (error) {
                 return defaults;
             }
         }
-        if (!guildid || !mod) return defaults;
-        if (row) {
+        if (row) {// if a row (presumably containing automodule data) is provided and this method is just being used to safely parse and provide defaults
             return safeParseAM(row);
         }
         // I have no idea why I didn't just do getGuildSetting in the first place, my stupid fucking error caused it to get any existing automod setting in the db causing it to activate automod for all servers.
         //const result = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE property = 'automod_${mod.replace(/'/g, "\\'")}'`);
         const result = await this.getGuildSetting(guildid, `automod_${mod}`);
-        if (result) {
+        if (result) {// if automodule data was found
             return safeParseAM(result);
         }
-        return defaults;
+        return defaults;// if all else fails, return defaults
     }
 
     /**
      * Get every automodule for a guild.
      */
-    async getAllAutoModules(guildid: string): Promise<AutomoduleData[]> {
+    async getAllAutoModules(guildid: Snowflake): Promise<AutomoduleData[]> {
         if (!guildid) return [];
         const services = Bot.client.services?.automods || [];
         const modConf = await this.getGuildSettingsByPrefix(guildid, "automod_") || [];
@@ -1197,7 +1217,7 @@ export class DBManager {
     /**
      * Check if an automodule is enabled given different check values.
      */
-    async getAutoModuleEnabled(guildid: string, mod: string, channelid?: string, anywhere?: boolean, member?: GuildMember): Promise<false | AutomoduleData> {
+    async getAutoModuleEnabled(guildid: Snowflake, mod: string, channelid?: string, anywhere?: boolean, member?: GuildMember): Promise<false | AutomoduleData> {
         if (!guildid || !mod) return false;
         const m = await this.getAutoModule(guildid, mod);
 

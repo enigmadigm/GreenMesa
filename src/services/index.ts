@@ -124,9 +124,10 @@ export class MessageServices {
             } else {
                 ud.offenses++;
             }
+            await Bot.client.database.updateGuildUserData(ud);// updating offense count right away
             const pastOffset = (mod.offensesOffset || 0) < ud.offenses;// dumb (mod.offensesOffset || 0) % ud.offenses
             const ptime = mod.punishTime || 0;
-            const pud = await Bot.client.database.getUserData(target.id) || { userid: target.id, afk: "", offenses: 0, nicknames: "" };
+            const pud = await Bot.client.database.getUserData(target.id);
             if (!pud.offenses) {
                 pud.offenses = 1;
             } else {

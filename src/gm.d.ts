@@ -1077,6 +1077,18 @@ export interface SkeletonGuildObject {
     ownerName?: string;
 }
 
+export interface SkeletonRole {
+    id: Snowflake;
+    color: number;
+    hexColor: string;
+    position: number;
+    hoist: boolean;
+    createdTimestamp: number;
+    editable: boolean;
+    name: string;
+    mentionable: boolean;
+}
+
 // export interface SkeletonUserObject {// i literally accidentally made this, it isn't currently being used but it could be in the future for other broadcast methods
 //     id: Snowflake;
 //     tag: string;

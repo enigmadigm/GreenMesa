@@ -1,4 +1,4 @@
-import { ClientValuesGuild, DashboardMessage, GuildMessageProps, SkeletonGuildObject, XClient, XMessage } from '../gm';
+import { ClientValuesGuild, DashboardMessage, GuildMessageProps, SkeletonGuildObject, SkeletonRole, XClient, XMessage } from '../gm';
 import moment from 'moment';
 import { ButtonInteraction, Channel, CollectorFilter, DMChannel, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
 import { Bot } from "../bot";
@@ -256,13 +256,15 @@ export const shards = {
      * Send a message through all of the sharded clients that will send from the client that has the desired channel
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendMessageAll(m: Record < string, any >, cid: Snowflake): void {
-        Bot.client.shard?.broadcastEval((client) => {
-            const c = client.channels.cache.get(cid);
-            if (c && c.isText()) {
-                c.send(JSON.stringify(m))
-            }
-        });
+    sendMessageAll(m: Record<string, any>, cid: Snowflake): void {
+        if (Bot.client.shard) {
+            Bot.client.shard.broadcastEval((client, { m, cid }) => {
+                const c = client.channels.cache.get(cid);
+                if (c && c.isText()) {
+                    c.send(JSON.stringify(m))
+                }
+            }, { context: { m, cid } });
+        }
     },
     /**
      * Retrieves all of the guilds that belonging to a client if the client is sharded. It will asynchronously fetch all guilds from each of the shards and reduce them to one array. The values returned from the shards are not normal guild objects. They are reduced guild object.
@@ -304,6 +306,46 @@ export const shards = {
             return false;
         }
         return channels;
+    },
+    async getGuildRoles(gid: Snowflake): Promise<SkeletonRole[] | false> {
+        if (!Bot.client.shard) {
+            return false;
+        }
+        const roles = await Bot.client.shard.broadcastEval((client, { gid }) => {
+            try {
+                const g = client.guilds.cache.get(gid);
+                if (g) {
+                    const roles: SkeletonRole[] = g.roles.cache
+                        .filter(x => !x.deleted)
+                        .map(x => {
+                            return {
+                                id: x.id,
+                                color: x.color,
+                                hexColor: x.hexColor,
+                                position: x.rawPosition,
+                                hoist: x.hoist,
+                                createdTimestamp: x.createdTimestamp,
+                                name: x.name,
+                                mentionable: x.mentionable,
+                                editable: x.editable,
+                            };
+                        });
+                    return roles;
+                }
+                return [];
+            } catch (error) {
+                //
+            }
+        }, { context: { gid } });
+        const availableRoles: SkeletonRole[] = [];
+        for (const ra of roles) {
+            if (ra && ra.length) {
+                for (const r of ra) {
+                    availableRoles.push(r);
+                }
+            }
+        }
+        return availableRoles;
     },
     async getMutualGuilds(uid: Snowflake): Promise<SkeletonGuildObject[] | false> {
         if (!Bot.client.shard) {
