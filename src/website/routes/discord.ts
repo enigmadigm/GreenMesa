@@ -1143,7 +1143,7 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(500);
             }
             if (apply.length) {
-                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner")
+                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner");
 
                 if (delete_overwrites) {
                     const r = await client.database.editCommands(id, applyTo, true);

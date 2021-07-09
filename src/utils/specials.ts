@@ -71,7 +71,7 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
                 break;
             }
             const nr = parseInt(arg, 10);
-            if (isNaN(nr)) {
+            if (isNaN(nr) || nr > Number.MAX_SAFE_INTEGER || nr < Number.MIN_SAFE_INTEGER) {// if the arg is not a valid number or it is too big
                 forResult = false;
                 invalid.push(arg);
                 break;

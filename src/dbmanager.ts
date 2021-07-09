@@ -240,6 +240,10 @@ export class DBManager {
             if (!guildid || !userid || typeof guildid !== "string" || typeof userid !== "string") return { points: -1, level: -1 };
             let l = 0;
             let p = 0;
+            if (amount > Number.MAX_SAFE_INTEGER) {// if the amount to set/give/remove is too high, set mode to give 0
+                amount = 0;
+                mode = 1;
+            }
             if (!mode) {// mode = 0, set exactly
                 let level = 0;
                 let totalNeeded = 0;
@@ -259,7 +263,10 @@ export class DBManager {
                 } else {
                     // SENSITIVE AREA
                     // xp to next level = 5 * (lvl ^ 2) + 50 * lvl + 100 for mee6
-                    const xp = mode > 0 ? rows[0].xp + amount : rows[0].xp - amount;// mode > 0: add, mode < 0: subtract
+                    let xp = mode > 0 ? rows[0].xp + amount : rows[0].xp - amount;// mode > 0: add, mode < 0: subtract
+                    if (xp > Number.MAX_SAFE_INTEGER) {
+                        xp = rows[0].xp;
+                    }
                     // let totalNeeded = 0;
                     // for (let x = 0; x < rows[0].level + 1; x++) {
                     //     totalNeeded += (5 * (x ** 2)) + (50 * x) + 100;
