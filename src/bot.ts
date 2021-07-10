@@ -365,41 +365,32 @@ client.on("messageReactionRemove", async (reaction, user) => {
 // the actual command processing
 client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
-        // if (message.partial) {
-        //     message = await <Promise<XMessage>>message.fetch();
-        // }
+        client.services.runAllForEvent("message", message), client.database.logMsgReceive();// log reception of message event | run all passive command services
 
-        client.database.logMsgReceive();// log reception of message event
-        client.services.runAllForEvent("message", message);// run all passive command services
-
-        if (message.author.bot || message.system || message.webhookID) return;
-        if (!client.user) return;
-
-        // let dm = false; // checks if it's from a dm
-        // if (!(message.channel instanceof GuildChannel))
-        //     dm = true;
+        if (message.author.bot || message.system || message.webhookID || !client.user) return;
 
         const now = Date.now();
 
-        let special_prefix;
+        message.gprefix = "";
         if (message.channel instanceof GuildChannel) {
-            const gsr = await client.database.getGlobalSetting('global_prefix');
-            if (gsr) {
-                special_prefix = gsr.value;
-                message.bprefix = gsr.value;
-            }
-            const gpr = await client.database.getPrefix(message.channel.guild.id);
-            if (gpr) {
-                special_prefix = gpr;
+            // const gsr = await client.database.getGlobalSetting('global_prefix');
+            // if (gsr) {
+            //     special_prefix = gsr.value;
+            //     message.bprefix = gsr.value;
+            // }
+            const prefixes = await client.database.getPrefixes(message.channel.guild.id);// this takes too long (120ms+)
+            if (prefixes) {
+                const { gprefix, nprefix } = prefixes;
+                message.bprefix = nprefix;
+                message.gprefix = gprefix;
             }
         } else {
             const gsr = await client.database.getGlobalSetting('global_prefix');
             if (gsr) {
-                special_prefix = gsr.value;
                 message.bprefix = gsr.value;
+                message.gprefix = gsr.value;
             }
         }
-        message.gprefix = special_prefix || "";
 
         const ct = combineMessageText(message);// all of the text in the message put together (no delimeter, raw text);
 
@@ -437,12 +428,12 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
         let args = ct.slice(prefixUsed.length).trim().split(/ +/g);
         const commandName = args.shift()?.toLowerCase() || "";
-
+        
         const command = client.commands.get(commandName || "")
-            || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
-
+        || client.commands.find(cmd => !!(cmd.aliases && cmd.aliases.includes(commandName)));
+        
         if (!command || !command.name) return; //Stops processing if command doesn't exist, this isn't earlier because there are exceptions
-        const cc = message.guild ? await client.database.getCommands(message.guild.id, undefined, false) : false;
+        const cc = message.guild ? await client.database.getCommands(message.guild.id, undefined, false) : false;// this fetches from the db // this takes too much time
         const cs = cc && message.guild ? await client.database.getCommand(message.guild.id, command.name, cc) : false;
         const gc = cc && message.guild ? cc.conf : false;
         const disabled = cs ? !!(!cs.enabled || (!cs.channel_mode && cs.channels.includes(message.channel.id)) || (cs.channel_mode && !cs.channels.includes(message.channel.id)) || (message.member && ((cs.role_mode && !message.member.roles.cache.find(x => cs.roles.includes(x.id))) || (!cs.role_mode && message.member.roles.cache.find(x => cs.roles.includes(x.id)))))) : false;

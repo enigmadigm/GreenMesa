@@ -488,10 +488,21 @@ export class DBManager {
      * Get the prefix for a guild if it has one, otherwise it will be the default prefix stored in GlobalSettings
      * @param guildid Guild ID
      */
-    async getPrefix(guildid = ""): Promise<string | false> {
-        const rows = await <Promise<{ guildid: string, prefix: string }[]>>this.query(`SELECT \`prefix\` FROM \`prefix\` WHERE \`guildid\` = '${guildid}'`).catch(xlg.error);
+    async getPrefixes(guildid: string): Promise<{ gprefix: string, nprefix: string } | false> {
+        const rows = await <Promise<{ value: string }[]>>this.query(`SELECT value FROM globalsettings WHERE name = 'global_prefix' ` +
+            `UNION ALL SELECT prefix FROM prefix WHERE guildid = ${escape(guildid)}`);
+        // SELECT value FROM globalsettings WHERE name = 'global_prefix' UNION ALL SELECT prefix FROM prefix WHERE guildid = '660242946834038785'
+        // { guildid: string, prefix: string }[]
         if (rows.length > 0) {
-            return rows[0].prefix;
+            const prefixes = { gprefix: "", nprefix: "" };
+            if (rows[0]) {
+                prefixes.nprefix = rows[0].value;
+                prefixes.gprefix = rows[0].value;
+            }
+            if (rows[1]) {
+                prefixes.gprefix = rows[1].value;
+            }
+            return prefixes;
         } else {
             return false;
         }
@@ -546,7 +557,7 @@ export class DBManager {
         try {
             if (!guild) return false;
             const gid = guild instanceof Guild ? guild.id : guild;
-            const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${gid}' AND property = '${name}'`).catch(xlg.error);
+            const rows = await <Promise<GuildSettingsRow[]>>this.query(`SELECT * FROM guildsettings WHERE guildid = '${gid}' AND property = '${name}'`);
             if (rows.length > 0) {
                 return rows[0];
             } else {
@@ -1591,7 +1602,7 @@ export class DBManager {
      */
     async getCommandConf(guildid: string): Promise<CmdConfEntry | false> {
         try {
-            const ccd = await this.getGuildSetting(guildid, 'commandconf');
+            const ccd = await this.getGuildSetting(guildid, 'commandconf');//TODO: this takes at minimum 200ms to resolve, fix that
             let tp = "";
             if (!ccd || !ccd.value) {
                 if (ccd && !ccd.value) {
