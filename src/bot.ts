@@ -547,46 +547,6 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             }
         }
 
-        if (command.args && (typeof command.args === "boolean" || command.args > 0) && (!args.length || (typeof command.args === "number" && (args.length < command.args || args.length > command.args)))) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
-            const fec_gs = await client.database.getColor("fail");
-
-            let reply = command.args === true ? `Arguments are needed to make that work!` : `\`${args.length < command.args ? command.args - args.length : args.length - command.args}\` ${args.length < command.args ? `more` : `less`} argument${(args.length < command.args ? command.args - args.length : args.length - command.args) > 1 ? `s` : ``} required for this command`;
-            if (command.usage) {
-                reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
-            }
-            if (command.examples && command.examples.length) {
-                reply += `\n**Example${command.examples.length > 1 ? "s" : ""}:**`;
-                for (const example of command.examples) {
-                    reply += `\n\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}\``;
-                }
-            }
-
-            await message.channel.send({
-                embeds: [{
-                    description: reply,
-                    color: fec_gs,
-                    footer: {
-                        text: ['tip: separate arguments with spaces', 'tip: [] means optional, <> means required\nreplace these with your arguments'][Math.floor(Math.random() * 2)]
-                    }
-                }],
-            });
-            return;
-        } else if (typeof command.args === "number" && args.length !== command.args) {
-            let reply: string;
-            // because of the above condition block, if the command args property isn't 0, it should already be handled above
-            if (command.args === 0) {// therefore, this will always be true
-                reply = "**No arguments** are allowed for this command.";
-            } else {
-                reply = `Incorrect arguments. Please provide ${command.args} arguments.`;
-            }
-            if (command.usage) {
-                reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
-            }
-
-            await client.specials.sendError(message.channel, reply)
-            return;
-        }
-
         const flags = parseLongArgs(args);// get the flags from the beginning of the message, if they are provided
         if (flags.taken.length) {
             const queriedFlags = command.flags ? command.flags.length ? !command.flags.map(x => x.f).includes("help") ? ["help", ...command.flags.map(x => x.f)] : command.flags.map(x => x.f) : null : ["help"];/* if the flags property is specified, it will be used to figure out what flags will be accepted
@@ -644,6 +604,46 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             } else {
                 args.unshift("--help");
             }
+        }
+
+        if (command.args && (typeof command.args === "boolean" || command.args > 0) && (!args.length || (typeof command.args === "number" && (args.length < command.args || args.length > command.args)))) {// if arguments are required but not provided, SHOULD ADD SPECIFIC ARGUMENT COUNT PROPERTY
+            const fec_gs = await client.database.getColor("fail");
+
+            let reply = command.args === true ? `Arguments are needed to make that work!` : `\`${args.length < command.args ? command.args - args.length : args.length - command.args}\` ${args.length < command.args ? `more` : `less`} argument${(args.length < command.args ? command.args - args.length : args.length - command.args) > 1 ? `s` : ``} required for this command`;
+            if (command.usage) {
+                reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
+            }
+            if (command.examples && command.examples.length) {
+                reply += `\n**Example${command.examples.length > 1 ? "s" : ""}:**`;
+                for (const example of command.examples) {
+                    reply += `\n\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}\``;
+                }
+            }
+
+            await message.channel.send({
+                embeds: [{
+                    description: reply,
+                    color: fec_gs,
+                    footer: {
+                        text: ['tip: separate arguments with spaces', 'tip: [] means optional, <> means required\nreplace these with your arguments'][Math.floor(Math.random() * 2)]
+                    }
+                }],
+            });
+            return;
+        } else if (typeof command.args === "number" && args.length !== command.args) {
+            let reply: string;
+            // because of the above condition block, if the command args property isn't 0, it should already be handled above
+            if (command.args === 0) {// therefore, this will always be true
+                reply = "**No arguments** are allowed for this command.";
+            } else {
+                reply = `Incorrect arguments. Please provide ${command.args} arguments.`;
+            }
+            if (command.usage) {
+                reply += `\n**Usage:**\n\`${message.gprefix}${command.name} ${command.usage}\``;
+            }
+
+            await client.specials.sendError(message.channel, reply)
+            return;
         }
 
         try {
