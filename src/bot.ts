@@ -505,7 +505,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
         }
 
         const timestamps = cooldowns.get(command.name);
-        const cd = (cs ? typeof cs.cooldown === "number" ? cs.cooldown : command.cooldown || 0 : command.cooldown || 0) * 1000;
+        const cd = (cs ? typeof cs.cooldown === "number" ? cs.cooldown : command.cooldown ?? 0 : command.cooldown || 0) * 1000;
 
         if (timestamps) {
             if (timestamps.has(message.author.id)) {
@@ -515,7 +515,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
 
                     if (now < expirationTime) {
                         const timeLeft = (expirationTime - now) / 1000;
-                        message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
+                        await message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`)
                         return;
                     }
                 }

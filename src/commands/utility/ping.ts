@@ -2,7 +2,10 @@ import { Command } from "src/gm";
 
 export const command: Command = {
     name: 'ping',
-    description: 'the classic',
+    description: {
+        short: 'the classic',
+        long: "Get client latency data. Just to get to this command, at least ten (10) calls to the database were made (not all asynchronous), so that db latency stacks up.",
+    },
     cooldown: 0,
     async execute(client, message) {
         try {

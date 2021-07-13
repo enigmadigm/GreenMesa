@@ -1626,7 +1626,7 @@ export class DBManager {
             let tp = "";
             if (!ccd || !ccd.value) {
                 if (ccd && !ccd.value) {
-                    this.editGuildSetting(guildid, "commandconf", undefined, true);
+                    await this.editGuildSetting(guildid, "commandconf", undefined, true);
                 }
                 tp = `{"commands": [], "conf": {}}`;
             } else {
@@ -1638,7 +1638,7 @@ export class DBManager {
                 return 'commands' in o && 'conf' in o;
             }
             if (!isCmdConf(cc)) {
-                this.editGuildSetting(guildid, "commandconf", undefined, true);
+                await this.editGuildSetting(guildid, "commandconf", undefined, true);
                 return false;
             }
             return cc;
@@ -1719,7 +1719,7 @@ export class DBManager {
             return cc;
         } catch (error) {
             xlg.error(error)
-            this.editGuildSetting(guildid, "commandconf", undefined, true);
+            await this.editGuildSetting(guildid, "commandconf", undefined, true);
             return false;
         }
     }
