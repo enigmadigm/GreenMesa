@@ -61,15 +61,22 @@ export class DBManager {
     public db!: mysql.Connection;
     private query!: (arg1: string | mysql.QueryOptions) => Promise<unknown>;
     public connected: boolean;
+    private ping!: (arg1: mysql.QueryOptions | undefined) => Promise<void>;
 
     constructor() {
-        this.db;
-        this.query;
+        // this.db;
+        // this.query;
         this.connected = false;
     }
 
     async handleDisconnect(): Promise<this> {
         try {
+            this.connected = false;
+            if (this.db) {
+                this.db.end((err) => {
+                    xlg.error("MYSQL CONNECTION CLOSE ERROR:", err);
+                });
+            }
             const conn: mysql.Connection = mysql.createConnection(db_config);
             conn.connect((err) => {
                 if (err) {
@@ -94,6 +101,7 @@ export class DBManager {
 
             this.db = conn;
             this.query = util.promisify(conn.query).bind(conn);
+            this.ping = util.promisify<mysql.QueryOptions | undefined>(conn.ping).bind(this.db);
             // util.promisify(conn.query).bind(conn)
             /*(query_str, query_var => {
                 return new Promise((resolve, reject) => {
@@ -126,6 +134,18 @@ export class DBManager {
             xlg.error(`DB Error: ${error.message}\nError: ${error.stack}`);
             return this;
         }
+    }
+
+    /**
+     * Get a round trip ping (I assume it is accurate)
+     * 
+     * Returns a tuple [~seconds, =nanoseconds]
+     */
+    async getPing(): Promise<[number, number]> {
+        const pingStart = process.hrtime();
+        await this.ping(undefined);
+        const pingResolution = process.hrtime(pingStart);
+        return pingResolution;
     }
 
     /*escapeString(str: string) {
