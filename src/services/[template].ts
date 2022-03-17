@@ -1,13 +1,11 @@
-
 import { MessageService } from "../gm";
-import { Bot } from "../bot";
 
 export const service: MessageService = {
-    text: undefined,
+    events: [],
     async getInformation() {
         return "";
     },
-    async execute(client, data) {
+    async execute(client, event, ...data) {
         try {
             //
         } catch (error) {

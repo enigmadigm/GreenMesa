@@ -1,19 +1,21 @@
-
+import { Command, GuildMessageProps } from "src/gm";
 import moment from 'moment';
-//import { getTop10, getXP, getGlobalSetting } from "../dbmanager";
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
-import { Command, GuildMessageProps } from "src/gm";
-import { Guild, GuildMember } from "discord.js";
+import { Guild, GuildMember, Permissions, Snowflake } from "discord.js";
+import { isSnowflake } from "../../utils/specials";
 
-function getJoinRank(ID: string, guild: Guild) {// Call it with the ID of the user and the guild
-    if (!guild.member(ID)) return;// It will return undefined if the ID is not valid
+// ●
+
+function getJoinRank(id: string | Snowflake, guild: Guild) {// Call it with the ID of the user and the guild
+    if (!isSnowflake(id)) return;
+    if (!guild.members.cache.get(id)) return;// It will return undefined if the ID is not valid
 
     const arr = guild.members.cache.array();// Create an array with every member
     arr.sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0));// Sort them by join date
 
     for (let i = 0; i < arr.length; i++) {// Loop though every element
-        if (arr[i].id == ID) return i;// When you find the user, return it's position
+        if (arr[i].id == id) return i;// When you find the user, return it's position
     }
 }
 
@@ -27,22 +29,26 @@ function getPresenceEmoji(target: GuildMember) {
 
 export const command: Command<GuildMessageProps> = {
     name: "userinfo",
-    description: "get info on any member",
+    description: {
+        short: "get info on any member",
+        long: "Get detailed information on any provided member."
+    },
     aliases: ["ui"],
     cooldown: 3,
     guildOnly: true,
-    permissions: ["EMBED_LINKS"],
     async execute(client, message, args) {
         try {
             message.channel.startTyping();
-            await message.guild.fetch();
-            const target = await stringToMember(message.guild, args.join(" ")) || message.member;
+            const a = args.join(" ");
+            const memberFind = await stringToMember(message.guild, a);
+            const target = memberFind ?? message.member;
+            if (!memberFind && args.length) {
+                await client.specials.sendError(message.channel, `That user could not be found`);
+                message.channel.stopTyping();
+                return;
+            }
             const rank = await client.database.getXPTop10(message.guild.id, target.id);
             const xp = await client.database.getXP(target);
-            /* if (!rank || !xp) {
-                client.specials?.sendError(message.channel, "User information could not be retrieved");
-                return;
-            } */
 
             let roles = '';
             const roleArray = target.roles.cache.array().sort((a, b) => a.position > b.position ? -1 : 1);
@@ -64,7 +70,7 @@ export const command: Command<GuildMessageProps> = {
             if (joinRank === "1" || joinRank === "0") {
                 joinRank = 'oldest member';
             } else {
-                joinRank = ordinalSuffixOf(parseInt(joinRank, 10)) + ' member joined';
+                joinRank = ordinalSuffixOf(parseInt(joinRank, 10));
             }
 
             // designator
@@ -76,13 +82,13 @@ export const command: Command<GuildMessageProps> = {
 
             // invites
             const data = await client.database.getInvites({ guildid: message.guild.id, inviter: target.id });
-            const invitesTotal = message.guild.me?.permissions.has("MANAGE_GUILD") ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png) ⟵`;
+            const invitesTotal = message.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD) ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png) ⟵`;
 
             // last message
             const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
 
-            message.channel.send({
-                embed: {
+            await message.channel.send({
+                embeds: [{
                     color: target.roles.hoist && target.roles.hoist.color != 0x000000 ? target.roles.hoist.color : await client.database.getColor("info"),
                     author: {
                         name: `Info for ${target.user.tag} ${rank && xp ? `${rank.personal ? rank.personal.rank == 1 ? "🥇" : rank.personal.rank == 2 ? "🥈" : rank.personal.rank == 3 ? "🥉" : "" : ''}` : ""}`,
@@ -94,66 +100,66 @@ export const command: Command<GuildMessageProps> = {
                     description: `${target} ${target.id}`,
                     fields: [
                         {
-                            "name": "Status",
-                            "value": `${getPresenceEmoji(target)} ${target.user.presence.status || ''}`,
-                            "inline": true
+                            name: "Status",
+                            value: `${getPresenceEmoji(target)} ${target.user.presence.status || ''}`,
+                            inline: true,
                         },
                         {
                             name: 'Join Rank',
                             value: joinRank,
-                            inline: true
+                            inline: true,
                         },
                         {
                             name: 'Nitro Boosting',
-                            value: `${target.premiumSince ? `since ${moment(target.premiumSince).format('ddd M/D/Y HH:mm:ss')}` : 'no'}`,
-                            inline: true
+                            value: `${target.premiumSince ? `since <t:${moment(target.premiumSince).unix()}:R>` : 'sadly not'}`,
+                            inline: true,
                         },
                         {
                             name: 'Joined',
-                            value: `${joinedAt.format('ddd M/D/Y HH:mm:ss')}\n(${joinedAt.fromNow()})`,
-                            inline: true
+                            value: `<t:${joinedAt.unix()}:R>`,
+                            inline: true,
                         },
                         {
                             name: 'Created',
-                            value: `${createdAt.format('ddd M/D/Y HH:mm:ss')}\n(${createdAt.fromNow()})`,
-                            inline: true
+                            value: `<t:${createdAt.unix()}:R>`,
+                            inline: true,
                         },
                         {
                             name: "Last Message",
-                            value: lastCreated && target.lastMessage ? `[${lastCreated.format('ddd M/D/Y HH:mm:ss')}\n(${lastCreated.fromNow()})](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
-                            inline: true
+                            value: lastCreated && target.lastMessage ? `[<t:${lastCreated.unix()}:R>](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
+                            inline: true,
                         },
                         {
                             name: "Designation",
-                            value: `${permLevelName}\n[What is this?](https://enigmadigm.com/status/Designation/A%20property%20the%20bot%20gives%20you/It%20is%20used%20when%20checking%20for%20required%20or%20missing%20permissions)`,// How the bot internally sees the member in terms of permissions
-                            inline: true
+                            value: `${permLevelName}\n[ᵂʰᵃᵗ ⁱˢ ᵗʰⁱˢˀ](https://enigmadigm.com/status/Designation/A%20property%20the%20bot%20gives%20you/It%20is%20used%20when%20checking%20for%20required%20or%20missing%20permissions)`,// How the bot internally sees the member in terms of permissions
+                            inline: true,
                         },
                         {
                             name: "XP",
-                            value: rank && xp ? `Rank: \`${rank.personal ? rank.personal.rank : 'none'}\`\nLevel: \`${xp.level}\`` : "none",
-                            inline: true
+                            value: rank && xp ? `Rank: ${rank.personal ? `\`${rank.personal.rank}\` of \`${rank.total}\`` : '`none`'}\nLevel: \`${xp.level}\`` : "none",
+                            inline: true,
                         },
                         {
                             name: "Invites",
                             value: `${invitesTotal}`,
-                            inline: true
+                            inline: true,
                         },
                         {
-                            "name": `Roles [${roleCount}]`,
-                            "value": roles
+                            name: `Roles [${roleCount}]`,
+                            value: roles,
                         }
                     ],
                     footer: {
-                        text: 'All dates in UTC ● mm/dd/yyyy'
+                        text: 'All dates in UTC'
                     }
-                }
+                }],
             });
 
             message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
             message.channel.stopTyping(true);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

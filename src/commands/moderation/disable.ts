@@ -1,13 +1,10 @@
-
 import { permLevels } from '../../permissions';
-import { Command, CommandConf } from "src/gm";
+import { Command, CommandConf, GuildMessageProps } from "src/gm";
 import { stringToChannel, stringToRole } from "../../utils/parsers";
 import { GuildChannel } from "discord.js";
 import { getDashboardLink } from "../../utils/specials";
 
-// TODO: for commands that were not able to be changed, it should provide a link to change them in the dashboard
-
-export const command: Command = {
+export const command: Command<GuildMessageProps> = {
     name: 'disable',
     aliases: ['dis'],
     description: {
@@ -20,12 +17,10 @@ export const command: Command = {
     permLevel: permLevels.admin,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-
             const searchName = args[0].toLowerCase();
             const conf = await client.database.getCommands(message.guild.id, true);
             if (!conf) {
-                client.specials.sendError(message.channel, "Something ate sh*t", true);
+                await client.specials.sendError(message.channel, "Something ate sh*t", true);
                 return;
             }
             const commands = conf.commands;
@@ -60,13 +55,13 @@ export const command: Command = {
 
             args.shift();
             const a = args.join(" ");
-            const spec = stringToChannel(message.guild, a, true, true) || stringToRole(message.guild, a, true, true, false);
+            const spec = stringToChannel(message.guild, a, true, true) || stringToRole(message.guild, a, true, true);// where or what to disable the command
             const unchanged: string[] = [];
 
             if (applyTo.some(x => x.enabled || !x.channel_mode || x.channels.length || !x.role_mode || x.roles.length) || spec) {
                 let already = 0;
                 for (const c of applyTo) {
-                    if (!spec || spec === "@everyone" || spec === "@here") {
+                    if (!spec || spec.id === message.guild.roles.cache.find(x => x.name === "@everyone")?.id) {
                         c.enabled = false;
                         c.channel_mode = false;
                         c.channels = [];
@@ -115,26 +110,26 @@ export const command: Command = {
                 }
                 if (already === applyTo.length) {
                     await message.channel.send({
-                        embed: {
+                        embeds: [{
                             color: await client.database.getColor("warn_embed_color"),
                             description: `${catMatch ? "Category" : "Command"} \` ${name} \` is already disabled ${spec instanceof GuildChannel ? "in" : "for"} ${spec}`,
                             footer: {
-                                text: `module debosser`
-                            }
-                        }
+                                text: `module debosser`,
+                            },
+                        }],
                     });
                     return;
                 }
                 
             } else {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("warn_embed_color"),
                         description: `${catMatch ? "Category" : "Command"} \` ${name} \` is already disabled`,
                         footer: {
-                            text: `module debosser`
-                        }
-                    }
+                            text: `module debosser`,
+                        },
+                    }]
                 });
                 return;
             }
@@ -142,29 +137,29 @@ export const command: Command = {
             const r = await client.database.editCommands(message.guild.id, applyTo);
             if (!r) {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("fail"),
                         description: `Failed to disable ${catMatch ? "group" : "command"}`,
                         footer: {
-                            text: `module debosser`
-                        }
-                    }
+                            text: `module debosser`,
+                        },
+                    }],
                 });
                 return;
             }
 
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: await client.database.getColor("success"),
                     description: `${catMatch ? "Category" : "Command"} \` ${name} \` **disabled**${spec ? ` ${spec instanceof GuildChannel ? "in" : "for"} ${spec}` : ""}${unchanged.length ? `\n\n[One or more commands](${getDashboardLink(message.guild.id, "commands")}?select=${unchanged.join(",")}) may not have changed how you wanted because of conflicting options. Go to the dashboard to confirm and fix.` : ""}`,
                     footer: {
-                        text: `module debosser`
-                    }
-                }
+                        text: `module debosser`,
+                    },
+                }],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

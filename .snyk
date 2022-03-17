@@ -1,9 +1,45 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.14.1
+version: v1.19.0
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
   SNYK-JS-GLOBPARENT-1016905:
     - pm2 > chokidar > glob-parent:
         reason: 'No update currently, there probably won''t be one'
         expires: '2021-02-23T04:06:51.841Z'
+  SNYK-JS-CSSWHAT-1298035:
+    - get-image-colors > get-svg-colors > cheerio > css-select > css-what:
+        reason: None given
+        expires: '2021-07-08T13:16:25.075Z'
+  SNYK-JS-ISSVG-1085627:
+    - get-image-colors > get-svg-colors > is-svg:
+        reason: None given
+        expires: '2021-07-08T13:16:25.075Z'
+  SNYK-JS-ISSVG-1243891:
+    - get-image-colors > get-svg-colors > is-svg:
+        reason: None given
+        expires: '2021-07-08T13:16:25.076Z'
+  SNYK-JS-JPEGJS-570039:
+    - get-image-colors > get-pixels > jpeg-js:
+        reason: None given
+        expires: '2021-07-08T13:16:25.076Z'
+  SNYK-JS-LODASH-1018905:
+    - pug > pug-code-gen > with > babel-walk > @babel/types > lodash:
+        reason: None given
+        expires: '2021-07-08T13:16:25.076Z'
+  SNYK-JS-LODASH-1040724:
+    - pug > pug-code-gen > with > babel-walk > @babel/types > lodash:
+        reason: None given
+        expires: '2021-07-08T13:16:25.076Z'
+  SNYK-JS-MATHJS-1016401:
+    - rpg-dice-roller > mathjs-expression-parser > mathjs:
+        reason: None given
+        expires: '2021-07-08T13:16:25.076Z'
+  SNYK-JS-NETMASK-1089716:
+    - pm2 > @pm2/io > @pm2/agent-node > proxy-agent > pac-proxy-agent > pac-resolver > netmask:
+        reason: None given
+        expires: '2021-07-08T13:16:25.076Z'
+  SNYK-JS-WS-1296835:
+    - pm2 > @pm2/io > @pm2/agent-node > ws:
+        reason: None given
+        expires: '2021-07-08T13:16:25.076Z'
 patch: {}

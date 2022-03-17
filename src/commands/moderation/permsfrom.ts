@@ -1,8 +1,7 @@
-
-import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
+import { permLevels } from '../../permissions';
 import { stringToChannel, stringToMember } from "../../utils/parsers";
-import { DMChannel, MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
+import { Collection, MessageEmbedOptions, Permissions, PermissionString, TextChannel, ThreadChannel } from "discord.js";
 
 export const command: Command = {
     name: "permsfrom",
@@ -22,7 +21,6 @@ export const command: Command = {
     permissions: ["MANAGE_CHANNELS", "MANAGE_ROLES"],
     async execute(client, message, args) {
         try {
-            if (!message.guild || message.channel instanceof DMChannel) return;
             const target = await stringToMember(message.guild, args[0], true, true, true);
             if (!target) {
                 await message.channel.send(`Target not found`);
@@ -58,7 +56,7 @@ export const command: Command = {
             const originatingRoles = tRoles.filter(x => {
                 return ((x.permissions.bitfield & bit) === bit);
             });
-            const relevantOverwrites = channel.permissionOverwrites.filter(x => (x.allow.has(bit) || x.deny.has(bit)) && (x.type === "member" ? x.id === target.id : target.roles.cache.has(x.id)));
+            const relevantOverwrites = (channel instanceof ThreadChannel ? channel.parent?.permissionOverwrites : channel.permissionOverwrites)?.filter(x => (x.allow.has(bit) || x.deny.has(bit)) && (x.type === "member" ? x.id === target.id : target.roles.cache.has(x.id))) ?? new Collection();
             const originatingOverwrites = relevantOverwrites.filter(x => x.allow.has(bit));
             const disallowingOverwrites = relevantOverwrites.filter(x => x.deny.has(bit));
             const embed: MessageEmbedOptions = {
@@ -71,9 +69,10 @@ export const command: Command = {
                 fields: [],
             }
             if (!channel.permissionsFor(target)?.has(bit)/* !originatingRoles.size && !originatingOverwrites.size */) {
+                const disallowingOverwrite = disallowingOverwrites.first()?.id;
                 embed.fields?.push({
                     name: `Absent`,
-                    value: `${target} does not have this permission${!originatingRoles.size && !relevantOverwrites.size ? ` because no role or overwrite they have allows it` : (disallowingOverwrites.find(x => x.type === "member") ? ` because they have a personal overwrite in ${channel} denying it` : (disallowingOverwrites.find(x => x.type === "role") ? ` because the overwrite for ${tRoles.get(disallowingOverwrites.first()?.id || "")} denies it` : ``))}`,
+                    value: `${target} does not have this permission${!originatingRoles.size && !relevantOverwrites.size ? ` because no role or overwrite they have allows it` : (disallowingOverwrites.find(x => x.type === "member") ? ` because they have a personal overwrite in ${channel} denying it` : (disallowingOverwrites.find(x => x.type === "role") ? ` because the overwrite for ${disallowingOverwrite && tRoles.get(disallowingOverwrite)} denies it` : ``))}`,
                 });
             } else {
                 if (originatingRoles.size) {
@@ -89,10 +88,10 @@ export const command: Command = {
                     });
                 }
             }
-            await message.channel.send({ embed });
+            await message.channel.send({ embeds: [embed] });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

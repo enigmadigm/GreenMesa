@@ -2,7 +2,7 @@ import { permLevels } from '../../permissions';
 import { Command, GuildMessageProps, ModActionData } from "src/gm";
 import { MessageEmbed, MessageEmbedOptions } from 'discord.js';
 import { PaginationExecutor } from '../../utils/pagination';
-import { getDashboardLink } from '../../utils/specials';
+import { getDashboardLink, isSnowflake } from '../../utils/specials';
 
 export const command: Command<GuildMessageProps> = {
     name: "modlb",
@@ -21,7 +21,7 @@ export const command: Command<GuildMessageProps> = {
         try {
             const list = await client.database.getModActions({ guildid: message.guild.id });
             if (!list || !list.length) {
-                client.specials.sendError(message.channel)
+                await client.specials.sendError(message.channel)
                 return;
             }
             const groupings: { mod: string, cases: ModActionData[] }[] = [];
@@ -44,7 +44,7 @@ export const command: Command<GuildMessageProps> = {
             const pages: string[] = [""];
             let pi = 0;
             for (const d of groupings.sort((a,b) => b.cases.length - a.cases.length)) {
-                const u = d.mod ? message.guild.members.cache.get(d.mod)?.user : undefined;
+                const u = isSnowflake(d.mod) ? message.guild.members.cache.get(d.mod)?.user : undefined;
                 const mod = d.mod ? u ? `${u.tag}${u.bot ? ` [BOT](${getDashboardLink()})` : ""}` : d.cases[0].agenttag : `anonymous#0000`;
                 const a = `(${d.cases.length} actions) ${mod}`;
                 if (`${pages[pi]}\n${a}`.length > 512) {

@@ -41,6 +41,6 @@ router.get("/", (req, res) => {
         //res.status(401).send({ msg: "Unauthorized: Not Logged In" });
         res.sendStatus(401);
     }
-})
+});
 
 export default router;

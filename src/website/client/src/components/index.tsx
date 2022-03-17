@@ -8,4 +8,6 @@ export { DashboardAutorole } from './DashboardAutorole';
 export { DashboardServerlog } from './DashboardServerlog';
 export { ChannelSelect } from './ChannelSelect';
 export { DashboardTwitch } from './DashboardTwitch';
+export { DashboardAppeals } from './DashboardAppeals';
 export { Rootportal } from './Rootportal';
+export { ColorPicker } from './ColorPicker';

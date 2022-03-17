@@ -35,3 +35,13 @@ interface String {
     escapeSpecialChars(): string;
     escapeDiscord(): string;
 }
+
+interface Number {
+    /**
+     * Find whether a number is between two numbers
+     * @param gt number it is greater than
+     * @param lt number it is less than
+     * @param inclusive whether the number could also be equal to the margins
+     */
+    between(gt: number, lt: number, inclusive?: boolean): boolean;
+}

@@ -1,10 +1,10 @@
+import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, HomeEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import express from 'express';
-import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import { Bot } from '../../bot';
 import { addTwitchWebhook } from './twitch';
 import { stringToChannel } from '../../utils/parsers';
-//const { token } = require("../../auth.json");
-//const fetch = require("node-fetch");
+import { isSnowflake } from '../../utils/specials';
+import { Collection, GuildChannel } from 'discord.js';
 
 export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): PartialGuildObject[] {
     return userGuilds.filter(g => {
@@ -63,7 +63,7 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(500);
             }
 
-            const allGuilds = await client.specials.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const { excluded, included } = getApplicableGuilds(req.user.guilds, allGuilds || []);
             const guilds: GuildItemSpecial[] = [
                 ...excluded.map((e) => {
@@ -107,7 +107,7 @@ export default function routerBuild (client: XClient): express.Router {
             if (!Array.isArray(req.user.guilds)) {
                 return res.sendStatus(500);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuilds(req.user.guilds, allGuilds ? allGuilds : []);
             res.send({
                 guilds: mg,
@@ -122,26 +122,26 @@ export default function routerBuild (client: XClient): express.Router {
     router.get("/guilds/:id/config", async (req, res) => {
         try {
             const { id } = req.params;
-            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            if (typeof id !== "string" || !isSnowflake(id)) {
                 return res.sendStatus(400);
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
             }
             const g = await client.guilds.fetch(id);
             if (!g) return res.sendStatus(404);
-            const r = await Bot.client.database.getPrefix(id);
-            let prefix = r ? r : false;
-            if (!prefix) {
-                const r = await client.database.getGlobalSetting('global_prefix');
-                prefix = r ? r.value : "sm";
-            }
-            if (!prefix) {
+            const prefixesResult = await Bot.client.database.getPrefixes(id);
+            const prefix = prefixesResult ? prefixesResult.gprefix || prefixesResult.nprefix : false;
+            // if (!prefix) {
+            //     const r = await client.database.getGlobalSetting('global_prefix');
+            //     prefix = r ? r.value : "sm";
+            // }
+            if (!prefix || !prefixesResult) {
                 return res.status(500).send({ msg: "Unable to retrieve prefix" });
             }
             const modAllRes = await client.database.getGuildSetting(id, 'all_moderation');
@@ -165,13 +165,13 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.get("/guilds/:id/home", async (req, res) => {
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.sendStatus(400);
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -179,21 +179,14 @@ export default function routerBuild (client: XClient): express.Router {
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
 
-        const amRes = await client.database.getGuildSetting(id, 'access_message');
-        let am = false;
-        if (amRes && amRes.value === "enabled") {
-            am = true;
-        }
         try {
-            res.send({
+            const toSend: HomeEndpointData = {
                 guild: {
                     id,
                     name: g.name,
                 },
-                home: {
-                    permNotif: am
-                }
-            });
+            };
+            res.send(toSend);
         } catch (e) {
             xlg.error(e);
             res.sendStatus(500);
@@ -202,13 +195,13 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.get("/guilds/:id/channels", async (req, res) => {
         const { id, text } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.sendStatus(400);
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -216,14 +209,13 @@ export default function routerBuild (client: XClient): express.Router {
         const g = await client.guilds.fetch(id);
         if (!g) return res.sendStatus(404);
 
-        const channels = g.channels.cache.map((c) => {
+        const channels = (g.channels.cache.filter(x => x instanceof GuildChannel) as Collection<string, GuildChannel>).map((c) => {
             const data: ChannelData = {
                 id: c.id,
                 name: c.name,
                 type: c.type,
-                position: c.position,
-                parentID: c.parentID || ""
-                //parent: c.parent
+                position: c.rawPosition,
+                parentID: c.parentId ?? undefined
             }
             if (c.isText()) {
                 data.nsfw = c.nsfw;
@@ -246,13 +238,13 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.get("/guilds/:id/roles", async (req, res) => {
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.sendStatus(400);
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -285,13 +277,13 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.get("/guilds/:id/allautomods", async (req, res) => {
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.sendStatus(400);
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -324,7 +316,7 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.get("/guilds/:id/automod/:name", async (req, res) => {
         const { id, name } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id) || typeof name !== "string") {
+        if (typeof id !== "string" || !isSnowflake(id) || typeof name !== "string") {
             return res.sendStatus(400);
         }
         const allMods = client.services?.automods || [];
@@ -334,7 +326,7 @@ export default function routerBuild (client: XClient): express.Router {
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -362,13 +354,13 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.get("/guilds/:id/levels", async (req, res) => {
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.sendStatus(400);
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -398,13 +390,13 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.get("/guilds/:id/autoroles", async (req, res) => {
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.sendStatus(400);
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -430,13 +422,13 @@ export default function routerBuild (client: XClient): express.Router {
     router.get("/guilds/:id/warnconf", async (req, res) => {
         try {
             const { id } = req.params;
-            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            if (typeof id !== "string" || !isSnowflake(id)) {
                 return res.sendStatus(400);
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -481,13 +473,13 @@ export default function routerBuild (client: XClient): express.Router {
     router.get("/guilds/:id/serverlog", async (req, res) => {
         try {
             const { id } = req.params;
-            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            if (typeof id !== "string" || !isSnowflake(id)) {
                 return res.sendStatus(400);
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -534,13 +526,13 @@ export default function routerBuild (client: XClient): express.Router {
     router.get("/guilds/:id/twitch", async (req, res) => {
         try {
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -579,28 +571,29 @@ export default function routerBuild (client: XClient): express.Router {
     router.get("/guilds/:id/movement", async (req, res) => {
         try {
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
             }
 
             try {
-                const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
+                const g = client.guilds.cache.get(id);//TODO: make this able to work with shards (apply to all uses of this)
                 if (!g) return res.sendStatus(404);
-                const channels = g.channels.cache.map((c) => {
+                //TODO: it isn't necessary to have two filter calls in this statement, the text channel filter can be applied in the first
+                const channels = (g.channels.cache.filter(x => x instanceof GuildChannel) as Collection<string, GuildChannel>).map((c) => {
                     const data: ChannelData = {
                         id: c.id,
                         name: c.name,
                         type: c.type,
-                        position: c.position,
-                        parentID: c.parentID || ""
+                        position: c.rawPosition,
+                        parentID: c.parentId ?? undefined
                         //parent: c.parent
                     }
                     if (c.isText()) {
@@ -608,7 +601,7 @@ export default function routerBuild (client: XClient): express.Router {
                         data.topic = c.topic || "";
                     }
                     return data;
-                }).filter(c => c.type === "text").sort((a, b) => a.position - b.position);
+                }).filter(c => c && c.type === "text").sort((a, b) => a.position - b.position);
 
                 const mvm = await client.database.getMovementData(id);
 
@@ -627,13 +620,13 @@ export default function routerBuild (client: XClient): express.Router {
     router.get("/guilds/:id/commands", async (req, res) => {
         try {
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -642,14 +635,13 @@ export default function routerBuild (client: XClient): express.Router {
             const g = await client.guilds.fetch(id);//TODO: make this able to work with shards
             if (!g) return res.sendStatus(404);
 
-            const channels = g.channels.cache.map((c) => {
+            const channels = (g.channels.cache.filter(x => x instanceof GuildChannel) as Collection<string, GuildChannel>).map((c) => {
                 const data: ChannelData = {
                     id: c.id,
                     name: c.name,
                     type: c.type,
-                    position: c.position,
-                    parentID: c.parentID || ""
-                    //parent: c.parent
+                    position: c.rawPosition,
+                    parentID: c.parentId ?? undefined
                 }
                 if (c.isText()) {
                     data.nsfw = c.nsfw;
@@ -662,7 +654,7 @@ export default function routerBuild (client: XClient): express.Router {
                 const data: RoleData = {
                     id: c.id,
                     name: c.name,
-                    position: c.position,
+                    position: c.rawPosition,
                     hexColor: c.hexColor
                 }
                 return data;
@@ -690,33 +682,6 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
-    // router.get("/guilds/:id/modrole", async (req, res) => {//FIXME: this is unused at the moment
-    //     try {
-    //         const { id } = req.params;
-    //         if (!/^[0-9]{18}$/g.test(id)) {
-    //             return res.status(400).send("Bad id");
-    //         }
-    //         if (!req.user) {
-    //             return res.sendStatus(401);
-    //         }
-    //         const allGuilds = await client.specials.getAllGuilds(client);
-    //         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-    //         if (!mg.find(x => x.id && x.id === id)) {
-    //             return res.sendStatus(401);
-    //         }
-
-    //         try {
-    //             res.send("nothing");
-    //         } catch (e) {
-    //             xlg.error(e);
-    //             res.sendStatus(500);
-    //         }
-    //     } catch (error) {
-    //         xlg.error(error)
-    //         return res.sendStatus(500);
-    //     }
-    // });
-
     // PUTters
 
     router.put("/guilds/:id/prefix", async (req, res) => {
@@ -725,13 +690,13 @@ export default function routerBuild (client: XClient): express.Router {
             return res.status(400).send("Bad prefix");
         }
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.status(400).send("Bad id");
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -756,13 +721,13 @@ export default function routerBuild (client: XClient): express.Router {
             return res.status(400).send("Invalid moderation");
         }
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.status(400).send("Bad id");
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -787,43 +752,6 @@ export default function routerBuild (client: XClient): express.Router {
         }
     });
 
-    router.put("/guilds/:id/permnotif", async (req, res) => {
-        const { permnotif } = req.body;
-        if (!permnotif || typeof permnotif !== "string" || (permnotif !== "true" && permnotif !== "false")) {
-            return res.status(400).send("Invalid permnotif");
-        }
-        const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
-            return res.status(400).send("Bad id");
-        }
-        if (!req.user) {
-            return res.sendStatus(401);
-        }
-        const allGuilds = await client.specials?.getAllGuilds(client);
-        const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
-        if (!mg.find(x => x.id && x.id === id)) {
-            return res.sendStatus(401);
-        }
-        try {
-            const g = await client.guilds.fetch(id);
-            if (permnotif === "true") {
-                await client.database.editGuildSetting(g, "access_message", "enabled");
-            } else {
-                await client.database.editGuildSetting(g, "access_message", undefined, true);
-            }
-            res.send({
-                guild: {
-                    id,
-                    permNotif: permnotif
-                },
-                user: req.user,
-            });
-        } catch (e) {
-            xlg.error(e);
-            res.sendStatus(500);
-        }
-    });
-
     router.put("/guilds/:id/automod", async (req, res) => {
         const { module, data } = req.body;
         const allMods = client.services?.automods || [];
@@ -831,13 +759,13 @@ export default function routerBuild (client: XClient): express.Router {
             return res.sendStatus(400);
         }
         const { id } = req.params;
-        if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+        if (typeof id !== "string" || !isSnowflake(id)) {
             return res.status(400).send("Bad id");
         }
         if (!req.user) {
             return res.sendStatus(401);
         }
-        const allGuilds = await client.specials?.getAllGuilds(client);
+        const allGuilds = await client.specials.shards.getAllGuilds();
         const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
         if (!mg.find(x => x.id && x.id === id)) {
             return res.sendStatus(401);
@@ -884,13 +812,13 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(400);
             }
             const { id } = req.params;
-            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            if (typeof id !== "string" || !isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -935,13 +863,13 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(400);
             }
             const { id } = req.params;
-            if (typeof id !== "string" || !/^[0-9]{18}$/g.test(id)) {
+            if (typeof id !== "string" || !isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -991,13 +919,13 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(400);
             }
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -1043,13 +971,13 @@ export default function routerBuild (client: XClient): express.Router {
     router.delete("/guilds/:id/twitch/:channel", async (req, res) => {
         try {
             const { id, channel } = req.params;
-            if (!/^[0-9]{18}$/g.test(id) || !channel) {
+            if (!isSnowflake(id) || !channel) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -1084,13 +1012,13 @@ export default function routerBuild (client: XClient): express.Router {
             const da = parseInt(delafter, 10);
             const msg = typeof message !== "string" ? undefined : message;
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             if (!mg.find(x => x.id && x.id === id)) {
                 return res.sendStatus(401);
@@ -1125,38 +1053,45 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.put("/guilds/:id/movement", async (req, res) => {
         try {
-            const { data } = req.body;
-            if (typeof data !== "string") {
+            const { add_channel, depart_channel, add_message, dm_message, depart_message } = req.body;
+            if (typeof add_channel !== "string" ||
+                typeof depart_channel !== "string") {
                 return res.sendStatus(400);
             }
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             const g = mg.find(x => x.id && x.id === id);
             if (!g) {
                 return res.sendStatus(401);
             }
 
-            const parsed = JSON.parse(data);
-
+            // const parsed = JSON.parse(data);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const conformsToMvm = (o: any): o is MovementData => {
-                return typeof o === "object" && !!o && typeof o.dm_channel === "string" && typeof o.add_channel === "string" && typeof o.depart_channel === "string" && 'add_message' in o && 'dm_message' in o && 'depart_message' in o;
-            }
+            // const conformsToMvm = (o: any): o is MovementData => {
+            //     return typeof o === "object" && !!o && typeof o.dm_channel === "string" && typeof o.add_channel === "string" && typeof o.depart_channel === "string" && 'add_message' in o && 'dm_message' in o && 'depart_message' in o;
+            // }
 
-            if (!conformsToMvm(parsed)) {
-                return res.sendStatus(400);
-            }
+            // if (!conformsToMvm(parsed)) {
+            //     return res.sendStatus(400);
+            // }
+
+            const data: MovementData = {
+                add_channel,
+                depart_channel,
+                add_message,
+                dm_message,
+                depart_message,
+            };
 
             // store the data however it will be stored
-            const r = await client.database.editGuildSetting(g, "movement", JSON.stringify(parsed).escapeSpecialChars());
-
+            const r = await client.database.editGuildSetting(g, "movement", JSON.stringify(data).escapeSpecialChars());
             if (r && r.affectedRows) {
                 return res.sendStatus(200);
             }
@@ -1170,13 +1105,14 @@ export default function routerBuild (client: XClient): express.Router {
 
     router.patch("/guilds/:id/commands", async (req, res) => {
         try {
-            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore, delete_overwrites, respond} = req.body;
+            const { apply, enabled, channel_mode, channels, role_mode, roles, description_edited, cooldown, exp_level, level, overwites_ignore, delete_overwrites, respond, perm_notif} = req.body;
             // these type checks used to be one big if block, but it was harder to read
             if ((!Array.isArray(apply) || !isStringArray(apply)) ||
                 (typeof enabled !== "boolean") ||
                 (typeof level !== "undefined" && typeof level !== "number") ||
                 (typeof delete_overwrites !== "undefined" && typeof delete_overwrites !== "boolean") || 
                 (typeof respond !== "undefined" && typeof respond !== "boolean") || 
+                (typeof perm_notif !== "undefined" && typeof perm_notif !== "boolean") || 
                 (typeof channel_mode !== "undefined" && typeof channel_mode !== "boolean") || 
                 (typeof role_mode !== "undefined" && typeof role_mode !== "boolean") ||
                 (typeof channels !== "undefined" && (!Array.isArray(channels) || !isStringArray(channels))) ||
@@ -1189,13 +1125,13 @@ export default function routerBuild (client: XClient): express.Router {
             }
 
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             const g = mg.find(x => x.id && x.id === id);
             if (!g) {
@@ -1207,7 +1143,7 @@ export default function routerBuild (client: XClient): express.Router {
                 return res.sendStatus(500);
             }
             if (apply.length) {
-                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner")
+                const applyTo = conf.commands.filter(x => apply.includes(x.name) && x.category !== "owner");
 
                 if (delete_overwrites) {
                     const r = await client.database.editCommands(id, applyTo, true);
@@ -1303,6 +1239,9 @@ export default function routerBuild (client: XClient): express.Router {
                 if (typeof respond === "boolean") {
                     glob.respond = respond;
                 }
+                if (typeof perm_notif === "boolean") {
+                    glob.perm_notif = perm_notif;
+                }
 
                 // const r = await client.database.editGuildSetting(id, "commandconf", JSON.stringify(conf));
                 const r = await client.database.editCommands(id, conf.commands, false, glob);
@@ -1327,13 +1266,13 @@ export default function routerBuild (client: XClient): express.Router {
             }
 
             const { id } = req.params;
-            if (!/^[0-9]{18}$/g.test(id)) {
+            if (!isSnowflake(id)) {
                 return res.status(400).send("Bad id");
             }
             if (!req.user) {
                 return res.sendStatus(401);
             }
-            const allGuilds = await client.specials?.getAllGuilds(client);
+            const allGuilds = await client.specials.shards.getAllGuilds();
             const mg = getMutualGuildsWithPerms(req.user.guilds, allGuilds ? allGuilds : []);
             const g = mg.find(x => x.id && x.id === id);
             if (!g) {

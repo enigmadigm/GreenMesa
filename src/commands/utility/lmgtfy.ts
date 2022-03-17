@@ -1,7 +1,6 @@
 import puppeteer from 'puppeteer';
-import Discord, { DMChannel, MessageEmbedOptions } from 'discord.js';
+import Discord, { DMChannel, MessageEmbedOptions, ThreadChannel } from 'discord.js';
 import { Command } from 'src/gm';
-import { parseOptions } from '../../utils/parsers';
 import { PaginationExecutor } from '../../utils/pagination';
 
 //TODO: provide the first few links that result from the search
@@ -85,17 +84,33 @@ export const command: Command = {
     name: 'lmgtfy',
     description: {
         short: "teach the uninformed how to google",
-        long: "Teach the uninformed how to google, or just get a search link.\n\nOptions:\n`-t` get a plaintext link\n`-e` get an explainer link (lmgtfy.app)\n`-i` search google images\n`-l` light mode (with capture search mode)"
+        long: "Teach the uninformed how to google, or just get a search link.",
     },
+    flags: [
+        {
+            f: "t",
+            d: "get a plaintext link",
+        },
+        {
+            f: "e",
+            d: "get an explainer link (lmgtfy.app)",
+        },
+        {
+            f: "i",
+            d: "search google images",
+        },
+        {
+            f: "l",
+            d: "light mode (with capture search mode)",
+        },
+    ],
     aliases:['search', 'google', 'iie'],
     usage:"[explainer: -e] [plain text link: -t] [google images: -i] [light mode: -l] <search terms>",
     args: true,
     guildOnly: true,
-    async execute(client, message, args) {
+    async execute(client, message, args, flags) {
         try {
             if (!message.guild) return;
-
-            const useArgs = parseOptions(args);
 
             let dark = true;
             let sengine = "google.com/search";
@@ -108,23 +123,23 @@ export const command: Command = {
                 iie = "&iie=1";
                 plainText = true;
             }*/
-            if (useArgs.includes('-e')) {
+            if (flags.find(x => x.name === 'e')) {
                 sengine = "lmgtfy.app/";
                 iie = "&iie=1";
-            } else if (useArgs.includes('-i')) {
+            } else if (flags.find(x => x.name === 'i')) {
                 sengine = "google.com/images";
             }
-            if (useArgs.includes('-t')) {
+            if (flags.find(x => x.name === 't')) {
                 plainText = true;
             }
-            if (useArgs.includes('-l')) {
+            if (flags.find(x => x.name === 'l')) {
                 dark = false;
             }
 
-            if (!useArgs.length || (!useArgs.includes("-e") && !useArgs.includes("-t"))) {
+            if (!flags.length || (!flags.find(x => x.name === "e") && !flags.find(x => x.name === "t"))) {
                 plainText = false;
                 message.channel.startTyping();
-                const { page, browser } = await goMarionette(`https://${sengine}?q=${sterms}${(!(message.channel instanceof DMChannel) && message.channel.nsfw) ? "" : "&safe=active"}&hl=en`);
+                const { page, browser } = await goMarionette(`https://${sengine}?q=${sterms}${(!(message.channel instanceof DMChannel) && (message.channel instanceof ThreadChannel ? !!message.channel.parent?.nsfw : message.channel.nsfw)) ? "" : "&safe=active"}&hl=en`);
                 const voiceElement = await page.$$('[aria-label*="Search by voice"],.clear-button,.gb_Xd');
                 voiceElement.forEach((e) => {
                     e.evaluate(node => node.style.display = 'none');
@@ -158,20 +173,20 @@ export const command: Command = {
                             url: 'attachment://screenshot.png'
                         },
                         footer: {
-                            text: (!(message.channel instanceof DMChannel) && message.channel.nsfw) ? undefined : "Safe Search On"
+                            text: (!(message.channel instanceof DMChannel) && (message.channel instanceof ThreadChannel ? !!message.channel.parent?.nsfw : message.channel.nsfw)) ? undefined : "Safe Search On"
                         }
                     }
                     const scfile = new Discord.MessageAttachment(sc, 'screenshot.png');
-                    const response = await message.channel.send({ files: [scfile], embed: embed });
+                    const response = await message.channel.send({ files: [scfile], embeds: [embed] });
                     PaginationExecutor.addCloseListener(response);
                     message.channel.stopTyping();
                     return;
                 }
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         description: `[Let Me Google That For You](https://${sengine}?q=${sterms}${iie})`,
                         color: 0xF4B400
-                    }
+                    }],
                 });
             }
         } catch (error) {

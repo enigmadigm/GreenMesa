@@ -1,4 +1,4 @@
-import { Client, Collection, Guild, GuildMember, Message, MessageEmbedOptions, PermissionString } from "discord.js";
+import { Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel, ThreadChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -11,12 +11,15 @@ export interface XClient extends Client {
     specials: typeof Specials;
     database: DBManager;
     services: MessageServices;
-    msgLogging: boolean | strin;
+    msgLogging: boolean | string;
     invites: Invites;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface Command<T = Record<string, any>, A = string[]> {
+// export type Command<T = Record<string, any>> = NormalCommand<T> | GuildCommand<T>;
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Command<T = {}> = BaseCommand<T> | GuildOnlyCommand<T>;
+
+export interface BaseCommand<T> {
     name: string;
     /**
      * Alternate names to use to call the command
@@ -29,34 +32,129 @@ export interface Command<T = Record<string, any>, A = string[]> {
         short: string,
         long: string
     }
+    /**
+     * The flags that are allowed to be used for the command
+     * 
+     * if it is an empty array, all flags will be accepted
+     * if it is not defined, no flags will be accepted and they will remain in the arguments array
+     * if certain flags are specified in the definition array, only those flags will be allowed in the arguments
+     */
+    flags?: CommandFlagDefinition[];
+    /**
+     * NOT FOR NORMAL USE
+     */
     category?: string;
     /**
      * Optional usage instructions for the command
      */
     usage?: string;
     /**
-     * Options usage examples displayed with the help command and when not being used correctly
+     * Options usage examples displayed with the help command
+     * and when not being used correctly
      */
     examples?: string[];
     /**
-     * Whether arguments should be required, or the number of arguments needed
+     * Whether arguments should be required, or the number of
+     * arguments needed
+     * 
+     * Flags ARE NOT args
      */
     args?: boolean | number;
     // specialArgs?: number;
+    /**
+     * The amount of time, in ms, that the user will need to
+     * wait to use the command again
+     */
     cooldown?: number;
+    /**
+     * The security level required on the user to execute the
+     * command (higher meaning a greater amount of access needed).
+     * 
+     * Defaults to `'member'` level in guilds and `'trustedMember'` level in DMs.
+     */
     permLevel?: number;
+    /**
+     * Whether the command should be treated as a moderation command
+     * and require moderation to be active
+     * 
+     * This may also involve additional checks on the user in the feature
+     */
     moderation?: boolean;
-    guildOnly?: boolean;
+    /**
+     * Whether the command should only by allowed to execute in guilds
+     * 
+     * Uses the {@link GuildMessageProps} type to accommodate for a message object that will definitely include guild info
+     */
+    guildOnly?: false;
     /**
      * @deprecated
      */
     ownerOnly?: boolean;
+    /**
+     * The discord permissions necessary to execute the command
+     */
     permissions?: PermissionString[];
+    /**
+     * Whether the command executor should try to parse meaningful flags from the arguments
+     */
+    // acceptFlags?: boolean | string[];// i realized that the `flags` descriptor type can basically function the same
     // client: XClient, message: XMessage, args: string[]
-    execute(client: XClient, message: XMessage & T, args: A): Promise<void | boolean | CommandReturnData>;
+    /**
+     * The method that will be called to execute the command (what should provide the command's function)
+     */
+    execute(client: XClient, message: XMessage & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 }
 
-export type GuildMessageProps = { guild: Guild, member: GuildMember };
+export interface GuildOnlyCommand<T> extends BaseCommand<T> {
+    guildOnly: true;
+    execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
+}
+
+// export interface GuildCommand<T> extends NormalCommand<T> {
+//     guildOnly: true;
+//     execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
+// }
+
+export type GuildMessageProps = { guild: Guild, member: GuildMember, channel: TextChannel | NewsChannel | ThreadChannel };
+
+export interface CommandFlagDefinition {
+    /**
+     * The name of the flag
+     */
+    f: string;
+    /**
+     * The description of the flag
+     */
+    d: string;
+    /**
+     * Example value for the flag
+     */
+    v?: string;
+    // aliases?: string[];
+    /**
+     * Specify if the value must be a number, the command will not be executed if a number value is not provided
+     */
+    isNumber?: boolean;
+    /**
+     * Specify if the flag cannot be sent without a value, the command will not be executed if a value is not provided
+     */
+    notEmpty?: boolean;
+    /**
+     * A custom filter to validate input
+     * If the filter does not match input, the command will not be executed, and a generic "invalid value" error will be displayed
+     */
+    filter?: RegExp;
+}
+
+export interface CommandArgumentFlag {
+    name: string;
+    value: string;
+    numberValue: number;
+}
+
+// export interface NumberCommandArgumentFlag extends CommandArgumentFlag {
+//     value: number;
+// }
 // export type GuildMessage = XMessage & { guild: Guild, member: GuildMember };
 
 export interface CommandReturnData {
@@ -103,13 +201,44 @@ export interface SSRow {
 }
 
 export interface ExpRow {
+    /**
+     * combined snowflakes
+     */
     id: string;
-    userid: string;
-    guildid: string;
+    userid: Snowflake;
+    guildid: Snowflake;
+    /**
+     * when their data was first added
+     */
     timeAdded: timestamp;
+    /**
+     * last user exp updated time
+     */
     timeUpdated: timestamp;
+    /**
+     * exp count
+     */
     xp: number;
+    /**
+     * exp level
+     */
     level: number;
+    /**
+     * total number of messages used in calculating the xp
+     * not accurate for data aggregated before the count began
+     * only a count of messages used once per minute
+     */
+    msgcount: number;
+    /**
+     * not used
+     * @deprecated
+     */
+    thinice: 0 | 1;
+    /**
+     * not used
+     * @deprecated
+     */
+    warnings: number;
     spideySaved: string;
 }
 
@@ -126,8 +255,8 @@ export interface PersonalExpRow extends ExpRow {
 
 export interface LevelRolesRow {
     id: string;
-    guildid: string;
-    roleid: string;
+    guildid: Snowflake;
+    roleid: Snowflake;
     level: number;
 }
 
@@ -141,6 +270,10 @@ export interface BSRow {
 
 export interface XMessage extends Message {
     gprefix?: string;
+    bprefix?: string;
+    treatOwner?: true;
+    // [index: 'client']: Partial<Omit<XClient, keyof Client>> & Client;
+    client: Partial<Omit<XClient, keyof Client>> & Client;
 }
 
 export interface InsertionResult {
@@ -156,7 +289,7 @@ export interface InsertionResult {
 
 export interface GuildSettingsRow {
     id: number;
-    guildid: string;
+    guildid: Snowflake;
     property: string;
     value: string;
     previousvalue: string;
@@ -170,18 +303,47 @@ export interface CmdTrackingRow {
 
 export interface TwitchHookRow {
     id: string;
+    /**
+     * The channel ID of the streamer
+     */
     streamerid: string;
-    guildid: string;
-    channelid: string;
+    /**
+     * The ID of the guild to which this sub belongs
+     */
+    guildid: Snowflake;
+    /**
+     * The ID of the channel in which notifications should be sent
+     */
+    channelid: Snowflake;
+    /**
+     * The UID of the streamer
+     */
     streamerlogin: string;
+    /**
+     * The message to be sent in a notification
+     */
     message: string;
+    /**
+     * The date at which this stream will expire
+     * @deprecated subscriptions no longer expire so this is not used
+     */
     expires: string;
+    /**
+     * The configured number of streams the sub should be deleted after
+     */
     delafter: number;
+    /**
+     * Number of notifications received
+     */
     notified: number;
+    /**
+     * The date of the last notification received (not necessarily successfully sent)
+     */
     laststream: string;
+    subscriptionid: string;
 }
 
-export interface PartialGuildObject extends DiscordStrategy.GuildInfo {
+export type PartialGuildObject = DiscordStrategy.GuildInfo & {
     features?: string[];
     permissions_new?: string;
 }
@@ -196,41 +358,44 @@ export interface DashUserObject {
 export interface MessageService {
     name?: string;
     disabled?: true;
-    text?: true;
+    allowNonUser?: true;
+    allowDM?: true;
+    events: (keyof ClientEvents)[];
     getInformation?(client: XClient, guildid: string): Promise<string>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    execute(client: XClient, data: any): Promise<void>;
+    execute(client: XClient, event: keyof ClientEvents, ...data: any): Promise<void>;
 }
 
-export interface UnparsedTimedAction {
+export interface TimedActionRow {
     actionid: string;
     exectime: string;
-    actiontype: string;
+    actiontype: TimedAction["type"];
     actiondata: string;
     casenumber: number;
 }
 
-export interface TimedAction {
+export type TimedAction = UnmuteAction | UnbanAction;
+
+export interface TimedActionPayload<T = string, D = Record<string, unknown>> {
     id: string;
     case?: number;
     time: Date;
-    type: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: Record<string, any>;
+    type: T;
+    data: D;
 }
 
-export interface UnmuteActionData {
-    guildid: string;
-    userid: string;
-    roleid: string;
+export type UnmuteAction = TimedActionPayload<'unmute', {
+    guildid: Snowflake;
+    userid: Snowflake;
+    roleid: Snowflake;
     duration: string;
-}
+}>;
 
-export interface UnbanActionData {
-    guildid: string;
-    userid: string;
+export type UnbanAction = TimedActionPayload<'unban', {
+    guildid: Snowflake;
+    userid: Snowflake;
     duration: string;
-}
+}>;
 
 /*export interface UserData {
     userid?: string;
@@ -240,7 +405,7 @@ export interface UnbanActionData {
 }*/
 
 export interface UserDataRow {
-    userid: string;
+    userid: Snowflake;
     createdat?: string;
     updatedat?: string;
     bio?: string;
@@ -266,6 +431,8 @@ export interface AutomoduleData {
     enableAll: boolean;
     /**
      * channel ids to apply channel effect to
+     * 
+     * this is an optional property because it will only exist on text modules
      */
     channels?: string[];
     /**
@@ -336,8 +503,8 @@ export interface AutomoduleData {
 
 export interface GuildUserDataRow {
     id?: string;
-    userid?: string;
-    guildid?: string;
+    userid?: Snowflake;
+    guildid?: Snowflake;
     createdat?: string;
     updatedat?: string;
     offenses?: number;
@@ -351,6 +518,13 @@ export interface GuildUserDataRow {
     roles?: string;
     banned?: string;
     modnote?: string;
+}
+
+export interface HomeEndpointData {
+    guild: {
+        id: string;
+        name: string;
+    };
 }
 
 export interface AutomoduleEndpointData extends GuildsEndpointBase {
@@ -371,11 +545,11 @@ export interface GuildsEndpointData {
 }
 
 export interface ChannelData {
-    id: string;
+    id: Snowflake;
     name: string;
     type: string;
     position: number;
-    parentID: string;
+    parentID?: Snowflake;
     nsfw?: boolean;
     topic?: string;
 }
@@ -386,7 +560,7 @@ export interface ChannelEndpointData extends GuildsEndpointBase {
 }
 
 export interface RoleData {
-    id: string;
+    id: Snowflake;
     name: string;
     hexColor: string;
     position: number;
@@ -417,11 +591,19 @@ export interface AutoroleData {
      * the roles to automatically give people when they join
      */
     roles?: string[];
-    ignore?: string[];
+    // ignore?: string[];// not sure what this property was supposed to be
     /**
      * the roles to automatically give to bots when they join
      */
     botRoles?: string[];
+    /**
+     * Whether user's roles should be restored when they rejoin the server
+     */
+    retain?: boolean;
+    /**
+     * The optional list of roles that should not be restored when users rejoin
+     */
+    noRetain?: string[];
 }
 
 export interface LevelsEndpointData  extends GuildsEndpointBase {
@@ -459,7 +641,7 @@ export interface ModActionData {
     /**
      * The id of the guild the case belongs to
      */
-    guildid: string;
+    guildid: Snowflake;
     /**
      * The guild-localized case number for the incident (represents the identifier of the case based on a self-incrementing identifier number pattern)
      */
@@ -467,7 +649,7 @@ export interface ModActionData {
     /**
      * The target's id
      */
-    userid: string;
+    userid: Snowflake;
     /**
      * The tag of the target at the time of the incident
      */
@@ -500,9 +682,14 @@ export interface ModActionData {
      * The given reason/case summary for the incident
      */
     summary: string;
+    /**
+     * A boolean representing whether or not the user was notified of the action taken against them, if necessary
+     */
+    notified: number;
 }
 
-export interface ModActionEditData {
+export type ModActionEditData<R = 'guildid' | 'agent' | 'userid'> = Required<Pick<ModActionData, R>> & Partial<Omit<ModActionData, R>>;
+/* {
     superid?: string;
     guildid: string;
     casenumber?: number;
@@ -513,7 +700,7 @@ export interface ModActionEditData {
     agent: string;
     agenttag?: string;// maybe make this required
     summary?: string;
-}
+} */
 
 export interface ServerlogData {
     log_channel: string;
@@ -531,7 +718,7 @@ export type ServerlogEndpointData = ServerlogData;
 
 export interface UserNote {
     id: number;
-    authorID: string;
+    authorID: Snowflake;
     author: string;
     content: string;
     created: string;
@@ -582,14 +769,39 @@ export interface TwitchSearchChannelsReturns {
 }
 
 export interface FullPointsData {
-    guild: string;
-    user: string;
+    guild: Snowflake;
+    user: Snowflake;
+    /**
+     * The current CUMULATIVE TOTAL of points
+     */
     points: number;
+    /**
+     * The current number of RELATIVE POINTS from the last level
+     */
+    pointsInLevel: number;
+    /**
+     * The current level
+     */
     level: number;
+    /**
+     * When the first points were earned by this user
+     */
     firstCounted: Date;
+    /**
+     * When points were last earned by this user
+     */
     lastGained: Date;
+    /**
+     * The relative points still needed to go from the current point in the current level to the next level
+     */
     pointsToGo: number;
+    /**
+     * The relative points required to get to the next level from the current level (cum next level) - (cum this level) = (relative to next level)
+     */
     pointsLevelNext: number;
+    /**
+     * The relative points required to level to the current level from the previous level
+     */
     pointsLevelNow: number;
 }
 
@@ -660,13 +872,35 @@ export interface TriviaResponse {
 
 export interface DashboardMessage {
     outside: string;
-    embed: MessageEmbedOptions;
+    embed: DashboardMessageEmbed;
+}
+
+export interface DashboardMessageEmbed {
+    title?: string;
+    description?: string;
+    url?: string;
+    timestamp?: number;
+    color?: number/*  | [number, number, number] */;
+    fields?: {
+        order: number;
+        name: string;
+        value: string;
+        inline?: boolean;
+    }[];
+    files?: string[];
+    authorname?: string;
+    authorurl?: string;
+    authoricon?: string;
+    thumbnailurl?: string;
+    imageurl?: string;
+    videourl?: string;
+    footertext?: string;
+    footericon?: string;
 }
 
 export interface MovementData {
     add_channel: string;
     depart_channel: string;
-    dm_channel: string;
     add_message: DashboardMessage;
     depart_message: DashboardMessage;
     dm_message: DashboardMessage;
@@ -712,6 +946,10 @@ export interface CommandsGlobalConf {
      * Send that the command is disabled in chat
      */
     respond?: boolean;
+    /**
+     * notify the user if they don't have the internal permissions to run the command
+     */
+    perm_notif?: boolean;
 }
 
 export interface CommandConf {
@@ -771,15 +1009,15 @@ export interface CmdHistoryRow {
     command_name: string;
     message_content: string;
     guildid: string;
-    userid: string | null;
-    messageid: string;
-    channelid: string;
+    userid: Snowflake | null;
+    messageid: Snowflake;
+    channelid: Snowflake;
     invocation_time: string;
 }
 
-export interface InvitedData {// data for the people that have joined and were tracked by an invite
+export interface InvitedUserData {// data for the people that have joined and were tracked by an invite
     id: number;
-    guildid: string;
+    guildid: Snowflake;
     inviteat: string;
     invitee: string;
     inviteename: string;
@@ -797,6 +1035,95 @@ export interface InviteData {// data for the actual invites that are in use for 
 }
 
 export interface InviteStateData {
-    guildid: string;
+    guildid: Snowflake;
     invites: InviteData[];
+    rewards?: Record<number, InviteLevelReward>;
+    reset_at?: string;
 }
+
+export interface InviteLevelReward {
+    level: number;
+    mode: string;
+    value: string;
+    attachment?: string;
+}
+
+export interface StoredPresenceData {
+    /**
+     * dnd, offline, etc
+     */
+    status: PresenceStatusData;
+    /**
+     * the description
+     */
+    name: string;
+    /**
+     * watching, listening, etc
+     */
+    type: ExcludeEnum<ActivityTypes, 'CUSTOM'>;
+    /**
+     * afk value for the api, not really sure what it does
+     */
+    afk?: boolean;
+    /**
+     * whether to deactivate these stored values and use the hardcoded default
+     */
+    useDefault?: boolean;
+}
+
+export interface SkeletonGuildObject {
+    id: Snowflake;
+    name: string;
+    icon: string | null;
+    owner: Snowflake;
+    ownerName?: string;
+}
+
+export interface SkeletonRole {
+    id: Snowflake;
+    color: number;
+    hexColor: string;
+    position: number;
+    hoist: boolean;
+    createdTimestamp: number;
+    editable: boolean;
+    name: string;
+    mentionable: boolean;
+}
+
+// export interface SkeletonUserObject {// i literally accidentally made this, it isn't currently being used but it could be in the future for other broadcast methods
+//     id: Snowflake;
+//     tag: string;
+//     profile: string;
+//     created: string;
+// }
+
+export interface StarboardSetting {
+    channel: Snowflake;
+    threshold: number;
+    allowSelf: boolean;
+    jumpLink: boolean;
+    allowSensitive: boolean;
+    locked: boolean;
+    ignoredChannels: Snowflake[];
+    starStarred: boolean;
+    emoji: string[];
+    color: number;
+}
+
+export interface StarredMessageData {
+    messageid: Snowflake;
+    guildid: Snowflake;
+    channelid: Snowflake;
+    authorid: Snowflake;
+    stars: number;
+    locked: 0 | 1;
+    nsfw: 0 | 1;
+    postid: string;
+    postchannel: string;
+}
+
+// export type ChannelTypeKeyData = Record<ChannelTypes, {
+//     pretty: string;
+//     indicator?: string;
+// }>

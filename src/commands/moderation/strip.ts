@@ -1,4 +1,3 @@
-
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { parseFriendlyUptime, stringToMember } from "../../utils/parsers";
@@ -27,28 +26,26 @@ export const command: Command = {
     moderation: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild || !message.member) return;
-
             const g = await message.guild.fetch();
             if (!g.me) {
-                client.specials?.sendError(message.channel, "Something must be wrong with my configuration on this server", true)
+                await client.specials.sendError(message.channel, "Something must be wrong with my configuration on this server", true)
                 return;
             }
             const target = await stringToMember(g, args[0], false, false, false);
             if (!target) {
-                await client.specials?.sendError(message.channel, "Invalid target", true);
+                await client.specials.sendError(message.channel, "Invalid target", true);
                 return;
             }
 
             if (g.me.roles.highest.position <= 1) {
-                await client.specials?.sendError(message.channel, "I don't have a role above the bottom", true);
+                await client.specials.sendError(message.channel, "I don't have a role above the bottom", true);
                 return;
             }
 
             const roles = target.roles.cache.filter((x) => (x.position < (g.me?.roles.highest.position || 0)) && x.name !== "@everyone");
 
             if (!roles.size) {
-                await client.specials?.sendError(message.channel, "No strippable roles. My highest role probably is not high enough, or the member has no roles.", true);
+                await client.specials.sendError(message.channel, "No strippable roles. My highest role probably is not high enough, or the member has no roles.", true);
                 return;
             }
 
@@ -57,10 +54,10 @@ export const command: Command = {
                 const t = getFriendlyUptime(roles.size * 200 + 500);
                 const fu = parseFriendlyUptime(t);
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("info"),
-                        description: `**ETA:**\n${fu}`
-                    }
+                        description: `**ETA:**\n${fu}`,
+                    }],
                 });
 
                 const rolesArray = roles.array();
@@ -71,18 +68,18 @@ export const command: Command = {
                 }
             } catch (e) {
                 xlg.error(e);
-                client.specials?.sendError(message.channel, `Error stripping roles.`);
+                await client.specials.sendError(message.channel, `Error stripping roles.`);
             }
 
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: await client.database.getColor("success"),
-                    description: `All roles successfully stripped from ${target} (${target.id})`
-                }
+                    description: `All roles successfully stripped from ${target} (${target.id})`,
+                }],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

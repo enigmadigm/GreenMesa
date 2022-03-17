@@ -20,21 +20,27 @@ interface CmdCat {
     // show: boolean;
 }
 
-interface PatchRequest {
-    apply: string[];
-    enabled: boolean;
-    delete_overwrites?: boolean;
-    channel_mode?: boolean;
-    channels?: string[];
-    role_mode?: boolean;
-    roles?: string[];
-    description_edited?: string;
-    cooldown?: number;
-    exp_level?: number;
-    level?: number;
-    overwites_ignore?: string[];
-    respond?: boolean;
-}
+type PatchRequest = Omit<Partial<CommandConf & CommandsGlobalConf & {
+    delete_overwrites?: boolean,
+    apply: string[],
+    enabed: boolean
+}>, 'description' | 'description_short' | 'category' | 'confined' | 'overwrite' | 'name'>;
+
+// interface PatchRequest {
+//     apply: string[];
+//     enabled: boolean;
+//     delete_overwrites?: boolean;
+//     channel_mode?: boolean;
+//     channels?: string[];
+//     role_mode?: boolean;
+//     roles?: string[];
+//     description_edited?: string;
+//     cooldown?: number;
+//     exp_level?: number;
+//     level?: number;
+//     overwites_ignore?: string[];
+//     respond?: boolean;
+// }
 
 const DISABLED = <FontAwesomeIcon icon={faSkull} />;
 const WARNING = <FontAwesomeIcon icon={faExclamationTriangle} />;
@@ -67,7 +73,7 @@ export function DashboardCommands(props: HomeProps) {
     const [selectedCmds, setSelectedCmds] = React.useState<string[]>([]);// the commands that should be shown as selected on the dashboard
     const [selectedCats, setSelectedCats] = React.useState<string[]>([]);// the cats that should be shown as selected on the dashboard
     const [applying, setApplying] = React.useState<string[]>([]);// the commands that the settings will actually be applied to on the dashboard
-    const [pending, setPending] = React.useState<CommandConf & CommandsGlobalConf>({name: "", enabled: true, channel_mode: false, role_mode: false, channels: [], roles: [], default_cooldown: 0,overwrite: false});// the settings to apply to the 'applying' commands on the next patch, should be cleared after every patch or cancellation
+    const [pending, setPending] = React.useState<CommandConf & CommandsGlobalConf>({ name: "", enabled: true, channel_mode: false, role_mode: false, channels: [], roles: [], default_cooldown: 0, overwrite: false });// the settings to apply to the 'applying' commands on the next patch, should be cleared after every patch or cancellation
     // const [delOw, setDelOw] = React.useState(false);// whether the applied commands should be deleted as overwrites on the next patch
     const [searchFor, setSearchFor] = React.useState("");// the search string to be used in sorting, deactivated by default
     const [em, setEm] = React.useState("");// the error message to show in the overwrite conf modal
@@ -173,6 +179,7 @@ export function DashboardCommands(props: HomeProps) {
                 role_mode: pending.role_mode,
                 roles: pending.roles,
                 respond: pending.respond,
+                perm_notif: pending.perm_notif
             }
         }
         const obj = {
@@ -380,6 +387,16 @@ export function DashboardCommands(props: HomeProps) {
         patchNow(2);
     }
 
+    const togglePermNotif = () => {
+        const n = typeof globalConf.perm_notif === "boolean" && !globalConf.perm_notif ? true : false;
+        pending.perm_notif = n;
+        setPending({
+            ...pending,
+            perm_notif: n
+        });
+        patchNow(2);
+    }
+
     const handleSave = () => {
         setWaiting(true);
         if (mm === 2) {
@@ -483,7 +500,8 @@ export function DashboardCommands(props: HomeProps) {
                                     <button onClick={showIconKey}>Icon Key</button>
                                     <button disabled>Set Global Defaults</button>
                                     <button onClick={editModRole}>Set Mod Role</button>
-                                    <button onClick={toggleRespond}>{typeof globalConf.respond === "boolean" && !globalConf.respond ? UNCHECKED : CHECKED} Send Disabled Message</button>
+                                    <button onClick={toggleRespond} title="Send a message to notify users that the command is disabled">{typeof globalConf.respond === "boolean" && !globalConf.respond ? UNCHECKED : CHECKED} Disabled Message</button>
+                                    <button onClick={togglePermNotif} title="Send a message to notify users that they don't have permission to use a command">{typeof globalConf.perm_notif === "boolean" && !globalConf.perm_notif ? UNCHECKED : CHECKED} Missing Perms Message</button>
                                 </div>
                                 <hr style={{ marginBottom: 10, marginTop: 0 }} />
                                 <div className="c-cats">

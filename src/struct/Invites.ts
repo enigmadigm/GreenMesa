@@ -1,6 +1,7 @@
-import { Guild, GuildMember, User } from "discord.js";
+import { Guild, GuildMember, Permissions, Snowflake, User } from "discord.js";
 import moment from "moment";
-import { InviteData, InviteStateData, XClient } from "../gm";
+import { InsertionResult, InviteData, InviteStateData, XClient } from "../gm";
+import { isSnowflake } from "../utils/specials";
 
 /**
  * This class tracks invites
@@ -16,11 +17,10 @@ export default class {
 
     public async getFull(guild: Guild): Promise<{ invitesNow: InviteData[], invitesBefore: InviteData[], increased: InviteData[], decreased: InviteData[] } | void> {
         try {
-            if (!guild.me?.permissions.has("MANAGE_GUILD")) return;
-            const previousResult = await this.client.database.getGuildSetting(guild.id, "invites_data");//TODO: make this a direct method for interacting with the db table
-            const stateBefore: InviteStateData = previousResult ? JSON.parse(previousResult.value) : { guildid: guild.id, invites: [] };
-            const invitesBefore = stateBefore.invites;
-            const invitesCollection = await guild.fetchInvites();
+            if (!guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) return;
+            const dataState = await this.getInvitesState(guild.id);
+            const invitesBefore = dataState.invites;
+            const invitesCollection = guild.invites.cache;
             const invites: InviteData[] = invitesCollection.filter(x => typeof x.uses === "number" && x.inviter instanceof User).map((x) => {
                 return { inviter: x.inviter?.id || "", uses: x.uses || 0, code: x.code, channel: x.channel.id, members: x.memberCount || 0 };
             });
@@ -33,7 +33,7 @@ export default class {
                 return (preexisting && x.members < preexisting.members);
             })
             const newState: InviteStateData = { guildid: guild.id, invites };
-            await this.client.database.editGuildSetting(guild, "invites_data", JSON.stringify(newState).escapeSpecialChars());// make sure the new invites state gets updated in the database
+            await this.updateInvitesState(newState);// make sure the new invites state gets updated in the database
             return { invitesBefore, invitesNow: invites, increased: increasedInvites, decreased: decreasedInvites };
         } catch (error) {
             xlg.error(error);
@@ -61,6 +61,7 @@ export default class {
                 if (!probable.length) return;
                 invite = probable[0];
             }
+            if (!isSnowflake(invite.inviter)) return;
             const inviter = member.guild.members.cache.get(invite.inviter);
             if (!inviter) return;
             await this.client.database.addInvite(member.guild.id, member.user, invite.code, inviter.user);
@@ -92,6 +93,7 @@ export default class {
             const userInvites = await this.client.database.getInvites({ invitee: member.id, guildid: member.guild.id });
             console.log(userInvites)
             if (!userInvites.length || !userInvites.find(x => moment().diff(x.inviteat, "s") < 300)) {// if it is determined that an invite has not already been tracked for the departing user, it adds one to the database just so it can be recorded
+                if (!isSnowflake(invite.inviter)) return;
                 const inviter = member.guild.members.cache.get(invite.inviter);
                 const pastCodeInvites = await this.client.database.getInvites({ guildid: member.guild.id, code: invite.code });
                 await this.client.database.addInvite(member.id, member.user, invite.code, inviter?.user ?? { id: invite.inviter, tag: pastCodeInvites.length ? pastCodeInvites[0].invitername : "" });
@@ -99,6 +101,37 @@ export default class {
             //TODO: here the invite entry in the db could be updated to reflect the departure of the user
         } catch (error) {
             xlg.error(error);
+        }
+    }
+
+    public async getInvitesState(gid: Snowflake): Promise<InviteStateData> {
+        const r = await this.client.database.getGuildSetting(gid, "invites_data");
+        const dataState: InviteStateData = r ? JSON.parse(r.value) : { guildid: gid, invites: [] };
+        return dataState;
+    }
+
+    public async updateInvitesState(dataState: InviteStateData): Promise<InsertionResult> {
+        const r = await this.client.database.editGuildSetting(dataState.guildid, "invites_data", JSON.stringify(dataState).escapeSpecialChars());
+        return r;
+    }
+
+    public async resetInvites(gid: Snowflake, mid?: Snowflake): Promise<void> {
+        if (mid) {
+            const r2 = await this.client.database.deleteInvites({
+                guildid: gid,
+                inviter: mid
+            });
+            console.log("del4m", r2);
+            
+        } else {
+            const r = await this.client.database.editGuildSetting(gid, "invites_data", undefined, true);
+            console.log("delall", r);
+            
+            const r2 = await this.client.database.deleteInvites({
+                guildid: gid,
+            });
+            console.log("delev", r2);
+            
         }
     }
 }

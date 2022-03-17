@@ -1,8 +1,7 @@
-
 import { permLevels } from '../../permissions';
-//import { getGlobalSetting, getGuildSetting } from "../dbmanager";
 import { stringToChannel } from '../../utils/parsers';
 import { Command } from "src/gm";
+import { ThreadChannel } from 'discord.js';
 
 export const command: Command = {
     name: "copychannel",
@@ -20,12 +19,14 @@ export const command: Command = {
     permissions: ["MANAGE_CHANNELS"],
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-            
             const target = stringToChannel(message.guild, args[0], true, true);
             if (!target) {
                 xlg.log(target)
-                await client.specials?.sendError(message.channel, "Invalid channel");
+                await client.specials.sendError(message.channel, `Invalid channel`);
+                return;
+            }
+            if (target instanceof ThreadChannel) {
+                await client.specials.sendError(message.channel, `Threads cannot be cloned`);
                 return;
             }
             args.shift();
@@ -42,21 +43,20 @@ export const command: Command = {
                 });
             } catch (error) {
                 xlg.error(error);
-                client.specials?.sendError(message.channel, "Could not copy the channel. Do I lack permissions?");
+                await client.specials.sendError(message.channel, "Could not copy the channel. Do I lack permissions?");
                 return false;
             }
             
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: await client.database.getColor("info"),
-                    description: `Channel copied`
-                }
+                    description: `Channel copied`,
+                }],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

@@ -1,9 +1,8 @@
+// —
 import { permLevels } from '../permissions';
 import { Command } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';
 import { PaginationExecutor } from '../utils/pagination';
-
-// —
 
 function titleCase(str: string) {
     if (str == "nsfw") {
@@ -20,14 +19,16 @@ function titleCase(str: string) {
 }
 
 export const command: Command = {
-    name: 'help',
-    description: 'get a command list or command help',
-    usage:"[command name]",
+    name: "help",
+    description: {
+        short: "detailed command help",
+        long: "Per command/category help. List commands and categories. Find out how to use commands.",
+    },
+    usage:"[command|category]",
     cooldown: 2,
     async execute(client, message, args) {
         try {
-            const { commands } = client;
-            const { categories } = client;
+            const { commands, categories } = client;
             //const cats = categories.map(c => c.name);
 
             // kind of an unnecessary and stupid part, this will rename any categories with the key being the original and the value being the new name
@@ -103,14 +104,14 @@ export const command: Command = {
                     };
                     pages.push(e);
                 }
-                PaginationExecutor.createEmbed(message, pages);
+                await PaginationExecutor.createEmbed(message, pages);
                 return;
             }
             const name = args[0].toLowerCase();
             const command = commands.get(name) || commands.find(c => !!(c.aliases && c.aliases.includes(name)));
             const category = categories.get(name);
 
-            if (command) {
+            if (command) {// if help was requested for a specific command
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const embed: MessageEmbedOptions = {
                     title: `${message.gprefix}${command.name}`,
@@ -128,6 +129,17 @@ export const command: Command = {
                         embed.fields?.push({ name: "Description", value: `${command.description}` });
                     }
                 }
+                if (command.flags && command.flags.length) {
+                    const longest = command.flags.reduce((p, c) => `-${p.f.length > 1 ? "-" : ""}${p.f}${p.v ? `="${p.v}"` : ""}`.length < `-${c.f.length > 1 ? "-" : ""}${c.f}${c.v ? `="${c.v}"` : ""}`.length ? c : p);
+                    const longestString = `-${longest.f.length > 1 ? "-" : ""}${longest.f}${longest.v ? `="${longest.v}"` : ""}`;
+                    embed.fields?.push({
+                        name: `Flags`,
+                        value: `${command.flags.map((f) => {
+                            const flagSec = `-${f.f.length > 1 ? "-" : ""}${f.f}${f.v ? `="${f.v}"` : ""}`;
+                            return `\`${flagSec}${longestString.slice(flagSec.length).split("").map(() => " ").join("")}\` ${f.d}`;
+                        }).join("\n")}`,
+                    });
+                }
                 if (command.aliases) {
                     embed.fields?.push({ name: "Aliases", value: `${command.aliases.join(', ')}` });
                 }
@@ -138,21 +150,27 @@ export const command: Command = {
                     const longest = command.examples.reduce((p, c) => p.length < c.length ? c : p);
                     embed.fields?.push({
                         name: `Example${command.examples.length > 1 ? "s" : ""}`,
-                        value: `${command.examples.map(example => `\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}${longest.substring(example.length - 1, longest.length).split("").map(() => " ").join("")}\``).join("\n")}`
+                        value: `${command.examples.map(example => `\`${message.gprefix} ${command.aliases && command.aliases.length ? command.aliases[0] : command.name} ${example}${longest.substring(example.length - 1, longest.length).split("").map(() => " ").join("")}\``).join("\n")}`,
                     });
                 }
-                embed.fields?.push({ name: "Cooldown", value: `${command.cooldown || 2} second(s)`, inline: true });
+                embed.fields?.push({ name: "Cooldown", value: `\`${command.cooldown ?? 0}\` second(s)`, inline: true });
                 if (command.permLevel) {
                     const permKeys = Object.keys(permLevels);
                     embed.fields?.push({
-                        name: "Permissions",
-                        value: permKeys[command.permLevel],
+                        name: "Designate",
+                        value: `${permKeys[command.permLevel]}`,
                         inline: true
-                    })
+                    });
+                }
+                if (command.permissions?.length) {
+                    embed.fields?.push({
+                        name: "Required Permissions",
+                        value: `${command.permissions.map(x => `${x.toLowerCase().replace(/_/g, " ")}`).join(", ")}`,
+                    });
                 }
 
-                message.channel.send({ embed });
-            } else if (category) {
+                await message.channel.send({ embeds: [embed] });
+            } else if (category) {// if help was requested for a specific category
                 if (category.name === "owner") {
                     message.channel.send("That is a hidden category");
                     return;
@@ -176,32 +194,31 @@ export const command: Command = {
                 data.push(`You can send \`${message.gprefix}help [command name]\` to get help on a specific command!`)
                 const cmdcount = commands.filter(comd => ((comd.category && comd.category === category.name) || (category.name === 'misc' && !comd.category))).size;
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         title: `${category.emoji || ''}${category.emoji ? '  ' : ''}Help: ${titleCase(category.name)}`,
                         color: await client.database.getColor("darkred_embed_color"),
                         description: `${data.join("\n").length < 2048 ? data.join("\n") || 'none' : 'too many commands to send!'}`,
                         footer: {
-                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`
-                        }
-                    }
+                            text: `${data.join("\n").length < 2048 ? cmdcount : ''} command(s)`,
+                        },
+                    }],
                 });
             } else {
                 await message.channel.send({
-                    embed: {
+                    embeds: [{
                         color: await client.database.getColor("fail"),
-                        description: `that is not a valid command or category`,
+                        description: `\` ${name.escapeDiscord()} \` is not a valid command or category`,
                         footer: {
-                            text: `an nlp command assistant is in the works`
-                        }
-                    }
+                            text: `an nlp command assistant is in the works`,
+                        },
+                    }],
                 });
                 return;
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

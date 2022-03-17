@@ -1,7 +1,5 @@
 import { Command } from "src/gm";
 
-//import { getGlobalSetting } from "../dbmanager";
-
 export const command: Command = {
     name: 'vote',
     description: {
@@ -10,26 +8,33 @@ export const command: Command = {
     },
     usage: "[the content of the vote]",
     guildOnly: true,
+    permissions: ["ADD_REACTIONS"],
     async execute(client, message, args) {
         try {
             if (!args.length) {
-                await message.react('✅')
-                    .catch(console.error);
-                message.react('❌')
-                    .catch(console.error);
+                try {
+                    await message.react('✅')
+                    await message.react('❌')
+                } catch (error) {
+                    //
+                }
                 return;
             }
-            message.delete().catch();
+            try {
+                await message.delete();
+            } catch (error) {
+                //
+            }
             const info_embed_color = await client.database.getColor("info");
             const voteEmbed = await message.channel.send({
-                embed: {
+                embeds: [{
                     color: info_embed_color,
                     title: "Vote",
                     description: args.join(" "),
                     footer: {
                         text: `by ${message.author.tag}`
                     }
-                }
+                }],
             });
             try {
                 await voteEmbed.react('✅');
@@ -39,9 +44,8 @@ export const command: Command = {
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

@@ -1,8 +1,9 @@
 // THANK YOU BULLETBOT, A LOT OF THE BASE CODE FOR THESE PARSERS CAME FROM THAT REPO, THEY ARE VERY HELPFUL
 // https://www.npmjs.com/package/string-similarity
 
-import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, Role, User } from "discord.js";
-import { XClient } from "src/gm";
+import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, ThreadChannel, User } from "discord.js";
+import { CommandArgumentFlag, XClient } from "src/gm";
+import { isSnowflake } from "./specials";
 
 /**
  * Returns similarity value based on Levenshtein distance.
@@ -67,7 +68,7 @@ function editDistance(s1: string, s2: string) {
  * @param regex RegExp to search with
  * @returns
  */
-function extractString(str: string, regex: RegExp) {
+export function extractString(str: string, regex: RegExp): string | undefined {
     const result = regex.exec(str);
     if (!result)
         return undefined;
@@ -85,7 +86,7 @@ function extractString(str: string, regex: RegExp) {
 export async function stringToUser(client: XClient, text: string): Promise<User | undefined> {
     text = extractString(text, /<@!?(\d*)>/) || text;
     try {
-        return await client.users.fetch(text) || undefined;
+        return isSnowflake(text) ? await client.users.fetch(text) || undefined : undefined;
     } catch (e) {
         return undefined;
     }
@@ -112,27 +113,36 @@ export async function stringToUser(client: XClient, text: string): Promise<User 
 export async function stringToMember(guild: Guild, text: string, byUsername = true, byNickname = true, bySimilar = true): Promise<GuildMember | undefined> {
     if (!text) return undefined;
     text = extractString(text, /<@!?(\d*)>/) || extractString(text, /([^#@:]{2,32})#\d{4}/) || text;
-    guild.members.cache = await guild.members.fetch();
+
+    // guild.members.cache = await guild.members.fetch();
 
     // by id
-    let member = guild.members.cache.get(text);
-    if (!member && byUsername)
-    // by username
-    member = guild.members.cache.find(x => x.user.username == text || x.user.tag == text);
-    if (!member && byNickname)
-    // by nickname
-    member = guild.members.cache.find(x => x.nickname == text);
-    
-    if (!member && bySimilar) {
-        // closest matching username
-        member = guild.members.cache.reduce((prev, curr) => {
-            return (stringSimilarity(curr.user.username, text) > stringSimilarity(prev?.user.username || "", text) ? curr : prev);
-        });
-        if (stringSimilarity(member?.user.username || "", text) < 0.4) {
-            member = undefined;
+    try {
+        let member = guild.members.cache.get(text as Snowflake);
+        if (!member && byUsername)
+        // by username
+        member = guild.members.cache.find(x => x.user.username == text || x.user.tag == text);
+        if (!member && byNickname)
+        // by nickname
+        member = guild.members.cache.find(x => x.nickname == text);
+        
+        if (!member && bySimilar) {
+            // closest matching username
+            member = guild.members.cache.reduce((prev, curr) => {
+                return (stringSimilarity(curr.user.username, text) > stringSimilarity(prev?.user.username || "", text) ? curr : prev);
+            });
+            if (stringSimilarity(member?.user.username || "", text) < 0.4) {
+                member = undefined;
+            }
         }
+        if (!member) {
+            member = await guild.members.fetch(text as Snowflake);
+        }
+        return member;
+    } catch (error) {
+        xlg.error(`Err while parsing (stringToMember): `, error);
+        return;
     }
-    return member;
 }
 
 /**
@@ -153,20 +163,11 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
  * @param [bySimilar=true] if it should also search by similar name (default true)
  * @returns
  */
-
-export function stringToRole(guild: Guild, text: string, byName = true, bySimilar = true, everyone = false): Role | '@everyone' | '@here' | undefined {
-
-    if (everyone && (text == 'here' || text == '@here')) {
-        return '@here';
-    }
-    if (everyone && (text == 'everyone' || text == '@everyone')) {
-        return '@everyone';
-    }
-
+export function stringToRole(guild: Guild, text: string, byName = true, bySimilar = true): Role | undefined {
     text = extractString(text, /<@&(\d*)>/) || text;
 
     // by id
-    let role = guild.roles.cache.get(text);
+    let role = guild.roles.cache.get(text as Snowflake);
     if (!role && byName) {
         // by name
         role = guild.roles.cache.find(x => x.name == text);
@@ -196,11 +197,11 @@ export function stringToRole(guild: Guild, text: string, byName = true, bySimila
  * @param text string to parse
  * @returns
  */
-export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): GuildChannel | undefined {
+export function stringToChannel(guild: Guild, text: string, byName = true, bySimilar = true): GuildChannel | ThreadChannel | undefined {
     if (!guild || !text) return undefined;
     text = extractString(text, /<#(\d*)>/) || text;
 
-    let channel = guild.channels.cache.get(text);
+    let channel = guild.channels.cache.get(text as Snowflake);
     if (!channel && byName) channel = guild.channels.cache.find(x => x.name == text);
     if (!channel && bySimilar) {
         // closest matching name
@@ -287,11 +288,17 @@ export function parseFriendlyUptime(t: { hours: number, minutes: number, seconds
     return tt.join("");
 }
 
-export function titleCase(str: string): string {
+/**
+ * Convert a string to title case (capitalize every word split by a delimiter)
+ * @param str The string to onvert to title case
+ * @param altDelim A delimiter regex to use contrary to the default " "
+ * @returns A string in titlecase
+ */
+export function titleCase(str: string, altDelim?: RegExp): string {
     if (str === "nsfw") {
         return "NSFW";
     }
-    const splitStr = str.toLowerCase().split(' ');
+    const splitStr = str.toLowerCase().split(altDelim ?? ' ');
     for (let i = 0; i < splitStr.length; i++) {
         // You do not need to check if i is larger than splitStr length, as your for does that for you
         // Assign it back to the array
@@ -318,6 +325,9 @@ export function randomIntFromInterval(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+/**
+ * Parse hyphen flagged options that occur at the beginning of an options array
+ */
 export function parseOptions(opts: string[]): string[] {
     const n = opts.reduce((p, c, ci) => {
         const condition = (pcv: string) => pcv.startsWith("-") && pcv.length < 20;
@@ -329,6 +339,53 @@ export function parseOptions(opts: string[]): string[] {
     }, <string[]>[]);
     opts.splice(0, n.length);
     return n;
+}
+
+/**
+ * Parse hyphen flagged arguments that occur at the beginning of a string
+ *
+ * const flags = parseLongArgs(args);
+ * args = args.join(" ").slice(flags.taken.join(" ").length).trim().split(" ");// trim the provided argument array to disclude the parsed flags
+ * @param toParse the pre-split arguments (assuming space delimited) from commands
+ * @returns a list of specified options
+ */
+export function parseLongArgs(toParse: string[]): { flags: CommandArgumentFlag[], taken: string[] } {
+    // a side effect of the regex i chose to use is the possible return of flag values wrapped in double quotations
+    // the fat is trimmed below in the exec loop
+    const a = toParse.join(" ");
+    const opts: CommandArgumentFlag[] = [];
+    // const matcher = /(?<!.)--?([A-Za-z]){1,30}(?:=("[\w\s]*"|[\w]+))?(?![^\s])/g;// x.replace(/^"(x*)"$/, "{0}")
+    const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=("[\w\s<@#&!>$*()\-=+^%:';[\]{}\\|\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}]*"|[\w<@#&!>$*()\-=+^%:';[\]{}\\|\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}]+))?(?![^\s])/gu;// x.replace(/^"(x*)"$/, "{0}")
+    // const matcher = /(?<![^\s])--?([A-Za-z]{1,100})(?:=(?:"([\w\s<@#&!>$*()\-=+^%:';[\]{}\\|]*)"|([\w<@#&!>$*()\-=+^%:';[\]{}\\|]+)))?(?![^\s])/g;// this regex will not return any flag values wrapped in  
+    let match;
+    let matchCycle = 0;
+    let currentStartingIndex = 0;
+    const taken: string[] = [];
+    while ((match = matcher.exec(a)) !== null) {// getting the next flag match
+        if (!matchCycle && match.index) {// if the match begins at a non-zero index, but there have not been previous matches in front of it
+            break;
+        }
+        if (new RegExp(matcher).exec(a.slice(currentStartingIndex).trim())?.index) {// if the current match does not begin after some non-matching material
+            // (i assume, i did not write down the process when i initially scripted this)
+            break;
+        }
+        const g1 = match[1] || "";
+        const g2 = match[2] ? match[2].replace(/^"(.*)"$/, "$1") : "";
+        const numVal = g2 && /^(?:[0-9]+(?:\.[0-9]+)?|0x[0-9A-Za-z]{6})$/.test(g2) ? /^[0-9]+(?:\.[0-9]+)?$/.test(g2) ? parseInt(g2, 10) : parseInt(g2, 16) : 0;
+        opts.push({
+            name: g1,
+            value: g2,
+            numberValue: numVal,
+        });
+        // a = a.slice(match.index + match[0].length)
+        taken.push(match[0]);
+        matchCycle++;
+        currentStartingIndex = match.index + match[0].length;
+    }
+    // toParse = toParse.slice(taken.join(" ").length - 1);// trim the provided argument array to disclude the parsed flags
+    // toParse = toParse.join(" ").slice(taken.join(" ").length).trim().split(" ");
+    // ^ apparently this reference ends at reassignment
+    return { flags: opts, taken: taken };
 }
 
 /**
@@ -390,36 +447,68 @@ export function ordinalSuffixOf(i: number): string {
 //     return isTitle && isDescription && isURL && isTimestamp && isColor && isFields;
 // }
 
-export function combineMessageText(m: Message): string {
+/**
+ * Turn a normal message from discord into a single string of text, this will join elements like strings in embeds together into a more parseable form
+ * @param m the message to parse
+ * @returns a string representing the entire message
+ */
+export function combineMessageText(m: Message, space = 0): string {
     let t = "";
     if (m.content) {
         t += m.content;
     }
     if (m.embeds && m.embeds.length && m.embeds[0]) {
         const e = m.embeds[0];
-        if (e.description) {
-            t += e.description;
+        const combinedEmbed = combineEmbedText(e, space);
+        if (combinedEmbed) {
+            t += combinedEmbed;
         }
-        if (e.footer) {
-            if (e.footer.text) {
-                t += e.footer.text;
+    }
+    return t;
+}
+
+export function combineEmbedText(e: MessageEmbedOptions | MessageEmbed, space = 0): string {
+    let t = "";
+    if (e.author && e.author.name) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
+        }
+        t += e.author.name;
+    }
+    if (e.title) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
+        }
+        t += e.title;
+    }
+    if (e.description) {
+        if (space) {
+            t += space === 1 ? " " : "\n";
+        }
+        t += e.description;
+    }
+    if (e.fields && e.fields.length) {
+        e.fields.forEach(f => {
+            if (f.name) {
+                if (space) {
+                    t += space === 1 ? " " : "\n";
+                }
+                t += f.name;
             }
-        }
-        if (e.fields && e.fields.length) {
-            e.fields.forEach(f => {
-                if (f.name) {
-                    t += f.name;
+            if (f.value) {
+                if (space) {
+                    t += space === 1 ? " " : "\n";
                 }
-                if (f.value) {
-                    t += f.value;
-                }
-            })
-        }
-        if (e.author && e.author.name) {
-            t += e.author.name;
-        }
-        if (e.title) {
-            t += e.title;
+                t += f.value;
+            }
+        });
+    }
+    if (e.footer) {
+        if (e.footer.text) {
+            if (space) {
+                t += space === 1 ? " " : "\n";
+            }
+            t += e.footer.text;
         }
     }
     return t;

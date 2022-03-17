@@ -1,8 +1,8 @@
-
 import { permLevels } from '../permissions';
 import { Command } from "src/gm";
 import fetch from "node-fetch";
 import { MessageAttachment } from "discord.js";
+import { langs } from "../utils/hl_langs";
 
 export const command: Command = {
     name: "cheat",
@@ -20,11 +20,10 @@ export const command: Command = {
     args: true,
     cooldown: 2,
     permLevel: permLevels.member,
-    guildOnly: false,
     async execute(client, message, args) {
         try {
             const a = args.join(" ");
-            const parts = a.split("/");
+            const parts = a.indexOf("/") > -1 ? a.split("/") : a.split(" ");
             if (parts[0] === "" || parts[0] === "/") {
                 parts.shift();
             }
@@ -35,9 +34,10 @@ export const command: Command = {
             const r = await fetch(`https://cheat.sh/${a}?T`);
             const t = await r.text();
 
-            const lang = parts.length > 1 ? parts[0] : "";
+            const lang = parts.length > 1 && langs.indexOf(parts[0].toLowerCase()) > -1 ? parts[0] : "";
+            const cheatAttachment = new MessageAttachment(Buffer.from(t, 'utf-8'), `cheat_sheet.${lang ? lang : "txt"}`);
             await message.channel.send({
-                files: [new MessageAttachment(Buffer.from(t, 'utf-8'), `cheat_sheet.${lang && lang.length < 20 ? lang : "txt"}`)],
+                files: [cheatAttachment],
             });
             // const lines = t.split("\n");
             // const groups: string[][] = [[]];

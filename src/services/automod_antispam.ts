@@ -1,7 +1,7 @@
-
-import { MessageService, XMessage } from "../gm";
+//TODO: redo this whole service
+import { GuildMessageProps, MessageService, XMessage } from "../gm";
 import { Bot } from "../bot";
-import { Message, TextChannel } from "discord.js";
+import { Message, NewsChannel, TextChannel, ThreadChannel } from "discord.js";
 import moment from "moment";
 
 interface SpamCacheData {
@@ -46,9 +46,9 @@ const deletionQueue: Message[] = [];
 /*async function enqueueDeletion(channel: TextChannel, c: Message[]): Promise<void> {
 
 }*/
-let deleting = false;
 
-async function deleteMessages(msgs: Message[], channel: TextChannel) {
+let deleting = false;
+async function deleteMessages(msgs: Message[], channel: TextChannel | NewsChannel | ThreadChannel) {
     try {
         const toBulk = msgs.filter(x => !deleted.find(x1 => x1.id === x.id));
         if (toBulk.length > 1) {
@@ -79,7 +79,7 @@ async function deleteMessages(msgs: Message[], channel: TextChannel) {
                     time: new Date()
                 });
             } catch (error) {
-                xlg.log(`antispam could not delete ${m.id}`)
+                xlg.error(`antispam could not delete ${m.id}`)
             }
         }
         deletionQueue.shift();
@@ -95,14 +95,14 @@ setTimeout(() => {
     }
 }, 60000);
 
-export const service: MessageService = {
-    text: true,
+export const service: MessageService = {//TODO: redo this, refer to gaius i guess
+    events: ["message", "messageUpdate"],
     async getInformation() {
-        return "Stop excessive spam. Enable this module to prevent incursions of spammers on your server. This module currently acts on a per channel basis only and watches for spam over time. To avoid false positives, it waits to be sure spam is occurring. If it flags spam, it will delete messages from the start of when it believes a user starts to spam. This module may take up to ten (10) seconds to detect spam.";
+        return "Stop excessive spam. Enable this module to prevent incursions of spammers on your server. This module currently acts on a per channel basis only and watches for spam over time. To avoid false positives, it uses threshold values that moderators set. If spam is detected, it will take the designated actions.";
     },
-    async execute(client, message: XMessage) {
+    async execute(client, event, message: XMessage & GuildMessageProps) {
         try {
-            if (!message.guild || !message.member || !(message.channel instanceof TextChannel) || message.author.bot || message.webhookID) return;
+            if (message.author.bot || message.webhookId) return;
             const modResult = await Bot.client.database.getAutoModuleEnabled(message.guild.id, "antispam", message.channel.id, undefined, message.member);
             if (!modResult) return;
             let flag = false;
@@ -146,7 +146,7 @@ export const service: MessageService = {
             }*/
             //updateCache(cache);
             if (flag) {
-                await client.services?.punish<XMessage>(modResult, message.member, message);
+                await client.services.punish<XMessage>(modResult, message.member, message);
             }
         } catch (error) {
             xlg.error(error);

@@ -1,4 +1,3 @@
-
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToRole } from "../../utils/parsers";
@@ -17,15 +16,13 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-
-            const role = stringToRole(message.guild, args.join(" "), true, true, false);
-            if (!role || role === "@everyone" || role === "@here") {
-                client.specials?.sendError(message.channel, "A valid role could not be found");
+            const role = stringToRole(message.guild, args.join(" "), true, true);
+            if (!role) {
+                await client.specials.sendError(message.channel, "A valid role could not be found");
                 return;
             }
             await message.channel.send({
-                embed: {
+                embeds: [{
                     color: role.color > 150 ? role.color : await client.database.getColor("info"), 
                     description:
 `Role info for ${role}
@@ -36,11 +33,11 @@ export const command: Command = {
 **Permissions Int:** ${role.permissions.bitfield}
 **Color Hex:** ${role.hexColor}
 `
-                }
+                }]
             })
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

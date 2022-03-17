@@ -26,7 +26,7 @@ export function Embark() {
             if (window.opener) {
                 setTron("Goodbye")
                 window.onunload = () => {
-                    if (id) {
+                    if (id && window.opener) {
                         window.opener.location.pathname = `/dash/${id}`;
                     }
                 }

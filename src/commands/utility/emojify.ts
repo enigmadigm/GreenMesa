@@ -1,6 +1,5 @@
 import { Command } from "src/gm";
 
-//import { getGlobalSetting } from "../dbmanager";
 const emojiConversion = {
     "A": "🇦",
     "B": "🇧",
@@ -42,39 +41,49 @@ const emojiConversion = {
 
 export const command: Command = {
     name: "emojify",
-    description: "convert text to emojies",
+    description: {
+        short: "convert text to emojis",
+        long: "Convert normal text to emoji characters",
+    },
+    flags: [
+        {
+            f: "s",
+            d: "use normal spaces to delimit instead of no-width spaces",
+        }
+    ],
     usage: "<text>",
+    examples: [
+        "I am your father",
+        "-s I am pregnant",
+    ],
     args: true,
-    async execute(client, message, args) {
+    async execute(client, message, args, flags) {
         try {
             const textArray = args.join(" ").split("");
             const mappedText = [];
             for (let i = 0; i < textArray.length; i++) {
                 const letter = <keyof typeof emojiConversion>textArray[i].toUpperCase();
                 if (emojiConversion[letter]) {
-                    mappedText.push(`${emojiConversion[letter]}\u200b`);
+                    mappedText.push(`${emojiConversion[letter]}${flags.find(x => x.name === "s") ? ` ` : `\u200b`}`);
                 } else {
                     mappedText.push(letter);
                 }
             }
             if (mappedText.length < 1) {
-                message.channel.send({
-                    embed: {
+                await message.channel.send({
+                    embeds: [{
                         color: await client.database.getColor("fail"),
-                        description: "no emojified content"
-                    }
+                        description: "no emojifiable content",
+                    }],
                 });
-                return false;
+                return;
             }
 
-            message.channel.send(mappedText.join(""));
-            
-            return true;
+            await message.channel.send(mappedText.join(""));
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

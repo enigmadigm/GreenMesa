@@ -1,7 +1,6 @@
 import { MessageEmbedOptions } from "discord.js";
 import { Command } from "src/gm";
 
-
 export const command: Command = {
     name: "leaderboard",
     aliases: ['lb'],
@@ -9,10 +8,9 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message) {
         try {
-            if (!message.guild) return;
             const rowobj = await client.database.getXPTop10(message.guild.id, message.author.id);
             if (!rowobj || !rowobj.rows.length) {
-                message.channel.send('No users');
+                await message.channel.send(`No users`);
                 return;
             }
             const typeres = await client.database.getGlobalSetting('xp_type');
@@ -34,14 +32,14 @@ export const command: Command = {
                     text: (rowobj.personal.rank > 10) ? `${message.member?.displayName}'s rank: ${rowobj.personal.rank}` : `top ten for this server`
                 };
             }
-            message.channel.send({
-                embed
+
+            await message.channel.send({
+                embeds: [embed],
             });
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

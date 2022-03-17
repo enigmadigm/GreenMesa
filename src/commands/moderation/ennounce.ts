@@ -1,3 +1,4 @@
+import { MessageEmbedOptions } from 'discord.js';
 import { Command } from 'src/gm';
 import { permLevels } from '../../permissions';
 //import { getGuildSetting, getGlobalSetting } from "../dbmanager";
@@ -20,8 +21,6 @@ export const command: Command = {
     moderation: true,
     async execute(client, message, args) {
         try {
-            if (!message.guild) return;
-    
             let sclength = 0;
             let seacolor;
             if (parseInt(args[0], 10) && parseInt(args[0], 10) <= 16777215) {
@@ -59,8 +58,7 @@ export const command: Command = {
                 seacolor = await client.database.getColor("info");
                 sclength = 0;
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let embed: any = {
+            let embed: MessageEmbedOptions = {
                 color: seacolor,
                 description: args.join(" ").slice(sclength).trim(),
                 timestamp: new Date().getTime(),
@@ -76,20 +74,21 @@ export const command: Command = {
                 if (validation.errors && validation.errors.length) {
                     return message.channel.send(`\`\`\`${validation.errors}\`\`\``);
                 }*/
+                const a = args.join(" ");
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let parsedJSON: any;
                 try {
-                    parsedJSON = JSON.parse(args.join(" ").slice(sclength).trim());
+                    parsedJSON = JSON.parse(a.slice(sclength).trim());
                 } catch (e) {
-                    message.channel.send(`\`\`\`data is not of type object\`\`\``);
+                    await message.channel.send(`\`\`\`data is not of type object\`\`\``);
                     return;
                 }
-    
+
                 if (!parsedJSON.description && !parsedJSON.title) {
-                    message.channel.send('Invalid embed format. You must have a title or description.');
+                    await message.channel.send(`Invalid embed format. You must have a title or description.`);
                     return;
                 }
-                embed = { parsedJSON };
+                embed = { ...parsedJSON };
             } else if (args.includes('--no-footer') || args.includes('-nf')) {
                 args.splice(args.findIndex(arg => arg == '--no-footer' || arg == '-nf'), 1);
                 embed = {
@@ -98,11 +97,11 @@ export const command: Command = {
                 }
             }
 
-            message.delete().catch(O_o => O_o);
-            message.channel.send({ embed });
+            await message.channel.send({ embeds: [embed] });
+            await message.delete().catch(O_o => O_o);
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

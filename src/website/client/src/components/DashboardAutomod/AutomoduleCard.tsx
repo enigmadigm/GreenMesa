@@ -297,7 +297,7 @@ export function AutomoduleCard(props: CustomModuleCardProps) {
             <div className="x-card-body">
                 {(!mod.punishment && (!mod.actions || !mod.actions.length)) && checkEnabled(mod) ? (
                     <div className="inline-error">
-                        A punishment and action is not set for this module. It will do nothing.
+                        Neither punishment nor action is set for this module. It will do nothing.
                     </div>
                 ) : null}
                 {wmessage ? (

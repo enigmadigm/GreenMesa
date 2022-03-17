@@ -1,75 +1,92 @@
-import { DMChannel } from 'discord.js';
-import { Command } from 'src/gm';
+import { ChannelLogsQueryOptions } from 'discord.js';
+import moment from 'moment';
+import { Command, GuildMessageProps } from 'src/gm';
 import { permLevels } from '../../permissions';
 import { stringToMember } from '../../utils/parsers';
-//import { getGuildSetting } from "../dbmanager";
+import { argsMustBeNum } from '../../utils/specials';
 
-export const command: Command = {
-    name: 'purge',
+export const command: Command<GuildMessageProps> = {
+    name: "purge",
     description: {
-        short: 'bulk delete messages in a channel',
-        long: 'This command can remove up to 100 messages from all members or a single target in a channel.'
+        short: "bulk delete messages in a channel",
+        long: "This command can remove up to 100 messages from all members or a single target in a channel.",
     },
-    aliases: ['bulkdelete'],
-    usage: "<# of messages to delete> [target member @]",
+    aliases: ['clear'],
+    usage: "<# of messages to delete> [@target]",
     args: true,
+    flags: [
+        {
+            f: "r",
+            d: "show receipt"
+        }
+    ],
     guildOnly: true,
     permLevel: permLevels.mod,
     moderation: true,
-    async execute(client, message, args) {
+    permissions: ["MANAGE_MESSAGES"],
+    async execute(client, message, args, flags) {
         try {
-            if (!message.guild || message.channel instanceof DMChannel) return;
-    
-            const deleteCount = parseInt(args[0], 10); // get the delete count, as an actual number.
-            args.shift();
-            const target = await stringToMember(message.guild, args.join(" "));
-    
-            // Ooooh nice, combined conditions. <3
-            if (!deleteCount || deleteCount < 2) {
-                client.specials?.sendError(message.channel, "Provide a number (2-100) for the number of messages to delete.");
+            if (!(await argsMustBeNum(message.channel, [args[0]]))) {// check to make sure first argument is a number (any number)
                 return;
             }
-            
-            let opts = {
+            const deleteCount = parseInt(args[0], 10); // get the delete count, as an actual number.
+            args.shift();
+            const a = args.join(" ");
+            const target = await stringToMember(message.guild, a);
+
+            // Ooooh nice, combined conditions. <3
+            if (!deleteCount || deleteCount < 2) {
+                await client.specials.sendError(message.channel, "Provide a number (2-100) for the number of messages to delete.");
+                return;
+            }
+
+            let opts: ChannelLogsQueryOptions = {
                 limit: (deleteCount < 100) ? deleteCount : 100,
                 before: message.id
             }
             if (target) {
                 opts = {
                     limit: 100,
-                    before: (target.user.lastMessage?.channel.id === message.channel.id) ? target.user.lastMessageID || "" : message.id
+                    before: (target.user.lastMessage?.channel.id === message.channel.id) ? target.user.lastMessageID || undefined : message.id
                 }
             }
-            
+
             // Get messages and delete them. Simple enough, right?
-            const messages = await message.channel.messages.fetch( opts )
-            messages.set(message.id, message);
-            let c = 0;
+            const messages = await message.channel.messages.fetch(opts);
+            let c = 0;// the number of messages to be deleted (after they are fetched and filtered)
             if (target) {
                 if (target.user.lastMessage?.channel.id === message.channel.id) {
                     messages.set(target.user.lastMessage.id, target.user.lastMessage);
                 }
-                const mc = messages.filter(m => m.author.id === target.user.id || m.id === message.id).array().slice(0, deleteCount);
+                const mc = messages.filter(m => (m.author.id === target.user.id || m.id === message.id) && moment().diff(m.createdAt, "s") < 1209600).array().slice(0, deleteCount);
                 if (mc.length == 0) {
-                    message.channel.send(`Could not find any recent messages.`);
-                    message.delete();
+                    await message.channel.send(`Could not find any recent messages younger than 14 days.`);
+                    await message.delete();
                     return;
                 }
                 c = mc.length;
-                message.channel.bulkDelete(mc);
+                mc.push(message);
+                await message.channel.bulkDelete(mc);
             } else {
+                // console.log(moment().diff(messages.first()?.createdAt, "s"))
+                const mc = messages.filter(m => moment().diff(m.createdAt, "s") < 1209600).array().slice(0, deleteCount);
+                if (mc.length == 0) {
+                    await message.channel.send(`Could not find any recent messages younger than 14 days.`);
+                    await message.delete();
+                    return;
+                }
                 c = messages.size;
-                message.channel.bulkDelete(messages);
+                mc.push(message);
+                await message.channel.bulkDelete(mc);
             }
 
-            if (args.join(" ").endsWith("-m")) {
-                message.channel.send(`Purged ${c} messages`);// People don't seem to like that it says a message at the end.
+            if (flags.find(x => x.name === "r")) {// if receipt flag is provided, send deletion receipt
+                await message.channel.send(`Purged ${c} messages`);// People don't seem to like that it says a message at the end.
             }
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }
 }
-

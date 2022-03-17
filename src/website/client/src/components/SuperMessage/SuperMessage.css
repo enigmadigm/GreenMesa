@@ -1,0 +1,191 @@
+.sm-super {
+    background-color: rgba(0, 0, 0, 0.25);
+    width: 100%;
+    top: 0;
+    overflow-y: auto;
+    opacity: 0;
+    /* padding-bottom: 20px; */
+    transition: opacity 0.3s, border 0.3s;
+}
+
+.sm-super .sm-form-container {
+    padding: 1.25rem;
+    position: relative;
+}
+
+.sm-opener {
+    height: 35px;
+    line-height: 0.6;
+    transition: border 0.3s, background-color 0.2s;
+}
+
+.sm-opener-blend {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.sm-input-group {
+    margin-bottom: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.sm-group-menu {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 0.5rem;/* this must go below .sm-input-group to override its margin value */
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.sm-embed-reset button {
+    background-color: #621d39;
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: opacity 0.3s;
+}
+
+.sm-embed-reset button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.sm-iholder {
+    padding-left: 15px;
+    padding-right: 15px;
+    width: 100%;
+    position: relative;
+}
+
+.sm-iholder input[type=text] {
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
+    outline: 0;
+    display: block;
+    width: 100%;
+    height: calc(2rem + 2px);/* 1.5em + 0.75rem + 2px */
+    /* padding: .375rem .75rem; */
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #e4e7ea;
+    /* background-clip: padding-box; */
+    border: 1px solid #23282c;
+    -webkit-transition: border-color .15s ease-in-out, -webkit-box-shadow .15s ease-in-out;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out, -webkit-box-shadow .15s ease-in-out;
+}
+
+/* .sm-iholder input[type=color] {
+    
+} */
+
+.sm-iholder .sm-climiter {
+    position: absolute;
+    opacity: 0.7;
+    font-size: 0.8em;
+}
+
+.sm-miniswatch {
+    transition: background 0.3s;
+}
+
+.sm-txta {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background-color: #343B41;
+    width: 100%;
+    padding: 3px 5px;
+}
+
+.sm-container select {
+    background-color: #343B41;
+    margin-right: 5px;
+}
+
+.sm-add-field {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-radius: 5px;
+    padding: 4px 15px;
+    --sm-add-field: 15, 37, 57;
+    background-color: rgb(var(--sm-add-field));
+    cursor: pointer;
+    /* margin-left: 5px; */
+    border: 3px solid rgb(var(--sm-add-field));
+    transition: background-color 0.2s;
+}
+
+.sm-add-field:hover {
+    background-color: rgba(var(--sm-add-field), 0.5);
+}
+
+.sm-fields {
+    width: 100%;
+    position: relative;
+}
+
+.sm-field {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 1rem;
+}
+
+.sm-field > div {
+    width: 100%;
+}
+
+.sm-field > div:first-of-type {
+    margin-bottom: 0.5rem;
+}
+
+.sm-field .sm-field-text {
+    flex-grow: 1;
+    height: 37px;
+}
+
+.sm-field .sm-field-option {
+    padding: 5px;
+    margin-left: 5px;
+}
+
+.sm-buttons {
+    position: absolute;
+    width: 100%;
+    padding: 1.25em;
+    bottom: 0;
+    left: 0;
+}
+
+.sm-buttons button.primary-button {
+    background-color: rgb(0, 75, 148);
+    transition: opacity 0.3s;
+}
+
+.sm-buttons button.primary-button:hover {
+    opacity: 0.7;
+}
+
+.sm-buttons button.primary-button:disabled {
+    color: rgb(122, 122, 122);
+    cursor: not-allowed;
+    /* background-image: linear-gradient(63deg, #230063 38.89%, #610000 38.89%, #610000 50%, #230063 50%, #230063 88.89%, #610000 88.89%, #610000 100%); */
+    /* background-size: 10.10px 19.82px; */
+    /* background-color: rgba(35, 0, 99, 0.8); */
+    opacity: 0.5;
+}
+
+.sm-buttons button.primary-button+.sm-cancel-bottom {
+    margin-left: 15px;
+    position: absolute;
+    right: 1.25em;
+}
+
+.sm-buttons hr:first-child {
+    margin-bottom: 10px;
+}

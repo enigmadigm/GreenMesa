@@ -1,10 +1,10 @@
-import { GuildMember, MessageEmbedOptions } from "discord.js";
+import { Guild, GuildMember, MessageEmbedOptions, Permissions, User } from "discord.js";
 import moment from "moment";
-import { UnbanActionData, UnmuteActionData, WarnConf, XClient } from "../gm";
+import { UnbanAction, UnmuteAction, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers";
 import uniqid from 'uniqid';
-
 import { Contraventions } from "./contraventions";
+import { isSnowflake } from "./specials";
 
 // export class BaseModAction<T> {
 //     public client: XClient;
@@ -139,9 +139,9 @@ import { Contraventions } from "./contraventions";
 /**
  * Auto-mute a target permanently or for a period
  */
-export async function mute(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, reason = "Automatic mute"): Promise<void | string> {
-    if (!target.guild.me?.permissions.has("MANAGE_ROLES")) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+export async function mute(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, reason = "Automatic mute", remute = false): Promise<void | string> {
+    if (!target.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) return;
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     const dbmr = await client.database.getGuildSetting(target.guild, "mutedrole");
     const mutedRoleID = dbmr ? dbmr.value : "";
@@ -152,20 +152,18 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
     if (!mutedRole) {
         // Create a role called "Muted"
         mutedRole = await target.guild.roles.create({
-            data: {
-                name: 'Muted',
-                color: '#708090',
-                permissions: 0,
-                position: 1
-            }
+            name: 'Muted',
+            color: '#708090',
+            permissions: 0n,
+            position: 1
         });
 
         client.database.editGuildSetting(target.guild, "mutedrole", mutedRole.id);
 
         // Prevent the user from sending messages or reacting to messages
         target.guild.channels.cache.each(async (channel) => {
-            if (mutedRole) {
-                await channel.updateOverwrite(mutedRole, {
+            if (mutedRole && !channel.isThread()) {
+                await channel.permissionOverwrites.edit(mutedRole, {
                     SEND_MESSAGES: false,
                     ADD_REACTIONS: false
                 });
@@ -186,8 +184,12 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
     }
 
     await target.roles.add(mutedRole, `Requested by ${modtag}${reason ? ` for ${reason}` : ""}`).catch(e => console.log(e.stack));
-    if (target.voice.connection && !target.voice.mute) {
-        await target.voice.setMute(true);
+    if (target.voice.channel && !target.voice.serverMute) {
+        try {
+            await target.voice.setMute(true);
+        } catch (error) {
+            xlg.error("modactions error setting voice mute", error)
+        }
     }
     let duration = "";
     let mendm = "";
@@ -198,29 +200,38 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
 
     let noNotify = false;
     try {
-        const embed: MessageEmbedOptions = {
-            color: await client.database.getColor("fail"),
-            title: `Mute Notice`,
-            description: `You were **muted** in \`${target.guild.name}\`.${time ? `\nThis is a temporary mute, it will end in ${duration} at \`${moment().add(time, "ms").format('YYYY-MM-DD HH:mm:ss')}\`.` : ""}`,
-            fields: [
-                {
-                    name: "Reason",
-                    value: `${reason || "*none*"}`,
-                }
-            ],
-        };
-        if (modtag) {
-            embed.fields?.push({
-                name: "Moderator",
-                value: `${modtag}`,
-            });
+        let embed: MessageEmbedOptions = {};
+        if (!remute) {
+            embed = {
+                color: await client.database.getColor("fail"),
+                title: `Mute Notice`,
+                description: `You were **muted** in \`${target.guild.name.escapeDiscord()}\`.${time ? `\nThis is a temporary mute, it will end in ${duration} at \`${moment().add(time, "ms").format('YYYY-MM-DD HH:mm:ss')}\`.` : ""}`,
+                fields: [
+                    {
+                        name: "Reason",
+                        value: `${reason || "*none*"}`,
+                    }
+                ],
+            };
+            if (modtag) {
+                embed.fields?.push({
+                    name: "Moderator",
+                    value: `${modtag}`,
+                });
+            }
+        } else {
+            embed = {
+                color: await client.database.getColor("warn"),
+                title: `Remute`,
+                description: `**Re:** \`${target.guild.name.escapeDiscord()}\`\nYou either intentionally or unintentionally tried to evade your mute. It has been reinstated.`,
+            };
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
     } catch (error) {
         noNotify = true;
     }
 
-    await Contraventions.logMute(target, time, mod, `${reason}${noNotify ? " - could not notify offender" : ""}`);
+    await Contraventions.logMute(target, time, mod, `${reason}`, remute, noNotify ? true : false);
 
     if (time) {
         /*setTimeout(async () => {
@@ -233,7 +244,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
                 }
             }
         }, time)*/
-        const data: UnmuteActionData = {
+        const data: UnmuteAction["data"] = {
             guildid: target.guild.id,
             userid: target.id,
             roleid: mutedRole.id,
@@ -257,7 +268,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
  */
 export async function ban(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, summary?: string): Promise<void | string> {
     if (!client.database || !target.bannable) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
     
     let duration = "";
     let mendm = "";
@@ -283,9 +294,9 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
             embed.fields?.push({
                 name: "Moderator",
                 value: `${modtag}`,
-            })
+            });
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
         
     } catch (error) {
         noNotify = true;
@@ -296,14 +307,14 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
         reason: `Requested by ${modtag}${summary ? ` for ${summary}` : ``}`
     });
 
-    await Contraventions.logBan(target, mod, `${summary ? summary : ``}${noNotify ? " - could not notify offender" : ""}`, time);
+    await Contraventions.logBan(target, mod, `${summary ? summary : ``}`, time, noNotify ? true : false);
 
     if (time) {
-        const data: UnbanActionData = {
+        const data: UnbanAction["data"] = {
             guildid: target.guild.id,
             userid: target.id,
             duration: duration,
-        }
+        };
         
         if (client.database) {
             const t = moment().add(time, "ms").toDate();
@@ -311,7 +322,8 @@ export async function ban(client: XClient, target: GuildMember, time = 0, mod: G
         }
     }
 
-    registerBan(client, target);
+    await registerBan(client, target);
+
     return `\\✅ Banned \`${target.user.tag}\`${mendm}`;
 }
 
@@ -334,11 +346,52 @@ export async function registerBan(client: XClient, target: GuildMember): Promise
 }
 
 /**
+ * Unban a user from a guild
+ */
+export async function unban(client: XClient, guild: Guild, target: User, mod: GuildMember | string, summary?: string): Promise<void | string> {
+    if (!client.database || !client.user) return;
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user.id ? client.user.tag : isSnowflake(mod) ? guild.members.cache.get(mod)?.user.tag || "" : "";
+
+    let noNotify = false;
+    try {
+        const embed: MessageEmbedOptions = {
+            color: await client.database.getColor("success"),
+            title: `Unbab Notice`,
+            description: `You were **unbanned** from \`${guild.name}\`.    `,
+            fields: [
+                {
+                    name: "Reason",
+                    value: `${summary || "*none*"}`,
+                }
+            ],
+        };
+        if (modtag) {
+            embed.fields?.push({
+                name: "Moderator",
+                value: `${modtag}`,
+            });
+        }
+        await target.send({ embeds: [embed] });
+    } catch (error) {
+        noNotify = true;
+    }
+
+    try {
+        await guild.members.unban(target, summary);
+    } catch (e) {
+        return `\\🆘 Could not unban ${target.tag}`
+    }
+    
+    await Contraventions.logUnban(guild.id, target.id, mod, `${summary ? summary : ``}`, target.tag, noNotify ? true : false);
+    return `\\✅ Unbanned ${target.tag}`;
+}
+
+/**
  * Kick someone
  */
 export async function kick(client: XClient, target: GuildMember, mod: GuildMember | string, summary?: string): Promise<void | string> {
     if (!client.database || !target.kickable) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     let noNotify = false;
     try {
@@ -359,13 +412,13 @@ export async function kick(client: XClient, target: GuildMember, mod: GuildMembe
                 value: `${modtag}`,
             });
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
     } catch (error) {
         noNotify = true;
     }
 
     await target.kick(`Requested by ${modtag}${summary ? ` for ${summary}` : ``}`);
-    await Contraventions.logKick(target, mod, `${summary ? summary : ``}${noNotify ? " - could not notify offender" : ""}`);
+    await Contraventions.logKick(target, mod, `${summary ? summary : ``}`, noNotify ? true : false);
     return `\\✅ Kicked ${target.user.tag}`;
 }
 
@@ -374,7 +427,7 @@ export async function kick(client: XClient, target: GuildMember, mod: GuildMembe
  */
 export async function warn(client: XClient, target: GuildMember, mod: GuildMember | string, summary?: string): Promise<void | string> {
     if (!client.database) return;
-    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : /^[0-9]{18}$/.test(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
 
     let noNotify = false;
     try {
@@ -395,12 +448,12 @@ export async function warn(client: XClient, target: GuildMember, mod: GuildMembe
                 value: `${modtag}`,
             });
         }
-        await target.send({ embed });
+        await target.send({ embeds: [embed] });
     } catch (error) {
         noNotify = true;
     }
 
-    await Contraventions.logWarn(target, mod, `${summary ? summary : ``}${noNotify ? " - could not notify offender" : ""}`);
+    await Contraventions.logWarn(target, mod, `${summary ? summary : ``}`, noNotify ? true : false);
 
     checkWarnings(client, target);
 
