@@ -1,10 +1,11 @@
 import { ClientValuesGuild, DashboardMessage, GuildMessageProps, SkeletonGuildObject, SkeletonRole, XClient, XMessage } from '../gm';
 import moment from 'moment';
-import { ButtonInteraction, Channel, CollectorFilter, DMChannel, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
+import { ButtonInteraction, Channel, CollectorFilter, DMChannel, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, PartialDMChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
 import { Bot } from "../bot";
 import { combineEmbedText } from './parsers';
+import { MessageButtonStyles } from 'discord.js/typings/enums';
 
-export async function sendModerationDisabled(channel: Channel): Promise<void> {
+export async function sendModerationDisabled(channel: Channel ): Promise<void> {
     if (!channel.isText() || !('guild' in channel)) return;
     const fail_embed_color = await Bot.client.database.getColor("fail");
     await channel.send({
@@ -15,7 +16,7 @@ export async function sendModerationDisabled(channel: Channel): Promise<void> {
     });
 }
 
-export async function sendError(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, message?: string, errorTitle: string | boolean = false): Promise<Message> {
+export async function sendError(channel: TextChannel | DMChannel | PartialDMChannel | NewsChannel | ThreadChannel, message?: string, errorTitle: string | boolean = false): Promise<Message> {
     return await channel.send({
         embeds: [{
             color: await Bot.client.database.getColor("fail") || 16711680,
@@ -25,7 +26,7 @@ export async function sendError(channel: TextChannel | DMChannel | NewsChannel |
     });
 }
 
-export async function sendInfo(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, message: string): Promise<Message> {
+export async function sendInfo(channel: TextChannel | DMChannel | PartialDMChannel | NewsChannel | ThreadChannel, message: string): Promise<Message> {
     return await channel.send({
         embeds: [{
             color: 0x337fd5/* await Bot.client.database.getColor("info") */,
@@ -104,16 +105,16 @@ export async function argsMustBeNum(channel: Channel, args: string[]): Promise<b
  * @param adminOverride Should admin permissions override  (default False)
  * @returns the result of the confirmation
  */
-export async function getUserConfirmation(channel: TextChannel | DMChannel | NewsChannel | ThreadChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**", adminOverride = false): Promise<{ end: boolean, msg: Message | null, inter: ButtonInteraction | null }> {
+export async function getUserConfirmation(channel: TextChannel | DMChannel | PartialDMChannel | NewsChannel | ThreadChannel, acceptFrom: Snowflake[], text = "Please confirm", confirmationMessage = "**Confirmed**", rejectionMessage = "**Aborted**", adminOverride = false): Promise<{ end: boolean, msg: Message | null, inter: ButtonInteraction | null }> {
     const cm = await channel.send({
         embeds: [{
             color: 0x337fd5/* await Bot.client.database.getColor("info") */,
             description: `<:sminfo:818342088088354866> ${text}`
         }],
-        components: [new MessageActionRow().addComponents(new MessageButton({ customID: "yes", label: "Yes", style: "SUCCESS" }), new MessageButton({ customID: "no", label: "No", style: "DANGER" }))],
+        components: [new MessageActionRow().addComponents(new MessageButton({ customId: "yes", label: "Yes", style: MessageButtonStyles.SUCCESS }), new MessageButton({ customId: "no", label: "No", style: MessageButtonStyles.DANGER }))],
     });
     const alreadyShovedOff: Snowflake[] = [];
-    const pushFilter: CollectorFilter<[MessageComponentInteraction]> = async (inter) => {
+    const pushFilter: CollectorFilter<[MessageComponentInteraction]> = async (inter) => {// filters button clicks to ensure only authorized users are permitted to confirm
         if (inter.isButton()) {
             if (
                 acceptFrom.includes(inter.user.id) ||
@@ -137,25 +138,28 @@ export async function getUserConfirmation(channel: TextChannel | DMChannel | New
         }
     };
     // const pushes = await cm.awaitMessageComponentInteraction({filter: pushFilter, time: 10 * 1000});
-    const buttonOption = await cm.awaitMessageComponentInteraction({ filter: pushFilter, time: 10 * 1000 }).catch(() => undefined);
+    const buttonOption = await cm.awaitMessageComponent({ filter: pushFilter, time: 10 * 1000 }).catch(() => undefined);// wait for responses to the confirmation buttons
     if (!buttonOption || !buttonOption.isButton()) {
         await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(`**No confirmation**`).setColor(await Bot.client.database.getColor("fail"))], components: [] });
-        return { end: false, msg: cm.deleted ? cm : null, inter: null };
+        return { end: false, msg: !cm.deleted ? cm : null, inter: null };
+        // return { end: false, msg: cm.deleted ? cm : null, inter: null };
     }
-    if (buttonOption.customID === "yes") {
+    if (buttonOption.customId === "yes") {
         if (confirmationMessage) {
             await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(confirmationMessage).setColor(await Bot.client.database.getColor("success"))], components: [] });
         } else if (cm.deletable) {
             await cm.delete();
         }
-        return { end: true, msg: cm.deleted ? cm : null, inter: buttonOption };
+        return { end: true, msg: !cm.deleted ? cm : null, inter: buttonOption };
+        // return { end: true, msg: cm.deleted ? cm : null, inter: buttonOption };
     }
     if (rejectionMessage) {
         await cm.edit({ embeds: [new MessageEmbed(cm.embeds[0]).setDescription(rejectionMessage).setColor(await Bot.client.database.getColor("fail"))], components: [] });
     } else if (cm.deletable) {
         await cm.delete();
     }
-    return { end: false, msg: cm.deleted ? cm : null, inter: buttonOption };
+    return { end: false, msg: !cm.deleted ? cm : null, inter: buttonOption };
+    // return { end: false, msg: cm.deleted ? cm : null, inter: buttonOption };
 }
 
 export function timedMessagesHandler(client: XClient): void {//TODO: make this a real handler, integrate with cronjobs or timedactions or something
@@ -295,13 +299,14 @@ export const shards = {
         if (!Bot.client.shard) {
             return false;
         }
-        const reductionFunc = (p: Channel[], c: Channel[]) => {
+        const reductionFunc = (p: Channel[], c: Channel[]): Channel[] => {
             for (const chan of c) {
                 p.push(chan);
             }
             return p;
         };
-        const channels = (await Bot.client.shard.fetchClientValues("channels.cache"))?.reduce(reductionFunc, []);
+        const clientValuesResponse = <Channel[][]>(await Bot.client.shard.fetchClientValues("channels.cache"));//TODO: does this break?
+        const channels = clientValuesResponse?.reduce(reductionFunc, []);
         if (!channels) {
             return false;
         }
@@ -376,7 +381,7 @@ export const shards = {
                             name: x.name,
                             id: x.id,
                             icon: x.iconURL(),
-                            owner: x.ownerID,
+                            owner: x.ownerId,
                         }
                 });
                 return mutualGuilds;
@@ -441,3 +446,41 @@ export function assembleDashboardMessage(m: DashboardMessage): MC {
         embed: combineEmbedText(e).length ? new MessageEmbed(e) : undefined,
     };
 }
+
+export const ChannelTypeKey = {
+    GUILD_CATEGORY: {
+        pretty: "Category",
+    },
+    GUILD_VOICE: {
+        pretty: "Voice",
+        emoji: "<:voice_channel:828153551154315275>",
+    },
+    GUILD_STAGE_VOICE: {
+        pretty: "Stage Voice",
+        emoji: "<:voice_channel:828153551154315275>",
+    },
+    GUILD_STORE: {
+        pretty: "Store",
+        emoji: "<:text_channel:828153514315612230>",
+    },
+    GUILD_TEXT: {
+        pretty: "Text",
+        emoji: "<:text_channel:828153514315612230>",
+    },
+    GUILD_NEWS: {
+        pretty: "News",
+        emoji: "<:text_channel:828153514315612230>",
+    },
+    GUILD_NEWS_THREAD: {
+        pretty: "News Thread",
+        emoji: "<:text_channel:828153514315612230>",
+    },
+    GUILD_PRIVATE_THREAD: {
+        pretty: "Private Thread",
+        emoji: "<:text_channel:828153514315612230>",
+    },
+    GUILD_PUBLIC_THREAD: {
+        pretty: "Public Thread",
+        emoji: "<:text_channel:828153514315612230>",
+    },
+};

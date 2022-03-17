@@ -13,7 +13,7 @@ export const service: MessageService = {
             let flag = false;
 
             if (message.embeds.length) {
-                if (modResult.ignoreBots && (message.webhookID || message.author.bot)) {
+                if (modResult.ignoreBots && (message.webhookId || message.author.bot)) {
                     return;
                 }
                 flag = true;

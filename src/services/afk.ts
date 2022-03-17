@@ -88,7 +88,7 @@ export const service: MessageService = {
                     })
                     return;
                 }*/
-            } else if (message.reference && message.reference.messageID && (target = await testReference(message.reference.guildID, message.reference.channelID, message.reference.messageID))) {
+            } else if (message.reference && message.reference.messageId && message.reference.guildId && (target = await testReference(message.reference.guildId, message.reference.channelId, message.reference.messageId))) {
                 const afk = await Bot.client.database.getUserData(target.id);
                 if (afk.afk && afk.afk !== "~~off~~" && afk.afk !== "off") {
                     sendAfk(afk.afk, message.channel, target);

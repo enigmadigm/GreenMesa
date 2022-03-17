@@ -14,11 +14,12 @@
   },
   "author": "Stefan Hauge",
   "dependencies": {
+    "@dice-roller/rpg-dice-roller": "^5.1.0",
     "@discordjs/opus": "^0.3.3",
     "body-parser": "^1.19.0",
     "chroma-js": "^2.1.0",
     "corpora": "git+https://github.com/dariusk/corpora.git",
-    "discord.js": "^13.0.0-dev.3a718d8.1625270632",
+    "discord.js": "^13.6.0",
     "dotenv": "^8.2.0",
     "exit-hook": "^2.2.1",
     "express": "^4.17.1",
@@ -44,7 +45,6 @@
     "pm2": "^5.0.0",
     "pug": "^3.0.2",
     "puppeteer": "^5.5.0",
-    "rpg-dice-roller": "^4.5.2",
     "source-map-support": "^0.5.19"
   },
   "license": "AGPL-3.0-or-later",

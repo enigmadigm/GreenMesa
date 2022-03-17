@@ -1,8 +1,9 @@
-import { stringToChannel, capitalize, combineMessageText } from './utils/parsers';
+import { stringToChannel, combineMessageText } from './utils/parsers';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel, ThreadChannel } from 'discord.js';
 import moment from 'moment';
 import { Bot } from './bot';
 import { ServerlogData } from './gm';
+import { ChannelTypeKey } from './utils/specials';
 
 const LoggingFlags = {
     MEMBER_STATE: 1 << 0,
@@ -74,7 +75,7 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
         }
 
         const logChannel = await getLogChannel(member.guild, LoggingFlags.MEMBER_STATE, "movement_channel");
-        if (!logChannel || logChannel.type !== 'text') return;
+        if (!logChannel) return;
 
         
         // "color": joining ? 0x00ff00 : 0xff0000,
@@ -107,9 +108,9 @@ export async function logMember(member: GuildMember, joining: boolean): Promise<
 export async function logMessageDelete(message: Message): Promise<void> {// add attachment cache system (posts all deleted attachments in a specific channel in the server and uses the link to that attachment in the msg log) 
     //TODO: NEW PROPOSITION: USE rooskie.is-a-virg.in temp cdn
     try {
-        if (!message.guild || message.channel instanceof DMChannel) return;
+        if (!message.guild || message.channel.type === "DM") return;
         const logChannel = await getLogChannel(message.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", message.channel);
-        if (!logChannel || logChannel.type !== 'text') return;
+        if (!logChannel) return;
         //if (logChannel.id === message.channel.id) return;
         if (message.author.id === message.client.user?.id) return;
         // shorten message if it's longer then 1024 (thank you bulletbot)
@@ -166,14 +167,14 @@ export async function logMessageDelete(message: Message): Promise<void> {// add 
 export async function logMessageBulkDelete(messageCollection: Collection<string, Message | Discord.PartialMessage>): Promise<void> {
     try {
         const first = messageCollection.first();
-        if (!first || !first.guild) return;
+        if (!first || !first.guild || first.channel.type == "DM") return;
         if (messageCollection instanceof DMChannel || first.channel instanceof DMChannel) return;
         const logChannel = await getLogChannel(first.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", first.channel);
-        if (!logChannel || logChannel.type !== 'text') return;
+        if (!logChannel) return;
         if (logChannel.id === messageCollection.first()?.channel.id) return;
     
         let humanLog = `**Deleted Messages from #${first.channel.name} (${first.channel.id}) in ${first.guild.name} (${first.guild.id})**`;
-        for (const message of messageCollection.array().reverse()) {
+        for (const message of [...messageCollection.values()].reverse()) {
             humanLog += `\r\n\r\n[${moment(message.createdAt).format()}] ${message.author?.tag.replace("*", "⁎").replace("_", "\\_").replace("`", "\\`")} (${message.id})`;
             humanLog += ' : ' + message.content;
             if (message.attachments.size) {
@@ -196,7 +197,7 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
                 fields: [
                     {
                         name: 'Message Count',
-                        value: `${messageCollection.array().length} messages deleted`
+                        value: `${[...messageCollection.values()].length} messages deleted`
                     },
                     {
                         name: 'Messages',
@@ -212,9 +213,9 @@ export async function logMessageBulkDelete(messageCollection: Collection<string,
 
 export async function logMessageUpdate(omessage: Message, nmessage: Message): Promise<void> {
     try {
-        if (omessage.content == nmessage.content || !nmessage.guild || nmessage.channel instanceof DMChannel) return;
+        if (omessage.content == nmessage.content || !nmessage.guild || nmessage.channel.type === "DM") return;
         const logChannel = await getLogChannel(nmessage.guild, LoggingFlags.MESSAGE_DELETION, "messages_channel", nmessage.channel);
-        if (!logChannel || logChannel.type !== 'text') return;
+        if (!logChannel) return;
         if (logChannel.id === nmessage.channel.id) return;
         if (nmessage.author.id == nmessage.client.user?.id) return;
     
@@ -262,7 +263,7 @@ export async function logMessageUpdate(omessage: Message, nmessage: Message): Pr
 export async function logRole(role: Role, deletion = false): Promise<void> {
     try {
         const logChannel = await getLogChannel(role.guild, deletion ? LoggingFlags.ROLE_DELETION : LoggingFlags.ROLE_CREATION, "server_channel");
-        if (!logChannel || logChannel.type !== 'text') return;
+        if (!logChannel || logChannel.type !== "GUILD_TEXT") return;
     
         try {
             await logChannel.send({
@@ -290,7 +291,7 @@ export async function logRole(role: Role, deletion = false): Promise<void> {
 export async function logRoleUpdate(previousrole: Role, currentRole: Role): Promise<void> {
     try {
         const logChannel = await getLogChannel(currentRole.guild, LoggingFlags.OTHER_EVENTS, "server_channel");
-        if (!logChannel || logChannel.type !== 'text') return;
+        if (!logChannel || logChannel.type !== "GUILD_TEXT") return;
 
         if (previousrole.name !== currentRole.name) {
             await logChannel.send({
@@ -328,13 +329,13 @@ export async function logRoleUpdate(previousrole: Role, currentRole: Role): Prom
 export async function logChannelState(channel: GuildChannel, deletion = false): Promise<void> {
     try {
         const logChannel = await getLogChannel(channel.guild, deletion ? LoggingFlags.CHANNEL_DELETION : LoggingFlags.CHANNEL_CREATION, "server_channel", channel);
-        if (!logChannel || logChannel.type !== 'text') return;
+        if (!logChannel) return;
         const nameref = channel.name ? ` (${channel.name})` : "";
-        const titletyperef = channel.type !== "category" ? `${capitalize(channel.type)} ` : "";
+        const titletyperef = channel.type !== "GUILD_CATEGORY"/*  && channel.type in ChannelTypeKey */ ? `${ChannelTypeKey[channel.type]/* capitalize(channel.type) */} ` : "";
 
         await logChannel.send({
             embeds: [{
-                title: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type === "voice" ? "<:voice_channel:828153551154315275>" : (channel.type === "text" ? "<:text_channel:828153514315612230>" : ""))} ${titletyperef}${channel.type === 'category' ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
+                title: `${deletion ? "<:trashcan:828153494858366997>" : (channel.type in ChannelTypeKey ? ChannelTypeKey[channel.type] : "")} ${titletyperef}${channel.type === "GUILD_CATEGORY" ? "Category" : "Channel"} ${deletion ? 'Deleted' : 'Created'}`,
                 description: `${deletion ? `#${channel.name}` : `${channel}`}${nameref}${deletion ? "\n created " + moment(channel.createdAt).utc().fromNow() : ''}`,
                 color: deletion ? await Bot.client.database.getColor("fail") || 0xff0000 : await Bot.client.database.getColor("success"),
                 timestamp: deletion ? channel.createdAt : new Date(),
@@ -399,19 +400,19 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
         // https://github.com/CodeBullet-Community/BulletBot/blob/d5e8f7f5e6649f6b552e4ad7fe5c31f6aa42b1b8/src/megalogger.ts#L125
         // I am going to be honest here, I have no idea as to how this works. That's why I had to take the code from elsewhere.
         // get permission difference between the old and new channel
-        const permDiff = oc.permissionOverwrites.filter(x => {
-            if (nc.permissionOverwrites.find(y => y.allow.bitfield == x.allow.bitfield && x.id === y.id) && nc.permissionOverwrites.find(y => y.deny.bitfield == x.deny.bitfield && y.id === x.id))
+        const permDiff = oc.permissionOverwrites.cache.filter(x => {
+            if (nc.permissionOverwrites.cache.find(y => y.allow.bitfield == x.allow.bitfield && x.id === y.id) && nc.permissionOverwrites.cache.find(y => y.deny.bitfield == x.deny.bitfield && y.id === x.id))
                 return false;
             return true;
-        }).concat(nc.permissionOverwrites.filter(x => {
-            if (oc.permissionOverwrites.find(y => y.deny.bitfield == x.allow.bitfield) && oc.permissionOverwrites.find(y => y.deny.bitfield == x.deny.bitfield))
+        }).concat(nc.permissionOverwrites.cache.filter(x => {
+            if (oc.permissionOverwrites.cache.find(y => y.deny.bitfield == x.allow.bitfield) && oc.permissionOverwrites.cache.find(y => y.deny.bitfield == x.deny.bitfield))
                 return false;
             return true;
         }));
         if (permDiff.size) {
             for (const id of permDiff.keys()) {
-                const oldPerm = oc.permissionOverwrites.get(id);
-                const newPerm = nc.permissionOverwrites.get(id);
+                const oldPerm = oc.permissionOverwrites.cache.get(id);
+                const newPerm = nc.permissionOverwrites.cache.get(id);
                 if (!oldPerm || !newPerm) return;
                 const oldBitfield = {
                     allow: oldPerm.allow.bitfield,
@@ -474,7 +475,7 @@ export async function logChannelUpdate(oc: GuildChannel, nc: GuildChannel): Prom
 export async function logEmojiState(emoji: GuildEmoji, deletion = false): Promise<void> {
     try {
         const logChannel = await getLogChannel(emoji.guild, deletion ? LoggingFlags.EMOJI_DELETION : LoggingFlags.EMOJI_CREATION, "server_channel");
-        if (!logChannel || logChannel.type !== 'text' || !(emoji instanceof Discord.GuildEmoji)) return;
+        if (!logChannel || logChannel.type !== "GUILD_TEXT" || !(emoji instanceof Discord.GuildEmoji)) return;
 
         let creator = null;
         if (!deletion) {
