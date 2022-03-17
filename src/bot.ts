@@ -31,7 +31,7 @@ process.on('SIGINT', function () {
 });*/
 // catches unhandled promise rejections
 process.on('unhandledRejection', async (reason, promise) => {
-    const error = new Error('Unhandled Rejection. Reason: ' + reason);
+    const error = new Error(`Unhandled Rejection. Reason: ${reason}`);
     console.error(error, "Promise:", promise);
 });
 
@@ -170,7 +170,7 @@ client.on("ready", async () => {// This event will run if the bot starts, and lo
 
     try {
         //Generates invite link to put in console.
-        const link = await client.generateInvite({ permissions: ["ADMINISTRATOR"] });
+        const link = client.generateInvite({ scopes: ["bot"], permissions: ["ADMINISTRATOR"] });
         console.log(link);
 
         // Twitch, I hope
@@ -367,7 +367,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
     try {
         client.services.runAllForEvent("message", message), client.database.logMsgReceive();// log reception of message event | run all passive command services
 
-        if (message.author.bot || message.system || message.webhookID || !client.user) return;
+        if (message.author.bot || message.system || message.webhookId || !client.user) return;
 
         const now = Date.now();
 
@@ -492,7 +492,7 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             return;
         }
 
-        if (command.moderation && message.guild) {
+        if (command.moderation && message.guild && !message.channel.partial) {
             const moderationEnabled = await client.database.getGuildSetting(message.guild, 'all_moderation');
             if (!moderationEnabled || moderationEnabled.value === 'disabled') {
                 await client.specials.sendModerationDisabled(message.channel);
@@ -651,7 +651,9 @@ client.on("message", async (message: XMessage) => {// This event will run on eve
             const ret = command.guildOnly ? (isGuildMessage(message) ? await command.execute(client, message, args, flags.flags) : void 0) : await command.execute(client, message, args, flags.flags);
             // i realized i could just add a catchall stopTyping() here in case
             // it is never called at the end of some command or it never makes it that far
-            message.channel.stopTyping();
+            // if (isGuildMessage(message)) {
+            //     message.channel.stopTyping();
+            // }
 
             if (ret && ret !== true) {
                 if (ret.error) {

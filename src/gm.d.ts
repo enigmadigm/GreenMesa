@@ -1,4 +1,4 @@
-import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel, ThreadChannel } from "discord.js";
+import { Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel, ThreadChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -1060,7 +1060,7 @@ export interface StoredPresenceData {
     /**
      * watching, listening, etc
      */
-    type: ActivityType;
+    type: ExcludeEnum<ActivityTypes, 'CUSTOM'>;
     /**
      * afk value for the api, not really sure what it does
      */
@@ -1122,3 +1122,8 @@ export interface StarredMessageData {
     postid: string;
     postchannel: string;
 }
+
+// export type ChannelTypeKeyData = Record<ChannelTypes, {
+//     pretty: string;
+//     indicator?: string;
+// }>

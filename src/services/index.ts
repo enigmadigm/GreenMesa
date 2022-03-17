@@ -61,7 +61,7 @@ export class MessageServices {
                         !((data[0] instanceof Message &&
                             (data[0].author.bot ||
                                 data[0].author.system ||
-                                data[0].webhookID)) ||
+                                data[0].webhookId)) ||
                             (data[1] instanceof User && (data[1].bot || data[1].system)))
                     ) &&
                     (

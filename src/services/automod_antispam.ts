@@ -102,7 +102,7 @@ export const service: MessageService = {//TODO: redo this, refer to gaius i gues
     },
     async execute(client, event, message: XMessage & GuildMessageProps) {
         try {
-            if (message.author.bot || message.webhookID) return;
+            if (message.author.bot || message.webhookId) return;
             const modResult = await Bot.client.database.getAutoModuleEnabled(message.guild.id, "antispam", message.channel.id, undefined, message.member);
             if (!modResult) return;
             let flag = false;

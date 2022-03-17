@@ -163,7 +163,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
         // Prevent the user from sending messages or reacting to messages
         target.guild.channels.cache.each(async (channel) => {
             if (mutedRole && !channel.isThread()) {
-                await channel.updateOverwrite(mutedRole, {
+                await channel.permissionOverwrites.edit(mutedRole, {
                     SEND_MESSAGES: false,
                     ADD_REACTIONS: false
                 });

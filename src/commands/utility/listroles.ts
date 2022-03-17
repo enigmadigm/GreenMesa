@@ -19,6 +19,10 @@ export const command: Command<GuildMessageProps> = {
         {
             f: "nonman",
             d: "list only non-managed roles (bot roles)",
+        },
+        {
+            f: "vacant",
+            d: "list only vacant (unassigned) roles",
         }
     ],
     guildOnly: true,
@@ -27,9 +31,10 @@ export const command: Command<GuildMessageProps> = {
         try {
             const everyoneMentionableFlag = flags.find(x => x.name === "e" && !x.value);
             const nonManagedFlag = flags.find(x => x.name === "nonman" && !x.value);
+            const vacantFlag = flags.find(x => x.name === "vacant" && !x.value)
             const roleArray = message.guild.roles.cache
                 .sort((roleA, roleB) => roleB.position - roleA.position)
-                .filter((x) => x.name !== "@everyone" && (!everyoneMentionableFlag || (x.permissions.bitfield & Permissions.FLAGS.MENTION_EVERYONE) === Permissions.FLAGS.MENTION_EVERYONE) && (!nonManagedFlag || !x.managed))
+                .filter((x) => x.name !== "@everyone" && (!everyoneMentionableFlag || (x.permissions.bitfield & Permissions.FLAGS.MENTION_EVERYONE) === Permissions.FLAGS.MENTION_EVERYONE) && (!nonManagedFlag || !x.managed) && (!vacantFlag || !x.members.size))
                 .map((r, i, c) => {
                     const prefix = `${c.size}`.split(/./).map(() => "0").join("").slice(0, `${c.size}`.length - `${r.position}`.length);
                     return `\`${prefix}${r.position}\` ${r} *${r.id}*`;

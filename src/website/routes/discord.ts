@@ -215,7 +215,7 @@ export default function routerBuild (client: XClient): express.Router {
                 name: c.name,
                 type: c.type,
                 position: c.rawPosition,
-                parentID: c.parentID ?? undefined
+                parentID: c.parentId ?? undefined
             }
             if (c.isText()) {
                 data.nsfw = c.nsfw;
@@ -593,7 +593,7 @@ export default function routerBuild (client: XClient): express.Router {
                         name: c.name,
                         type: c.type,
                         position: c.rawPosition,
-                        parentID: c.parentID ?? undefined
+                        parentID: c.parentId ?? undefined
                         //parent: c.parent
                     }
                     if (c.isText()) {
@@ -641,7 +641,7 @@ export default function routerBuild (client: XClient): express.Router {
                     name: c.name,
                     type: c.type,
                     position: c.rawPosition,
-                    parentID: c.parentID ?? undefined
+                    parentID: c.parentId ?? undefined
                 }
                 if (c.isText()) {
                     data.nsfw = c.nsfw;

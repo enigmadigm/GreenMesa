@@ -63,7 +63,7 @@ export default class MesaWebsite {
                 permissions: 2147483639n,
                 guild: id,
                 //disableGuildSelect: true,
-                additionalScopes: ["applications.commands"],
+                scopes: ["applications.commands"],
             });
             // url = url.replace("scope=bot", "scope=bot applications.commands");
             res.redirect(301, `${url}&response_type=code&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000' : `https://stratum.hauge.rocks`)}/embark`);
@@ -71,7 +71,7 @@ export default class MesaWebsite {
         this.app.get("/invite", async (req, res) => {
             const url = this.client.generateInvite({
                 permissions: 2147483639n,
-                additionalScopes: ["applications.commands"],
+                scopes: ["applications.commands"],
             });
             // url = url.replace("scope=bot", "scope=bot applications.commands");
             res.redirect(301, `${url}&redirect_uri=${encodeURIComponent(process.env.NODE_ENV === "dev" ? 'http://localhost:3000/embark' : `https://stratum.hauge.rocks/embark`)}`);
