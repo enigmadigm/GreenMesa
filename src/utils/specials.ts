@@ -40,7 +40,7 @@ export async function sendInfo(channel: TextChannel | DMChannel | PartialDMChann
  * 
  * @deprecated Use built-in command feature instead
  */
-export async function argsNumRequire(channel: Channel, args: string[], num: number): Promise<boolean> {
+export async function argsNumRequire(channel: Channel | PartialDMChannel, args: string[], num: number): Promise<boolean> {
     try {
         if (!channel.isText()) return false;
         if (args.length == num) return true;
@@ -58,7 +58,7 @@ export async function argsNumRequire(channel: Channel, args: string[], num: numb
     }
 }
 
-export async function argsMustBeNum(channel: Channel, args: string[]): Promise<boolean> {
+export async function argsMustBeNum(channel: Channel | PartialDMChannel, args: string[]): Promise<boolean> {
     try {
         if (!channel.isText()) return false;
         if (!args || !args.length) return false;

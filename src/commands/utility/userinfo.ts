@@ -2,7 +2,7 @@ import { Command, GuildMessageProps } from "src/gm";
 import moment from 'moment';
 import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
 import { permLevels, getPermLevel } from "../../permissions";
-import { Guild, GuildMember, Permissions, Snowflake } from "discord.js";
+import { Collection, Guild, GuildMember, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from "discord.js";
 import { isSnowflake } from "../../utils/specials";
 
 // ●
@@ -11,7 +11,7 @@ function getJoinRank(id: string | Snowflake, guild: Guild) {// Call it with the 
     if (!isSnowflake(id)) return;
     if (!guild.members.cache.get(id)) return;// It will return undefined if the ID is not valid
 
-    const arr = guild.members.cache.array();// Create an array with every member
+    const arr = [...guild.members.cache.values()];// Create an array with every member
     arr.sort((a, b) => (a.joinedTimestamp || 0) - (b.joinedTimestamp || 0));// Sort them by join date
 
     for (let i = 0; i < arr.length; i++) {// Loop though every element
@@ -20,11 +20,11 @@ function getJoinRank(id: string | Snowflake, guild: Guild) {// Call it with the 
 }
 
 function getPresenceEmoji(target: GuildMember) {
-    if (target.user.presence.status === 'online') return '<:736903507436896313:752118506950230067>';
-    if (target.user.presence.status === 'idle') return '<:736903574235250790:752118507164139570>';
-    if (target.user.presence.status === 'dnd') return '<:736903662617755670:752118507046699079>';
-    if (target.user.presence.status === 'offline') return '<:736903819509628948:752118507260477460>';
-    if (target.user.presence.activities.length && target.user.presence.activities[0].type === 'STREAMING') return '<:736903745245413386:752118507248025641>';
+    if (target.presence?.status === 'online') return '<:736903507436896313:752118506950230067>';
+    if (target.presence?.status === 'idle') return '<:736903574235250790:752118507164139570>';
+    if (target.presence?.status === 'dnd') return '<:736903662617755670:752118507046699079>';
+    if (target.presence?.status === 'offline') return '<:736903819509628948:752118507260477460>';
+    if (target.presence?.activities.length && target.presence.activities[0].type === 'STREAMING') return '<:736903745245413386:752118507248025641>';
 }
 
 export const command: Command<GuildMessageProps> = {
@@ -38,20 +38,19 @@ export const command: Command<GuildMessageProps> = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            message.channel.startTyping();
+            await message.channel.sendTyping();
             const a = args.join(" ");
             const memberFind = await stringToMember(message.guild, a);
             const target = memberFind ?? message.member;
             if (!memberFind && args.length) {
                 await client.specials.sendError(message.channel, `That user could not be found`);
-                message.channel.stopTyping();
                 return;
             }
             const rank = await client.database.getXPTop10(message.guild.id, target.id);
             const xp = await client.database.getXP(target);
 
             let roles = '';
-            const roleArray = target.roles.cache.array().sort((a, b) => a.position > b.position ? -1 : 1);
+            const roleArray = [...target.roles.cache.values()].sort((a, b) => a.position > b.position ? -1 : 1);
             const roleCount = target.roles.cache.size - 1;
             roleArray.pop();
             for (const role of roleArray.slice(0, 40)) {
@@ -85,7 +84,17 @@ export const command: Command<GuildMessageProps> = {
             const invitesTotal = message.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD) ? `\`${data.length}\` (total)` : `[unknown](${process.env.DASHBOARD_HOST}/assets/invites_disclaimer.png) ⟵`;
 
             // last message
-            const lastCreated = target.lastMessage ? moment(target.lastMessage.createdAt).utc() : null;
+            const lastChannel = message.guild.channels.cache.filter((c) => !!(c.isText() && c.messages.cache.find(m => m.author.id === message.author.id))).reduce<Collection<string, NewsChannel | TextChannel | ThreadChannel>>((p, c) => {
+                const f = p.first();
+                if (f && f.createdAt < c.createdAt) {
+                    p.delete(c.id);
+                    return p;
+                } else {
+                    return p;
+                }
+            }).first();
+            const lastMessage = lastChannel?.id ? lastChannel.messages.cache.find(m => m.author.id === message.author.id) : null;
+            const lastCreated = lastMessage?.id ? moment(lastMessage.createdAt).utc() : null;
 
             await message.channel.send({
                 embeds: [{
@@ -101,7 +110,7 @@ export const command: Command<GuildMessageProps> = {
                     fields: [
                         {
                             name: "Status",
-                            value: `${getPresenceEmoji(target)} ${target.user.presence.status || ''}`,
+                            value: `${getPresenceEmoji(target)} ${target.presence?.status || ''}`,
                             inline: true,
                         },
                         {
@@ -126,7 +135,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "Last Message",
-                            value: lastCreated && target.lastMessage ? `[<t:${lastCreated.unix()}:R>](${target.lastMessage.url})` : `Unsure, I haven't seen one recently`,
+                            value: lastCreated && lastMessage?.id ? `[<t:${lastCreated.unix()}:R>](${lastMessage?.url})` : `Unsure, I haven't seen one recently`,
                             inline: true,
                         },
                         {
@@ -155,10 +164,8 @@ export const command: Command<GuildMessageProps> = {
                 }],
             });
 
-            message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
-            message.channel.stopTyping(true);
             await client.specials.sendError(message.channel);
             return false;
         }
