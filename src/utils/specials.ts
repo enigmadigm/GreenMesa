@@ -4,6 +4,7 @@ import { ButtonInteraction, Channel, CollectorFilter, DMChannel, GuildChannel, M
 import { Bot } from "../bot";
 import { combineEmbedText } from './parsers';
 import { MessageButtonStyles } from 'discord.js/typings/enums';
+import { MysqlError } from 'mysql';
 
 export async function sendModerationDisabled(channel: Channel ): Promise<void> {
     if (!channel.isText() || !('guild' in channel)) return;
@@ -484,3 +485,9 @@ export const ChannelTypeKey = {
         emoji: "<:text_channel:828153514315612230>",
     },
 };
+
+//  https://stackoverflow.com/a/42618403/10660033
+export function isMysqlError(err: unknown): err is MysqlError {
+    const e = err as Partial<MysqlError>;
+    return 'code' in e && 'errno' in e && 'fatal' in e;
+}

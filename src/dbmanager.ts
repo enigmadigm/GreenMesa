@@ -7,7 +7,7 @@ import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Sno
 import { Bot } from "./bot";
 import uniquid from 'uniqid';
 import { permLevels } from "./permissions";
-import { isSnowflake, shards } from "./utils/specials";
+import { isMysqlError, isSnowflake, shards } from "./utils/specials";
 import Starboard from "./struct/Starboard";
 
 const levelRoles = [
@@ -131,7 +131,11 @@ export class DBManager {
 
             return this;
         } catch (error) {
-            xlg.error(`DB Error: ${error.message}\nError: ${error.stack}`);
+            if (isMysqlError(error)) {
+                xlg.error(`DB Error: ${error.message}\nError: ${error.stack}`);
+            } else {
+                xlg.error(error);
+            }
             return this;
         }
     }
@@ -311,10 +315,10 @@ export class DBManager {
             }
             return { points: p, level: l };
         } catch (error) {
-            if (error.code === "ER_DUP_ENTRY") {
+            if (isMysqlError(error) && error.code === "ER_DUP_ENTRY") {
                 xlg.error('error: ER_DUP_ENTRY caught and deflected');
             } else {
-                xlg.error(error);
+                xlg.error("err setting xp: ", error);
             }
         }
         return { points: -1, level: -1 };
@@ -362,7 +366,7 @@ export class DBManager {
         let levelsEnabled: false | GuildSettingsRow | string = await this.getGuildSetting(member.guild, 'xp_levels');
         levelsEnabled = levelsEnabled ? levelsEnabled.value : false;
         if (levelsEnabled === "enabled") {
-            member.guild.roles.cache = await member.guild.roles.fetch();
+            // await member.guild.roles.fetch();// I think this is probably very resource intensive
             const levelRows = await this.checkForLevelRoles(member.guild);
             if (!levelRows) return false;
             const availableRoles = [];
@@ -441,9 +445,9 @@ export class DBManager {
     async updateBotStats(client: XClient): Promise<void> {
         try {
             const reductionFunc = (a: number, b: number) => a + b;
-            const users = (await client.shard?.fetchClientValues("users.cache.size"))?.reduce(reductionFunc, 0);
-            const guilds = (await client.shard?.fetchClientValues("guilds.cache.size"))?.reduce(reductionFunc, 0);
-            const channels = (await client.shard?.fetchClientValues("channels.cache.size"))?.reduce(reductionFunc, 0);
+            const users = (await client.shard?.fetchClientValues("users.cache.size") as number[])?.reduce(reductionFunc, 0);
+            const guilds = (await client.shard?.fetchClientValues("guilds.cache.size") as number[])?.reduce(reductionFunc, 0);
+            const channels = (await client.shard?.fetchClientValues("channels.cache.size") as number[])?.reduce(reductionFunc, 0);
             this.query(`INSERT INTO botstats (numUsers, numGuilds, numChannels) VALUES (${users}, ${guilds}, ${channels})`);
             const scConf = await client.database.getGlobalSetting("sc_conf");
             const statChannelGuild = scConf ? scConf.value.split(",")[0] : "745670883074637904";

@@ -1129,3 +1129,8 @@ export interface StarredMessageData {
 // }>
 
 export type GdShortenerResponse = {shorturl: string} | {errorcode: number; errormessage: string};
+
+//  https://stackoverflow.com/a/42618403/10660033
+// export interface MySQLError {
+//     code: string;
+// }
