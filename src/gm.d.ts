@@ -87,7 +87,7 @@ export interface BaseCommand<T> {
      */
     guildOnly?: false;
     /**
-     * @deprecated
+     * @deprecated change the permissions to a higher level, this was just a shitty if true then don't execute implementation
      */
     ownerOnly?: boolean;
     /**
