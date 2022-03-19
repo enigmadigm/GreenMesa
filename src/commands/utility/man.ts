@@ -15,7 +15,8 @@ export const command: Command = {
     usage: "<query>",
     args: true,
     cooldown: 1,
-    permLevel: permLevels.member,
+    permLevel: permLevels.botMaster,
+    // permLevel: permLevels.member,
     permissions: [],
     async execute(client, message, args) {
         const a = args.join(" ");
@@ -24,5 +25,6 @@ export const command: Command = {
             await client.specials.sendError(message.channel, `Invalid response.`);
         }
         const retext = await r.text();
+        xlg.log(retext);
     }
 }
