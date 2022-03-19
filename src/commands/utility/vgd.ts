@@ -1,6 +1,6 @@
 import { permLevels } from '../../permissions';
 import fetch from "node-fetch";
-import { Command } from "src/gm";
+import { Command, GdShortenerResponse } from "src/gm";
 
 export const command: Command = {
     name: "vgd",
@@ -23,8 +23,8 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, "Received a non-ok response code from v.gd", true);
                 return;
             }
-            const j = await r.json();
-            if (!j || j.errorcode || !j.shorturl) {
+            const j = await r.json() as GdShortenerResponse;
+            if (!("shorturl" in j) || "errorcode" in j) {
                 if (j.errorcode === 1 && j.errormessage) {
                     await client.specials.sendError(message.channel, `Could not shorten URL:\n${j.errormessage}`, true);
                 } else {
@@ -32,6 +32,7 @@ export const command: Command = {
                 }
                 return;
             }
+
             await message.channel.send({
                 embeds: [{
                     color: await client.database.getColor("info"),

@@ -1127,3 +1127,5 @@ export interface StarredMessageData {
 //     pretty: string;
 //     indicator?: string;
 // }>
+
+export type GdShortenerResponse = {shorturl: string} | {errorcode: number; errormessage: string};
