@@ -4,6 +4,7 @@ import { getFriendlyUptime } from '../../utils/time';
 import { parseFriendlyUptime } from '../../utils/parsers';
 import { MessageActionRow, MessageButton, CollectorFilter, MessageComponentInteraction, Permissions, MessageEmbed } from 'discord.js';
 import { addTwitchWebhook } from '../../website/routes/twitch';
+import { MessageButtonStyles } from 'discord.js/typings/enums';
 
 const delay = 1000;
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -49,7 +50,7 @@ export const command: Command = {
                 }],
                 components: [
                     new MessageActionRow().addComponents(
-                        new MessageButton({ customID: "abort", style: "SECONDARY" }).setEmoji("🔴")
+                        new MessageButton({ customId: "abort", style: MessageButtonStyles.SECONDARY }).setEmoji("🔴")
                     )
                 ],
             });
@@ -60,13 +61,13 @@ export const command: Command = {
             // listener for the cancel button
             const filter: CollectorFilter<[MessageComponentInteraction]> = (inter) => {
                 if (inter.user.id !== client.user?.id &&
-                    inter.customID === 'abort' &&
+                    inter.customId === 'abort' &&
                     (inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & Permissions.FLAGS.ADMINISTRATOR) === Permissions.FLAGS.ADMINISTRATOR || inter.user.id === message.author.id)) {
                     return true;
                 }
                 return false;
             };
-            const collector = etaMessage.createMessageComponentInteractionCollector({ filter, time: d, maxUsers: 1 });
+            const collector = etaMessage.createMessageComponentCollector({ filter, time: d, maxUsers: 1 });
             // await etaMessage.react("🔴");
 
             collector.on('collect', async () => {

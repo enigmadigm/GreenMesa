@@ -56,7 +56,7 @@ export const command: Command = {
             const originatingRoles = tRoles.filter(x => {
                 return ((x.permissions.bitfield & bit) === bit);
             });
-            const relevantOverwrites = (channel instanceof ThreadChannel ? channel.parent?.permissionOverwrites : channel.permissionOverwrites)?.filter(x => (x.allow.has(bit) || x.deny.has(bit)) && (x.type === "member" ? x.id === target.id : target.roles.cache.has(x.id))) ?? new Collection();
+            const relevantOverwrites = (channel instanceof ThreadChannel ? channel.parent?.permissionOverwrites.cache : channel.permissionOverwrites.cache)?.filter(x => (x.allow.has(bit) || x.deny.has(bit)) && (x.type === "member" ? x.id === target.id : target.roles.cache.has(x.id))) ?? new Collection();
             const originatingOverwrites = relevantOverwrites.filter(x => x.allow.has(bit));
             const disallowingOverwrites = relevantOverwrites.filter(x => x.deny.has(bit));
             const embed: MessageEmbedOptions = {

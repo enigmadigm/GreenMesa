@@ -1,4 +1,3 @@
-
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { TextChannel } from "discord.js";
@@ -40,7 +39,7 @@ export const command: Command = {
 
             try {
                 const loop = delayedLoop(0, channels.size, 1, 200);
-                const channelArray = channels.array();
+                const channelArray = [...channels.values()];
 
                 for await (const i of loop) {
                     const channel = channelArray[i];
@@ -49,11 +48,11 @@ export const command: Command = {
                     }
                     const p = channel.permissionsFor(everyone);
                     if (p?.serialize().SEND_MESSAGES) {
-                        await channel.updateOverwrite(everyone, {
+                        await channel.permissionOverwrites.edit(everyone, {
                             'SEND_MESSAGES': false
                         });
                     }
-                    const overwrites = channel.permissionOverwrites.array();
+                    const overwrites = [...channel.permissionOverwrites.cache.values()];
                     
                     for (const o of overwrites) {
                         try {
@@ -65,7 +64,7 @@ export const command: Command = {
                             }
                             
                             if (p?.serialize().SEND_MESSAGES) {
-                                await o.update({
+                                await o.edit({
                                     'SEND_MESSAGES': false
                                 });
                             }

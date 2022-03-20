@@ -58,7 +58,7 @@ export const command: Command = {
                         },
                         {
                             "name": "Shard",
-                            "value": `Current: ${message.guild?.shardID || client.shard?.ids[0]}\nTotal: ${client.shard?.count}`,
+                            "value": `Current: ${message.guild?.shardId || client.shard?.ids[0]}\nTotal: ${client.shard?.count}`,
                             "inline": true,
                         },
                         {

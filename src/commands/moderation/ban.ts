@@ -51,7 +51,7 @@ export const command: Command = {
             }
             const dbmr = await client.database.getGuildSetting(message.guild, "mutedrole");
             const mutedRoleID = dbmr ? dbmr.value : "";
-            if ((target.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
+            if ((target.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerId !== message.member.id) {
                 await message.channel.send('You cannot ban a member that is equal to or higher than yourself');
                 return;
             }

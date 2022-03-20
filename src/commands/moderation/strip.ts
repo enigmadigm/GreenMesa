@@ -60,7 +60,7 @@ export const command: Command = {
                     }],
                 });
 
-                const rolesArray = roles.array();
+                const rolesArray = [...roles.values()];
 
                 for await (const i of loop) {
                     const r = rolesArray[i];

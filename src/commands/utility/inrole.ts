@@ -22,12 +22,11 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message, args) {
         try {
-            message.channel.startTyping();
+            message.channel.sendTyping();
             const g = await message.guild.fetch();
             const target = stringToRole(g, args.join(" "), true, true);
             if (!target) {
                 await client.specials.sendError(message.channel, "That role could not be found.")
-                message.channel.stopTyping();
                 return;
             }
             // if (target.name === "@everyone" && target.position === 0) {
@@ -36,7 +35,7 @@ export const command: Command = {
             //     return;
             // }
             let list = [];
-            const userList = target.members.array().map(x => {//˾
+            const userList = [...target.members.values()].map(x => {//˾
                 const tag = `${x.user.tag || "not identifiable"}`.split("").map((x) => {
                     return x.escapeDiscord();
                 })
@@ -98,10 +97,8 @@ export const command: Command = {
 
             await PaginationExecutor.createEmbed(message, pages);
 
-            message.channel.stopTyping();
         } catch (error) {
             xlg.error(error);
-            message.channel.stopTyping(true);
             await client.specials.sendError(message.channel);
             return false;
         }
