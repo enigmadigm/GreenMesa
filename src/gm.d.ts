@@ -1352,3 +1352,13 @@ export type MovieAPIResponse = {
     Response: "False";
     Error: string;
 };
+
+export interface NumbersAPIResponse {
+    text: string;
+    number: number;
+    found: boolean;
+    /**
+     * Probably "trivia"
+     */
+    type: string;
+}
