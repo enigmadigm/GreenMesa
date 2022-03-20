@@ -1135,7 +1135,9 @@ export type GdShortenerResponse = {shorturl: string} | {errorcode: number; error
 //     code: string;
 // }
 
-// https://docs.kutt.it/#tag/links/paths/~1links/post
+/**
+ * https://docs.kutt.it/#tag/links/paths/~1links/post
+ */
 export interface KuttPostResponse {
     address: string;
     banned: boolean;// False
@@ -1147,4 +1149,20 @@ export interface KuttPostResponse {
     description: string;
     updated_at: string;// date-time
     visit_count: number;
+}
+
+/**
+ * Thanks NotGrey
+ * 
+ * https://search-xkcd.mfwowocringe.repl.co/search/{query}
+ */
+export interface XKCDSearchResponse {
+    /**
+     * "Success" if successful
+     */
+    status: string;
+    /**
+     * The comic number
+     */
+    id: number;
 }

@@ -1,5 +1,5 @@
 import { permLevels } from '../../permissions';
-import { Command, XClient, XKCDEndpointResponse } from "src/gm";
+import { Command, XClient, XKCDEndpointResponse, XKCDSearchResponse } from "src/gm";
 import fetch from 'node-fetch';
 import { randomIntFromInterval } from "../../utils/parsers";
 import { CollectorFilter, DMChannel, MessageAttachment, MessageEmbed, MessageReaction, NewsChannel, TextChannel, ThreadChannel, User } from "discord.js";
@@ -11,7 +11,7 @@ async function getComic(number: number): Promise<XKCDEndpointResponse | number> 
     if (r.status !== 200) {
         return r.status;
     }
-    const j: XKCDEndpointResponse = await r.json();
+    const j = await r.json() as XKCDEndpointResponse;
     return j;
 }
 
@@ -91,7 +91,7 @@ random
                 });
                 return;
             }
-            message.channel.startTyping();
+            await message.channel.sendTyping();
             let ai = 0;
             switch (args[ai].toLowerCase()) {
                 case "latest": {
@@ -103,7 +103,7 @@ random
                     }
                     try {
                         const r = await fetch(`${HOST}/info.0.json`);
-                        const j: XKCDEndpointResponse = await r.json();
+                        const j = await r.json() as XKCDEndpointResponse;
                         const attach = new MessageAttachment(`${j.img}`);
                         // await message.channel.send(`**${j.title || j.safe_title}**${j.alt ? `\n${j.alt}` : ""}`, attach);
                         // await message.channel.send(`**${j.title || j.safe_title}**`, [attach, new MessageEmbed().setDescription(`${j.alt ? `||${j.alt}||` : "*no caption*"}`).setColor("#2f3136")]);
@@ -140,7 +140,7 @@ random
                         break;
                     }
                     const r = await fetch(`${HOST}/info.0.json`);
-                    const j: XKCDEndpointResponse = await r.json();
+                    const j = await r.json() as XKCDEndpointResponse;
                     const currentNumber = j.num;
                     
                     await sendById(client, message.channel, randomIntFromInterval(1, currentNumber), message.author.id);
@@ -153,8 +153,8 @@ random
                         await client.specials.sendError(message.channel, `A strip ID is required for this subcommand`);
                         break;
                     }
-                    const sr = await fetch(`https://search-xkcd.mfwowocringe.repl.co/search/${o}`)
-                    const j = await sr.json();
+                    const sr = await fetch(`https://search-xkcd.mfwowocringe.repl.co/search/${o}`);
+                    const j = await sr.json() as XKCDSearchResponse;
                     if (!j || sr.status !== 200 || j.status !== "Success" || typeof j.id !== "number") {
                         await client.specials.sendError(message.channel, "No search results found.\n\nThere may be a problem with the search service.", true);
                         break;
@@ -174,9 +174,7 @@ random
                     break;
                 }
             }
-            message.channel.stopTyping();
         } catch (error) {
-            message.channel.stopTyping();
             xlg.error(error);
             await client.specials.sendError(message.channel);
             return false;
