@@ -1,6 +1,6 @@
-// NOTE: The database that this command is built upon seems to be kind of done with updates
+//NOTE: The database that this command is built upon seems to be kind of done with updates
 import fetch from 'node-fetch';
-import { Command } from 'src/gm';
+import { Command, TronaldQuoteResponse, TronaldRandomResponse, TronaldSearchResponse, TronaldTagResponse } from 'src/gm';
 
 export const command: Command = {
     name: 'tronalddump',
@@ -13,21 +13,20 @@ export const command: Command = {
     cooldown: 2,
     async execute(client, message, args) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const allTags: any = [];
-            const r = await fetch('https://api.tronalddump.io/tag')
-            const j = await r.json();
+            const allTags: string[] = [];
+            const r = await fetch('https://api.tronalddump.io/tag');
+            const j = await r.json() as TronaldTagResponse;
             for (let i = 0; i < j._embedded.tag.length; i++) {
                 allTags.push(j._embedded.tag[i].value);
             }
             const tagInfo = {
                 count: j.total,
-                tags: allTags
+                tags: allTags,
             };
 
             if (!args.length) {
                 const r = await fetch('https://api.tronalddump.io/random/quote')
-                const j = await r.json();
+                const j = await r.json() as TronaldRandomResponse;
                 await message.channel.send({
                     embeds: [{
                         title: "Donald Trump",
@@ -45,9 +44,13 @@ export const command: Command = {
 
             if (args.length == 1 && args.join(" ").length === 22) {// search for a quote by its id (displayed in the embed)
                 const r = await fetch(`https://api.tronalddump.io/quote/${args[0]}`);
-                const j = await r.json();
-                if (j.status === 404) {
+                const j = await r.json() as TronaldQuoteResponse;
+                if (r.status === 404) {
                     await message.channel.send(`Quote not found`);
+                    return;
+                }
+                if ('error' in j) {
+                    await message.channel.send(`Unable to find quote`);
                     return;
                 }
                 await message.channel.send({
@@ -84,18 +87,23 @@ export const command: Command = {
     
             if (args.length) {
                 if (tagInfo.tags.includes(args.join(" "))) {
-                    const r = await fetch(`https://api.tronalddump.io/search/quote?tag=${encodeURIComponent(args.join(" "))}&query=`)
-                    let j = await r.json();
-                    j = j._embedded.quotes[Math.floor(Math.random() * j.count)];
+                    // use query to search for specific quote or tag to search within category
+                    const r = await fetch(`https://api.tronalddump.io/search/quote?tag=${encodeURIComponent(args.join(" "))}&query=`);
+                    const j = await r.json() as TronaldSearchResponse;
+                    if ('error' in j) {
+                        await message.channel.send(`Unable to find quote`);
+                        return;
+                    }
+                    const randomResult = j._embedded.quotes[Math.floor(Math.random() * j.count)];
                     await message.channel.send({
                         embeds: [{
                             title: "Donald Trump",
-                            url: j._links.self.href,
-                            description: j.value,
+                            url: randomResult._links.self.href,
+                            description: randomResult.value,
                             color: Math.floor(Math.random() * 16777215),
-                            timestamp: j.appeared_at,
+                            timestamp: randomResult.appeared_at,
                             footer: {
-                                text: `Tronald Dump: ${j.tags[0]} | ${j.quote_id}`,
+                                text: `Tronald Dump: ${randomResult.tags[0]} | ${randomResult.quote_id}`,
                             },
                         }],
                     });
@@ -110,4 +118,3 @@ export const command: Command = {
         }
     }
 }
-

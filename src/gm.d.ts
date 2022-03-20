@@ -1166,3 +1166,137 @@ export interface XKCDSearchResponse {
      */
     id: number;
 }
+
+export interface TronaldTagResponse {
+    count: number;
+    total: number;
+    _embedded: {
+        tag: TronaldTag[];
+    };
+}
+
+export interface TronaldTag {
+    /**
+     * date-time
+     */
+    created_at: string;
+    /**
+     * date-time
+     */
+    updated_at: string;
+    /**
+     * The actual tag
+     */
+    value: string;
+    _links: {
+        self: {
+            href: string;
+        }
+    }
+}
+
+export type TronaldRandomResponse = TronaldQuote
+
+export interface TronaldQuote {
+    /**
+     * date-time
+     */
+    appeared_at: string;
+    /**
+     * date-time
+     */
+    created_at: string;
+    /**
+     * unique identifier
+     */
+    quote_id: string;
+    tags: string[];
+    /**
+     * date-time
+     */
+    updated_at: string;
+    value: string;
+    /**
+     * metadata
+     */
+    _embedded: {
+        author: {
+            author_id: string;
+            bio: string | null;
+            created_at: string;
+            name: string;
+            slug: string;
+            updated_at: string;
+            _links: {
+                self: {
+                    href: string;
+                };
+            };
+        }[];
+        source: {
+            created_at: string;
+            filename: string | null;
+            quote_source_id: string;
+            remarks: string | null;
+            updated_at: string;
+            url: string;
+            _links: {
+                self: {
+                    href: string;
+                };
+            };
+        }[];
+    };
+    _links: {
+        self: {
+            href: string;
+        };
+    };
+}
+
+export type TronaldQuoteResponse = TronaldAPIErrorResponse | TronaldQuote;
+
+export type TronaldSearchResponse = TronaldAPIErrorResponse | {
+    count: number;
+    total: number;
+    _embedded: {
+        quotes: TronaldQuote[];
+    };
+    _links: {
+        self: {
+            href: string;
+        };
+        first: {
+            href: string;
+        };
+        prev: {
+            href: string;
+        };
+        next: {
+            href: string;
+        };
+        last: {
+            href: string;
+        };
+    };
+}
+
+export interface TronaldAPIErrorResponse {
+    /**
+     * date-time
+     */
+    timestamp: string;
+    /**
+     * 404 most likely in this type
+     */
+    status: number;
+    /**
+     * Most likely "Not Found"
+     */
+    error: string;
+    message: string;
+    /**
+     * Should be "/quote/" or "/search/quote"
+     */
+    path: string;
+}
