@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { Command } from 'src/gm';
+import { Command, NorrisAPIResponse } from 'src/gm';
 
 export const command: Command = {
     name: 'chucknorris',
@@ -13,7 +13,7 @@ export const command: Command = {
             }
             if (args.length && args.length == 1 && args.toString().length == 22) {
                 const r = await fetch(`https://api.chucknorris.io/jokes/${args.join("%20")}`)
-                const j = await r.json();
+                const j = await r.json() as NorrisAPIResponse;
                 await message.channel.send({
                     embeds: [{
                         title: "👤 Chuck Norris 👊",
@@ -31,7 +31,7 @@ export const command: Command = {
 
             try {
                 const r = await fetch('https://api.chucknorris.io/jokes/random')
-                const j = await r.json();
+                const j = await r.json() as NorrisAPIResponse;
                 await message.channel.send({
                     embeds: [{
                         title: ":bust_in_silhouette: Chuck Norris :punch:",
