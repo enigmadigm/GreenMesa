@@ -33,7 +33,10 @@ const pageArgs = [
     '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
 ];
 
-const opts: puppeteer.LaunchOptions = {
+const opts: puppeteer.LaunchOptions & puppeteer.BrowserLaunchArgumentOptions & puppeteer.BrowserConnectOptions & {
+    product?: puppeteer.Product | undefined;
+    extraPrefsFirefox?: Record<string, unknown> | undefined;
+} = {
     defaultViewport: {
         width: 1300,
         height: 950
@@ -45,7 +48,7 @@ const opts: puppeteer.LaunchOptions = {
 async function goMarionette(dest: string): Promise<{page: puppeteer.Page, browser: puppeteer.Browser}> {
     const browser = await puppeteer.launch(opts);
     const contexts = browser.browserContexts();
-    contexts[0].overridePermissions("https://google.com", [
+    await contexts[0].overridePermissions("https://google.com", [
         "geolocation"
     ]);
     const page = await browser.newPage();
@@ -138,19 +141,19 @@ export const command: Command = {
 
             if (!flags.length || (!flags.find(x => x.name === "e") && !flags.find(x => x.name === "t"))) {
                 plainText = false;
-                message.channel.startTyping();
+                message.channel.sendTyping();
                 const { page, browser } = await goMarionette(`https://${sengine}?q=${sterms}${(!(message.channel instanceof DMChannel) && (message.channel instanceof ThreadChannel ? !!message.channel.parent?.nsfw : message.channel.nsfw)) ? "" : "&safe=active"}&hl=en`);
-                const voiceElement = await page.$$('[aria-label*="Search by voice"],.clear-button,.gb_Xd');
+                const voiceElement = await page.$$<HTMLElement>('[aria-label*="Search by voice"],.clear-button,.gb_Xd');
                 voiceElement.forEach((e) => {
-                    e.evaluate(node => node.style.display = 'none');
+                    e.evaluate((node) => node.style.display = 'none');
                 });
                 if (sengine === "google.com/images") {
-                    const cameraElement = await page.$$('[aria-label*="Search by image"],scrolling-carousel,body > div > c-wiz > div:nth-child(1),body > div > c-wiz > div:nth-child(1)');
+                    const cameraElement = await page.$$<HTMLElement>('[aria-label*="Search by image"],scrolling-carousel,body > div > c-wiz > div:nth-child(1),body > div > c-wiz > div:nth-child(1)');
                     cameraElement.forEach((e) => {
                         e.evaluate(node => node.style.display = 'none');
                     });
                 } else {
-                    const miniappsElement = await page.$$('[data-async-type*="miniapps"],.ULSxyf,#top_nav');
+                    const miniappsElement = await page.$$<HTMLElement>('[data-async-type*="miniapps"],.ULSxyf,#top_nav');
                     miniappsElement.forEach((e) => {
                         e.evaluate(node => node.style.display = 'none');
                     });
@@ -179,7 +182,6 @@ export const command: Command = {
                     const scfile = new Discord.MessageAttachment(sc, 'screenshot.png');
                     const response = await message.channel.send({ files: [scfile], embeds: [embed] });
                     PaginationExecutor.addCloseListener(response);
-                    message.channel.stopTyping();
                     return;
                 }
                 await message.channel.send({
@@ -190,11 +192,9 @@ export const command: Command = {
                 });
             }
         } catch (error) {
-            message.channel.stopTyping(true);
             xlg.error(error);
             await client.specials?.sendError(message.channel);
             return false;
         }
     }
 }
-
