@@ -1134,3 +1134,17 @@ export type GdShortenerResponse = {shorturl: string} | {errorcode: number; error
 // export interface MySQLError {
 //     code: string;
 // }
+
+// https://docs.kutt.it/#tag/links/paths/~1links/post
+export interface KuttPostResponse {
+    address: string;
+    banned: boolean;// False
+    created_at: string;//Zulu Time Format (date-time format)
+    id: string;// uuid
+    link: string;
+    password: boolean;// False
+    target: string;
+    description: string;
+    updated_at: string;// date-time
+    visit_count: number;
+}
