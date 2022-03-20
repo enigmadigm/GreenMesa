@@ -1,4 +1,4 @@
-import { ChannelLogsQueryOptions } from 'discord.js';
+import { ChannelLogsQueryOptions, Message } from 'discord.js';
 import moment from 'moment';
 import { Command, GuildMessageProps } from 'src/gm';
 import { permLevels } from '../../permissions';
@@ -44,10 +44,12 @@ export const command: Command<GuildMessageProps> = {
                 limit: (deleteCount < 100) ? deleteCount : 100,
                 before: message.id
             }
+            let lastMessage: false | Message = false;
             if (target) {
+                lastMessage = client.specials.findLastMessage(target);
                 opts = {
                     limit: 100,
-                    before: (target.user.lastMessage?.channel.id === message.channel.id) ? target.user.lastMessageID || undefined : message.id
+                    before: (lastMessage && lastMessage.channel.id === message.channel.id) ? lastMessage.id || undefined : message.id,
                 }
             }
 
@@ -55,10 +57,10 @@ export const command: Command<GuildMessageProps> = {
             const messages = await message.channel.messages.fetch(opts);
             let c = 0;// the number of messages to be deleted (after they are fetched and filtered)
             if (target) {
-                if (target.user.lastMessage?.channel.id === message.channel.id) {
-                    messages.set(target.user.lastMessage.id, target.user.lastMessage);
+                if (lastMessage && lastMessage.channel.id === message.channel.id) {
+                    messages.set(lastMessage.id, lastMessage);
                 }
-                const mc = messages.filter(m => (m.author.id === target.user.id || m.id === message.id) && moment().diff(m.createdAt, "s") < 1209600).array().slice(0, deleteCount);
+                const mc = [...messages.filter(m => (m.author.id === target.user.id || m.id === message.id) && moment().diff(m.createdAt, "s") < 1209600).values()].slice(0, deleteCount);
                 if (mc.length == 0) {
                     await message.channel.send(`Could not find any recent messages younger than 14 days.`);
                     await message.delete();
@@ -69,7 +71,7 @@ export const command: Command<GuildMessageProps> = {
                 await message.channel.bulkDelete(mc);
             } else {
                 // console.log(moment().diff(messages.first()?.createdAt, "s"))
-                const mc = messages.filter(m => moment().diff(m.createdAt, "s") < 1209600).array().slice(0, deleteCount);
+                const mc = [...messages.filter(m => moment().diff(m.createdAt, "s") < 1209600).values()].slice(0, deleteCount);
                 if (mc.length == 0) {
                     await message.channel.send(`Could not find any recent messages younger than 14 days.`);
                     await message.delete();

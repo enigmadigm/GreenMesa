@@ -1,6 +1,6 @@
 import { ClientValuesGuild, DashboardMessage, GuildMessageProps, SkeletonGuildObject, SkeletonRole, XClient, XMessage } from '../gm';
 import moment from 'moment';
-import { ButtonInteraction, Channel, CollectorFilter, DMChannel, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, PartialDMChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
+import { ButtonInteraction, Channel, Collection, CollectorFilter, DMChannel, GuildChannel, GuildMember, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, PartialDMChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
 import { Bot } from "../bot";
 import { combineEmbedText } from './parsers';
 import { MessageButtonStyles } from 'discord.js/typings/enums';
@@ -490,4 +490,18 @@ export const ChannelTypeKey = {
 export function isMysqlError(err: unknown): err is MysqlError {
     const e = err as Partial<MysqlError>;
     return 'code' in e && 'errno' in e && 'fatal' in e;
+}
+
+export function findLastMessage(member: GuildMember): Message | false {
+    const lastChannel = member.guild.channels.cache.filter((c) => !!(c.isText() && c.messages.cache.find(m => m.author.id === member.id))).reduce<Collection<string, NewsChannel | TextChannel | ThreadChannel>>((p, c) => {
+        const f = p.first();
+        if (f && f.createdAt < c.createdAt) {
+            p.delete(c.id);
+            return p;
+        } else {
+            return p;
+        }
+    }).first();
+    const lastMessage = lastChannel?.id ? lastChannel.messages.cache.find(m => m.author.id === member.id) : false;
+    return lastMessage ? lastMessage : false;
 }
