@@ -169,11 +169,15 @@ export class DBManager {
         }
     }
 
+    private infoColor = -1;
+    private failColor = -1;
+    private warnColor = -1;
+    private successColor = -1;
     /**
      * Get the stored value paired to a color name in the database
      * @param name name of the color
      */
-    async getColor(name: string): Promise<number> {
+    async getColor(name: string, nocache?: boolean): Promise<number> {
         if (name === "embed") {
             return 0x2F3136;
         }
@@ -184,6 +188,12 @@ export class DBManager {
             name += "_embed_color";
         }
         // color cache lookup and management should go here
+        if (!nocache) {
+            if (name === "info_embed_color" && this.infoColor > -1) return this.infoColor;//279673
+            if (name === "fail_embed_color" && this.failColor > -1) return this.failColor;//16711680
+            if (name === "warn_embed_color" && this.warnColor > -1) return this.warnColor;//16750899
+            if (name === "success_embed_color" && this.successColor > -1) return this.successColor;//4437377
+        }
         const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlg.error);
         if (!rows || rows.length == 0) {
             if (name === "info_embed_color") return 279673;
@@ -193,7 +203,14 @@ export class DBManager {
             return 0;
         }
         if (!isNaN(parseInt(rows[0].value, 10))) {
-            return parseInt(rows[0].value);
+            const col = parseInt(rows[0].value);
+
+            if (name === "info_embed_color" && this.infoColor !== col) this.infoColor = col;
+            if (name === "fail_embed_color" && this.failColor !== col) this.failColor = col;
+            if (name === "warn_embed_color" && this.warnColor !== col) this.warnColor = col;
+            if (name === "success_embed_color" && this.successColor !== col) this.successColor = col;
+
+            return col;
         }
         return 0;
     }
