@@ -1,12 +1,12 @@
 import { permLevels } from '../../permissions';
 import moment from "moment";
 import fetch from "node-fetch";
-import { AOCEndpointResponse, Command } from "src/gm";
+import { AOCEndpointResponse, AOCMemberData, Command } from "src/gm";
 
 interface AdventLeaderBoardData {
     guildID: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: Record<string, any>[];
+    data: AOCMemberData[];
     lastFetched: null | Date;
 }
 
@@ -147,7 +147,7 @@ export const command: Command = {
                     const j = await res.json() as AOCEndpointResponse;
                     if (j) {
                         // guildlbdat.data = (Object.keys(j.members) as `${number}`[]).map((mid) => {
-                        guildlbdat.data = Object.values(j.members).map((mdat) => {
+                        guildlbdat.data = (Object.values(j.members) as AOCMemberData[]).map((mdat) => {// there is no reason for `as AOCMemberData[]` to be present but the command line transpiler kept showing a ts error there while vscode was not
                             mdat.name = mdat.name.replace("_", "˾");
                             return mdat;
                         });

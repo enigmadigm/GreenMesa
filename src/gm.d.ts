@@ -1401,22 +1401,40 @@ export type APODAPIResponse = {
 
 export interface AOCEndpointResponse {
     owner_id: string;
-    members: {// or Record<string,{}>
-        [key:`${number}`]: {
-            last_star_ts: number;
-            name: string;
-            global_score: number;
-            local_score: number;
-            id: string;
-            stars: number;
-            completion_day_level: Record<`${number}`, {
-                "1": {
-                    get_star_ts: number;
-                };
-                "2"?: {
-                    get_star_ts: number;
-                };
-            }>;
-        }
-    }
+    members: Record<`${number}`, AOCMemberData>;
+    // members: {// or Record<string,{}>
+    //     [key:`${number}`]: {
+    //         last_star_ts: number;
+    //         name: string;
+    //         global_score: number;
+    //         local_score: number;
+    //         id: string;
+    //         stars: number;
+    //         completion_day_level: Record<`${number}`, {
+    //             "1": {
+    //                 get_star_ts: number;
+    //             };
+    //             "2"?: {
+    //                 get_star_ts: number;
+    //             };
+    //         }>;
+    //     }
+    // }
+}
+
+export interface AOCMemberData {
+    last_star_ts: number;
+    name: string;
+    global_score: number;
+    local_score: number;
+    id: string;
+    stars: number;
+    completion_day_level: Record<`${number}`, {
+        "1": {
+            get_star_ts: number;
+        };
+        "2"?: {
+            get_star_ts: number;
+        };
+    }>;
 }
