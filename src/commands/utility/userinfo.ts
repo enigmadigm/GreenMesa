@@ -125,7 +125,7 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "Last Message",
-                            value: lastCreated && lastMessage ? `[<t:${lastCreated.unix()}:R>](${lastMessage?.url})` : `Unsure, I haven't seen one recently`,
+                            value: lastCreated && lastMessage ? `[<t:${lastCreated.unix()}:R>](${lastMessage.url})` : `Unsure, I haven't seen one recently`,
                             inline: true,
                         },
                         {
