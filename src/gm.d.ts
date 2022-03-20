@@ -1372,3 +1372,9 @@ export interface NorrisAPIResponse {
     url: string;
     value: string;
 }
+
+export interface ChangeMyMindAPIResponse {
+    success: boolean;
+    status: number;
+    message: string;
+}
