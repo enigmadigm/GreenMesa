@@ -492,6 +492,11 @@ export function isMysqlError(err: unknown): err is MysqlError {
     return 'code' in e && 'errno' in e && 'fatal' in e;
 }
 
+export function isNodeError(err: unknown): err is Error {
+    const e = err as Partial<Error>;
+    return 'name' in e && 'message' in e;
+}
+
 export function findLastMessage(member: GuildMember): Message | false {
     const lastChannel = member.guild.channels.cache.filter((c) => !!(c.isText() && c.messages.cache.find(m => m.author.id === member.id))).reduce<Collection<string, NewsChannel | TextChannel | ThreadChannel>>((p, c) => {
         const f = p.first();
