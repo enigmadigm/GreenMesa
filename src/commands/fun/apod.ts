@@ -1,7 +1,7 @@
 import { default as fetch } from "node-fetch";
 import config from '../../../auth.json';
 import { validURL } from '../../utils/urls';
-import { Command } from "src/gm";
+import { APODAPIResponse, Command } from "src/gm";
 import moment from "moment";
 
 export const command: Command = {
@@ -33,10 +33,10 @@ export const command: Command = {
             }
 
             const r = await fetch(url)
-            const j = await r.json();
+            const j = await r.json() as APODAPIResponse;
 
-            if (!j.url || !validURL(j.url)) {
-                if (j.code && j.code == 400) {
+            if (!('url' in j)) {
+                if ('code' in j && j.code == 400) {
                     await message.channel.send({
                         embeds: [{
                             color: await client.database.getColor("fail"),
@@ -46,7 +46,7 @@ export const command: Command = {
                     });
                     return;
                 }
-                if (j.code && j.code == 404) {
+                if ('code' in j && j.code == 404) {
                     await message.channel.send({
                         embeds: [{
                             color: await client.database.getColor("fail"),
@@ -65,12 +65,22 @@ export const command: Command = {
                 });
                 return;
             }
+            if (!validURL(j.url)) {
+                await message.channel.send({
+                    embeds: [{
+                        color: await client.database.getColor("fail"),
+                        title: "Sorry",
+                        description: "I don't have an image to show you",
+                    }],
+                });
+                return;
+            }
             await message.channel.send({
                 embeds: [{
                     timestamp: j.date ? new Date(j.date).getTime() : new Date().getTime(),
                     color: await client.database.getColor("info"),
                     title: `${(j.title) ? j.title : 'NASA APOD'}`,
-                    description: j.explanation && j.explanation.length < 2048 ? j.explanation : null,
+                    description: j.explanation && j.explanation.length < 2048 ? j.explanation : undefined,
                     image: {
                         url: j.url
                     },

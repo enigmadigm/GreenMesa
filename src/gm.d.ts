@@ -1378,3 +1378,23 @@ export interface ChangeMyMindAPIResponse {
     status: number;
     message: string;
 }
+
+export type APODAPIResponse = {
+    copyright: string;
+    date: string;
+    explanation: string;
+    hdurl: string;
+    media_type: string;
+    service_version: string;
+    title: string;
+    url: string;
+} | {
+    code: number;
+    msg: string;
+    service_version: string;
+} | {
+    error: {
+        code: string;
+        message: string;
+    };
+}
