@@ -1,7 +1,7 @@
 import { permLevels } from '../../permissions';
 import moment from "moment";
 import fetch from "node-fetch";
-import { Command } from "src/gm";
+import { AOCEndpointResponse, Command } from "src/gm";
 
 interface AdventLeaderBoardData {
     guildID: string;
@@ -144,16 +144,12 @@ export const command: Command = {
                         await client.database.editGuildSetting(message.guild, "aoc_year", "", true);
                         return false;
                     }
-                    const j = await res.json();
+                    const j = await res.json() as AOCEndpointResponse;
                     if (j) {
-                        guildlbdat.data = Object.keys(j.members).map((mid) => {
-                            const mdat = j.members[mid];
-                            if (mdat && mdat.id) {
-                                if (mdat.name) {
-                                    mdat.name = mdat.name.replace("_", "˾");
-                                }
-                                return mdat;
-                            }
+                        // guildlbdat.data = (Object.keys(j.members) as `${number}`[]).map((mid) => {
+                        guildlbdat.data = Object.values(j.members).map((mdat) => {
+                            mdat.name = mdat.name.replace("_", "˾");
+                            return mdat;
                         });
                         guildlbdat.lastFetched = new Date();
                     }
