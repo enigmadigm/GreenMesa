@@ -60,7 +60,7 @@ export default class MesaWebsite {
                 return res.sendStatus(400);
             }
             const url = this.client.generateInvite({
-                permissions: 2147483639n,
+                permissions: 545225370870n,
                 guild: id,
                 //disableGuildSelect: true,
                 scopes: ["applications.commands"],
@@ -70,7 +70,7 @@ export default class MesaWebsite {
         });
         this.app.get("/invite", async (req, res) => {
             const url = this.client.generateInvite({
-                permissions: 2147483639n,
+                permissions: BigInt(process.env.PERMS_DEFAULT ?? 2147483639n),
                 scopes: ["applications.commands"],
             });
             // url = url.replace("scope=bot", "scope=bot applications.commands");
