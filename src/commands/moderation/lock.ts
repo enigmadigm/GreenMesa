@@ -1,4 +1,3 @@
-
 import { permLevels } from '../../permissions';
 import { Command } from "src/gm";
 import { stringToChannel } from "../../utils/parsers";
@@ -35,7 +34,7 @@ export const command: Command = {
             }
             const p = channel.permissionsFor(everyone);
             if (p && !p.has("SEND_MESSAGES")) {
-                await channel.updateOverwrite(everyone, {
+                await channel.permissionOverwrites.edit(everyone, {
                     'SEND_MESSAGES': true
                 });
                 try {
@@ -45,7 +44,7 @@ export const command: Command = {
                     message.author.send(`I gave @ everyone permissions to speak in ${channel}, but I do not have the permissions to speak`);
                 }
             } else {
-                await channel.updateOverwrite(everyone, {
+                await channel.permissionOverwrites.edit(everyone, {
                     'SEND_MESSAGES': false
                 });
                 try {

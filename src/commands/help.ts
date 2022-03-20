@@ -72,7 +72,7 @@ export const command: Command = {
                 };
                 pages.push(e);
 
-                for (const category of categories.array()) {
+                for (const category of [...categories.values()]) {
                     if (category.name === "owner") {
                         continue;
                     }

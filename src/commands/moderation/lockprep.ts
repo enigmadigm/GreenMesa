@@ -29,7 +29,7 @@ export const command: Command = {
             try {
                 const loop = delayedLoop(0, roles.size, 1, 200);
 
-                const rolesArray = roles.array();
+                const rolesArray = [...roles.values()];
                 for await (const i of loop) {
                     const r = rolesArray[i];
                     /*const everyone = g.roles.cache.find(x => x.position === 0);

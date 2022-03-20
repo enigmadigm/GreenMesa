@@ -5,7 +5,7 @@ import { Command } from "src/gm";
 import { Contraventions } from "../../utils/contraventions";
 import { Permissions } from 'discord.js';
 
-export const command: Command = {
+export const command: Command = {//TODO: convert to use new method
     name: 'unmute',
     description: {
         short: 'unmute a member',

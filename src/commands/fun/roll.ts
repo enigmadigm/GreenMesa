@@ -1,4 +1,4 @@
-import { DiceRoll } from 'rpg-dice-roller';
+import { DiceRoll } from '@dice-roller/rpg-dice-roller';
 import { Command } from "src/gm";
 
 export const command: Command = {
@@ -11,6 +11,7 @@ export const command: Command = {
     aliases: ['r', 'dice', 'cast'],
     async execute(client, message, args) {
         try {
+            await message.channel.sendTyping();
             const notation = args.join(" ");
             if (!notation) {
                 await message.channel.send({
@@ -41,13 +42,23 @@ export const command: Command = {
                     }]
                 });
             } catch (error) {
-                await message.channel.send({
-                    embeds: [{
-                        color: await client.database.getColor("fail"),
-                        title: 'Error Rolling',
-                        description: `${error.message}`,
-                    }],
-                });
+                if (client.specials.isNodeError(error)) {
+                    await message.channel.send({
+                        embeds: [{
+                            color: await client.database.getColor("fail"),
+                            title: 'Error while rolling',
+                            description: `${error.message}`,
+                        }],
+                    });
+                } else {
+                    await message.channel.send({
+                        embeds: [{
+                            color: await client.database.getColor("fail"),
+                            title: 'Error while rolling',
+                            description: `Unknown error`,
+                        }],
+                    });
+                }
             }
         } catch (error) {
             xlg.error(error);

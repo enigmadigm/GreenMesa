@@ -39,7 +39,7 @@ export const command: Command = {
                     await client.specials.sendError(message.channel, `No bans found`);
                     return;
                 }
-                const ba = b.array();
+                const ba = [...b.values()];
                 for (let i = 0; i < ba.length; i++) {
                     const c = ba[i];
                     // await message.guild.members.unban(c.user);

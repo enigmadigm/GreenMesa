@@ -19,13 +19,13 @@ export const command: Command = {
             const row1 = new MessageActionRow()
                 .addComponents(
                     new MessageButton()
-                        .setCustomID("1")
+                        .setCustomId("1")
                         .setLabel("One")
                         .setStyle("PRIMARY")
                 );
             const m = await message.channel.send({ content: "Test", components: [row1] });
             const pushFilter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.user.id === message.author.id;
-            const buttonOption = await m.awaitMessageComponentInteraction({ filter: pushFilter });
+            const buttonOption = await m.awaitMessageComponent({ filter: pushFilter });
             if (!buttonOption) {
                 return;
             }

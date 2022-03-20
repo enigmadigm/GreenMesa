@@ -52,7 +52,7 @@ export const command: Command = {
             }
         }
 
-        if (message.channel.type !== 'dm') {
+        if (message.channel.type !== "DM") {
             await message.channel.send("📩 *you've* got mail!");
         }
     }

@@ -81,7 +81,7 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, `Stuff to send was not specified.`);
                 return;
             }
-            const made = constructMessage(args.join(" "), flags, message.attachments.map((a)=> a.attachment));
+            const made = constructMessage(args.join(" "), flags, [...message.attachments.values()]);
             if (channel && channel.isText()) {
                 await channel.send(made);
             } else {
