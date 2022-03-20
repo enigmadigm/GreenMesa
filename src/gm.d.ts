@@ -107,6 +107,9 @@ export interface BaseCommand<T> {
 
 export interface GuildOnlyCommand<T> extends BaseCommand<T> {
     guildOnly: true;
+    /**
+     * The method that will be called to execute the command (what should provide the command's function)
+     */
     execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 }
 
@@ -858,18 +861,6 @@ export interface ClientValuesGuild {
     bannerURL: string | null;
 }
 
-export interface TriviaResponse {
-    response_code: 0 | 1 | 2 | 3 | 4;
-    results: {
-        category: string;
-        type: string;
-        difficulty: string;
-        question: string;
-        correct_answer: string;
-        incorrect_answers: string[];
-    }[];
-}
-
 export interface DashboardMessage {
     outside: string;
     embed: DashboardMessageEmbed;
@@ -1299,4 +1290,31 @@ export interface TronaldAPIErrorResponse {
      * Should be "/quote/" or "/search/quote"
      */
     path: string;
+}
+
+export interface TriviaCategory {
+    id: number;
+    name: string;
+}
+
+export interface TriviaAPICategoriesResponse {
+    trivia_categories: TriviaCategory[];
+}
+
+export interface TriviaAPIResponse {
+    response_code: 0 | 1 | 2 | 3 | 4;
+    results: {
+        category: string;
+        type: string;
+        difficulty: string;
+        question: string;
+        correct_answer: string;
+        incorrect_answers: string[];
+    }[];
+}
+
+export interface TriviaAPITokenResponse {
+    response_code: number;
+    response_message: string;
+    token: string;
 }
