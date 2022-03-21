@@ -52,6 +52,6 @@ passport.use(new DiscordStrategy({
             }
         } catch (error) {
             xlg.error(error);
-            return done(error, undefined);
+            return done(Bot.client.specials.isNodeError(error) ? error : undefined, undefined);
         }
 }));
