@@ -15,6 +15,7 @@ export const command: Command = {
     guildOnly: false,
     async execute(client, message, args) {
         try {
+            await message.channel.sendTyping();
             if (args.length > 1) {
                 await client.specials.sendError(message.channel, "A valid URL should not contain whitespace");
                 return;
