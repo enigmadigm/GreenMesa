@@ -42,7 +42,7 @@ function constructMessage(content: string, flags: CommandArgumentFlag[], atts: M
         }
     }
     if (atts.length) {
-        fin.attachments.concat(atts);
+        fin.attachments = fin.attachments.concat(atts);
     }
     return fin;
 }
