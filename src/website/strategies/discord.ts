@@ -1,7 +1,10 @@
 import passport from 'passport';
 import DiscordStrategy from 'passport-discord';
-import { Bot } from '../../bot';
+import { Bot } from '../../bot.js';
 import { PartialGuildObject } from 'src/gm';
+// for some reason process.env doesn't exist in this file even though it is part of the same module unless I specifically import it here?
+import dotenv from 'dotenv';
+dotenv.config();
 
 passport.serializeUser((user, done) => {// "these take care of getting the session id ... checking the session id and verifying and getting the user that belongs to it and serializing it to the request"
     done(null, user);
@@ -22,8 +25,8 @@ passport.deserializeUser<any>(async (obj, done) => {// this needs to search the 
 });
 
 passport.use(new DiscordStrategy({
-        clientID: process.env.DASHBOARD_CLIENT_ID || "",
-        clientSecret: process.env.DASHBOARD_CLIENT_SECRET || "",
+        clientID: process.env.DASHBOARD_CLIENT_ID ?? "",
+        clientSecret: process.env.DASHBOARD_CLIENT_SECRET ?? "",
         callbackURL: process.env.DASHBOARD_CALLBACK_URL,
         scope: ['identify', 'guilds']
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -52,6 +55,6 @@ passport.use(new DiscordStrategy({
             }
         } catch (error) {
             xlg.error(error);
-            return done(error, undefined);
+            return done(Bot.client.specials.isNodeError(error) ? error : undefined, undefined);
         }
 }));

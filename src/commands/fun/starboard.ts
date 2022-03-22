@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToChannel } from '../../utils/parsers';
+import { stringToChannel } from '../../utils/parsers.js';
 import { CollectorFilter, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, MessageSelectMenu, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
-import Starboard from '../../struct/Starboard';
+import Starboard from '../../struct/Starboard.js';
 
 export const command: Command = {
     name: "starboard",
@@ -232,13 +232,13 @@ export const command: Command = {
                         components: [
                             new MessageActionRow().addComponents(
                                 new MessageSelectMenu()
-                                    .setCustomID(`sbchannelselect-${setChannelConfInter.id}`)
+                                    .setCustomId(`sbchannelselect-${setChannelConfInter.id}`)
                                     .setPlaceholder("Select SB Channel")
                                     .addOptions(channelSelectOptions)
                             ),
                         ],
                     });
-                    const channelSelection = await message.channel.awaitMessageComponentInteraction({
+                    const channelSelection = await message.channel.awaitMessageComponent({
                         filter: (inter) => inter.user.id === message.author.id ||
                             inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & 0x8n) === 0x8n,
                         time: 20 * 1000,
@@ -353,26 +353,26 @@ export const command: Command = {
                     e: new MessageEmbed(e), comp: [
                         new MessageActionRow()
                             .addComponents(
-                                new MessageButton().setDisabled(false).setLabel(`${sb.jumpLink ? "✖" : "✔"} Jump Link`).setStyle("PRIMARY").setCustomID("jump"),
-                                new MessageButton().setDisabled(false).setLabel(`${sb.allowSensitive ? "✖" : "✔"} NSFW`).setStyle("PRIMARY").setCustomID("nsfw"),
-                                new MessageButton().setDisabled(false).setLabel(`${sb.allowSelf ? "✖" : "✔"} Self`).setStyle("PRIMARY").setCustomID("self"),
-                                new MessageButton().setDisabled(false).setLabel(`${sb.starStarred ? "✖" : "✔"} After-Star`).setStyle("PRIMARY").setCustomID("pstar"),
+                                new MessageButton().setDisabled(false).setLabel(`${sb.jumpLink ? "✖" : "✔"} Jump Link`).setStyle("PRIMARY").setCustomId("jump"),
+                                new MessageButton().setDisabled(false).setLabel(`${sb.allowSensitive ? "✖" : "✔"} NSFW`).setStyle("PRIMARY").setCustomId("nsfw"),
+                                new MessageButton().setDisabled(false).setLabel(`${sb.allowSelf ? "✖" : "✔"} Self`).setStyle("PRIMARY").setCustomId("self"),
+                                new MessageButton().setDisabled(false).setLabel(`${sb.starStarred ? "✖" : "✔"} After-Star`).setStyle("PRIMARY").setCustomId("pstar"),
                             ),
                         new MessageActionRow()
                             .addComponents(
-                                new MessageButton().setDisabled(false).setLabel(`Set Threshold`).setStyle("PRIMARY").setCustomID("thresh"),
-                                new MessageButton().setDisabled(false).setLabel(`Set Emoji`).setStyle("PRIMARY").setCustomID("emoj"),
+                                new MessageButton().setDisabled(false).setLabel(`Set Threshold`).setStyle("PRIMARY").setCustomId("thresh"),
+                                new MessageButton().setDisabled(false).setLabel(`Set Emoji`).setStyle("PRIMARY").setCustomId("emoj"),
                         ),
                         [new MessageActionRow()
                             .addComponents(
-                                new MessageButton().setDisabled(false).setLabel(`+ Ignored`).setStyle("PRIMARY").setCustomID("aigno"),
-                                new MessageButton().setDisabled(!sb.ignoredChannels.length).setLabel(`- Ignored`).setStyle("PRIMARY").setCustomID("rigno"),
-                                new MessageButton().setDisabled(!sb.ignoredChannels.length).setLabel(`Clear Ignored`).setStyle("DANGER").setCustomID("cigno"),
+                                new MessageButton().setDisabled(false).setLabel(`+ Ignored`).setStyle("PRIMARY").setCustomId("aigno"),
+                                new MessageButton().setDisabled(!sb.ignoredChannels.length).setLabel(`- Ignored`).setStyle("PRIMARY").setCustomId("rigno"),
+                                new MessageButton().setDisabled(!sb.ignoredChannels.length).setLabel(`Clear Ignored`).setStyle("DANGER").setCustomId("cigno"),
                         ),
                         new MessageActionRow().addComponents(
                             new MessageSelectMenu()
                                 .setDisabled(false)
-                                .setCustomID("ignomenu")
+                                .setCustomId("ignomenu")
                                 .setMinValues(0)
                                 .setMaxValues(channelSelectOptions.length <= 25 ? channelSelectOptions.length : 25)
                                 .setPlaceholder("Select Ignored Channels")
@@ -394,14 +394,14 @@ export const command: Command = {
                 }
                 return false;
             }
-            const confButtonCollector = confMsg.createMessageComponentInteractionCollector({
+            const confButtonCollector = confMsg.createMessageComponentCollector({
                 filter,
                 time: 1000 * 120,
             });
 
             confButtonCollector.on("collect", async (inter) => {
                 const secondStepFilter: CollectorFilter<[Message]> = (m) => m.author.id === inter.user.id;
-                switch (inter.customID) {
+                switch (inter.customId) {
                     case "cigno": {
                         if (sb.ignoredChannels.length) {
                             sb.ignoredChannels = [];

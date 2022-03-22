@@ -1,7 +1,9 @@
 import { MessageEmbedOptions } from "discord.js";
 import fetch from "node-fetch";
 import { Command } from "src/gm";
-import { MWKEY } from '../../../auth.json';
+import config from '../../../auth.json' assert {type: "json"};
+import mw from 'mw-collegiate';
+const MWKEY = config.MWKEY;
 
 export const command: Command = {
     name: "define",
@@ -84,7 +86,7 @@ export const command: Command = {
                 const letters = /^[A-Za-z\s-]+$/; // regular expression testing whether everything matched against contains only upper/lower case letters
                 if (letters.test(def)) {
                     const r = await fetch(`https://www.dictionaryapi.com/api/v3/references/collegiate/json/${def}?key=${MWKEY}`, { method: "GET" });
-                    const j = await r.json();
+                    const j = await r.json() as mw.Entry[];
                     if (!j[0]) {
                         await message.channel.send({
                             embeds: [{
@@ -96,9 +98,10 @@ export const command: Command = {
                                 },
                             }],
                         });
-                    } else if (!j[0].shortdef) {
-                        j.push("or " + j.pop() + "?");
-                        const altWords = j.join(", ");
+                    } else if (/* !j.every((e) => e.shortdef) */!j[0].shortdef) {
+                        // j.push("or " + j.pop() + "?");
+                        const lastWord = j.pop();
+                        const altWords = [...j, `or ${lastWord}?`].join(", ");
                         const embed: MessageEmbedOptions = {
                             title: "Your word could not be found",
                             description: "Did you mean: " + altWords,
@@ -113,7 +116,7 @@ export const command: Command = {
                         for (let i = 0; i < (j.length > 3 ? 3 : j.length); i++) {
                             const r = j[i];
 
-                            if (r.hwi.hw && r.shortdef.length >= 1) {
+                            if (r.hwi.hw && r.shortdef && r.shortdef.length >= 1) {
                                 const defsArray = [];
                                 for (let x = 0; x < r.shortdef.length; x++) {
                                     defsArray[x] = "**[" + (x + 1) + "]** " + r.shortdef[x];

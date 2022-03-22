@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, GuildMessageProps, ModActionData } from "src/gm";
 import { MessageEmbed, MessageEmbedOptions } from 'discord.js';
-import { PaginationExecutor } from '../../utils/pagination';
-import { getDashboardLink, isSnowflake } from '../../utils/specials';
+import { PaginationExecutor } from '../../utils/pagination.js';
+import { getDashboardLink, isSnowflake } from '../../utils/specials.js';
 
 export const command: Command<GuildMessageProps> = {
     name: "modlb",

@@ -1,8 +1,8 @@
 // —
-import { permLevels } from '../permissions';
+import { permLevels } from '../permissions.js';
 import { Command } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';
-import { PaginationExecutor } from '../utils/pagination';
+import { PaginationExecutor } from '../utils/pagination.js';
 
 function titleCase(str: string) {
     if (str == "nsfw") {
@@ -72,7 +72,7 @@ export const command: Command = {
                 };
                 pages.push(e);
 
-                for (const category of categories.array()) {
+                for (const category of [...categories.values()]) {
                     if (category.name === "owner") {
                         continue;
                     }

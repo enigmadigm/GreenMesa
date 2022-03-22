@@ -1,8 +1,8 @@
 // NOTE: This whole xp system is in long-term development and needs work. The updates will probably come with a web console if there ever is one.
 import { MessageAttachment, Permissions } from "discord.js";
-import fetch from "node-fetch";
 import { Command } from "src/gm";
-import { stringToMember } from "../../utils/parsers";
+import { stringToMember } from "../../utils/parsers.js";
+import { VACEFronJS } from 'vacefron';
 
 const verbs = [
     "procured",
@@ -55,14 +55,18 @@ export const command: Command = {
             const pointsLevelNext = xp.pointsLevelNext;
             const pointsToNext = xp.pointsToGo;
             if (message.guild.me && message.channel.permissionsFor(message.guild.me).has(Permissions.FLAGS.ATTACH_FILES)) {
+                const vac = new VACEFronJS();
+                // old
                 // const r = await fetch(`https://vacefron.nl/api/rankcard?username=${encodeURIComponent(target.user.tag)}&avatar=${encodeURIComponent(target.user.displayAvatarURL())}&currentxp=${xp.pointsInLevel}&nextlevelxp=${xp.pointsLevelNext}&previouslevelxp=${0}&level=${xp.level}&rank=${personal ? personal.rank : "undefined"}&custombg=${bgColor}&xpcolor=${xpColor}&isboosting=${target.premiumSince ? "true" : "false"}&circleavatar=true`);
-                const r = await fetch(`https://vacefron.nl/api/rankcard?username=${encodeURIComponent(target.user.tag)}&avatar=${encodeURIComponent(target.user.displayAvatarURL())}&currentxp=${xp.points}&nextlevelxp=${client.database.getCumulativePointsForLevel(xp.level + 1)}&previouslevelxp=${client.database.getCumulativePointsForLevel(xp.level)}&level=${xp.level}&rank=${personal ? personal.rank : "undefined"}&custombg=${bgColor}&xpcolor=${xpColor}&isboosting=${target.premiumSince ? "true" : "false"}&circleavatar=true`);
-                if (r.status !== 200) {
-                    const j = await r.json();
-                    throw new Error(`VACEfron API Not OK: ${j.status} (status ${j.code})`);
-                }
-                const b = await r.buffer();
-                const att = new MessageAttachment(b);
+                // new
+                // const r = await fetch(`https://vacefron.nl/api/rankcard?username=${encodeURIComponent(target.user.tag)}&avatar=${encodeURIComponent(target.user.displayAvatarURL())}&currentxp=${xp.points}&nextlevelxp=${client.database.getCumulativePointsForLevel(xp.level + 1)}&previouslevelxp=${client.database.getCumulativePointsForLevel(xp.level)}&level=${xp.level}&rank=${personal ? personal.rank : "undefined"}&custombg=${bgColor}&xpcolor=${xpColor}&isboosting=${target.premiumSince ? "true" : "false"}&circleavatar=true`);
+                // if (r.status !== 200) {
+                //     const j = await r.json();
+                //     throw new Error(`VACEfron API Not OK: ${j.status} (status ${j.code})`);
+                // }
+                // const b = await r.buffer();
+                const r = await vac.rankCard(target.user.tag, target.user.displayAvatarURL(), bgColor, xp.level, personal ? personal.rank : -1, xp.points, client.database.getCumulativePointsForLevel(xp.level + 1), client.database.getCumulativePointsForLevel(xp.level), xpColor, false);
+                const att = new MessageAttachment(r);
                 await message.channel.send({ files: [att] });
             } else {
                 await message.channel.send({

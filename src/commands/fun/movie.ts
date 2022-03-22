@@ -1,7 +1,8 @@
 import fetch from "node-fetch";
 import getColors from 'get-image-colors';
-import { Command } from "src/gm";
+import { Command, MovieAPIResponse } from "src/gm";
 import { MessageEmbedOptions } from "discord.js";
+import config from "../../../auth.json" assert {type: "json"};
 
 export const command: Command = {
     name: 'movie',
@@ -31,7 +32,7 @@ export const command: Command = {
             await message.channel.send({
                 embeds: [{
                     "title": "Please send a valid movie to look up",
-                    "description": "Whatever you entered wasn't found to be valid",
+                    "description": "Whatever you entered had some unfriendy characters",
                     "color": 16711680,
                     "footer": {
                         "text": "Movies",
@@ -40,10 +41,10 @@ export const command: Command = {
             });
             return;
         }
-        const r = await fetch(`http://www.omdbapi.com/?t=${sterms}&apikey=4f5eed5a`)
-        const j = await r.json();
+        const r = await fetch(`http://www.omdbapi.com/?t=${sterms}&apikey=${config.OMDB.key}&r=json`)
+        const j = await r.json() as MovieAPIResponse;
 
-        if (j.Response == "False" || !j.Title || !j.Year || !j.Plot || !j.imdbID) {
+        if (j.Response == "False") {
             await message.channel.send({
                 embeds: [{
                     title: "Error!",
@@ -54,91 +55,104 @@ export const command: Command = {
                     },
                 }],
             });
-        } else {
-            const fields = [];
-            if (j.Rated) {
-                fields.push({
-                    name: "<:mpaa_sm:757460418573762580> Rated",
-                    value: `${j.Rated}`,
-                    inline: true
-                });
-            }
-            if (j.BoxOffice) {
-                fields.push({
-                    name: "🎟️ Box Office",
-                    value: `${j.BoxOffice}`,
-                    inline: true
-                });
-            }
-            if (j.imdbRating) {
-                fields.push({
-                    name: "IMDb",
-                    value: `<:imdb_sm:757460717740884098> ${j.imdbRating}/10${j.imdbVotes ? `\n👥 ${j.imdbVotes}` : ''}`,
-                    inline: true
-                });
-            }
-            if (j.Actors) {
-                fields.push({
-                    name: "👨‍💼 Cast",
-                    value: j.Actors,
-                    inline: true
-                });
-            }
-            if (j.Awards) {
-                fields.push({
-                    name: "🌐 Awards",
-                    value: j.Awards,
-                    inline: true
-                });
-            }
-            if (j.Genre) {
-                fields.push({
-                    name: "📕 Genre",
-                    value: `${j.Genre}`,
-                    inline: true
-                });
-            }
-            if (j.Director) {
-                fields.push({
-                    name: "🎥 Director",
-                    value: `${j.Director}`,
-                    inline: true
-                });
-            }
-            if (j.Released) {
-                fields.push({
-                    name: "📅 Release Date",
-                    value: `${j.Released}`,
-                    inline: true
-                });
-            }
-            if (j.Runtime) {
-                fields.push({
-                    name: "🕦 Runtime",
-                    value: `${j.Runtime}`,
-                    inline: true
-                });
-            }
-            const embed: MessageEmbedOptions = {
-                title: `🍿 ${j.Title} (${j.Year})`,
-                description: `${j.Plot}`,
-                fields,
-                footer: {
-                    text: `${j.imdbID}${j.Production ? ` | Studio: ${j.Production}` : ''}`
-                },
-            }
-            if (j.Poster && j.Poster.toLowerCase() !== "n/a") {
-                const cres = await getColors(j.Poster);
-                const pcol = cres[0] ? cres[0].num() : await client.database.getColor("info");
-                embed.image = {
-                    url: j.Poster
-                }
-                embed.color = pcol;
-            } else {
-                embed.color = await client.database.getColor("info");
-            }
-
-            await message.channel.send({ embeds: [embed] });
+            return;
         }
+        if (!j.Title || !j.Year || !j.Plot || !j.imdbID) {
+            await message.channel.send({
+                embeds: [{
+                    title: "Error!",
+                    description: `Incomplete movie data`,
+                    color: await client.database.getColor("fail"),
+                    footer: {
+                        text: "Movies",
+                    },
+                }],
+            });
+            return;
+        }
+        const fields = [];
+        if (j.Rated) {
+            fields.push({
+                name: "<:mpaa_sm:757460418573762580> Rated",
+                value: `${j.Rated}`,
+                inline: true
+            });
+        }
+        if (j.BoxOffice) {
+            fields.push({
+                name: "🎟️ Box Office",
+                value: `${j.BoxOffice}`,
+                inline: true
+            });
+        }
+        if (j.imdbRating) {
+            fields.push({
+                name: "IMDb",
+                value: `<:imdb_sm:757460717740884098> ${j.imdbRating}/10${j.imdbVotes ? `\n👥 ${j.imdbVotes}` : ''}`,
+                inline: true
+            });
+        }
+        if (j.Actors) {
+            fields.push({
+                name: "👨‍💼 Cast",
+                value: j.Actors,
+                inline: true
+            });
+        }
+        if (j.Awards) {
+            fields.push({
+                name: "🌐 Awards",
+                value: j.Awards,
+                inline: true
+            });
+        }
+        if (j.Genre) {
+            fields.push({
+                name: "📕 Genre",
+                value: `${j.Genre}`,
+                inline: true
+            });
+        }
+        if (j.Director) {
+            fields.push({
+                name: "🎥 Director",
+                value: `${j.Director}`,
+                inline: true
+            });
+        }
+        if (j.Released) {
+            fields.push({
+                name: "📅 Release Date",
+                value: `${j.Released}`,
+                inline: true
+            });
+        }
+        if (j.Runtime) {
+            fields.push({
+                name: "🕦 Runtime",
+                value: `${j.Runtime}`,
+                inline: true
+            });
+        }
+        const embed: MessageEmbedOptions = {
+            title: `🍿 ${j.Title} (${j.Year})`,
+            description: `${j.Plot}`,
+            fields,
+            footer: {
+                text: `${j.imdbID}${j.Production ? ` | Studio: ${j.Production}` : ''}`
+            },
+        }
+        if (j.Poster && j.Poster.toLowerCase() !== "n/a") {
+            const cres = await getColors(j.Poster);
+            const pcol = cres[0] ? cres[0].num() : await client.database.getColor("info");
+            embed.image = {
+                url: j.Poster
+            }
+            embed.color = pcol;
+        } else {
+            embed.color = await client.database.getColor("info");
+        }
+
+        await message.channel.send({ embeds: [embed] });
     }
 }

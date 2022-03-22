@@ -1,5 +1,5 @@
-import { permLevels } from '../../permissions';
-import { Z } from "../../utils/zalgo";
+import { permLevels } from '../../permissions.js';
+import { Z } from "../../utils/zalgo.js";
 import { Command } from "src/gm";
 
 export const command: Command = {

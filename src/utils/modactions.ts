@@ -1,10 +1,10 @@
 import { Guild, GuildMember, MessageEmbedOptions, Permissions, User } from "discord.js";
 import moment from "moment";
 import { UnbanAction, UnmuteAction, WarnConf, XClient } from "../gm";
-import { durationToString } from "./parsers";
+import { durationToString } from "./parsers.js";
 import uniqid from 'uniqid';
-import { Contraventions } from "./contraventions";
-import { isSnowflake } from "./specials";
+import { Contraventions } from "./contraventions.js";
+import { isSnowflake } from "./specials.js";
 
 // export class BaseModAction<T> {
 //     public client: XClient;
@@ -163,7 +163,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
         // Prevent the user from sending messages or reacting to messages
         target.guild.channels.cache.each(async (channel) => {
             if (mutedRole && !channel.isThread()) {
-                await channel.updateOverwrite(mutedRole, {
+                await channel.permissionOverwrites.edit(mutedRole, {
                     SEND_MESSAGES: false,
                     ADD_REACTIONS: false
                 });
@@ -252,10 +252,8 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
         }
 
         if (client.database) {
-            if (time) {
-                const t = moment().add(time, "ms").toDate();
-                await client.database.setAction(uniqid(), t, "unmute", data);
-            }
+            const t = moment().add(time, "ms").toDate();
+            await client.database.setAction(uniqid(), t, "unmute", data);
         }
         //await set(data);
     }

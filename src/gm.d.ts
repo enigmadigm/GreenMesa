@@ -1,4 +1,4 @@
-import { ActivityType, Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel, ThreadChannel } from "discord.js";
+import { Client, ClientEvents, Collection, Guild, GuildMember, Message, NewsChannel, PermissionString, PresenceStatusData, Snowflake, TextChannel, ThreadChannel } from "discord.js";
 import { DBManager } from "./dbmanager";
 import * as Specials from "./utils/specials";
 import DiscordStrategy from 'passport-discord';
@@ -87,7 +87,7 @@ export interface BaseCommand<T> {
      */
     guildOnly?: false;
     /**
-     * @deprecated
+     * @deprecated change the permissions to a higher level, this was just a shitty if true then don't execute implementation
      */
     ownerOnly?: boolean;
     /**
@@ -107,6 +107,9 @@ export interface BaseCommand<T> {
 
 export interface GuildOnlyCommand<T> extends BaseCommand<T> {
     guildOnly: true;
+    /**
+     * The method that will be called to execute the command (what should provide the command's function)
+     */
     execute(client: XClient, message: XMessage & GuildMessageProps & T, args: string[], flags: (CommandArgumentFlag)[]): Promise<void | boolean | CommandReturnData>;
 }
 
@@ -858,18 +861,6 @@ export interface ClientValuesGuild {
     bannerURL: string | null;
 }
 
-export interface TriviaResponse {
-    response_code: 0 | 1 | 2 | 3 | 4;
-    results: {
-        category: string;
-        type: string;
-        difficulty: string;
-        question: string;
-        correct_answer: string;
-        incorrect_answers: string[];
-    }[];
-}
-
 export interface DashboardMessage {
     outside: string;
     embed: DashboardMessageEmbed;
@@ -1060,7 +1051,7 @@ export interface StoredPresenceData {
     /**
      * watching, listening, etc
      */
-    type: ActivityType;
+    type: ExcludeEnum<ActivityTypes, 'CUSTOM'>;
     /**
      * afk value for the api, not really sure what it does
      */
@@ -1121,4 +1112,329 @@ export interface StarredMessageData {
     nsfw: 0 | 1;
     postid: string;
     postchannel: string;
+}
+
+// export type ChannelTypeKeyData = Record<ChannelTypes, {
+//     pretty: string;
+//     indicator?: string;
+// }>
+
+export type GdShortenerResponse = {shorturl: string} | {errorcode: number; errormessage: string};
+
+//  https://stackoverflow.com/a/42618403/10660033
+// export interface MySQLError {
+//     code: string;
+// }
+
+/**
+ * https://docs.kutt.it/#tag/links/paths/~1links/post
+ */
+export interface KuttPostResponse {
+    address: string;
+    banned: boolean;// False
+    created_at: string;//Zulu Time Format (date-time format)
+    id: string;// uuid
+    link: string;
+    password: boolean;// False
+    target: string;
+    description: string;
+    updated_at: string;// date-time
+    visit_count: number;
+}
+
+/**
+ * Thanks NotGrey
+ * 
+ * https://search-xkcd.mfwowocringe.repl.co/search/{query}
+ */
+export interface XKCDSearchResponse {
+    /**
+     * "Success" if successful
+     */
+    status: string;
+    /**
+     * The comic number
+     */
+    id: number;
+}
+
+export interface TronaldTagResponse {
+    count: number;
+    total: number;
+    _embedded: {
+        tag: TronaldTag[];
+    };
+}
+
+export interface TronaldTag {
+    /**
+     * date-time
+     */
+    created_at: string;
+    /**
+     * date-time
+     */
+    updated_at: string;
+    /**
+     * The actual tag
+     */
+    value: string;
+    _links: {
+        self: {
+            href: string;
+        }
+    }
+}
+
+export type TronaldRandomResponse = TronaldQuote
+
+export interface TronaldQuote {
+    /**
+     * date-time
+     */
+    appeared_at: string;
+    /**
+     * date-time
+     */
+    created_at: string;
+    /**
+     * unique identifier
+     */
+    quote_id: string;
+    tags: string[];
+    /**
+     * date-time
+     */
+    updated_at: string;
+    value: string;
+    /**
+     * metadata
+     */
+    _embedded: {
+        author: {
+            author_id: string;
+            bio: string | null;
+            created_at: string;
+            name: string;
+            slug: string;
+            updated_at: string;
+            _links: {
+                self: {
+                    href: string;
+                };
+            };
+        }[];
+        source: {
+            created_at: string;
+            filename: string | null;
+            quote_source_id: string;
+            remarks: string | null;
+            updated_at: string;
+            url: string;
+            _links: {
+                self: {
+                    href: string;
+                };
+            };
+        }[];
+    };
+    _links: {
+        self: {
+            href: string;
+        };
+    };
+}
+
+export type TronaldQuoteResponse = TronaldAPIErrorResponse | TronaldQuote;
+
+export type TronaldSearchResponse = TronaldAPIErrorResponse | {
+    count: number;
+    total: number;
+    _embedded: {
+        quotes: TronaldQuote[];
+    };
+    _links: {
+        self: {
+            href: string;
+        };
+        first: {
+            href: string;
+        };
+        prev: {
+            href: string;
+        };
+        next: {
+            href: string;
+        };
+        last: {
+            href: string;
+        };
+    };
+}
+
+export interface TronaldAPIErrorResponse {
+    /**
+     * date-time
+     */
+    timestamp: string;
+    /**
+     * 404 most likely in this type
+     */
+    status: number;
+    /**
+     * Most likely "Not Found"
+     */
+    error: string;
+    message: string;
+    /**
+     * Should be "/quote/" or "/search/quote"
+     */
+    path: string;
+}
+
+export interface TriviaCategory {
+    id: number;
+    name: string;
+}
+
+export interface TriviaAPICategoriesResponse {
+    trivia_categories: TriviaCategory[];
+}
+
+export interface TriviaAPIResponse {
+    response_code: 0 | 1 | 2 | 3 | 4;
+    results: {
+        category: string;
+        type: string;
+        difficulty: string;
+        question: string;
+        correct_answer: string;
+        incorrect_answers: string[];
+    }[];
+}
+
+export interface TriviaAPITokenResponse {
+    response_code: number;
+    response_message: string;
+    token: string;
+}
+
+export type MovieAPIResponse = {
+    Title?: string;
+    Year?: string;
+    Rated?: string;
+    Released?: string;
+    Runtime?: string;
+    Genre?: string;
+    Director?: string;
+    Writer?: string;
+    Actors?: string;
+    Plot?: string;
+    Language?: string;
+    Country?: string;
+    Awards?: string;
+    Poster?: string;
+    Ratings?: {
+        Source: string;
+        Value: string;
+    }[];
+    Metascore?: string;
+    imdbRating?: string;
+    imdbVotes?: string;
+    imdbID?: string;
+    Type?: string;
+    DVD?: string;
+    BoxOffice?: string;
+    Production?: string;
+    Website?: string;
+    Response: "True";
+} | {
+    Response: "False";
+    Error: string;
+};
+
+export interface NumbersAPIResponse {
+    text: string;
+    number: number;
+    found: boolean;
+    /**
+     * Probably "trivia"
+     */
+    type: string;
+}
+
+export interface NorrisAPIResponse {
+    categories: [];
+    created_at: string;
+    icon_url: string;
+    id: string;
+    updated_at: string;
+    url: string;
+    value: string;
+}
+
+export interface ChangeMyMindAPIResponse {
+    success: boolean;
+    status: number;
+    message: string;
+}
+
+export type APODAPIResponse = {
+    copyright: string;
+    date: string;
+    explanation: string;
+    hdurl: string;
+    media_type: string;
+    service_version: string;
+    title: string;
+    url: string;
+} | {
+    code: number;
+    msg: string;
+    service_version: string;
+} | {
+    error: {
+        code: string;
+        message: string;
+    };
+}
+
+export interface AOCEndpointResponse {
+    owner_id: string;
+    members: Record<`${number}`, AOCMemberData>;
+    // members: {// or Record<string,{}>
+    //     [key:`${number}`]: {
+    //         last_star_ts: number;
+    //         name: string;
+    //         global_score: number;
+    //         local_score: number;
+    //         id: string;
+    //         stars: number;
+    //         completion_day_level: Record<`${number}`, {
+    //             "1": {
+    //                 get_star_ts: number;
+    //             };
+    //             "2"?: {
+    //                 get_star_ts: number;
+    //             };
+    //         }>;
+    //     }
+    // }
+}
+
+export interface AOCMemberData {
+    last_star_ts: number;
+    name: string;
+    global_score: number;
+    local_score: number;
+    id: string;
+    stars: number;
+    completion_day_level: Record<`${number}`, {
+        "1": {
+            get_star_ts: number;
+        };
+        "2"?: {
+            get_star_ts: number;
+        };
+    }>;
 }

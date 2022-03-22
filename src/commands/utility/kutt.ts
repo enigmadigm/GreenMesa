@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import fetch from "node-fetch";
-import { Command } from "src/gm";
-import * as config from "../../../auth.json";
+import { Command, KuttPostResponse } from "src/gm";
+import config from "../../../auth.json" assert {type: "json"};
 
 export const command: Command = {
     name: "kutt",
@@ -19,12 +19,11 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, "A valid URL should not contain whitespace");
                 return;
             }
-            const url = args[0].slice(0, 1024);
             const a = args[0];
             const r = await fetch(`https://kutt.it/api/v2/links`, {
                 method: "POST",
                 body: JSON.stringify({
-                    target: a
+                    target: a,//TODO: set auto-expiry
                 }),
                 headers: {
                     "x-api-key": `${config.KUTT}`,
@@ -35,7 +34,7 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, "Received a non-ok response code from kutt.it", true);
                 return;
             }
-            const j = await r.json();
+            const j = await r.json() as KuttPostResponse;
             if (!j || !j.link || !j.address) {
                 await client.specials.sendError(message.channel, `Could not shorten URL. Feel free to tell the devs if this keeps happening.`, true);
                 return;
@@ -48,7 +47,7 @@ export const command: Command = {
                     fields: [
                         {
                             name: "Input",
-                            value: `${url}`,
+                            value: `${j.target.slice(0, 1024)}`,
                         },
                         {
                             name: "Output",

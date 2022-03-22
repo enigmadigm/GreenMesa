@@ -1,5 +1,5 @@
 import { Command } from "src/gm";
-import { stringToMember } from '../../utils/parsers';
+import { stringToMember } from '../../utils/parsers.js';
 
 const actions = ['shoot', 'punch', 'kick', 'drop', 'choke', 'torture', 'shoot', 'superhero battle', 'cleave', 'cgi fight', 'electrocute', 'nuke', 'SCP-3125', 'clobber', 'decimate', 'humiliate'];
 

@@ -1,16 +1,16 @@
 import fetch from 'node-fetch';
-import { Command } from 'src/gm';
+import { Command, NumbersAPIResponse } from 'src/gm';
 
 export const command: Command = {
-    name: 'numbers',
+    name: "numbers",
     description: {
-        short: "provides some neato number facts",
+        short: "get some number trivia",
         long: "provides some neato number facts"
     },
     async execute(client, message) {
         try {
             const r = await fetch('http://numbersapi.com/random?json=')
-            const j = await r.json();
+            const j = await r.json() as NumbersAPIResponse;
             await message.channel.send({
                 embeds: [{
                     title: `:regional_indicator_n::regional_indicator_u::regional_indicator_m::regional_indicator_b::regional_indicator_e::regional_indicator_r::regional_indicator_s:`,
@@ -29,4 +29,3 @@ export const command: Command = {
         }
     }
 }
-

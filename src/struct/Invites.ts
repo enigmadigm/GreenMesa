@@ -1,7 +1,7 @@
 import { Guild, GuildMember, Permissions, Snowflake, User } from "discord.js";
 import moment from "moment";
 import { InsertionResult, InviteData, InviteStateData, XClient } from "../gm";
-import { isSnowflake } from "../utils/specials";
+import { isSnowflake } from "../utils/specials.js";
 
 /**
  * This class tracks invites
@@ -20,7 +20,7 @@ export default class {
             if (!guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) return;
             const dataState = await this.getInvitesState(guild.id);
             const invitesBefore = dataState.invites;
-            const invitesCollection = await guild.fetchInvites();
+            const invitesCollection = guild.invites.cache;
             const invites: InviteData[] = invitesCollection.filter(x => typeof x.uses === "number" && x.inviter instanceof User).map((x) => {
                 return { inviter: x.inviter?.id || "", uses: x.uses || 0, code: x.code, channel: x.channel.id, members: x.memberCount || 0 };
             });

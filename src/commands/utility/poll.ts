@@ -1,6 +1,6 @@
 import { MessageEmbedOptions } from "discord.js";
 import { Command } from "src/gm";
-import { delayedLoop } from "../../utils/time";
+import { delayedLoop } from "../../utils/time.js";
 
 export const command: Command = {
     name: 'poll',

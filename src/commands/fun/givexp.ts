@@ -1,7 +1,7 @@
 // NOTE: This whole xp system is in long-term development and needs work. The updates will probably come with a web console if there ever is one.
 import { Command } from "src/gm";
-import { permLevels } from "../../permissions";
-import { stringToMember } from "../../utils/parsers";
+import { permLevels } from "../../permissions.js";
+import { stringToMember } from "../../utils/parsers.js";
 
 export const command: Command = {
     name: 'givexp',

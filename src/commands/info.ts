@@ -1,4 +1,4 @@
-import apppkg from '../../package.json';
+import apppkg from '../../package.json' assert {type: "json"};
 import { Command } from "src/gm";
 
 export const command: Command = {
@@ -58,7 +58,7 @@ export const command: Command = {
                         },
                         {
                             "name": "Shard",
-                            "value": `Current: ${message.guild?.shardID || client.shard?.ids[0]}\nTotal: ${client.shard?.count}`,
+                            "value": `Current: ${message.guild?.shardId || client.shard?.ids[0]}\nTotal: ${client.shard?.count}`,
                             "inline": true,
                         },
                         {

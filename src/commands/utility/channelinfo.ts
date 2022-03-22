@@ -1,6 +1,6 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToChannel } from "../../utils/parsers";
+import { stringToChannel } from "../../utils/parsers.js";
 import { GuildChannel, MessageEmbedOptions, Permissions, ThreadChannel, VoiceChannel } from "discord.js";
 import moment from 'moment';
 
@@ -43,7 +43,7 @@ export const command: Command = {
             } else {
                 e.description += `\n**Viewable By Everyone:** no`;
             }
-            if (!channel.parentID || !channel.parent) {
+            if (!channel.parentId || !channel.parent) {
                 e.description += `\n**Has Parent:** no`;
             } else {
                 e.description += `\n**Has Parent:** yes (${channel.parent})`;

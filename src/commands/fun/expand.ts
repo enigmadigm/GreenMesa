@@ -1,6 +1,4 @@
-
-import { permLevels } from '../../permissions';
-//const { getGlobalSetting } = require("../dbmanager");
+import { permLevels } from '../../permissions.js';
 import { genPhrase } from "../../utils/wordfromacronym.js";
 import { Command } from "src/gm";
 

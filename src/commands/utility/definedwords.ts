@@ -7,7 +7,7 @@ export const command: Command = {
         long: "This lists all of the words that have been defined using the define command in the past.",
     },
     async execute(client, message) {
-        const config = await import("../../../auth.json");
+        const config = await import("../../../auth.json", {assert: {type: "json"}});
         const totalDefined = await client.database.getGlobalSetting("definedcount");
 
         await message.channel.send({

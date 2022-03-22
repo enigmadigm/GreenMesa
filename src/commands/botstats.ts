@@ -1,4 +1,4 @@
-import config from "../../auth.json";
+import config from "../../auth.json" assert {type: "json"};
 import fs from 'fs';
 import Discord, { MessageEmbed } from "discord.js";
 import { BSRow, Command } from "src/gm";

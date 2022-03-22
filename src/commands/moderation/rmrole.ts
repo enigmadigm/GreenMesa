@@ -1,5 +1,5 @@
-import { stringToRole } from '../../utils/parsers';
-import { permLevels } from '../../permissions';
+import { stringToRole } from '../../utils/parsers.js';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
 
 export const command: Command = {

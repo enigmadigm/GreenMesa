@@ -1,6 +1,6 @@
 import { Command } from 'src/gm';
 import getColors from 'get-image-colors';
-import { stringToMember } from '../../utils/parsers';
+import { stringToMember } from '../../utils/parsers.js';
 import chroma from 'chroma-js';
 import { MessageEmbedOptions } from 'discord.js';
 

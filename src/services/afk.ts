@@ -1,7 +1,7 @@
 import { GuildMember, Message, NewsChannel, Snowflake, TextChannel, ThreadChannel, Util } from "discord.js";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 import { GuildMessageProps, MessageService } from "../gm";
-import { stringToMember } from "../utils/parsers";
+import { stringToMember } from "../utils/parsers.js";
 
 async function sendAfk(m: string, c: TextChannel | NewsChannel | ThreadChannel, t: GuildMember) {
     const text = Util.removeMentions(m);
@@ -88,7 +88,7 @@ export const service: MessageService = {
                     })
                     return;
                 }*/
-            } else if (message.reference && message.reference.messageID && (target = await testReference(message.reference.guildID, message.reference.channelID, message.reference.messageID))) {
+            } else if (message.reference && message.reference.messageId && message.reference.guildId && (target = await testReference(message.reference.guildId, message.reference.channelId, message.reference.messageId))) {
                 const afk = await Bot.client.database.getUserData(target.id);
                 if (afk.afk && afk.afk !== "~~off~~" && afk.afk !== "off") {
                     sendAfk(afk.afk, message.channel, target);

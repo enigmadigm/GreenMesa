@@ -1,17 +1,12 @@
-//TODO: should probably update this command to use flags to set category and difficulty
-//TODO: track user participation in questions to display as `right/participated` in the scoreboard display
+//TODO: update command to use flags to set category and difficulty
+//TODO: track participation in questions and display as `right/participated` in the scoreboard display
 import Discord, { CollectorFilter, GuildMember, Message, User } from "discord.js";
 import fetch from 'node-fetch';
-import { Command, TriviaResponse } from "src/gm";
+import { Command, TriviaAPICategoriesResponse, TriviaAPIResponse, TriviaAPITokenResponse, TriviaCategory } from "src/gm";
 
 interface TriviaScoreboard {
     user: GuildMember;
     score: number;
-}
-
-interface TriviaCategory {
-    id: number;
-    name: string;
 }
 
 const deftime = 15;
@@ -101,7 +96,7 @@ export const command: Command = {
     name: 'trivia',
     description: {
         short: 'starts a trivia game to play solo or with friends',
-        long: 'Starts a trivia game that can be played alone or with any number of people. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer while it keeps track of the score for you!\n\nYou can start the game with a specified category and/or difficulty, if you wish. View all categories and their ids by adding "cats" to this command. The available difficulties are easy, medium, and hard.\n\nThis command has been well used, more features to come!'
+        long: 'Starts a trivia game that can be played alone or with any number of people. Let it ask you grueling questions and embarass you in front of your friends because you won\'t know the answer while it keeps track of the score for you!\n\nYou can start the game with a specified category and/or difficulty, if you wish. View all categories and their ids by adding "cats" to this command. The available difficulties are easy, medium, and hard.\n\nThis command has been well used, more features to come! (Uses OpenTDB)'
     },
     usage: "[cats]",
     examples: [
@@ -121,7 +116,7 @@ export const command: Command = {
                     client.specials.sendError(message.channel, `Categories cannot be retrieved at the moment.`, true);
                     return;
                 }
-                const j: { trivia_categories: TriviaCategory[] } = await r.json();
+                const j = await r.json() as TriviaAPICategoriesResponse;
                 await message.channel.send({
                     embeds: [{
                         color: await client.database.getColor("info"),
@@ -147,7 +142,7 @@ export const command: Command = {
             if (!process.env.TRIVIA_SESSION) {
                 process.env.TRIVIA_SESSION = "~";
                 const r = await fetch(`https://opentdb.com/api_token.php?command=request`);
-                const j = await r.json();
+                const j = await r.json() as TriviaAPITokenResponse;
                 if (j.response_code === 0 && j.token && typeof j.token === "string") {
                     process.env.TRIVIA_SESSION = j.token;
                 }
@@ -163,7 +158,7 @@ export const command: Command = {
                         client.specials.sendError(message.channel, `Categories cannot be retrieved at the moment.`, true);
                         return;
                     }
-                    const j: { trivia_categories: TriviaCategory[] } = await r.json();
+                    const j = await r.json() as TriviaAPICategoriesResponse;
                     for (const cat of j.trivia_categories) {
                         if (typeof cat.id === "number" && typeof cat.name === "string" && !categories.find(x => x.id === cat.id)) {
                             categories.push(cat);
@@ -195,7 +190,7 @@ export const command: Command = {
             }
 
             const r = await fetch(`https://opentdb.com/api.php?amount=1&difficulty=${difficulty}${category ? `&category=${category}` : ""}&type=multiple&encode=url3986&token=${process.env.TRIVIA_SESSION}`);
-            const j = <TriviaResponse>await r.json();
+            const j = <TriviaAPIResponse>await r.json();
             if (j.response_code !== 0) {
                 if (j.response_code === 3 || j.response_code === 4) {
                     process.env.TRIVIA_SESSION = undefined;

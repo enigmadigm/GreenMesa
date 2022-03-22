@@ -1,6 +1,6 @@
 import { GuildMessageProps, MessageService, XMessage } from "../gm";
-import { Bot } from "../bot";
-import expletives from 'corpora/data/words/expletives.json';
+import { Bot } from "../bot.js";
+import expletives from 'corpora/data/words/expletives.json' assert {type: "json"};
 const expletiveList: string[] = expletives.expletives;
 
 export const service: MessageService = {

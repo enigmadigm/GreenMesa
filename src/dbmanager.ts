@@ -1,14 +1,15 @@
 import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedUserData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import mysql, { escape } from "mysql";
-import config, { db_config } from "../auth.json";
+import config from "../auth.json" assert {type: "json"};
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
-import { Bot } from "./bot";
+import { Bot } from "./bot.js";
 import uniquid from 'uniqid';
-import { permLevels } from "./permissions";
-import { isSnowflake, shards } from "./utils/specials";
-import Starboard from "./struct/Starboard";
+import { permLevels } from "./permissions.js";
+import { isMysqlError, isSnowflake, shards } from "./utils/specials.js";
+import Starboard from "./struct/Starboard.js";
+const db_config = config.db_config;
 
 const levelRoles = [
     {
@@ -131,7 +132,11 @@ export class DBManager {
 
             return this;
         } catch (error) {
-            xlg.error(`DB Error: ${error.message}\nError: ${error.stack}`);
+            if (isMysqlError(error)) {
+                xlg.error(`DB Error: ${error.message}\nError: ${error.stack}`);
+            } else {
+                xlg.error(error);
+            }
             return this;
         }
     }
@@ -165,11 +170,15 @@ export class DBManager {
         }
     }
 
+    private infoColor = -1;
+    private failColor = -1;
+    private warnColor = -1;
+    private successColor = -1;
     /**
      * Get the stored value paired to a color name in the database
      * @param name name of the color
      */
-    async getColor(name: string): Promise<number> {
+    async getColor(name: string, nocache?: boolean): Promise<number> {
         if (name === "embed") {
             return 0x2F3136;
         }
@@ -180,6 +189,12 @@ export class DBManager {
             name += "_embed_color";
         }
         // color cache lookup and management should go here
+        if (!nocache) {
+            if (name === "info_embed_color" && this.infoColor > -1) return this.infoColor;//279673
+            if (name === "fail_embed_color" && this.failColor > -1) return this.failColor;//16711680
+            if (name === "warn_embed_color" && this.warnColor > -1) return this.warnColor;//16750899
+            if (name === "success_embed_color" && this.successColor > -1) return this.successColor;//4437377
+        }
         const rows = await <Promise<GlobalSettingRow[]>>this.query(`SELECT * FROM globalsettings WHERE name = ${escape(name)}`).catch(xlg.error);
         if (!rows || rows.length == 0) {
             if (name === "info_embed_color") return 279673;
@@ -189,7 +204,14 @@ export class DBManager {
             return 0;
         }
         if (!isNaN(parseInt(rows[0].value, 10))) {
-            return parseInt(rows[0].value);
+            const col = parseInt(rows[0].value);
+
+            if (name === "info_embed_color" && this.infoColor !== col) this.infoColor = col;
+            if (name === "fail_embed_color" && this.failColor !== col) this.failColor = col;
+            if (name === "warn_embed_color" && this.warnColor !== col) this.warnColor = col;
+            if (name === "success_embed_color" && this.successColor !== col) this.successColor = col;
+
+            return col;
         }
         return 0;
     }
@@ -311,10 +333,10 @@ export class DBManager {
             }
             return { points: p, level: l };
         } catch (error) {
-            if (error.code === "ER_DUP_ENTRY") {
+            if (isMysqlError(error) && error.code === "ER_DUP_ENTRY") {
                 xlg.error('error: ER_DUP_ENTRY caught and deflected');
             } else {
-                xlg.error(error);
+                xlg.error("err setting xp: ", error);
             }
         }
         return { points: -1, level: -1 };
@@ -362,7 +384,7 @@ export class DBManager {
         let levelsEnabled: false | GuildSettingsRow | string = await this.getGuildSetting(member.guild, 'xp_levels');
         levelsEnabled = levelsEnabled ? levelsEnabled.value : false;
         if (levelsEnabled === "enabled") {
-            member.guild.roles.cache = await member.guild.roles.fetch();
+            // await member.guild.roles.fetch();// I think this is probably very resource intensive
             const levelRows = await this.checkForLevelRoles(member.guild);
             if (!levelRows) return false;
             const availableRoles = [];
@@ -441,9 +463,9 @@ export class DBManager {
     async updateBotStats(client: XClient): Promise<void> {
         try {
             const reductionFunc = (a: number, b: number) => a + b;
-            const users = (await client.shard?.fetchClientValues("users.cache.size"))?.reduce(reductionFunc, 0);
-            const guilds = (await client.shard?.fetchClientValues("guilds.cache.size"))?.reduce(reductionFunc, 0);
-            const channels = (await client.shard?.fetchClientValues("channels.cache.size"))?.reduce(reductionFunc, 0);
+            const users = (await client.shard?.fetchClientValues("users.cache.size") as number[])?.reduce(reductionFunc, 0);
+            const guilds = (await client.shard?.fetchClientValues("guilds.cache.size") as number[])?.reduce(reductionFunc, 0);
+            const channels = (await client.shard?.fetchClientValues("channels.cache.size") as number[])?.reduce(reductionFunc, 0);
             this.query(`INSERT INTO botstats (numUsers, numGuilds, numChannels) VALUES (${users}, ${guilds}, ${channels})`);
             const scConf = await client.database.getGlobalSetting("sc_conf");
             const statChannelGuild = scConf ? scConf.value.split(",")[0] : "745670883074637904";

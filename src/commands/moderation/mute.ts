@@ -1,10 +1,10 @@
 import { Command, GuildMessageProps } from "src/gm";
-import { permLevels } from '../../permissions';
-import { stringToMember } from '../../utils/parsers';
-import { stringToDuration } from '../../utils/time';
-import { mute } from "../../utils/modactions";
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from '../../utils/parsers.js';
+import { stringToDuration } from '../../utils/time.js';
+import { mute } from "../../utils/modactions.js";
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command<GuildMessageProps> = {//TODO: convert to use new mute method
     name: 'mute',
     description: {
         short: 'fully mute a member',
@@ -35,7 +35,7 @@ export const command: Command<GuildMessageProps> = {
             }
             const dbmr = await client.database.getGuildSetting(message.guild, "mutedrole");
             const mutedRoleID = dbmr ? dbmr.value : "";
-            if ((toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
+            if ((toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerId !== message.member.id) {
                 await message.channel.send('You cannot mute a member that is equal to or higher than yourself');
                 return;
             }

@@ -1,8 +1,9 @@
-import { getPermLevel, permLevels } from '../../permissions';
-import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
-import { getFriendlyUptime } from "../../utils/time";
+import { getPermLevel, permLevels } from '../../permissions.js';
+import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers.js";
+import { getFriendlyUptime } from "../../utils/time.js";
 import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, Permissions, MessageActionRow, MessageButton, MessageComponentInteraction } from "discord.js";
 import { Command } from "src/gm";
+import { MessageButtonStyles } from 'discord.js/typings/enums';
 
 const roleDelay = 1000;
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -103,7 +104,7 @@ export const command: Command = {
                     return;
                 }
             }
-            if (targetRole.position >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
+            if (targetRole.position >= message.member.roles.highest.position && message.guild.ownerId !== message.member.id) {
                 await client.specials.sendError(message.channel, `Sorry ${message.member}, ${targetRole} has a higher position than your highest role, you aren't allowed to manage it.`);
                 return;
             }
@@ -117,7 +118,7 @@ export const command: Command = {
                         toExclude.push(m ? m : { id: "" });
                     }
                 }
-                const targets = g.members.cache.filter((m) => {
+                const targets = [...g.members.cache.filter((m) => {
                     if (toExclude.find(x => x.id === m.id)) return false;
                     if (target instanceof Role) {
                         return !!m.roles.cache.get(target.id);
@@ -127,7 +128,7 @@ export const command: Command = {
                     } else {
                         return !!m.roles.cache.get(targetRole.id);
                     }
-                }).array();
+                }).values()];
                 if (!targets.length) {
                     await client.specials.sendError(message.channel, `**Failure:** No members to ${add ? "give this role to" : "remove this role from"}`);
                     return;
@@ -153,7 +154,7 @@ export const command: Command = {
                     }],
                     components: [
                         new MessageActionRow().addComponents(
-                            new MessageButton({ customID: "abort", style: "SECONDARY" }).setEmoji("🔴")
+                            new MessageButton({ customId: "abort", style: MessageButtonStyles.SUCCESS }).setEmoji("🔴")
                         )
                     ],
                 });
@@ -164,13 +165,13 @@ export const command: Command = {
                 // listener for the cancel button
                 const filter: CollectorFilter<[MessageComponentInteraction]> = (inter) => {
                     if (inter.user.id !== client.user?.id &&
-                        inter.customID === 'abort' &&
+                        inter.customId === 'abort' &&
                         (inter.member?.permissions instanceof Permissions && (inter.member.permissions.bitfield & Permissions.FLAGS.ADMINISTRATOR) === Permissions.FLAGS.ADMINISTRATOR || inter.user.id === message.author.id)) {
                         return true;
                     }
                     return false;
                 };
-                const collector = etaMessage.createMessageComponentInteractionCollector({ filter, time: d, maxUsers: 1 });
+                const collector = etaMessage.createMessageComponentCollector({ filter, time: d, maxUsers: 1 });
                 // await etaMessage.react("🔴");
 
                 collector.on('collect', async () => {

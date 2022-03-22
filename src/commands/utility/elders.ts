@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
 import { MessageEmbedOptions } from 'discord.js';
-import { PaginationExecutor } from '../../utils/pagination';
+import { PaginationExecutor } from '../../utils/pagination.js';
 import moment from 'moment';
 
 const maxlen = 15;

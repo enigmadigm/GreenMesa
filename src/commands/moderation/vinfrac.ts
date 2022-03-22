@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { Contraventions } from '../../utils/contraventions';
+import { Contraventions } from '../../utils/contraventions.js';
 import moment from 'moment';
-import { isSnowflake } from '../../utils/specials';
+import { isSnowflake } from '../../utils/specials.js';
 
 export const command: Command = {
     name: "vinfrac",

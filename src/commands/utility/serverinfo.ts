@@ -18,21 +18,21 @@ export const command: Command<GuildMessageProps> = {
             const memberCount = mems.size;
             const botCount = mems.filter(member => member.user.bot).size;
             const channels = [
-                `Categories: ${message.guild.channels.cache.filter(x => x.type == 'category').size}`,
-                `Text: ${message.guild.channels.cache.filter(x => x.type == 'text').size}`,
-                `Voice: ${message.guild.channels.cache.filter(x => x.type == 'voice').size}`
+                `Categories: ${message.guild.channels.cache.filter(x => x.type == "GUILD_CATEGORY").size}`,
+                `Text: ${message.guild.channels.cache.filter(x => x.isText()).size}`,
+                `Voice: ${message.guild.channels.cache.filter(x => x.isVoice()).size}`
             ]
-            if (message.guild.channels.cache.filter(x => x.type == 'news').size) {
-                channels.push(`News: ${message.guild.channels.cache.filter(x => x.type == 'news').size}`);
+            const guildNewsChannels = message.guild.channels.cache.filter(x => x.type == "GUILD_NEWS").size;
+            if (guildNewsChannels) {
+                channels.push(`News: ${guildNewsChannels}`);
             }
-            if (message.guild.channels.cache.filter(x => x.type == 'store').size) {
-                channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == 'store').size}`);
+            if (message.guild.channels.cache.filter(x => x.type == "GUILD_STORE").size) {
+                channels.push(`Store: ${message.guild.channels.cache.filter(x => x.type == "GUILD_STORE").size}`);
             }
 
             let invites: boolean | Invite[] = false;
             if (message.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
-                const invitesCollection = await message.guild.fetchInvites();
-                invites = invitesCollection.array();
+                invites = [...message.guild.invites.cache.values()];
             }
             const owner = await message.guild.fetchOwner();
             await message.channel.send({
@@ -58,11 +58,11 @@ export const command: Command<GuildMessageProps> = {
                         },
                         {
                             name: "Online <:736903507436896313:752118506950230067>",
-                            value: `${mems.filter(member => (member.presence.status == 'online' || member.presence.status == 'idle') && !member.user.bot).size} human`,
+                            value: `${mems.filter(member => (member.presence?.status == 'online' || member.presence?.status == 'idle') && !member.user.bot).size} human`,
                             inline: true,
                         },
                         {
-                            name: `Channels (${message.guild.channels.cache.size - message.guild.channels.cache.filter(x => x.type == 'category').size})`,
+                            name: `Channels (${message.guild.channels.cache.size - message.guild.channels.cache.filter(x => x.type == "GUILD_CATEGORY").size})`,
                             value: `${channels.join("\n") || 'none'}`,
                             inline: true,
                         },

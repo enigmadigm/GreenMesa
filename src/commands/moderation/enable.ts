@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, CommandConf } from "src/gm";
 import { GuildChannel } from "discord.js";
-import { stringToRole, stringToChannel } from "../../utils/parsers";
-import { getDashboardLink } from "../../utils/specials";
+import { stringToRole, stringToChannel } from "../../utils/parsers.js";
+import { getDashboardLink } from "../../utils/specials.js";
 
 export const command: Command = {
     name: 'enable',

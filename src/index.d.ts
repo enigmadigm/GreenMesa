@@ -28,6 +28,7 @@ declare namespace NodeJS {
         TRIVIA_SESSION?: string;
         DASHBOARD_HOST?: string;
         NODE_ENV?: string;
+        PERMS_DEFAULT?: string;
     }
 }
 

@@ -1,5 +1,5 @@
 import { Command } from "src/gm";
-import { permLevels } from "../../permissions";
+import { permLevels } from "../../permissions.js";
 
 
 export const command: Command = {
@@ -33,13 +33,15 @@ export const command: Command = {
                 client.commands.set(newCommand.name, newCommand);
             } catch (error) {
                 console.log(error);
-                client.specials?.sendError(message.channel, `There was an error while reloading a command \`${commandName}\`:\n\`${error.message}\``);
+                if (client.specials.isNodeError(error)) {
+                    await client.specials.sendError(message.channel, `There was an error while reloading a command \`${commandName}\`:\n\`${error.message}\``);
+                }
             }
     
             message.channel.send(`Command \`${command.name}\` was reloaded!`);
         } catch (error) {
             xlg.error(error);
-            await client.specials?.sendError(message.channel);
+            await client.specials.sendError(message.channel);
             return false;
         }
     }

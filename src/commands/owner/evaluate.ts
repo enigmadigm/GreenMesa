@@ -1,4 +1,4 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
 import moment from 'moment';
 import Discord, { Util } from 'discord.js';

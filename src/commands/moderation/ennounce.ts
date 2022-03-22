@@ -1,6 +1,6 @@
 import { MessageEmbedOptions } from 'discord.js';
 import { Command } from 'src/gm';
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 //import { getGuildSetting, getGlobalSetting } from "../dbmanager";
 /*const Validator = require('jsonschema').Validator;
 var v = new Validator();

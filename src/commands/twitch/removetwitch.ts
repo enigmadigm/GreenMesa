@@ -1,5 +1,5 @@
-import { permLevels } from '../../permissions';
-import { unsubscribeTwitchSubscription } from "../../website/routes/twitch";
+import { permLevels } from '../../permissions.js';
+import { unsubscribeTwitchSubscription } from "../../website/routes/twitch.js";
 import { MessageEmbed } from "discord.js";
 import { Command } from "src/gm";
 

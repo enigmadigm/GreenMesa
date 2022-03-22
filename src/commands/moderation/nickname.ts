@@ -1,5 +1,5 @@
-import { permLevels, getPermLevel } from "../../permissions";
-import { stringToMember } from "../../utils/parsers";
+import { permLevels, getPermLevel } from "../../permissions.js";
+import { stringToMember } from "../../utils/parsers.js";
 import { Command, GuildMessageProps } from "src/gm";
 
 export const command: Command<GuildMessageProps> = {
@@ -45,7 +45,7 @@ export const command: Command<GuildMessageProps> = {
             // Why would I want it to be changed manually
             //if (target.id == client.id) return message.channel.send('My nickname should be changed manually');
 
-            if (target.id === target.guild.ownerID) {
+            if (target.id === target.guild.ownerId) {
                 await client.specials.sendError(message.channel, `Because you are the server owner, I will never be able to change your nickname`);
                 return;
             }
@@ -72,8 +72,12 @@ export const command: Command<GuildMessageProps> = {
                 await target.setNickname(args.join(" "), 'adjustment thru nick command');
                 await message.channel.send(`\\✅ Changed the nickname of \`${target.user.tag}\` to \`${target.displayName}\``)
             } catch (e) {
-                xlg.log(e.message);
-                await client.specials.sendError(message.channel, `◍ Command Error:\n${e.message}`)
+                if (client.specials.isNodeError(e)) {
+                    xlg.error("Nickname change error:", e.message);
+                    await client.specials.sendError(message.channel, `◍ Command Error:\n${e.message}`)
+                } else {
+                    xlg.error(e);
+                }
             }
         } catch (error) {
             xlg.error(error);

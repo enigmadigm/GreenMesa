@@ -1,7 +1,7 @@
-import httpdcodes from "../../httpcodes.json";
-import { permLevels } from '../permissions';
+import httpdcodes from "../../httpcodes.json" assert {type: "json"};
+import { permLevels } from '../permissions.js';
 import { Command } from "src/gm";
-import { stringSimilarity } from "../utils/parsers";
+import { stringSimilarity } from "../utils/parsers.js";
 
 export const command: Command = {
     name: "http",

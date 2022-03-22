@@ -1,8 +1,8 @@
 import { Permissions } from "discord.js";
 import moment from "moment";
-import { Bot } from "./bot";
-import { TimedAction } from "./gm";
-import { Contraventions } from "./utils/contraventions";
+import { Bot } from "./bot.js";
+import { TimedAction, TimedActionPayload } from "./gm";
+import { Contraventions } from "./utils/contraventions.js";
 
 export class TimedActionsSubsystem {
     private scheduled: TimedAction[];
@@ -40,7 +40,8 @@ export class TimedActionsSubsystem {
         }
 
         while (this.scheduled.length) {
-            const a = this.scheduled.slice(0, 1)[0];
+            const a = this.scheduled.splice(0, 1)[0];// remove the first scheduled action and execute
+            // so it will not execute repeateduly when it is already running
             const t = moment(a.time).diff(moment(), "s");
             if (t <= 1) {
                 this.execute(a);
@@ -67,7 +68,10 @@ export class TimedActionsSubsystem {
                             break;
                         }
                     }
-                    if (!m.roles.cache.has(d.roleid)) break;
+                    if (!m.roles.cache.has(d.roleid)) {
+                        await this.resolveAction(action);
+                        break;
+                    }
 
                     // Remove the mentioned users role and make notation in audit log
                     await m.roles.remove(d.roleid, `unmuting automatically after ${d.duration}`);
@@ -79,7 +83,8 @@ export class TimedActionsSubsystem {
                         }
                     }
                     await Contraventions.logUnmute(m, m.guild.me || "", `Automatic unmute after ${d.duration}`);//Automic
-                    await Bot.client.database.deleteAction(action.id);
+                    // await Bot.client.database.deleteAction(action.id);
+                    await this.resolveAction(action);
                     break;
                 }
                 case "unban": {
@@ -89,10 +94,11 @@ export class TimedActionsSubsystem {
                     try {
                         const g = Bot.client.guilds.cache.find(x => x.id === d.guildid);
                         if (!g || !g.me?.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) break;
-    
-                        await g.members.unban(d.userid, `unbanning automatically after ${d.duration}`);
-                        await Contraventions.logUnban(g.id, d.userid, Bot.client.user?.id || "", `Automatic unban after ${d.duration}`);
-                        await Bot.client.database.deleteAction(action.id);
+
+                        // await g.members.unban(d.userid, `unbanning automatically after ${d.duration}`);
+                        // await Contraventions.logUnban(g.id, d.userid, Bot.client.user?.id || "", `Automatic unban after ${d.duration}`);
+                        // await Bot.client.database.deleteAction(action.id);
+                        await this.resolveAction(action);
                     } catch (error) {
                         //
                     }
@@ -106,7 +112,12 @@ export class TimedActionsSubsystem {
         }
     }
 
-    stopPolling(): void {
+    private async resolveAction(action: TimedActionPayload): Promise<void> {
+        await Bot.client.database.deleteAction(action.id);// remove completed action from database
+        this.scheduled.splice(this.scheduled.findIndex(x => x.id === action.id), 1);// in case it wasn't already removed from class schedule
+    }
+
+    public stopPolling(): void {
         clearInterval(this.timer);
     }
 }

@@ -1,11 +1,11 @@
-import { Collection, MessageAttachment, MessageEmbed } from "discord.js";
+import { MessageAttachment, MessageEmbed } from "discord.js";
 import { Command, CommandArgumentFlag } from "src/gm";
-import { permLevels } from "../permissions";
-import { stringToChannel } from "../utils/parsers";
+import { permLevels } from "../permissions.js";
+import { stringToChannel } from "../utils/parsers.js";
 
-type MC = { content: string | undefined, embed: MessageEmbed | undefined, attachments: Collection<string, MessageAttachment> };
-function constructMessage(content: string, flags: CommandArgumentFlag[], atts: Collection<string, MessageAttachment>): MC {
-    const fin: MC = { content: undefined, embed: undefined, attachments: new Collection() };
+type MC = { content: string | undefined, embed: MessageEmbed | undefined, attachments: MessageAttachment[] };
+function constructMessage(content: string, flags: CommandArgumentFlag[], atts: MessageAttachment[]): MC {
+    const fin: MC = { content: undefined, embed: undefined, attachments: [] };
     if (content) {
         fin.content = content;
     }
@@ -32,15 +32,17 @@ function constructMessage(content: string, flags: CommandArgumentFlag[], atts: C
                 fin.embed.setTitle(flag.value);
             }
             if ((flag.name === "footer" || flag.name === "foot") && flag.value) {
-                fin.embed.setFooter(flag.value);
+                fin.embed.footer = {
+                    text: flag.value
+                };
             }
             if (flag.name === "author" && flag.value) {
                 fin.embed.setAuthor(flag.value);
             }
         }
     }
-    if (atts.size) {
-        fin.attachments.concat(atts);
+    if (atts.length) {
+        fin.attachments = fin.attachments.concat(atts);
     }
     return fin;
 }
@@ -79,7 +81,7 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, `Stuff to send was not specified.`);
                 return;
             }
-            const made = constructMessage(args.join(" "), flags, message.attachments);
+            const made = constructMessage(args.join(" "), flags, [...message.attachments.values()]);
             if (channel && channel.isText()) {
                 await channel.send(made);
             } else {

@@ -1,6 +1,6 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import fetch from "node-fetch";
-import { Command } from "src/gm";
+import { Command, GdShortenerResponse } from "src/gm";
 
 export const command: Command = {
     name: "isgd",
@@ -11,7 +11,6 @@ export const command: Command = {
     usage: "<url>",
     args: 1,
     permLevel: permLevels.member,
-    guildOnly: false,
     async execute(client, message, args) {
         try {
             if (args.length > 1) {
@@ -24,15 +23,14 @@ export const command: Command = {
                 await client.specials.sendError(message.channel, "Received a non-ok response code from is.gd", true);
                 return;
             }
-            const j = await r.json();
-            if (!j || j.errorcode || !j.shorturl) {
-                if (j && j.errorcode === 1 && j.errormessage) {
+            const j = await r.json() as GdShortenerResponse;
+            if (!("shorturl" in j) || "errorcode" in j) {
+                if (j.errorcode === 1 && j.errormessage) {
                     await client.specials.sendError(message.channel, `Could not shorten URL:\n${j.errormessage}`, true);
-                    return;
                 } else {
                     await client.specials.sendError(message.channel, `Could not shorten URL`, true);
-                    return;
                 }
+                return;
             }
 
             await message.channel.send({

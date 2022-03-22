@@ -1,9 +1,9 @@
-import { permLevels } from '../../permissions';
-import { stringToMember } from "../../utils/parsers";
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from "../../utils/parsers.js";
 import Discord from 'discord.js';
 import { Command } from "src/gm";
-import { stringToDuration } from "../../utils/time";
-import { ban } from "../../utils/modactions";
+import { stringToDuration } from "../../utils/time.js";
+import { ban } from "../../utils/modactions.js";
 
 export const command: Command = {
     name: "ban",
@@ -51,7 +51,7 @@ export const command: Command = {
             }
             const dbmr = await client.database.getGuildSetting(message.guild, "mutedrole");
             const mutedRoleID = dbmr ? dbmr.value : "";
-            if ((target.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
+            if ((target.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0) >= message.member.roles.highest.position && message.guild.ownerId !== message.member.id) {
                 await message.channel.send('You cannot ban a member that is equal to or higher than yourself');
                 return;
             }

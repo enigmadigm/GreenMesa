@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToChannel } from "../../utils/parsers";
-import { getDashboardLink, isSnowflake } from "../../utils/specials";
+import { stringToChannel } from "../../utils/parsers.js";
+import { getDashboardLink, isSnowflake } from "../../utils/specials.js";
 
 export const command: Command = {
     name: "automod",

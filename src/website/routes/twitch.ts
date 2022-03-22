@@ -13,14 +13,16 @@ import moment from 'moment';
 import { TwitchSearchChannelsReturns, XClient } from 'src/gm';
 import express, { Router } from 'express';
 import { IncomingMessage } from 'http';
-import { Bot } from '../../bot';
+import { Bot } from '../../bot.js';
 import { Channel, TextChannel } from 'discord.js';
+import { fileURLToPath } from 'url';
 // import { eq } from 'lodash';
 // url and querystring for parsing url queries
 // import url from 'url';
 // import querystring from 'querystring';
 
 // Load configuation
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const config = JSON.parse(fs.readFileSync(path.join( __dirname, '../../../auth.json')).toString()).TWITCH;
 
 // "subscription": {
@@ -156,7 +158,7 @@ export function twitchRouter(client: XClient): Router {
                     "Authorization": `Bearer ${currToken}`
                 }
             });
-            const j: { data: TwitchSearchChannelsReturns[], pagination: { cursor: string } } = await r.json();
+            const j = await r.json() as { data: TwitchSearchChannelsReturns[], pagination: { cursor: string } };
             if (j.data) {
                 return res.json(j.data);
             }
@@ -369,7 +371,8 @@ export async function addTwitchWebhook(username: string, isID = false, guildid?:
                 "Authorization": `Bearer ${currToken}`,
                 "Client-ID": `${config.client_id}`
             }
-        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }) as any;//TODO: assert type is correct
         const j = await res.json();
         if (`${res.status}`.startsWith("2") && j.data[0].id) {
             subid = j.data[0].id
@@ -447,8 +450,9 @@ export async function unsubscribeTwitchSubscription(username: string, guildid: s
 async function getOAuth() {
     try {
         if (tokenExpiresIn > 60) return;
-        const result = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${config.client_id}&client_secret=${config.client_secret}&grant_type=client_credentials&scope=user:read:email`, { method: "POST" })
-        const j = await result.json()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${config.client_id}&client_secret=${config.client_secret}&grant_type=client_credentials&scope=user:read:email`, { method: "POST" }) as any;//TODO: assert type is correct
+        const j = await result.json();
         if (!j || !j.access_token) {
             xlg.error("Couldn't retrieve access token", j);
             return false;
@@ -472,7 +476,8 @@ async function idLookup(username: string, isid = false) {
             "Authorization": `Bearer ${currToken}`
 		}
 	})
-    const json = await response.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const json = await response.json() as any;//TODO: explicity assert type is correct
 	return json;
 }
 

@@ -1,17 +1,23 @@
-import { permLevels } from '../../permissions';
-import { Command, GuildMessageProps, InvitedUserData } from "src/gm";
+import { permLevels } from '../../permissions.js';
+import { Command, InvitedUserData } from "src/gm";
 import { MessageEmbed, MessageEmbedOptions, Snowflake } from "discord.js";
-import { PaginationExecutor } from '../../utils/pagination';
-import { getDashboardLink } from '../../utils/specials';
+import { PaginationExecutor } from '../../utils/pagination.js';
+import { getDashboardLink } from '../../utils/specials.js';
 
-export const command: Command<GuildMessageProps> = {
+export const command: Command = {
     name: "invlb",
     description: {
         short: "inviters leaderboard",
         long: "Get a leaderboard of the top inviters in your server. It shows users ranked by the number of valid invites they have."
     },
     usage: "<@member> [count|list|users]",
-    args: false,
+    args: 0,
+    flags: [
+        {
+            f: "r",
+            d: "view stats relative to the reset date",
+        },
+    ],
     cooldown: 4,
     permLevel: permLevels.member,
     guildOnly: true,
@@ -20,7 +26,7 @@ export const command: Command<GuildMessageProps> = {
         try {
             const data = await client.database.getInvites({ guildid: message.guild.id });
             if (!data.length) {
-                await client.specials.sendError(message.channel)
+                await client.specials.sendError(message.channel, `Couldn't fetch invites data`, true);
                 return;
             }
             const groupings: { user: Snowflake, invites: InvitedUserData[] }[] = [];// an array of members and their invites data, it only includes member who have an invite count
@@ -49,7 +55,7 @@ export const command: Command<GuildMessageProps> = {
             for (const d of groupings.sort((a, b) => b.invites.length - a.invites.length)) {
                 const u = d.user ? message.guild.members.cache.get(d.user)?.user : undefined;
                 const tag = d.user ? u ? `${u.tag}${u.bot ? ` [BOT](${getDashboardLink()})` : ""}` : d.invites[0].invitername : `anonymous#0000`;
-                const a = `(${d.invites.length} invites) ${tag}`;
+                const a = `\`${d.invites.length}\`\u200b\`INV\` ${tag}`;
                 if (`${pages[pi]}\n${a}`.length > 512) {
                     pi++;
                     pages[pi] = a;

@@ -1,11 +1,11 @@
 //TODO: add a modaction for unmuting
-import { permLevels } from '../../permissions';
-import { stringToMember } from '../../utils/parsers';
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from '../../utils/parsers.js';
 import { Command } from "src/gm";
-import { Contraventions } from "../../utils/contraventions";
+import { Contraventions } from "../../utils/contraventions.js";
 import { Permissions } from 'discord.js';
 
-export const command: Command = {
+export const command: Command = {//TODO: convert to use new method
     name: 'unmute',
     description: {
         short: 'unmute a member',
@@ -34,7 +34,7 @@ export const command: Command = {
             }
             const dbmr = await client.database.getGuildSetting(message.guild, "mutedrole");
             const mutedRoleID = dbmr ? dbmr.value : "";
-            if (toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0 >= message.member.roles.highest.position && message.guild.ownerID !== message.member.id) {
+            if (toMute.roles.cache.filter(r => r.id !== mutedRoleID).sort((a, b) => a.position - b.position).first()?.position || 0 >= message.member.roles.highest.position && message.guild.ownerId !== message.member.id) {
                 await message.channel.send('You cannot unmute a member that is equal to or higher than yourself!');
                 return;
             }

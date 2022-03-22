@@ -1,9 +1,9 @@
 import { AutomoduleData, AutomoduleEndpointData, AutoroleData, AutoroleEndpointData, ChannelData, ClientValuesGuild, CommandsEndpointData, GuildItemSpecial, GuildsEndpointData, HomeEndpointData, LevelsEndpointData, MovementData, MovementEndpointData, PartialGuildObject, RoleData, RoleEndpointData, ServerlogData, ServerlogEndpointData, TwitchEndpointData, WarnConf, WarnConfEndpointData, XClient } from 'src/gm';
 import express from 'express';
-import { Bot } from '../../bot';
-import { addTwitchWebhook } from './twitch';
-import { stringToChannel } from '../../utils/parsers';
-import { isSnowflake } from '../../utils/specials';
+import { Bot } from '../../bot.js';
+import { addTwitchWebhook } from './twitch.js';
+import { stringToChannel } from '../../utils/parsers.js';
+import { isSnowflake } from '../../utils/specials.js';
 import { Collection, GuildChannel } from 'discord.js';
 
 export function getMutualGuilds(userGuilds: PartialGuildObject[], botGuilds: ClientValuesGuild[]): PartialGuildObject[] {
@@ -215,7 +215,7 @@ export default function routerBuild (client: XClient): express.Router {
                 name: c.name,
                 type: c.type,
                 position: c.rawPosition,
-                parentID: c.parentID ?? undefined
+                parentID: c.parentId ?? undefined
             }
             if (c.isText()) {
                 data.nsfw = c.nsfw;
@@ -593,7 +593,7 @@ export default function routerBuild (client: XClient): express.Router {
                         name: c.name,
                         type: c.type,
                         position: c.rawPosition,
-                        parentID: c.parentID ?? undefined
+                        parentID: c.parentId ?? undefined
                         //parent: c.parent
                     }
                     if (c.isText()) {
@@ -641,7 +641,7 @@ export default function routerBuild (client: XClient): express.Router {
                     name: c.name,
                     type: c.type,
                     position: c.rawPosition,
-                    parentID: c.parentID ?? undefined
+                    parentID: c.parentId ?? undefined
                 }
                 if (c.isText()) {
                     data.nsfw = c.nsfw;

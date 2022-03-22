@@ -3,7 +3,7 @@
 
 import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, ThreadChannel, User } from "discord.js";
 import { CommandArgumentFlag, XClient } from "src/gm";
-import { isSnowflake } from "./specials";
+import { isSnowflake } from "./specials.js";
 
 /**
  * Returns similarity value based on Levenshtein distance.
@@ -113,27 +113,36 @@ export async function stringToUser(client: XClient, text: string): Promise<User 
 export async function stringToMember(guild: Guild, text: string, byUsername = true, byNickname = true, bySimilar = true): Promise<GuildMember | undefined> {
     if (!text) return undefined;
     text = extractString(text, /<@!?(\d*)>/) || extractString(text, /([^#@:]{2,32})#\d{4}/) || text;
-    guild.members.cache = await guild.members.fetch();
+
+    // guild.members.cache = await guild.members.fetch();
 
     // by id
-    let member = guild.members.cache.get(text as Snowflake);
-    if (!member && byUsername)
-    // by username
-    member = guild.members.cache.find(x => x.user.username == text || x.user.tag == text);
-    if (!member && byNickname)
-    // by nickname
-    member = guild.members.cache.find(x => x.nickname == text);
-    
-    if (!member && bySimilar) {
-        // closest matching username
-        member = guild.members.cache.reduce((prev, curr) => {
-            return (stringSimilarity(curr.user.username, text) > stringSimilarity(prev?.user.username || "", text) ? curr : prev);
-        });
-        if (stringSimilarity(member?.user.username || "", text) < 0.4) {
-            member = undefined;
+    try {
+        let member = guild.members.cache.get(text as Snowflake);
+        if (!member && byUsername)
+        // by username
+        member = guild.members.cache.find(x => x.user.username == text || x.user.tag == text);
+        if (!member && byNickname)
+        // by nickname
+        member = guild.members.cache.find(x => x.nickname == text);
+        
+        if (!member && bySimilar) {
+            // closest matching username
+            member = guild.members.cache.reduce((prev, curr) => {
+                return (stringSimilarity(curr.user.username, text) > stringSimilarity(prev?.user.username || "", text) ? curr : prev);
+            });
+            if (stringSimilarity(member?.user.username || "", text) < 0.4) {
+                member = undefined;
+            }
         }
+        if (!member) {
+            member = await guild.members.fetch(text as Snowflake);
+        }
+        return member;
+    } catch (error) {
+        xlg.error(`Err while parsing (stringToMember): `, error);
+        return;
     }
-    return member;
 }
 
 /**

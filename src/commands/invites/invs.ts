@@ -1,9 +1,9 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToMember } from "../../utils/parsers";
+import { stringToMember } from "../../utils/parsers.js";
 import { MessageEmbed, MessageEmbedOptions } from "discord.js";
-import { PaginationExecutor } from "../../utils/pagination";
-import { isSnowflake } from '../../utils/specials';
+import { PaginationExecutor } from "../../utils/pagination.js";
+import { isSnowflake } from '../../utils/specials.js';
 
 export const command: Command = {
     name: "invs",
@@ -14,7 +14,8 @@ export const command: Command = {
     usage: "<@member> [count|list|users|inviter]",
     args: false,
     cooldown: 2,
-    permLevel: permLevels.member,
+    permLevel: permLevels.botMaster,
+    // permLevel: permLevels.member,
     guildOnly: true,
     permissions: ["MANAGE_GUILD"],
     async execute(client, message, args) {

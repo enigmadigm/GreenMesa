@@ -1,8 +1,8 @@
 import { AutoroleData, MessageService } from "../gm";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 import { GuildMember } from "discord.js";
-import { mute } from "../utils/modactions";
-import { isSnowflake } from "../utils/specials";
+import { mute } from "../utils/modactions.js";
+import { isSnowflake } from "../utils/specials.js";
 
 export const service: MessageService = {
     events: ["guildMemberAdd"],

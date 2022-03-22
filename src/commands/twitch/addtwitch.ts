@@ -1,6 +1,6 @@
-import { permLevels } from '../../permissions';
-import { stringToChannel } from "../../utils/parsers";
-import { addTwitchWebhook } from "../../website/routes/twitch";
+import { permLevels } from '../../permissions.js';
+import { stringToChannel } from "../../utils/parsers.js";
+import { addTwitchWebhook } from "../../website/routes/twitch.js";
 import { MessageEmbed, Permissions } from "discord.js";
 import { Command } from "src/gm";
 

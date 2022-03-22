@@ -1,10 +1,10 @@
 import { GuildMember, MessageEmbed, Snowflake, TextChannel, User } from "discord.js";
 import moment from "moment";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 import { ModActionEditData } from "../gm";
-import { combineEmbedText, titleCase } from "./parsers";
-import { isSnowflake } from "./specials";
-import { getFriendlyUptime } from "./time";
+import { combineEmbedText, titleCase } from "./parsers.js";
+import { isSnowflake } from "./specials.js";
+import { getFriendlyUptime } from "./time.js";
 
 // enum colorContraventions {
 //     ban = 0xff8282,

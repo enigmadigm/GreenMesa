@@ -12,7 +12,7 @@ export const command: Command = {
     guildOnly: true,
     async execute(client, message) {
         try {
-            message.channel.startTyping();
+            message.channel.sendTyping();
             const r = await fetch('https://either.io');
             const body = await r.text();
             const dom = new jsdom.JSDOM(body);
@@ -21,17 +21,17 @@ export const command: Command = {
             const msg = await message.channel.send({
                 embeds: [{
                     color: await client.database.getColor("info"),
-                    description: `Would you rather:\n**🅰 | ${ae.textContent}**\nor\n**🅱 | ${be.textContent}**`,
+                    description: `Would you rather:\n**🅰 | ${ae?.textContent}**\nor\n**🅱 | ${be?.textContent}**`,
                 }],
             });
             await msg.react('🇦');
             await msg.react('🇧');
 
-            message.channel.stopTyping();
         } catch (error) {
-            xlg.error(error);
-            message.channel.stopTyping();
-            await client.specials.sendError(message.channel, `An error occurred while thinking of a WYR:\n\`${error.message}\``);
+            xlg.error("wyr err:", error);
+            if (client.specials.isNodeError(error)) {
+                await client.specials.sendError(message.channel, `An error occurred while thinking of a WYR:\n\`${error.message}\``);
+            }
             return false;
         }
     }

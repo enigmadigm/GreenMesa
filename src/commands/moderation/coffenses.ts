@@ -1,7 +1,6 @@
-
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToMember } from "../../utils/parsers";
+import { stringToMember } from "../../utils/parsers.js";
 
 export const command: Command = {
     name: "coffenses",
