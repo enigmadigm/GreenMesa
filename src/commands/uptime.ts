@@ -3,8 +3,8 @@
 
 import fs from 'fs';
 import { Command } from 'src/gm';
-import config from '../../auth.json';
-import { getFriendlyUptime } from '../utils/time';
+import config from '../../auth.json' assert {type: "json"};
+import { getFriendlyUptime } from '../utils/time.js';
 
 export const command: Command = {
     name: "uptime",

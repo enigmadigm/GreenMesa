@@ -1,10 +1,10 @@
 import { Guild, GuildMember, MessageEmbedOptions, Permissions, User } from "discord.js";
 import moment from "moment";
 import { UnbanAction, UnmuteAction, WarnConf, XClient } from "../gm";
-import { durationToString } from "./parsers";
+import { durationToString } from "./parsers.js";
 import uniqid from 'uniqid';
-import { Contraventions } from "./contraventions";
-import { isSnowflake } from "./specials";
+import { Contraventions } from "./contraventions.js";
+import { isSnowflake } from "./specials.js";
 
 // export class BaseModAction<T> {
 //     public client: XClient;

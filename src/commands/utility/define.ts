@@ -1,8 +1,9 @@
 import { MessageEmbedOptions } from "discord.js";
 import fetch from "node-fetch";
 import { Command } from "src/gm";
-import { MWKEY } from '../../../auth.json';
+import config from '../../../auth.json' assert {type: "json"};
 import mw from 'mw-collegiate';
+const MWKEY = config.MWKEY;
 
 export const command: Command = {
     name: "define",

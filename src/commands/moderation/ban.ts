@@ -1,9 +1,9 @@
-import { permLevels } from '../../permissions';
-import { stringToMember } from "../../utils/parsers";
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from "../../utils/parsers.js";
 import Discord from 'discord.js';
 import { Command } from "src/gm";
-import { stringToDuration } from "../../utils/time";
-import { ban } from "../../utils/modactions";
+import { stringToDuration } from "../../utils/time.js";
+import { ban } from "../../utils/modactions.js";
 
 export const command: Command = {
     name: "ban",

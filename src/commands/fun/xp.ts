@@ -1,7 +1,7 @@
 // NOTE: This whole xp system is in long-term development and needs work. The updates will probably come with a web console if there ever is one.
 import { MessageAttachment, Permissions } from "discord.js";
 import { Command } from "src/gm";
-import { stringToMember } from "../../utils/parsers";
+import { stringToMember } from "../../utils/parsers.js";
 import { VACEFronJS } from 'vacefron';
 
 const verbs = [

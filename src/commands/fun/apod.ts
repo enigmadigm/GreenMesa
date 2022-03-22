@@ -1,6 +1,6 @@
 import { default as fetch } from "node-fetch";
-import config from '../../../auth.json';
-import { validURL } from '../../utils/urls';
+import config from '../../../auth.json' assert {type: "json"};
+import { validURL } from '../../utils/urls.js';
 import { APODAPIResponse, Command } from "src/gm";
 import moment from "moment";
 

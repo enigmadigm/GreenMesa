@@ -1,8 +1,8 @@
 import { ClientValuesGuild, DashboardMessage, GuildMessageProps, SkeletonGuildObject, SkeletonRole, XClient, XMessage } from '../gm';
 import moment from 'moment';
 import { ButtonInteraction, Channel, Collection, CollectorFilter, DMChannel, GuildChannel, GuildMember, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, PartialDMChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
-import { Bot } from "../bot";
-import { combineEmbedText } from './parsers';
+import { Bot } from "../bot.js";
+import { combineEmbedText } from './parsers.js';
 import { MessageButtonStyles } from 'discord.js/typings/enums';
 import { MysqlError } from 'mysql';
 

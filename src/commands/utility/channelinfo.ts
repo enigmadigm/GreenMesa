@@ -1,6 +1,6 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToChannel } from "../../utils/parsers";
+import { stringToChannel } from "../../utils/parsers.js";
 import { GuildChannel, MessageEmbedOptions, Permissions, ThreadChannel, VoiceChannel } from "discord.js";
 import moment from 'moment';
 

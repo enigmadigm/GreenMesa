@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { parseFriendlyUptime, stringToMember } from "../../utils/parsers";
-import { getFriendlyUptime } from "../../utils/time";
+import { parseFriendlyUptime, stringToMember } from "../../utils/parsers.js";
+import { getFriendlyUptime } from "../../utils/time.js";
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 

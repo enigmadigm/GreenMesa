@@ -1,8 +1,8 @@
 import { Command, GuildMessageProps } from "src/gm";
-import { permLevels } from '../../permissions';
-import { stringToMember } from '../../utils/parsers';
-import { stringToDuration } from '../../utils/time';
-import { mute } from "../../utils/modactions";
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from '../../utils/parsers.js';
+import { stringToDuration } from '../../utils/time.js';
+import { mute } from "../../utils/modactions.js";
 
 export const command: Command<GuildMessageProps> = {//TODO: convert to use new mute method
     name: 'mute',

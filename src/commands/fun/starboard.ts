@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToChannel } from '../../utils/parsers';
+import { stringToChannel } from '../../utils/parsers.js';
 import { CollectorFilter, GuildChannel, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, MessageSelectMenu, NewsChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
-import Starboard from '../../struct/Starboard';
+import Starboard from '../../struct/Starboard.js';
 
 export const command: Command = {
     name: "starboard",

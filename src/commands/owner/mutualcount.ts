@@ -1,6 +1,6 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { stringToUser } from '../../utils/parsers';
+import { stringToUser } from '../../utils/parsers.js';
 import { Util } from 'discord.js';
 
 export const command: Command = {

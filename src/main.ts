@@ -1,12 +1,12 @@
 import { ShardingManager } from 'discord.js';
-import config from "../auth.json";
+import config from "../auth.json" assert {type: "json"};
 import moment from 'moment'; // require
-import "./xlogger";
+import "./xlogger.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const log = (a: any) => {
     const now = moment().format();
-    console.log(`[COMMANDER] [${now}]`, a);
+    console.log(`[SHARDING] [${now}]`, a);
 }
 
 const manager = new ShardingManager('./dist/bot.js', { token: config.token });
@@ -34,4 +34,6 @@ manager.on('shardCreate', shard => {
     });
 });
 
-manager.spawn();
+manager.spawn({
+    amount: 'auto'
+});

@@ -1,6 +1,6 @@
 import { GuildMember, Permissions, User } from "discord.js";
-import { Bot } from "./bot";
-import { isSnowflake } from "./utils/specials";
+import { Bot } from "./bot.js";
+import { isSnowflake } from "./utils/specials.js";
 
 export const permLevels = {
     member: 0,

@@ -3,7 +3,7 @@
 
 import { Guild, GuildChannel, GuildMember, Message, MessageEmbed, MessageEmbedOptions, Role, Snowflake, ThreadChannel, User } from "discord.js";
 import { CommandArgumentFlag, XClient } from "src/gm";
-import { isSnowflake } from "./specials";
+import { isSnowflake } from "./specials.js";
 
 /**
  * Returns similarity value based on Levenshtein distance.

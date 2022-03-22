@@ -1,6 +1,6 @@
 import { Command } from "src/gm";
-import { permLevels } from '../../permissions';
-import { stringToChannel, stringToMember } from "../../utils/parsers";
+import { permLevels } from '../../permissions.js';
+import { stringToChannel, stringToMember } from "../../utils/parsers.js";
 import { Collection, MessageEmbedOptions, Permissions, PermissionString, TextChannel, ThreadChannel } from "discord.js";
 
 export const command: Command = {

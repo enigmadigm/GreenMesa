@@ -1,4 +1,4 @@
-import apppkg from '../../package.json';
+import apppkg from '../../package.json' assert {type: "json"};
 import { Command } from "src/gm";
 
 export const command: Command = {

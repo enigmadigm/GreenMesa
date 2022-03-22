@@ -1,5 +1,5 @@
-import { permLevels } from '../../permissions';
-import { stringToChannel } from '../../utils/parsers';
+import { permLevels } from '../../permissions.js';
+import { stringToChannel } from '../../utils/parsers.js';
 import { Command } from "src/gm";
 import { ThreadChannel } from 'discord.js';
 

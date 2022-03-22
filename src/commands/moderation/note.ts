@@ -1,6 +1,6 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, GuildMessageProps, UserNote } from "src/gm";
-import { stringToMember } from "../../utils/parsers";
+import { stringToMember } from "../../utils/parsers.js";
 import moment from 'moment';
 const charlimit = 1000;
 

@@ -1,7 +1,7 @@
 import { GuildMember, Message, NewsChannel, Snowflake, TextChannel, ThreadChannel, Util } from "discord.js";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 import { GuildMessageProps, MessageService } from "../gm";
-import { stringToMember } from "../utils/parsers";
+import { stringToMember } from "../utils/parsers.js";
 
 async function sendAfk(m: string, c: TextChannel | NewsChannel | ThreadChannel, t: GuildMember) {
     const text = Util.removeMentions(m);

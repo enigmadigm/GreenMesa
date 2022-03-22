@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
-import { stringToMember } from '../../utils/parsers';
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from '../../utils/parsers.js';
 import Discord from 'discord.js';
 import { Command, GuildMessageProps } from 'src/gm';
-import { kick } from '../../utils/modactions';
+import { kick } from '../../utils/modactions.js';
 
 export const command: Command<GuildMessageProps> = {
     name: 'kick',

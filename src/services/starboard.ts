@@ -1,8 +1,8 @@
 import { GuildChannel, Message, MessageEmbedOptions, MessageReaction, Permissions, ThreadChannel, User } from "discord.js";
 import { GuildMessageProps, MessageService } from "../gm";
-import Starboard from "../struct/Starboard";
-import { capitalize } from "../utils/parsers";
-import { isSnowflake } from "../utils/specials";
+import Starboard from "../struct/Starboard.js";
+import { capitalize } from "../utils/parsers.js";
+import { isSnowflake } from "../utils/specials.js";
 
 const jumpSynonyms = ["leap", "spring", "bound", "hop", "bounce", "skip", "bob", "dance", "prance", "frolic"];
 

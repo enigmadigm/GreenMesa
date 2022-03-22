@@ -1,8 +1,8 @@
-import { stringToRole } from "../../utils/parsers";
-import { permLevels } from '../../permissions';
+import { stringToRole } from "../../utils/parsers.js";
+import { permLevels } from '../../permissions.js';
 import { Command } from 'src/gm';
 import { MessageEmbedOptions } from 'discord.js';
-import { PaginationExecutor } from '../../utils/pagination';
+import { PaginationExecutor } from '../../utils/pagination.js';
 const maxlen = 15;
 
 export const command: Command = {

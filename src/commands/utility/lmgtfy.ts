@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import Discord, { DMChannel, MessageEmbedOptions, ThreadChannel } from 'discord.js';
 import { Command } from 'src/gm';
-import { PaginationExecutor } from '../../utils/pagination';
+import { PaginationExecutor } from '../../utils/pagination.js';
 
 //TODO: provide the first few links that result from the search
 

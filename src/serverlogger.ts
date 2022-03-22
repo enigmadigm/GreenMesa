@@ -1,9 +1,9 @@
-import { stringToChannel, combineMessageText } from './utils/parsers';
+import { stringToChannel, combineMessageText } from './utils/parsers.js';
 import Discord, { Collection, DMChannel, Guild, GuildChannel, GuildEmoji, GuildMember, Message, MessageEmbedOptions, Role, TextChannel, ThreadChannel } from 'discord.js';
 import moment from 'moment';
-import { Bot } from './bot';
+import { Bot } from './bot.js';
 import { ServerlogData } from './gm';
-import { ChannelTypeKey } from './utils/specials';
+import { ChannelTypeKey } from './utils/specials.js';
 
 const LoggingFlags = {
     MEMBER_STATE: 1 << 0,

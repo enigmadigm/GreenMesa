@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import getColors from 'get-image-colors';
 import { Command, MovieAPIResponse } from "src/gm";
 import { MessageEmbedOptions } from "discord.js";
-import * as config from "../../../auth.json";
+import * as config from "../../../auth.json" assert {type: "json"};
 
 export const command: Command = {
     name: 'movie',

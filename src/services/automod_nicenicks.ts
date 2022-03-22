@@ -1,5 +1,5 @@
 import { MessageService } from "../gm";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 import { GuildMember } from "discord.js";
 
 export const service: MessageService = {

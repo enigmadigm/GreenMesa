@@ -1,4 +1,4 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import moment from "moment";
 import fetch from "node-fetch";
 import { AOCEndpointResponse, AOCMemberData, Command } from "src/gm";

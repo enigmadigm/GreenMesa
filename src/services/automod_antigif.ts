@@ -1,5 +1,5 @@
 import { MessageAttachment } from "discord.js";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 import { GuildMessageProps, MessageService, XMessage } from "../gm";
 
 export const service: MessageService = {

@@ -18,9 +18,13 @@
 'use strict';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
+// require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-require('source-map-support').install();
+// require('source-map-support').install();
+import sourceMapSupport from 'source-map-support';
+sourceMapSupport.install();
 
 process.on('uncaughtException', function (e) {
     xlg.log(e);
@@ -30,26 +34,28 @@ process.on('uncaughtException', function (e) {
 process.on('SIGINT', function () {
 });*/
 // catches unhandled promise rejections
+
+import "./xlogger.js";
 process.on('unhandledRejection', async (reason, promise) => {
     const error = new Error(`Unhandled Rejection. Reason: ${reason}`);
-    console.error(error, "Promise:", promise);
+    xlg.error(error, "Promise:", promise);
 });
 
 import fs from 'fs'; // Get the filesystem library that comes with nodejs
 import Discord, { GuildChannel, Intents, MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js"; // Load discord.js library
-import config from "../auth.json"; // Loading app config file
-import { permLevels, getPermLevel } from "./permissions";
-import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger';
-import MesaWebsite from "./website/app";
+import config from "../auth.json" assert {type: "json"}; // Loading app config file
+// const config = await import("../auth.json", {assert: {type:"json"}})
+import { permLevels, getPermLevel } from "./permissions.js";
+import { logMember, logMessageDelete, logMessageBulkDelete, logMessageUpdate, logRole, logChannelState, logChannelUpdate, logEmojiState, logNickname, logRoleUpdate } from './serverlogger.js';
+import MesaWebsite from "./website/app.js";
 import { Command, XClient, XMessage } from "./gm";
-import { TimedActionsSubsystem } from "./tactions";
-import { PaginationExecutor } from "./utils/pagination";
-import Client from "./struct/Client";
-import "./xlogger";
-import { combineMessageText, parseLongArgs } from './utils/parsers';
+import { TimedActionsSubsystem } from "./tactions.js";
+import { PaginationExecutor } from "./utils/pagination.js";
+import Client from "./struct/Client.js";
+import { combineMessageText, parseLongArgs } from './utils/parsers.js';
 import cron from 'node-cron';
 import exitHook from 'exit-hook';
-import { isGuildMessage } from './utils/specials';
+import { isGuildMessage } from './utils/specials.js';
 
 String.prototype.escapeSpecialChars = function () {
     return this.replace(/(?<!\\)\\n/g, "\\n")
@@ -363,7 +369,7 @@ client.on("messageReactionRemove", async (reaction, user) => {
 });
 
 // the actual command processing
-client.on("message", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
+client.on("messageCreate", async (message: XMessage) => {// This event will run on every single message received, from any channel or DM.
     try {
         client.services.runAllForEvent("message", message), client.database.logMsgReceive();// log reception of message event | run all passive command services
 

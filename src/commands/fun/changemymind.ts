@@ -1,5 +1,5 @@
 import { default as fetch } from "node-fetch";
-import { validURL } from '../../utils/urls';
+import { validURL } from '../../utils/urls.js';
 import { ChangeMyMindAPIResponse, Command } from "src/gm";
 
 export const command: Command = {

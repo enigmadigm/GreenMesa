@@ -1,14 +1,15 @@
 import { AutomoduleData, BSRow, CmdConfEntry, CmdTrackingRow, CommandConf, CommandsGlobalConf, DashUserObject, ExpRow, FullPointsData, GlobalSettingRow, GuildSettingsRow, GuildUserDataRow, InsertionResult, InvitedUserData, LevelRolesRow, ModActionData, ModActionEditData, MovementData, PartialGuildObject, PersonalExpRow, StarredMessageData, StoredPresenceData, TimedAction, TimedActionRow, TwitchHookRow, UserDataRow, XClient, XMessage } from "./gm";
 import mysql, { escape } from "mysql";
-import config, { db_config } from "../auth.json";
+import config from "../auth.json" assert {type: "json"};
 import moment from "moment";
 import util from 'util';
 import Discord, { Guild, GuildMember, PartialGuildMember, Permissions, Role, Snowflake, TextChannel, User } from 'discord.js';
-import { Bot } from "./bot";
+import { Bot } from "./bot.js";
 import uniquid from 'uniqid';
-import { permLevels } from "./permissions";
-import { isMysqlError, isSnowflake, shards } from "./utils/specials";
-import Starboard from "./struct/Starboard";
+import { permLevels } from "./permissions.js";
+import { isMysqlError, isSnowflake, shards } from "./utils/specials.js";
+import Starboard from "./struct/Starboard.js";
+const db_config = config.db_config;
 
 const levelRoles = [
     {

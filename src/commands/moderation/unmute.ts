@@ -1,8 +1,8 @@
 //TODO: add a modaction for unmuting
-import { permLevels } from '../../permissions';
-import { stringToMember } from '../../utils/parsers';
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from '../../utils/parsers.js';
 import { Command } from "src/gm";
-import { Contraventions } from "../../utils/contraventions";
+import { Contraventions } from "../../utils/contraventions.js";
 import { Permissions } from 'discord.js';
 
 export const command: Command = {//TODO: convert to use new method

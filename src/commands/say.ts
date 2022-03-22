@@ -1,7 +1,7 @@
 import { MessageAttachment, MessageEmbed } from "discord.js";
 import { Command, CommandArgumentFlag } from "src/gm";
-import { permLevels } from "../permissions";
-import { stringToChannel } from "../utils/parsers";
+import { permLevels } from "../permissions.js";
+import { stringToChannel } from "../utils/parsers.js";
 
 type MC = { content: string | undefined, embed: MessageEmbed | undefined, attachments: MessageAttachment[] };
 function constructMessage(content: string, flags: CommandArgumentFlag[], atts: MessageAttachment[]): MC {

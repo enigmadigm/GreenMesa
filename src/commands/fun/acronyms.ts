@@ -1,4 +1,4 @@
-import acronyms from '../../../acronyms.json';
+import acronyms from '../../../acronyms.json' assert {type: "json"};
 import { Command } from 'src/gm';
 
 const commonAcronyms = [

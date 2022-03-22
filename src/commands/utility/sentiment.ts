@@ -1,15 +1,15 @@
-import config from '../../../auth.json';
-import NaturalLanguageUnderstandingV1 from 'ibm-watson/natural-language-understanding/v1';
-import { IamAuthenticator } from 'ibm-watson/auth';
+import config from '../../../auth.json' assert {type: "json"};
+import NaturalLanguageUnderstandingV1 from 'ibm-watson/natural-language-understanding/v1.js';
+import { IamAuthenticator } from 'ibm-watson/auth/index.js';
 import { Command } from 'src/gm';
-import { isSnowflake } from '../../utils/specials';
+import { isSnowflake } from '../../utils/specials.js';
 
 const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
     version: '2019-07-12',
     authenticator: new IamAuthenticator({
-        apikey: config.NLPAPIKEY,
+        apikey: config.IBM.NLPAPIKEY,
     }),
-    url: 'https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/c3583068-a860-4dea-b3b3-d417250e51bc',
+    url: config.IBM.NLPINSTANCE,
 });
 
 //For the future: There's more coming. In the future I may move to another Language Processor, or offer more to choose from by user preference. AYLIEN, Google Cloud, Twinword.

@@ -3,12 +3,14 @@ import express from "express";
 import passport from 'passport';
 import helmet from "helmet";
 import path from "path";
-import routes from './routes';
+import routes from './routes/index.js';
 import session from "express-session";
 import mstore from 'express-mysql-session';
-import { isSnowflake } from "../utils/specials";
+import { isSnowflake } from "../utils/specials.js";
 import * as http from 'http';
-require('./strategies/discord');
+import './strategies/discord.js';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.WEBSITE_PORT || 3002;
 //const STATIC = process.env.DASHBOARD_STATIC_LOC || "./website/static";

@@ -1,4 +1,4 @@
-import { permLevels, getPermLevel } from "../../permissions";
+import { permLevels, getPermLevel } from "../../permissions.js";
 import { Command } from "src/gm";
 
 export const command: Command = {

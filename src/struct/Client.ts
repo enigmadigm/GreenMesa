@@ -1,11 +1,11 @@
 import { Client, ClientOptions } from 'discord.js';
-import { Commands } from '../commands';
-import { DBManager } from '../dbmanager';
+import { Commands } from '../commands.js';
+import { DBManager } from '../dbmanager.js';
 import { XClient } from '../gm';
-import { MessageServices } from '../services';
-import * as Specials from "../utils/specials";
-import config from "../../auth.json"; // Loading app config file
-import Invites from './Invites';
+import { MessageServices } from '../services/index.js';
+import * as Specials from "../utils/specials.js";
+import config from "../../auth.json" assert {type: "json"}; // Loading app config file
+import Invites from './Invites.js';
 
 export default class extends Client implements XClient {
     public commands: XClient["commands"];
@@ -37,8 +37,9 @@ export default class extends Client implements XClient {
     }
 
     private async load(co: Commands) {
+        await this.database.handleDisconnect();
         await co.load(co.rootCommandPath);
         await this.services.load();
-        await this.database.handleDisconnect();
+        xlg.log(`Loading completed`)
     }
 }

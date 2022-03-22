@@ -1,8 +1,8 @@
 import { Permissions } from "discord.js";
 import moment from "moment";
-import { Bot } from "./bot";
+import { Bot } from "./bot.js";
 import { TimedAction, TimedActionPayload } from "./gm";
-import { Contraventions } from "./utils/contraventions";
+import { Contraventions } from "./utils/contraventions.js";
 
 export class TimedActionsSubsystem {
     private scheduled: TimedAction[];

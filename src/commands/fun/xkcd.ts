@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, XClient, XKCDEndpointResponse, XKCDSearchResponse } from "src/gm";
 import fetch from 'node-fetch';
-import { randomIntFromInterval } from "../../utils/parsers";
+import { randomIntFromInterval } from "../../utils/parsers.js";
 import { CollectorFilter, DMChannel, MessageAttachment, MessageEmbed, MessageReaction, NewsChannel, TextChannel, ThreadChannel, User } from "discord.js";
 
 const HOST = "http://xkcd.com/";

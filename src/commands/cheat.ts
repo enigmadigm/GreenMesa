@@ -1,8 +1,8 @@
-import { permLevels } from '../permissions';
+import { permLevels } from '../permissions.js';
 import { Command } from "src/gm";
 import fetch from "node-fetch";
 import { MessageAttachment } from "discord.js";
-import { langs } from "../utils/hl_langs";
+import { langs } from "../utils/hl_langs.js";
 
 export const command: Command = {
     name: "cheat",

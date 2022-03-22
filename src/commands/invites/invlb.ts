@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, InvitedUserData } from "src/gm";
 import { MessageEmbed, MessageEmbedOptions, Snowflake } from "discord.js";
-import { PaginationExecutor } from '../../utils/pagination';
-import { getDashboardLink } from '../../utils/specials';
+import { PaginationExecutor } from '../../utils/pagination.js';
+import { getDashboardLink } from '../../utils/specials.js';
 
 export const command: Command = {
     name: "invlb",

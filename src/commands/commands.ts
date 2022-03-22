@@ -1,5 +1,5 @@
 import { Command } from "src/gm";
-import { titleCase } from "../utils/parsers";
+import { titleCase } from "../utils/parsers.js";
 
 export const command: Command = {
     name: 'commands',

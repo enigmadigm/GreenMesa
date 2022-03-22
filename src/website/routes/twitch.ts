@@ -13,14 +13,16 @@ import moment from 'moment';
 import { TwitchSearchChannelsReturns, XClient } from 'src/gm';
 import express, { Router } from 'express';
 import { IncomingMessage } from 'http';
-import { Bot } from '../../bot';
+import { Bot } from '../../bot.js';
 import { Channel, TextChannel } from 'discord.js';
+import { fileURLToPath } from 'url';
 // import { eq } from 'lodash';
 // url and querystring for parsing url queries
 // import url from 'url';
 // import querystring from 'querystring';
 
 // Load configuation
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const config = JSON.parse(fs.readFileSync(path.join( __dirname, '../../../auth.json')).toString()).TWITCH;
 
 // "subscription": {

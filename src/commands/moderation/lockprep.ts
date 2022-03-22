@@ -1,4 +1,4 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));

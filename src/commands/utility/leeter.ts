@@ -1,5 +1,5 @@
 import { Command, GuildMessageProps } from "src/gm";
-import Leeter from '../../utils/leeter';
+import Leeter from '../../utils/leeter.js';
 
 export const command: Command<GuildMessageProps> = {
     name: 'leeter',

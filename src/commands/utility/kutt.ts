@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import fetch from "node-fetch";
 import { Command, KuttPostResponse } from "src/gm";
-import * as config from "../../../auth.json";
+import * as config from "../../../auth.json" assert {type: "json"};
 
 export const command: Command = {
     name: "kutt",

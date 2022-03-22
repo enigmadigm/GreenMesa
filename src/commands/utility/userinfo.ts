@@ -1,9 +1,9 @@
 import { Command, GuildMessageProps } from "src/gm";
 import moment from 'moment';
-import { ordinalSuffixOf, stringToMember } from "../../utils/parsers";
-import { permLevels, getPermLevel } from "../../permissions";
+import { ordinalSuffixOf, stringToMember } from "../../utils/parsers.js";
+import { permLevels, getPermLevel } from "../../permissions.js";
 import { Guild, GuildMember, Permissions, Snowflake } from "discord.js";
-import { isSnowflake } from "../../utils/specials";
+import { isSnowflake } from "../../utils/specials.js";
 
 // ●
 

@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, CommandConf, GuildMessageProps } from "src/gm";
-import { stringToChannel, stringToRole } from "../../utils/parsers";
+import { stringToChannel, stringToRole } from "../../utils/parsers.js";
 import { GuildChannel } from "discord.js";
-import { getDashboardLink } from "../../utils/specials";
+import { getDashboardLink } from "../../utils/specials.js";
 
 export const command: Command<GuildMessageProps> = {
     name: 'disable',

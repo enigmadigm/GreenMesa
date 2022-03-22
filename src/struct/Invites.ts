@@ -1,7 +1,7 @@
 import { Guild, GuildMember, Permissions, Snowflake, User } from "discord.js";
 import moment from "moment";
 import { InsertionResult, InviteData, InviteStateData, XClient } from "../gm";
-import { isSnowflake } from "../utils/specials";
+import { isSnowflake } from "../utils/specials.js";
 
 /**
  * This class tracks invites

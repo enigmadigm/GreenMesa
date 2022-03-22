@@ -1,8 +1,8 @@
-import { permLevels } from '../../permissions';
-import { stringToChannel, stringToRole } from '../../utils/parsers';
+import { permLevels } from '../../permissions.js';
+import { stringToChannel, stringToRole } from '../../utils/parsers.js';
 import { Channel, Role } from "discord.js";
 import { Command } from "src/gm";
-import { getDashboardLink, isSnowflake } from "../../utils/specials";
+import { getDashboardLink, isSnowflake } from "../../utils/specials.js";
 
 export const command: Command = {
     name: "settings",

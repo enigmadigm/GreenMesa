@@ -1,9 +1,9 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { getFriendlyUptime } from '../../utils/time';
-import { parseFriendlyUptime } from '../../utils/parsers';
+import { getFriendlyUptime } from '../../utils/time.js';
+import { parseFriendlyUptime } from '../../utils/parsers.js';
 import { MessageActionRow, MessageButton, CollectorFilter, MessageComponentInteraction, Permissions, MessageEmbed } from 'discord.js';
-import { addTwitchWebhook } from '../../website/routes/twitch';
+import { addTwitchWebhook } from '../../website/routes/twitch.js';
 import { MessageButtonStyles } from 'discord.js/typings/enums';
 
 const delay = 1000;

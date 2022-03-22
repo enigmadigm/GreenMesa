@@ -1,9 +1,9 @@
 import { ChannelLogsQueryOptions, Message } from 'discord.js';
 import moment from 'moment';
 import { Command, GuildMessageProps } from 'src/gm';
-import { permLevels } from '../../permissions';
-import { stringToMember } from '../../utils/parsers';
-import { argsMustBeNum } from '../../utils/specials';
+import { permLevels } from '../../permissions.js';
+import { stringToMember } from '../../utils/parsers.js';
+import { argsMustBeNum } from '../../utils/specials.js';
 
 export const command: Command<GuildMessageProps> = {
     name: "purge",

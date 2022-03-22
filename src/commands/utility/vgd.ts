@@ -1,4 +1,4 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import fetch from "node-fetch";
 import { Command, GdShortenerResponse } from "src/gm";
 

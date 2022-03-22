@@ -1,6 +1,6 @@
-import { getPermLevel, permLevels } from '../../permissions';
-import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers";
-import { getFriendlyUptime } from "../../utils/time";
+import { getPermLevel, permLevels } from '../../permissions.js';
+import { parseFriendlyUptime, stringToMember, stringToRole } from "../../utils/parsers.js";
+import { getFriendlyUptime } from "../../utils/time.js";
 import { Role, GuildMember, CollectorFilter, MessageEmbed, Collection, Permissions, MessageActionRow, MessageButton, MessageComponentInteraction } from "discord.js";
 import { Command } from "src/gm";
 import { MessageButtonStyles } from 'discord.js/typings/enums';

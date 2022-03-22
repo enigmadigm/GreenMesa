@@ -1,5 +1,5 @@
 import { Command } from "src/gm";
-import { getDashboardLink } from "../utils/specials";
+import { getDashboardLink } from "../utils/specials.js";
 
 export const command: Command = {
     name: 'dashboard',

@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, GuildMessageProps } from "src/gm";
 import { MessageEmbedOptions, Permissions } from "discord.js";
-import { PaginationExecutor } from "../../utils/pagination";
+import { PaginationExecutor } from "../../utils/pagination.js";
 const maxlen = 15;// maximum number of roles to be displayed at one time
 
 export const command: Command<GuildMessageProps> = {

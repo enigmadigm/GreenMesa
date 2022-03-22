@@ -1,6 +1,6 @@
 //TODO: redo this whole service
 import { GuildMessageProps, MessageService, XMessage } from "../gm";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 import { Message, NewsChannel, TextChannel, ThreadChannel } from "discord.js";
 import moment from "moment";
 

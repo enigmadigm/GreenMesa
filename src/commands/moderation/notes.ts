@@ -1,9 +1,9 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command, GuildMessageProps, UserNote } from "src/gm";
-import { combineEmbedText, stringToMember } from "../../utils/parsers";
+import { combineEmbedText, stringToMember } from "../../utils/parsers.js";
 import { MessageEmbed, MessageEmbedOptions } from "discord.js";
-import { PaginationExecutor } from '../../utils/pagination';
-import { isSnowflake } from '../../utils/specials';
+import { PaginationExecutor } from '../../utils/pagination.js';
+import { isSnowflake } from '../../utils/specials.js';
 
 export const command: Command<GuildMessageProps> = {
     name: "notes",

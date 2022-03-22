@@ -2,6 +2,8 @@ import { Collection } from "discord.js";
 import fs from "fs";
 import path from "path";
 import { Category, Command } from "./gm";
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class Commands {
 	public commands: Collection<string, Command>;
@@ -68,7 +70,7 @@ export class Commands {
         }
 
         for (const cmdfile of cmds) {
-            const { command } = await import(`${dir}${cmdfile}`);
+            const { command } = await import(`file:///${dir}${cmdfile}`);
             if (!command) {
                 console.log(`$ ${this.commandNumber} - $${cmdfile} \x1b[33mWARNING: \x1b[32mno command contained in this file, it will not work\x1b[0m`);
                 continue;

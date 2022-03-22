@@ -1,7 +1,7 @@
-import { permLevels } from '../../permissions';
+import { permLevels } from '../../permissions.js';
 import { Command } from "src/gm";
-import { isSnowflake } from '../../utils/specials';
-import { unban } from '../../utils/modactions';
+import { isSnowflake } from '../../utils/specials.js';
+import { unban } from '../../utils/modactions.js';
 
 export const command: Command = {
     name: "unban",

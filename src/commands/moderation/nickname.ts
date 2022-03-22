@@ -1,5 +1,5 @@
-import { permLevels, getPermLevel } from "../../permissions";
-import { stringToMember } from "../../utils/parsers";
+import { permLevels, getPermLevel } from "../../permissions.js";
+import { stringToMember } from "../../utils/parsers.js";
 import { Command, GuildMessageProps } from "src/gm";
 
 export const command: Command<GuildMessageProps> = {

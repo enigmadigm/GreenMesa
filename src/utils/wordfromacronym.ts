@@ -1,6 +1,6 @@
 // https://github.com/Chew/AcronymGenerator/blob/master/assets/js/changemessage.js
 
-import words from "../../words.json";
+import words from "../../words.json" assert {type: "json"};
 
 export function genPhrase(input: string): string {
     input = input.toLowerCase();

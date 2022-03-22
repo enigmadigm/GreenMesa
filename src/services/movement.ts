@@ -1,6 +1,6 @@
 import { GuildMember, Permissions } from "discord.js";
 import { MessageService } from "../gm";
-import { isSnowflake } from "../utils/specials";
+import { isSnowflake } from "../utils/specials.js";
 
 export const service: MessageService = {
     events: ["guildMemberAdd", "guildMemberRemove"],

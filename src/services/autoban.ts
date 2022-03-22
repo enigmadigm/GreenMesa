@@ -1,6 +1,6 @@
 import { GuildMember } from "discord.js";
 import { MessageService } from "../gm";
-import { ban } from "../utils/modactions";
+import { ban } from "../utils/modactions.js";
 
 export const service: MessageService = {
     events: ["guildMemberAdd"],

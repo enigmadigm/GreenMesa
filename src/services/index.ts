@@ -1,9 +1,12 @@
 import { AutomoduleData, MessageService, XClient, XMessage } from "../gm";
 import { ClientEvents, Collection, DMChannel, GuildChannel, GuildMember, Message, MessageEmbedOptions, MessageReaction, User } from "discord.js";
 import fs from "fs";
-import { Bot } from "../bot";
-import { ordinalSuffixOf } from "../utils/parsers";
-import { ban, kick, mute, warn } from "../utils/modactions";
+import { Bot } from "../bot.js";
+import { ordinalSuffixOf } from "../utils/parsers.js";
+import { ban, kick, mute, warn } from "../utils/modactions.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class MessageServices {
     private services: Collection<string, MessageService>;
@@ -18,7 +21,7 @@ export class MessageServices {
         const serviceFiles = fs.readdirSync(__dirname).filter(file => file.endsWith('.js') && !file.startsWith('[template]') && file !== "index.js")
 
         for (const file of serviceFiles) {
-            const { service } = await import(`${__dirname}/${file}`);
+            const { service } = await import(`file:///${__dirname}/${file}`);
             const name = file.split(".")[0];
             service.name = name;
             this.services.set(name, service);
