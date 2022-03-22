@@ -108,13 +108,24 @@ export class TimedActionsSubsystem {
                     break;
             }
         } catch (error) {
-            xlg.error(error);
+            if (Bot.client.specials.isNodeError(error)) {
+                if (error.message === "Unknown Member") {
+                    await this.resolveAction(action, "munknown");
+                } else {
+                    xlg.error(error);
+                }
+            }
         }
     }
 
-    private async resolveAction(action: TimedActionPayload): Promise<void> {
+    private async resolveAction(action: TimedActionPayload, errorReason?: "munknown"): Promise<void> {
         await Bot.client.database.deleteAction(action.id);// remove completed action from database
         this.scheduled.splice(this.scheduled.findIndex(x => x.id === action.id), 1);// in case it wasn't already removed from class schedule
+        if (errorReason) {
+            if (errorReason === "munknown") {
+                xlg.error(`Unable to complete taction:`, `Unknown member for action: ${action.data}`)
+            }
+        }
     }
 
     public stopPolling(): void {
