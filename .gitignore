@@ -9,3 +9,6 @@ commands/test.js
 .env
 .vscode
 .VSCodeCounter
+dist/*
+dist/*/
+#!dist/.gitignore
