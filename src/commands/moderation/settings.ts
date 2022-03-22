@@ -196,7 +196,7 @@ export const command: Command = {
                             }
                             argIndex++;
                             const newlevel = (args[argIndex] && args[argIndex].length < 6) ? parseInt(args[argIndex]) : undefined;
-                            if (!newlevel || isNaN(newlevel) || newlevel > 1000) {
+                            if (!newlevel || newlevel > 1000) {
                                 await message.channel.send(`Please send a valid level < 1001.`);
                                 return;
                             }
