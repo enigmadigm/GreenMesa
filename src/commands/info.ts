@@ -23,7 +23,7 @@ export const command: Command = {
                         },
                         {
                             "name": "Vote!",
-                            "value": "[d.b.l](https://top.gg/bot/560223567967551519)",
+                            "value": "[d.b.l](https://top.gg/bot/745780460034195536)",
                             "inline": true,
                         },
                         {
