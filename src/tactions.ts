@@ -109,7 +109,7 @@ export class TimedActionsSubsystem {
             }
         } catch (error) {
             if (Bot.client.specials.isNodeError(error)) {
-                if (error.message === "Unknown Member") {
+                if (error.message === "Unknown Member" || error.message === "Unknown User") {
                     await this.resolveAction(action, "munknown");
                 } else {
                     xlg.error(error);
@@ -123,7 +123,7 @@ export class TimedActionsSubsystem {
         this.scheduled.splice(this.scheduled.findIndex(x => x.id === action.id), 1);// in case it wasn't already removed from class schedule
         if (errorReason) {
             if (errorReason === "munknown") {
-                xlg.error(`Unable to complete taction:`, `Unknown member for action: ${action.data}`)
+                xlg.error(`Unable to complete taction:`, `Unknown member/user for action: ${JSON.stringify(action.data)}`)
             }
         }
     }
