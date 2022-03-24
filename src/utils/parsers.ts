@@ -135,8 +135,8 @@ export async function stringToMember(guild: Guild, text: string, byUsername = tr
                 member = undefined;
             }
         }
-        if (!member) {
-            member = await guild.members.fetch(text as Snowflake);
+        if (!member && isSnowflake(text)) {
+            member = await guild.members.fetch(text);
         }
         return member;
     } catch (error) {
