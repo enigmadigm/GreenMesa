@@ -11,7 +11,8 @@ export const command: Command = {
     usage: "[]",
     args: 0,
     cooldown: 1,
-    permLevel: permLevels.admin,
+    permLevel: permLevels.botMaster,
+    // permLevel: permLevels.admin,
     guildOnly: true,
     permissions: ["MANAGE_GUILD"],
     async execute(client, message) {

@@ -19,7 +19,7 @@ export const command: Command<GuildMessageProps> = {
             const dataState = await client.invites.getInvitesState(message.guild.id);
             dataState.reset_at = moment().format();
             await client.invites.updateInvitesState(dataState);
-            await message.channel.send(`Invite tracking is clocking from now`);
+            await message.channel.send(`Invite tracking is clocking from <t:${Math.round(Date.now()/1000)}:R>`);
         } catch (error) {
             xlg.error(error);
             await client.specials.sendError(message.channel);
