@@ -1,4 +1,4 @@
-import { Guild, GuildMember, MessageEmbedOptions, Permissions, User } from "discord.js";
+import { Guild, GuildMember, MessageEmbedOptions, Permissions, Snowflake, User } from "discord.js";
 import moment from "moment";
 import { UnbanAction, UnmuteAction, WarnConf, XClient } from "../gm";
 import { durationToString } from "./parsers.js";
@@ -137,7 +137,136 @@ import { isSnowflake } from "./specials.js";
 // }
 
 /**
+ * Unmutes a target (role mute and timeout)
+ * @param client 
+ * @param target 
+ * @param time 
+ * @param mod 
+ * @param reason 
+ * @param automatic if the mute was automatic, specifies the reason for role removal in the audit log
+ * @returns 
+ */
+export async function unmute(client: XClient, target: GuildMember, mod: GuildMember | string, reason?: string, automatic?: string, mutedRoleID?: Snowflake): Promise<void | string> {
+    if (!target.guild.me?.permissions.has(Permissions.FLAGS.MODERATE_MEMBERS) || !target.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) return;
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+    xlg.log("modtag", modtag)
+    const auditReason = automatic ?? `unmuted by ${modtag}`
+
+    if (!mutedRoleID) {
+        const dbmr = await client.database.getGuildSetting(target.guild, "mutedrole")
+        mutedRoleID = dbmr ? dbmr.value : "";
+    }
+    if (mutedRoleID) {
+        if (!target.manageable) {
+            return `Insufficient authority to unmute \`${target.user.tag}\``;
+        }
+
+        // Check if the user has the mutedRole, check if muted role exists
+        const mutedRole = target.guild.roles.cache.find(r => r.id === mutedRoleID);
+
+        // If the mentioned user or ID does not have the "mutedRole" return a message
+        if (mutedRole && target.roles.cache.has(mutedRole.id)) {
+            await target.roles.remove(mutedRole, auditReason);
+        }
+
+        // Remove the mentioned users role "mutedRole" and notify command sender
+        if (target.voice.channel && target.voice.mute) {
+            try {
+                await target.voice.setMute(false)
+            } catch (error) {
+                xlg.error("unmute: error undoing voice mute", error)
+            }
+        }
+    }
+    if (target.isCommunicationDisabled()) {
+        if (!target.moderatable) {
+            return `\`${target.user.tag}\` is not moderatable`;
+        }
+        await target.timeout(null, auditReason);
+    }
+
+    await Contraventions.logUnmute(target, modtag, reason);
+}
+
+/**
+ * Timeout a target for a set period
+ * @param client bot client to use
+ * @param target member to timeout
+ * @param time period to timeout, when not specified it defaults to 28 days
+ * @param mod acting moderator
+ * @param reason reason for moderation action
+ * @param remute whether the mute action is being executed because someone tried to evade their mute
+ * @returns 
+ */
+export async function timeout(client: XClient, target: GuildMember, time = 1000 * 60 * 60 * 24 * 28 - 1000, mod: GuildMember | string, reason = "Automatic timeout", remute = false): Promise<void | string> {
+    if (!target.guild.me?.permissions.has(Permissions.FLAGS.MODERATE_MEMBERS)) return;
+    const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
+
+    let duration = "";
+    let mendm = "";
+    duration = durationToString(time);
+    mendm = ` for ${duration}`
+
+    await target.disableCommunicationUntil(Date.now() + time, `Requested by ${modtag}${reason ? ` for ${reason}` : ""}`);
+
+    let noNotify = false;
+    try {
+        let embed: MessageEmbedOptions = {};
+        if (!remute) {
+            embed = {
+                color: await client.database.getColor("fail"),
+                title: `Mute Notice`,
+                description: `You were **muted** in \`${target.guild.name.escapeDiscord()}\`. This is a temporary mute, it will end in ${duration} at \`${moment().add(time, "ms").format('YYYY-MM-DD HH:mm:ss')}\`.`,
+                fields: [
+                    {
+                        name: "Reason",
+                        value: `${reason || "*none*"}`,
+                    }
+                ],
+            };
+            if (modtag) {
+                embed.fields?.push({
+                    name: "Moderator",
+                    value: `${modtag}`,
+                });
+            }
+        } else {
+            embed = {
+                color: await client.database.getColor("warn"),
+                title: `Remute`,
+                description: `**Re:** \`${target.guild.name.escapeDiscord()}\`\nYou either intentionally or unintentionally tried to evade your mute. It has been reinstated.`,
+            };
+        }
+        await target.send({ embeds: [embed] });
+    } catch (error) {
+        noNotify = true;
+    }
+
+    await Contraventions.logMute(target, time, mod, `${reason}`, remute, noNotify ? true : false, true);
+
+    const data: UnmuteAction["data"] = {
+        guildid: target.guild.id,
+        userid: target.id,
+        roleid: "000000000000000000",
+        duration: duration
+    }
+
+    if (client.database) {
+        const t = moment().add(time, "ms").toDate();
+        await client.database.setAction(uniqid(), t, "unmute", data);
+    }
+
+    return `\\✅ Muted \`${target.user.tag}\`${mendm}`;
+}
+
+/**
  * Auto-mute a target permanently or for a period
+ * @param client bot client to use
+ * @param target member to timeout
+ * @param time period to timeout
+ * @param mod acting moderator
+ * @param reason reason for moderation action
+ * @param remute whether the mute action is being executed because someone tried to evade their mute
  */
 export async function mute(client: XClient, target: GuildMember, time = 0, mod: GuildMember | string, reason = "Automatic mute", remute = false): Promise<void | string> {
     if (!target.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) return;
@@ -183,7 +312,7 @@ export async function mute(client: XClient, target: GuildMember, time = 0, mod: 
         return `\`${target.user.tag}\` is already muted`;
     }
 
-    await target.roles.add(mutedRole, `Requested by ${modtag}${reason ? ` for ${reason}` : ""}`).catch(e => console.log(e.stack));
+    await target.roles.add(mutedRole, `Requested by ${modtag}${reason ? ` for ${reason}` : ""}`).catch(e => xlg.error(e.stack));
     if (target.voice.channel && !target.voice.serverMute) {
         try {
             await target.voice.setMute(true);
