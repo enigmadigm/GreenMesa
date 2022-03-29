@@ -1,11 +1,10 @@
-//TODO: add a modaction for unmuting
 import { permLevels } from '../../permissions.js';
 import { stringToMember } from '../../utils/parsers.js';
 import { Command } from "src/gm";
-import { Contraventions } from "../../utils/contraventions.js";
 import { Permissions } from 'discord.js';
+import { unmute } from '../../utils/modactions.js';
 
-export const command: Command = {//TODO: convert to use new method
+export const command: Command = {
     name: 'unmute',
     description: {
         short: 'unmute a member',
@@ -38,33 +37,13 @@ export const command: Command = {//TODO: convert to use new method
                 await message.channel.send('You cannot unmute a member that is equal to or higher than yourself!');
                 return;
             }
-            if (!toMute.manageable) {
-                await message.channel.send(`I don't have a high enough role to manage ${toMute}.`);
-                return;
+
+            const unmuteResult = await unmute(client, toMute, message.member);
+            if (unmuteResult) {
+                await message.channel.send(`${unmuteResult}`);
+            } else {
+                await message.channel.send(`\\✅ Unmuted ${toMute.user.tag}`).catch(console.error);
             }
-
-            // Check if the user has the mutedRole ???? check if muted role exists
-            const mutedRole = message.guild.roles.cache.find(r => r.id === mutedRoleID || r.name.toLowerCase() === 'muted' || r.name.toLowerCase() === 'mute');
-
-            // If the mentioned user or ID does not have the "mutedRole" return a message
-            if (!mutedRole || !toMute.roles.cache.has(mutedRole.id)) {
-                await message.channel.send('\\🟥 User not muted');
-                return;
-            }
-
-            // Remove the mentioned users role "mutedRole" and notify command sender
-            await toMute.roles.remove(mutedRole, `unmuted by ${message.author.tag}`);
-            if (toMute.voice.channel && toMute.voice.mute) {
-                try {
-                    await toMute.voice.setMute(false)
-                } catch (error) {
-                    xlg.error("unmute: error undoing voice mute", error)
-                }
-            }
-
-            await Contraventions.logUnmute(toMute, message.member);
-
-            await message.channel.send(`\\✅ Unmuted ${toMute.user.tag}`).catch(console.error);
         } catch (error) {
             xlg.error(error);
             await client.specials.sendError(message.channel, "Failure while removing mute");

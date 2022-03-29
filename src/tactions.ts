@@ -2,7 +2,7 @@ import { Permissions } from "discord.js";
 import moment from "moment";
 import { Bot } from "./bot.js";
 import { TimedAction, TimedActionPayload } from "./gm";
-import { Contraventions } from "./utils/contraventions.js";
+import { unmute } from "./utils/modactions.js";
 
 export class TimedActionsSubsystem {
     private scheduled: TimedAction[];
@@ -65,25 +65,27 @@ export class TimedActionsSubsystem {
                     if (!m) {
                         m = await g.members.fetch(d.userid);
                         if (!m) {
+                            await this.resolveAction(action);
                             break;
                         }
                     }
-                    if (!m.roles.cache.has(d.roleid)) {
-                        await this.resolveAction(action);
-                        break;
-                    }
+                    // if (!m.roles.cache.has(d.roleid)) {
+                    //     await this.resolveAction(action);
+                    //     break;
+                    // }
 
                     // Remove the mentioned users role and make notation in audit log
-                    await m.roles.remove(d.roleid, `unmuting automatically after ${d.duration}`);
-                    if (m.voice.serverMute) {
-                        try {
-                            await m.voice.setMute(false);
-                        } catch (error) {
-                            xlg.error("tactions error removing voice mute", error)
-                        }
-                    }
-                    await Contraventions.logUnmute(m, m.guild.me || "", `Automatic unmute after ${d.duration}`);//Automic
+                    // await m.roles.remove(d.roleid, `unmuting automatically after ${d.duration}`);
+                    // if (m.voice.serverMute) {
+                    //     try {
+                    //         await m.voice.setMute(false);
+                    //     } catch (error) {
+                    //         xlg.error("tactions error removing voice mute", error)
+                    //     }
+                    // }
+                    // await Contraventions.logUnmute(m, m.guild.me || "", `Automatic unmute after ${d.duration}`);//Automic
                     // await Bot.client.database.deleteAction(action.id);
+                    await unmute(Bot.client, m, m.guild.me || "", `Automatic unmute after ${d.duration}`, `unmuting automatically after ${d.duration}`, d.roleid);
                     await this.resolveAction(action);
                     break;
                 }

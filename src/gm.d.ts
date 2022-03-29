@@ -390,6 +390,10 @@ export interface TimedActionPayload<T = string, D = Record<string, unknown>> {
 export type UnmuteAction = TimedActionPayload<'unmute', {
     guildid: Snowflake;
     userid: Snowflake;
+    /**
+     * Due to the addition of timeouts, the roleid property may be a dummy snowflake (000000000000000000) if the user was muted with a timeout
+     * I chose to make the property required in order to ensure all necessary properties are included if they are needed (because it does not hurt the system to have a dummy id)
+     */
     roleid: Snowflake;
     duration: string;
 }>;

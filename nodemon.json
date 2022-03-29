@@ -4,7 +4,7 @@
         "crash": "kill-port 3005"
     },
     "verbose": true,
-    "ignore": ["auth.json", "node_modules", "package.json", "package-lock.json", ".gitignore", ".eslintrc.json", "desktop.ini", "readme.md", "documentation", "dist", "src/website/client"],
+    "ignore": ["auth.json", "node_modules", "package.json", "package-lock.json", ".gitignore", ".eslintrc.json", "desktop.ini", "readme.md", "documentation", "dist/", "src/website/client"],
     "delay": 2000,
     "ext": "ts,js,json"
 }

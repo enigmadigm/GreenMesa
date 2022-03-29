@@ -80,7 +80,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         await this.logOne(d);
     }
 
-    public static async logMute(u: GuildMember, duration: number, agent: GuildMember | string, reason = "", remute = false, nonotify = false): Promise<void> {
+    public static async logMute(u: GuildMember, duration: number, agent: GuildMember | string, reason = "", remute = false, nonotify = false, timeout = false): Promise<void> {
         const modTag = typeof agent === "string" ? undefined : agent.user.tag;
         const modId = typeof agent === "string" ? agent : agent.id;
         const d: ModActionEditData = {
@@ -90,7 +90,7 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             endtime: moment().add(duration, "ms").toISOString(),
             agent: modId,
             agenttag: modTag,
-            summary: remute ? "Attempted mute evasion; automatically remuting to counter." : reason,
+            summary: `${timeout ? "(timeout) " : ""}${remute ? "Attempted mute evasion; automatically remuting to counter." : reason}`,
             type: remute ? "remute" : "mute",
             notified: nonotify ? 0 : 1
         };
@@ -117,9 +117,9 @@ export class Contraventions {//TODO: get rid of this class and just export all o
         if (!data.guildid || !data.userid || !Bot.client.user) return;
         const num = data.casenumber || (await Bot.client.database.getHighestCaseNumber(data.guildid)) + 1;// get the case number to be used for this entry
         data.casenumber = num;
-        const u = Bot.client.users.cache.get(data.userid) || data.userid;// retrieve the user who the case pertains to
+        const u = Bot.client.users.cache.get(data.userid) ?? data.userid;// retrieve the user who the case pertains to
         // if (!u) return;//TODO: finding the user should not be necessary, the last known tag of the user should be stored with the mod action data in the db
-        const m = isSnowflake(data.agent) ? Bot.client.users.cache.get(data.agent) || await Bot.client.users.fetch(data.agent) : "anonymous";
+        const m = isSnowflake(data.agent) ? Bot.client.users.cache.get(data.agent) ?? await Bot.client.users.fetch(data.agent).catch((e) => xlg.error(e)) ?? data.agent : data.agent;
         const action = data.type;
         const embed = await this.constructEmbed(u, m, num, action, color, data.summary, duration, data.endtime, u instanceof User ? undefined : data.usertag, undefined, !data.notified);
         const r = await Bot.client.database.getGuildSetting(data.guildid, "modlog");// get the case channel
@@ -150,8 +150,8 @@ export class Contraventions {//TODO: get rid of this class and just export all o
      * @returns embed data
      */
     public static async constructEmbed(target: User | string, mod: User | string, casenum: number, action = "log", color: number, reason = "", duration = 0, endat = "", usertag?: string, modtag?: string, nonotify = false): Promise<MessageEmbed> {
-        const modTag = mod instanceof User ? mod.tag : typeof modtag === "string" ? modtag : `unknown#0000`;
-        const modId = mod instanceof User ? mod.id : "none";
+        const modTag = mod instanceof User ? mod.tag : typeof modtag === "string" && modtag ? modtag : !isSnowflake(mod) ? mod as string : `unknown#0000`;
+        const modId = mod instanceof User ? mod.id : isSnowflake(mod) ? mod : "unavailable";
         const targTag = target instanceof User ? target.tag || "unknown#0000" : typeof usertag === "string" && usertag ? usertag : `unknown#0000`;
         const targId = target instanceof User ? target.id : target;
         const targUser = target instanceof User ? target : targId;
@@ -176,14 +176,14 @@ export class Contraventions {//TODO: get rid of this class and just export all o
             color,
             timestamp: new Date(),
             title: `Case ${casenum} ● ${titleCase(action, /[- ]/)} ● ${targTag.escapeDiscord()}`,// 💼
-            description: `**Perpetrator:** ${targTag.escapeDiscord()} ${targUser}\n**Marshal:** ${modTag.escapeDiscord()} ${mod instanceof User ? mod : null}`,
+            description: `**Perpetrator:** ${targTag.escapeDiscord()} ${targUser}\n**Marshal:** ${modTag.escapeDiscord()} ${mod instanceof User ? mod : ""}`,
             footer: {
                 text: `User: ${targId} • Mod: ${modId}`,
             },
         };
         const embed = new MessageEmbed(e);
         if (reason) {
-            const rt = reason.length < 1500 ? reason : reason.substr(0, 1496) + "...";
+            const rt = reason.length < 1500 ? reason : reason.slice(0, 1496) + "...";
             embed.description += `\n**Summary:** ${rt.escapeDiscord()}`;
         }
         if (duration) {
