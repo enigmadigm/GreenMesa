@@ -1,6 +1,6 @@
 import { ClientValuesGuild, DashboardMessage, GuildMessageProps, SkeletonGuildObject, SkeletonRole, XClient, XMessage } from '../gm';
 import moment from 'moment';
-import { ButtonInteraction, Channel, Collection, CollectorFilter, DMChannel, GuildChannel, GuildMember, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, PartialDMChannel, Permissions, Snowflake, TextChannel, ThreadChannel } from 'discord.js';
+import { ButtonInteraction, Channel, CollectorFilter, DMChannel, GuildChannel, GuildMember, Message, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed, MessageEmbedOptions, NewsChannel, PartialDMChannel, Permissions, Snowflake, TextBasedChannel, TextChannel, ThreadChannel } from 'discord.js';
 import { Bot } from "../bot.js";
 import { combineEmbedText } from './parsers.js';
 import { MessageButtonStyles } from 'discord.js/typings/enums';
@@ -486,27 +486,39 @@ export const ChannelTypeKey = {
     },
 };
 
-//  https://stackoverflow.com/a/42618403/10660033
+/**
+ * Check whether a catch clause error argument is a MySQL api error object
+ * 
+ * https://stackoverflow.com/a/42618403/10660033
+ */
 export function isMysqlError(err: unknown): err is MysqlError {
     const e = err as Partial<MysqlError>;
     return 'code' in e && 'errno' in e && 'fatal' in e;
 }
 
+/**
+ * Typeguard an error in a catch clause for NodeJS error object
+ */
 export function isNodeError(err: unknown): err is Error {
     const e = err as Partial<Error>;
     return 'name' in e && 'message' in e;
 }
 
+/**
+ * Using the stored cache of channels in a guild, the function attemps to find the most recent message a specified member sent.
+ * @param member the author of the messages to search for
+ * @returns false to indicate failure or the most recent found message
+ */
 export function findLastMessage(member: GuildMember): Message | false {
-    const lastChannel = member.guild.channels.cache.filter((c) => !!(c.isText() && c.messages.cache.find(m => m.author.id === member.id))).reduce<Collection<string, NewsChannel | TextChannel | ThreadChannel>>((p, c) => {
-        const f = p.first();
-        if (f && f.createdAt < c.createdAt) {
-            p.delete(c.id);
-            return p;
-        } else {
-            return p;
+    const lastChannels = member.guild.channels.cache.filter((c) => !!(c.isText() && c.messages.cache.find(m => m.author.id === member.id))).reduce<Message[]>((p, c) => {
+        const ch = c as TextBasedChannel;
+        const latest = ch.messages.cache.sort((m1, m2) => m2.createdTimestamp - m1.createdTimestamp);// sort by creation date, trying to put the newest first
+        if (latest.size) {
+            p.push(latest.first() as Message);// dumb typings
         }
-    }).first();
-    const lastMessage = lastChannel?.id ? lastChannel.messages.cache.find(m => m.author.id === member.id) : false;
-    return lastMessage ? lastMessage : false;
+        return p;
+    }, []);
+    if (!lastChannels.length) return false;
+    const lastMessage = lastChannels.reduce((p, c) => c.createdTimestamp > p.createdTimestamp ? c : p);
+    return lastMessage;
 }
