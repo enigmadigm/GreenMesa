@@ -149,7 +149,6 @@ import { isSnowflake } from "./specials.js";
 export async function unmute(client: XClient, target: GuildMember, mod: GuildMember | string, reason?: string, automatic?: string, mutedRoleID?: Snowflake): Promise<void | string> {
     if (!target.guild.me?.permissions.has(Permissions.FLAGS.MODERATE_MEMBERS) || !target.guild.me?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) return;
     const modtag = mod instanceof GuildMember ? mod.user.tag : mod === client.user?.id ? client.user?.tag : isSnowflake(mod) ? target.guild.members.cache.get(mod)?.user.tag || "" : "";
-    xlg.log("modtag", modtag)
     const auditReason = automatic ?? `unmuted by ${modtag}`
 
     if (!mutedRoleID) {
