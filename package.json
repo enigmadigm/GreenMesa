@@ -16,7 +16,7 @@
   "author": "Stefan Hauge",
   "dependencies": {
     "@dice-roller/rpg-dice-roller": "^5.1.0",
-    "@discordjs/opus": "^0.3.3",
+    "@discordjs/opus": "^0.8.0",
     "body-parser": "^1.19.0",
     "chroma-js": "^2.1.0",
     "corpora": "git+https://github.com/dariusk/corpora.git",
